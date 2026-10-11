@@ -25,13 +25,16 @@ CONTRACT_NAMES = {
 
 
 def run_lint_imports(src: Path) -> subprocess.CompletedProcess[str]:
-    env = {**os.environ, "PYTHONPATH": str(src)}
+    # lint-imports prints the contract names, which are in French: force UTF-8 on both
+    # sides of the pipe, since Windows defaults to cp1252.
+    env = {**os.environ, "PYTHONPATH": str(src), "PYTHONIOENCODING": "utf-8"}
     return subprocess.run(  # noqa: S603
         [str(LINT_IMPORTS), "--config", str(BACKEND / "pyproject.toml"), "--no-cache"],
         cwd=BACKEND,
         env=env,
         capture_output=True,
         text=True,
+        encoding="utf-8",
         check=False,
     )
 

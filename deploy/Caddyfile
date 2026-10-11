@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Reverse proxy with automatic TLS (TECH_CHOICES §19.2). The application relies on no
+# Caddy-specific feature: any proxy that forwards to api:8000 works.
+# With OTLET_DOMAIN=localhost, Caddy issues a certificate from its own local authority;
+# otherwise from Let's Encrypt, which needs no account e-mail.
+
+{$OTLET_DOMAIN} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	reverse_proxy api:8000
+}

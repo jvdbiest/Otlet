@@ -117,3 +117,23 @@ jobs:
         run: docker build -f deploy/Containerfile -t otlet:ci .
       - name: Vérifier l'image (rôles, non root, sans Node.js)
         run: sh deploy/ci/check-image.sh otlet:ci
+
+  compose:
+    name: Pile Compose solo
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Générer la configuration locale
+        run: sh deploy/configure.sh localhost
+      - name: Démarrer la pile (construction comprise)
+        run: docker compose -f deploy/compose.yaml up -d --build --wait --wait-timeout 300
+      - name: Vérifier la pile (HTTPS, interface, santé)
+        run: sh deploy/ci/check-compose.sh
+      - name: Journaux en cas d'échec
+        if: failure()
+        run: docker compose -f deploy/compose.yaml logs
+      - name: Arrêter la pile
+        if: always()
+        run: docker compose -f deploy/compose.yaml down -v

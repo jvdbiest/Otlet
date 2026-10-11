@@ -35,6 +35,15 @@ def build_parser() -> argparse.ArgumentParser:
     commands.add_parser("worker", help="exécuteur des tâches de fond")
     commands.add_parser("scheduler", help="planificateur")
 
+    migrate = commands.add_parser("migrate", help="migrations du schéma de la base")
+    steps = migrate.add_subparsers(dest="step", required=True)
+    upgrade = steps.add_parser("upgrade", help="monter le schéma (par défaut : dernière révision)")
+    upgrade.add_argument("revision", nargs="?", default="head")
+    downgrade = steps.add_parser("downgrade", help="redescendre le schéma à une révision")
+    downgrade.add_argument("revision")
+    steps.add_parser("current", help="révision actuelle de la base")
+    steps.add_parser("history", help="révisions connues de cette version")
+
     health = commands.add_parser("healthcheck", help="contrôle de santé d'un rôle (conteneurs)")
     health.add_argument("role", choices=("api", *LOOP_ROLES))
     health.add_argument("--port", type=int, default=port)
@@ -72,6 +81,17 @@ def main(argv: Sequence[str] | None = None) -> int:
         from otlet.entrypoints.scheduler import main as scheduler
 
         scheduler.run(settings, process.stop_on_signals())
+    elif args.command == "migrate":
+        from otlet.platform import migrations
+
+        if args.step == "upgrade":
+            migrations.upgrade(settings, args.revision)
+        elif args.step == "downgrade":
+            migrations.downgrade(settings, args.revision)
+        elif args.step == "current":
+            migrations.current(settings)
+        else:
+            migrations.history(settings)
     return 0
 
 

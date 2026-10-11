@@ -24,6 +24,7 @@ frontend/dist/
 *.pem
 *.key
 secrets/
+deploy/backups/
 
 # Résultats bruts volumineux des preuves (les synthèses JSON sont versionnées)
 spikes/**/data/

@@ -6,7 +6,10 @@ requires-python = ">=3.13"
 license = "AGPL-3.0-or-later"
 authors = [{ name = "Joël" }]
 dependencies = [
+    "alembic>=1.20.0",
     "fastapi>=0.143.0",
+    "psycopg[binary]>=3.3.6",
+    "sqlalchemy>=2.1.4",
     "uvicorn>=0.54.0",
 ]
 

@@ -50,3 +50,15 @@ def test_runs_without_interface(tmp_path: Path) -> None:
     client = TestClient(create_app(Settings(ui_dir=None, run_dir=tmp_path)))
     assert client.get("/health").status_code == 200
     assert client.get("/").status_code == 404
+
+
+def test_health_reports_an_unreachable_database(tmp_path: Path) -> None:
+    # Port 9 (discard) is never served in a test environment: the connection is refused.
+    settings = Settings(
+        ui_dir=None,
+        run_dir=tmp_path,
+        database_url="postgresql+psycopg://otlet:secret@127.0.0.1:9/otlet",
+    )
+    response = TestClient(create_app(settings)).get("/health")
+    assert response.status_code == 503
+    assert response.json()["database"] == "unavailable"

@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# Single multi-role image (TC-13): `otlet api`, `otlet worker`, `otlet scheduler`.
+# Single multi-role image (TC-13): `otlet api`, `otlet worker`, `otlet scheduler`,
+# `otlet migrate`.
 # Build from the repository root:
 #   docker build -f deploy/Containerfile -t otlet:dev .
 # Node.js is used only to build the interface; the final image has no Node.js (TC-03).
@@ -40,10 +41,12 @@ RUN groupadd --system --gid 10001 otlet \
     && useradd --system --uid 10001 --gid otlet --no-create-home --shell /usr/sbin/nologin otlet
 COPY --from=backend /opt/otlet/venv /opt/otlet/venv
 COPY --from=frontend /src/dist /opt/otlet/ui
+COPY backend/migrations /opt/otlet/migrations
 ENV PATH=/opt/otlet/venv/bin:$PATH \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     OTLET_UI_DIR=/opt/otlet/ui \
+    OTLET_MIGRATIONS_DIR=/opt/otlet/migrations \
     OTLET_RUN_DIR=/tmp/otlet
 USER otlet:otlet
 EXPOSE 8000

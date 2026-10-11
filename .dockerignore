@@ -3,6 +3,7 @@
 !backend/pyproject.toml
 !backend/uv.lock
 !backend/src/
+!backend/migrations/
 !frontend/
 frontend/node_modules/
 frontend/dist/

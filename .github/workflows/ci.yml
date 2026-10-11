@@ -81,3 +81,95 @@ jobs:
       - name: Réduire le cache uv
         if: always()
         run: uv cache prune --ci
+
+  frontend:
+    name: Interface (Node 24)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: frontend/.nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Installer les dépendances (verrou exact)
+        run: npm ci
+      - name: Lint (ESLint)
+        run: npm run lint
+      - name: Typage (tsc)
+        run: npm run typecheck
+      - name: Construction (vite build)
+        run: npm run build
+
+  image:
+    name: Image OCI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Construire l'image multirôle
+        run: docker build -f deploy/Containerfile -t otlet:ci .
+      - name: Vérifier l'image (rôles, non root, sans Node.js)
+        run: sh deploy/ci/check-image.sh otlet:ci
+
+  compose:
+    name: Pile Compose solo
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Générer la configuration locale
+        run: |
+          sh deploy/configure.sh localhost
+          sudo chown 10001:10001 deploy/keys/secrets-private.pem
+      - name: Démarrer la pile (construction comprise)
+        run: docker compose -f deploy/compose.yaml up -d --build --wait --wait-timeout 300
+      - name: Vérifier la pile (HTTPS, interface, santé)
+        run: sh deploy/ci/check-compose.sh
+      - name: Journaux en cas d'échec
+        if: failure()
+        run: docker compose -f deploy/compose.yaml logs
+      - name: Arrêter la pile
+        if: always()
+        run: docker compose -f deploy/compose.yaml down -v
+
+  upgrade:
+    name: Mise à jour et retour arrière
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Jouer le scénario (docs/exploitation/mise-a-jour.md)
+        run: sh spikes/s6-delivery/upgrade-rollback.sh
+      - name: Conserver le résultat
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: s6-upgrade-rollback
+          path: spikes/s6-delivery/results/
+          if-no-files-found: ignore
+
+  secrets:
+    name: Séparation des secrets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Jouer le scénario (rapport S6, critère C3)
+        run: sh spikes/s6-delivery/secrets-separation.sh
+      - name: Conserver le résultat
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: s6-secrets-separation
+          path: spikes/s6-delivery/results/
+          if-no-files-found: ignore

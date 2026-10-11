@@ -6,15 +6,15 @@ B04,socle,"CI : lint, types, tests, import-linter, vérification DCO, cache uv ;
 B05,socle,"CI : PostgreSQL 18 + pgvector éphémère ; fixture pytest ; rôles propriétaire, migration et applicatif séparés (M-12)",4,a_faire
 B06,socle,"Chaîne d'approvisionnement : verrous à empreintes, robot de mises à jour avec quarantaine de 7 jours, pip-audit, npm audit",4,a_faire
 B07,socle,Contrôle automatique des licences des dépendances (liste de TECH_CHOICES §1.1),3,a_faire
-B08,socle,Interface : Vite + React + TypeScript strict + ESLint ; construction en CI,4,a_faire
+B08,socle,Interface : Vite + React + TypeScript strict + ESLint ; construction en CI,4,fait
 B09,socle,"Banc de mesure commun spikes/bench/ : chronométrage, p50/p95, mémoire par conteneur, sortie JSON, exécution distante sur le VPS",5,a_faire
 B10,socle,"Liste de contrôle ASVS 5.0 niveau 2 restreinte au périmètre du lot 1, dans docs/security/asvs-l2.md",6,a_faire
 B11,socle,"Clôture : vélocité mesurée, projection CA4, ré-estimation d'É1, revue du registre des risques (ROADMAP §8.5), rapport P1 soumis à Joël",6,a_faire
 S6.1,S6,"Rapport ouvert : question, seuils, protocole de la mesure d'installation (commit avant mesure)",2,fait
-S6.2,S6,"Image OCI multi-étape et multirôle (api, worker, scheduler par argument), interface construite dedans, utilisateur non root",5,a_faire
-S6.3,S6,"compose.yaml solo (Caddy, application, worker, PostgreSQL), Caddyfile, contrôles de santé, .env.example",4,a_faire
-S6.4,S6,"FastAPI minimal, première migration Alembic, mise à jour avec migration et retour arrière documentés",4,a_faire
-S6.5,S6,"Secrets chiffrés par clé publique côté API, déchiffrés par le worker seul (DR6)",5,a_faire
+S6.2,S6,"Image OCI multi-étape et multirôle (api, worker, scheduler par argument), interface construite dedans, utilisateur non root",5,fait
+S6.3,S6,"compose.yaml solo (Caddy, application, worker, PostgreSQL), Caddyfile, contrôles de santé, .env.example",4,fait
+S6.4,S6,"FastAPI minimal, première migration Alembic, mise à jour avec migration et retour arrière documentés",4,fait
+S6.5,S6,"Secrets chiffrés par clé publique côté API, déchiffrés par le worker seul (DR6)",5,fait
 S6.6,S6,Installation chronométrée sur VPS vierge en suivant la documentation ; rapport conclu,4,a_faire
 S1.1,S1,Rapport ouvert ; schéma minimal couvrant les cinq lectures ; trois rôles séparés,4,a_faire
 S1.2,S1,"Générateur du jeu synthétique (200 sources, 100 000 éléments, 300 000 passages vectorisés, 2 000 articles), reproductible par graine",5,a_faire

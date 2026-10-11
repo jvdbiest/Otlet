@@ -5,10 +5,17 @@ description = "Plateforme open source de veille, de rédaction sourcée et de pu
 requires-python = ">=3.13"
 license = "AGPL-3.0-or-later"
 authors = [{ name = "Joël" }]
-dependencies = []
+dependencies = [
+    "fastapi>=0.143.0",
+    "uvicorn>=0.54.0",
+]
+
+[project.scripts]
+otlet = "otlet.entrypoints.cli:main"
 
 [dependency-groups]
 dev = [
+    "httpx2>=2.13.1",
     "import-linter>=2.15",
     "mypy>=2.4",
     "pre-commit>=4.6",
@@ -30,11 +37,17 @@ src = ["src", "tests"]
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "S"]
 
+[tool.ruff.lint.isort]
+# Explicit, because the pre-commit hook runs ruff from the repository root, where `src`
+# would not resolve to backend/src.
+known-first-party = ["otlet"]
+
 [tool.ruff.lint.per-file-ignores]
 "**/tests/**" = ["S101"]
 
 [tool.mypy]
 strict = true
+plugins = ["pydantic.mypy"]
 files = ["src", "tests"]
 
 [tool.pytest.ini_options]

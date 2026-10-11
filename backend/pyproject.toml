@@ -9,6 +9,7 @@ dependencies = []
 
 [dependency-groups]
 dev = [
+    "import-linter>=2.15",
     "mypy>=2.4",
     "pytest>=9.1",
     "ruff>=0.17",
@@ -38,3 +39,35 @@ files = ["src", "tests"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra --strict-markers"
+
+[tool.importlinter]
+root_package = "otlet"
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+id = "domain-independence"
+name = "Le domaine ne dépend d'aucun cadre ni d'aucune bibliothèque d'infrastructure"
+type = "forbidden"
+source_modules = ["otlet.**.domain"]
+forbidden_modules = ["fastapi", "starlette", "sqlalchemy", "alembic", "psycopg", "procrastinate", "httpx", "openai", "anthropic"]
+
+[[tool.importlinter.contracts]]
+id = "module-layers"
+name = "Couches de chaque module : adapters, puis application, puis domain"
+type = "layers"
+containers = ["otlet.*"]
+layers = ["(adapters)", "(application)", "(domain)"]
+
+[[tool.importlinter.contracts]]
+id = "entrypoints-on-top"
+name = "Seuls les points d'entrée importent otlet.entrypoints"
+type = "protected"
+protected_modules = ["otlet.entrypoints"]
+allowed_importers = ["otlet.entrypoints"]
+
+[[tool.importlinter.contracts]]
+id = "ai-sdks-gateway-only"
+name = "SDK des fournisseurs IA interdits tant que la passerelle n'existe pas (MD4)"
+type = "forbidden"
+source_modules = ["otlet"]
+forbidden_modules = ["openai", "anthropic"]

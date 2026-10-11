@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Statut | Proposé ; accepté à la fin de la tâche B03 |
+| Statut | Accepté (fin de la tâche B03) |
 | Date | 2026-10-11 |
 | Décideur | Joël |
 | Documents touchés | `ARCHITECTURE.md` §7.3 (MD1 à MD6) ; `TECH_CHOICES.md` §5.4 ; `RISKS.md` §4.15 (R-T14) |
@@ -29,6 +29,19 @@ Noms des modules : `identity`, `workspaces`, `audit`, `notifications`, `registry
 
 - Une exception demandée équivaut à une modification d'architecture : elle passe par un ADR.
 - Les contrats sont posés en B03 alors que les modules n'existent pas encore ; ils s'appliquent dès leur création.
+
+## Mise en œuvre en B03
+
+Configuration : section `[tool.importlinter]` de `backend/pyproject.toml`. Vérification : `uv run lint-imports` ; chaque contrat est défendu par un test qui introduit une violation (`backend/tests/architecture/test_import_contracts.py`).
+
+| Règle | Contrat (id) | Statut |
+|---|---|---|
+| 1. Indépendance du domaine | `domain-independence` (`otlet.**.domain`) | Actif |
+| 2. Couches | `module-layers` | Actif ; couches facultatives tant que le module n'existe pas |
+| 3. Points d'entrée au sommet | `entrypoints-on-top` | Actif ; crée le paquet vide `otlet.entrypoints` |
+| 4. MD4 | `ai-sdks-gateway-only` | Actif sous forme d'interdiction totale de `openai` et `anthropic` ; devient « seul `otlet.ai_gateway` » (contrat `protected`) à la création de la passerelle en S4 |
+| 5. MD3 | — | Reporté à la création de `publishing` : `import-linter` refuse un contrat sur un module absent |
+| 6. MD1 | — | Reporté à la création du deuxième module, pour la même raison |
 
 ## Options écartées
 

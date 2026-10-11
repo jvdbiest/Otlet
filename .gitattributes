@@ -1,0 +1,7 @@
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.webp binary
+*.onnx binary
+uv.lock linguist-generated=true
+package-lock.json linguist-generated=true

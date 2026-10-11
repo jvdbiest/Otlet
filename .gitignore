@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.hypothesis/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# Node
+node_modules/
+frontend/dist/
+
+# Environnement et secrets : jamais versionnés
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# Résultats bruts volumineux des preuves (les synthèses JSON sont versionnées)
+spikes/**/data/
+spikes/**/*.dump
+spikes/**/models/
+
+# Éditeurs et système
+.idea/
+.vscode/
+.DS_Store

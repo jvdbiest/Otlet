@@ -1,0 +1,28 @@
+# Registre des décisions
+
+Les documents de `docs/design/` sont figés à leur version 1.0 (2026-10-11). Ils sont la base d'hypothèses du projet ; toute modification passe par un ADR de ce dossier (ADR-0012).
+
+## Décisions antérieures (dans les documents de conception)
+
+| Référence | Où |
+|---|---|
+| ADR-01 à ADR-11 (architecture) | `docs/design/ARCHITECTURE.md` §25 |
+| D1 à D13 (fonctionnel) | `docs/design/FUNCTIONAL_ANALYSIS.md` |
+| DA1 à DA10 (architecture) | `docs/design/ARCHITECTURE.md` §27 |
+| TC-01 à TC-18, DT1 à DT14 (technique) | `docs/design/TECH_CHOICES.md` §26 et §27 |
+| DR1 à DR9 (risques) | `docs/design/RISKS.md` |
+| DRM1 à DRM7 (roadmap) | `docs/design/ROADMAP.md` §15 |
+
+## Décisions du dépôt
+
+La numérotation continue celle de l'architecture.
+
+| ADR | Titre | Statut |
+|---|---|---|
+| [0012](0012-decisions-dans-le-depot.md) | Décisions consignées dans le dépôt | Accepté |
+| [0013](0013-licence-et-dco.md) | Licence AGPL-3.0-or-later et DCO | Accepté |
+| [0014](0014-structure-du-depot.md) | Structure du dépôt et isolement des preuves | Accepté |
+| [0015](0015-forge-et-integration-continue.md) | Forge et intégration continue | Accepté |
+| [0016](0016-chaine-d-outils.md) | Chaîne d'outils | Proposé |
+| [0017](0017-contrats-d-imports.md) | Contrats d'imports | Proposé |
+| [0018](0018-protocole-des-preuves.md) | Protocole des preuves de concept | Accepté |

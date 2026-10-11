@@ -1,0 +1,55 @@
+id,bloc,tache,estimation_h,statut
+B01,socle,Créer le dépôt avec les fichiers d'amorçage ; protéger main ; activer le signalement privé de vulnérabilités,3,a_faire
+B02,socle,"Projet Python : backend/pyproject.toml, uv, Python 3.13, ruff, mypy --strict, pytest, crochets de pré-commit ; ADR-0016 accepté",4,a_faire
+B03,socle,Contrats import-linter de l'ADR-0017 ; un test qui introduit une violation et vérifie qu'elle est rejetée,4,a_faire
+B04,socle,"CI : lint, types, tests, import-linter, vérification DCO, cache uv ; toute vérification bloquante",5,a_faire
+B05,socle,"CI : PostgreSQL 18 + pgvector éphémère ; fixture pytest ; rôles propriétaire, migration et applicatif séparés (M-12)",4,a_faire
+B06,socle,"Chaîne d'approvisionnement : verrous à empreintes, robot de mises à jour avec quarantaine de 7 jours, pip-audit, npm audit",4,a_faire
+B07,socle,Contrôle automatique des licences des dépendances (liste de TECH_CHOICES §1.1),3,a_faire
+B08,socle,Interface : Vite + React + TypeScript strict + ESLint ; construction en CI,4,a_faire
+B09,socle,"Banc de mesure commun spikes/bench/ : chronométrage, p50/p95, mémoire par conteneur, sortie JSON, exécution distante sur le VPS",5,a_faire
+B10,socle,"Liste de contrôle ASVS 5.0 niveau 2 restreinte au périmètre du lot 1, dans docs/security/asvs-l2.md",6,a_faire
+B11,socle,"Clôture : vélocité mesurée, projection CA4, ré-estimation d'É1, revue du registre des risques (ROADMAP §8.5), rapport P1 soumis à Joël",6,a_faire
+S6.1,S6,"Rapport ouvert : question, seuils, protocole de la mesure d'installation (commit avant mesure)",2,a_faire
+S6.2,S6,"Image OCI multi-étape et multirôle (api, worker, scheduler par argument), interface construite dedans, utilisateur non root",5,a_faire
+S6.3,S6,"compose.yaml solo (Caddy, application, worker, PostgreSQL), Caddyfile, contrôles de santé, .env.example",4,a_faire
+S6.4,S6,"FastAPI minimal, première migration Alembic, mise à jour avec migration et retour arrière documentés",4,a_faire
+S6.5,S6,"Secrets chiffrés par clé publique côté API, déchiffrés par le worker seul (DR6)",5,a_faire
+S6.6,S6,Installation chronométrée sur VPS vierge en suivant la documentation ; rapport conclu,4,a_faire
+S1.1,S1,Rapport ouvert ; schéma minimal couvrant les cinq lectures ; trois rôles séparés,4,a_faire
+S1.2,S1,"Générateur du jeu synthétique (200 sources, 100 000 éléments, 300 000 passages vectorisés, 2 000 articles), reproductible par graine",5,a_faire
+S1.3,S1,"RLS forcée, SET LOCAL par la fabrique de sessions, test « requête sans contexte = zéro ligne »",4,a_faire
+S1.4,S1,"Mesures p95 des cinq lectures avec et sans RLS, mémoire de la pile sous charge",7,a_faire
+S1.5,S1,Analyse et conclusion ; ADR du profil solo si un seuil change,4,a_faire
+S2.1,S2,Rapport ouvert ; banc de tâches à clé d'idempotence avec compteur d'effets,4,a_faire
+S2.2,S2,"Procrastinate : enfilage dans la transaction SQLAlchemy, 100 annulations",4,a_faire
+S2.3,S2,"Procrastinate : 1 000 tâches, arrêts brutaux aléatoires du worker, reprise, annulation ciblée",6,a_faire
+S2.4,S2,Procrastinate sous RLS avec SET LOCAL (V8),3,a_faire
+S2.5,S2,"DBOS : mêmes scénarios, au besoin réduits",5,a_faire
+S2.6,S2,"Conclusion, ADR de la file",2,a_faire
+S3.1,S3,"Rapport ouvert ; corpus de 30 documents (10 collés depuis Word et Google Docs, 10 sorties IA en Markdown restreint, 10 rédigés)",5,a_faire
+S3.2,S3,"Schéma « Document plateforme v1 » en ébauche, avec nœuds obligatoires (bloc Sources, mention IA)",5,a_faire
+S3.3,S3,Rendu Python JSON → HTML ; conversion Markdown restreint → JSON,6,a_faire
+S3.4,S3,"Éditeur Tiptap minimal : collage, export JSON ; test de concordance rendu Python / rendu éditeur",7,a_faire
+S3.5,S3,"BlockNote sur le même corpus, comparaison courte",3,a_faire
+S3.6,S3,WordPress et Ghost en conteneurs locaux ; aller-retour et contrôle des éléments obligatoires,4,a_faire
+S3.7,S3,"Conclusion, décision Tiptap ou BlockNote, ADR",2,a_faire
+S5.1,S5,Rapport ouvert ; définitions de « quasi-copie » et « traduction détectée »,2,a_faire
+S5.2,S5,"Corpus de 200 paires FR / EN sous licence libre (50 traductions, 50 paraphrases, 100 indépendants), réutilisable par M-14",8,a_faire
+S5.3,S5,fastembed : deux ou trois modèles multilingues compacts ; mémoire et débit sur 2 vCPU,6,a_faire
+S5.4,S5,"Volet lexical : n-grammes, MinHash / LSH, rapidfuzz",5,a_faire
+S5.5,S5,"Calibration des seuils, courbes rappel / faux positifs, seuils inter-langues (DR4)",7,a_faire
+S5.6,S5,Conclusion ; ADR du modèle et des seuils ; DR4 confirmé ou soumis à Joël,4,a_faire
+S4.1,S4,Rapport ouvert ; 50 briefs ; schéma de sortie structurée ; plafonds de dépense posés chez chaque fournisseur,4,a_faire
+S4.2,S4,"Port de passerelle et adaptateur générique compatible OpenAI (Ollama, Groq ou OpenRouter)",6,a_faire
+S4.3,S4,Adaptateur Anthropic natif,3,a_faire
+S4.4,S4,Validation et réparation unique ; 50 briefs × 4 fournisseurs,4,a_faire
+S4.5,S4,Budget à réservation sur 200 appels concurrents (faux fournisseur) ; replis sur 429 et 5xx simulés,5,a_faire
+S4.6,S4,Conclusion ; profils « testés » et « non testés » ; ADR,2,a_faire
+S7.1,S7,"Rapport ouvert ; quatre environnements : WordPress récent, WordPress version majeure précédente, WordPress mutualisé avec extension de sécurité (A2), Ghost",6,a_faire
+S7.2,S7,"Vérification de V1, V2, V3 (RISKS §11.2)",5,a_faire
+S7.3,S7,"Prototype WordPress : machine à états minimale, clé d'idempotence, rapprochement",8,a_faire
+S7.4,S7,Prototype Ghost : idem,6,a_faire
+S7.5,S7,"Injecteur de pannes (délai dépassé après envoi, coupure) ; 100 publications par configuration",7,a_faire
+S7.6,S7,Extension WordPress compagnon facultative : évaluation courte,4,a_faire
+S7.7,S7,Conclusion ; « WordPress d'abord » confirmé ou inversé ; ADR,4,a_faire

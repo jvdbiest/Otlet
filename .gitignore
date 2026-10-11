@@ -23,8 +23,9 @@ frontend/dist/
 !.env.example
 *.pem
 *.key
-secrets/
+/secrets/
 deploy/backups/
+deploy/keys/
 
 # Résultats bruts volumineux des preuves (les synthèses JSON sont versionnées)
 spikes/**/data/

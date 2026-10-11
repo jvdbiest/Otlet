@@ -7,6 +7,7 @@ license = "AGPL-3.0-or-later"
 authors = [{ name = "Joël" }]
 dependencies = [
     "alembic>=1.20.0",
+    "cryptography>=50.0.2",
     "fastapi>=0.143.0",
     "psycopg[binary]>=3.3.6",
     "sqlalchemy>=2.1.4",
@@ -19,6 +20,7 @@ otlet = "otlet.entrypoints.cli:main"
 [dependency-groups]
 dev = [
     "httpx2>=2.13.1",
+    "hypothesis>=6.169.0",
     "import-linter>=2.15",
     "mypy>=2.4",
     "pre-commit>=4.6",
@@ -81,6 +83,13 @@ name = "Seuls les points d'entrée importent otlet.entrypoints"
 type = "protected"
 protected_modules = ["otlet.entrypoints"]
 allowed_importers = ["otlet.entrypoints"]
+
+[[tool.importlinter.contracts]]
+id = "secrets-worker-only"
+name = "L'API n'importe pas le déchiffrement des secrets (DR6)"
+type = "forbidden"
+source_modules = ["otlet.entrypoints.api"]
+forbidden_modules = ["otlet.platform.secrets.opening"]
 
 [[tool.importlinter.contracts]]
 id = "ai-sdks-gateway-only"

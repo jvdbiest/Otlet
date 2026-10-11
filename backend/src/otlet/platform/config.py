@@ -17,18 +17,26 @@ class Settings:
     run_dir: Path
     database_url: str | None = None
     migrations_dir: Path = SOURCE_MIGRATIONS_DIR
+    # Public key: API and worker. Private key: worker only (DR6).
+    secrets_public_key_file: Path | None = None
+    secrets_private_key_file: Path | None = None
 
     @classmethod
     def from_env(cls, environ: Mapping[str, str] | None = None) -> "Settings":
         env = os.environ if environ is None else environ
-        ui_dir = env.get("OTLET_UI_DIR")
+
+        def path(name: str) -> Path | None:
+            value = env.get(name)
+            return Path(value) if value else None
+
         run_dir = env.get("OTLET_RUN_DIR") or str(Path(tempfile.gettempdir()) / "otlet")
-        migrations_dir = env.get("OTLET_MIGRATIONS_DIR")
         return cls(
-            ui_dir=Path(ui_dir) if ui_dir else None,
+            ui_dir=path("OTLET_UI_DIR"),
             run_dir=Path(run_dir),
             database_url=env.get("OTLET_DATABASE_URL") or None,
-            migrations_dir=Path(migrations_dir) if migrations_dir else SOURCE_MIGRATIONS_DIR,
+            migrations_dir=path("OTLET_MIGRATIONS_DIR") or SOURCE_MIGRATIONS_DIR,
+            secrets_public_key_file=path("OTLET_SECRETS_PUBLIC_KEY_FILE"),
+            secrets_private_key_file=path("OTLET_SECRETS_PRIVATE_KEY_FILE"),
         )
 
     def require_database_url(self) -> str:

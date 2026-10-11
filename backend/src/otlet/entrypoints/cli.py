@@ -44,6 +44,15 @@ def build_parser() -> argparse.ArgumentParser:
     steps.add_parser("current", help="révision actuelle de la base")
     steps.add_parser("history", help="révisions connues de cette version")
 
+    secrets = commands.add_parser("secrets", help="secrets scellés (DR6)")
+    actions = secrets.add_subparsers(dest="action", required=True)
+    put = actions.add_parser("put", help="sceller la valeur lue sur l'entrée standard")
+    put.add_argument("name")
+    verify = actions.add_parser(
+        "verify", help="ouvrir un secret et afficher l'empreinte SHA-256 de sa valeur"
+    )
+    verify.add_argument("name")
+
     health = commands.add_parser("healthcheck", help="contrôle de santé d'un rôle (conteneurs)")
     health.add_argument("role", choices=("api", *LOOP_ROLES))
     health.add_argument("--port", type=int, default=port)
@@ -92,7 +101,40 @@ def main(argv: Sequence[str] | None = None) -> int:
             migrations.current(settings)
         else:
             migrations.history(settings)
+    elif args.command == "secrets":
+        return secrets_command(args.action, args.name, settings)
     return 0
+
+
+def secrets_command(action: str, name: str, settings: Settings) -> int:
+    import hashlib
+
+    from otlet.platform import database
+    from otlet.platform.secrets import SecretError, sealing, store
+
+    engine = database.create_engine(settings.require_database_url())
+    try:
+        if action == "put":
+            if settings.secrets_public_key_file is None:
+                raise SecretError("OTLET_SECRETS_PUBLIC_KEY_FILE is not set")
+            public_key = sealing.load_public_key(settings.secrets_public_key_file)
+            plaintext = sys.stdin.buffer.read()
+            store.put(engine, name, sealing.seal(public_key, plaintext, store.context(name)))
+            return 0
+
+        # Imported here only: the API process never loads it (DR6).
+        from otlet.platform.secrets import opening
+
+        private_key = opening.load_private_key(settings.secrets_private_key_file)
+        sealed = store.get(engine, name)
+        if sealed is None:
+            raise SecretError(f"no secret named {name!r}")
+        plaintext = opening.open_sealed(private_key, sealed, store.context(name))
+        print(hashlib.sha256(plaintext).hexdigest())
+        return 0
+    except SecretError as error:
+        print(f"otlet secrets {action}: {error}", file=sys.stderr)
+        return 2
 
 
 if __name__ == "__main__":

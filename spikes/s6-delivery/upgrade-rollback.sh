@@ -18,6 +18,7 @@ export COMPOSE_PROJECT_NAME=otlet-s6
 export OTLET_IMAGE=otlet-s6
 export OTLET_DOMAIN=localhost
 export OTLET_BACKUP_DIR="../$spike/data/backups"
+export OTLET_KEYS_DIR="../$spike/data/keys"
 POSTGRES_PASSWORD=$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n')
 export POSTGRES_PASSWORD
 compose() { docker compose -f deploy/compose.yaml "$@"; }
@@ -55,6 +56,12 @@ up() { # version
         return 1
     fi
 }
+
+# The stack needs the secrets key pair (same generation as deploy/configure.sh).
+rm -rf "$spike/data/keys"
+mkdir -p "$spike/data/keys"
+openssl genpkey -algorithm X25519 -out "$spike/data/keys/secrets-private.pem"
+openssl pkey -in "$spike/data/keys/secrets-private.pem" -pubout     -out "$spike/data/keys/secrets-public.pem"
 
 echo "Building version N and N+1"
 docker build -q -f deploy/Containerfile -t otlet-s6:n . >/dev/null

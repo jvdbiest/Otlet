@@ -52,6 +52,9 @@ VIOLATIONS = {
     },
     "entrypoints-on-top": {"demo/application/service.py": "import otlet.entrypoints\n"},
     "ai-sdks-gateway-only": {"demo/application/service.py": "import anthropic\n"},
+    "secrets-worker-only": {
+        "entrypoints/api/leak.py": "from otlet.platform.secrets import opening\n"
+    },
 }
 
 

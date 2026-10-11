@@ -41,6 +41,8 @@ openssl genpkey -algorithm X25519 -out "$keys/secrets-private.pem"
 openssl pkey -in "$keys/secrets-private.pem" -pubout -out "$keys/secrets-public.pem"
 chmod 600 "$keys/secrets-private.pem"
 chmod 644 "$keys/secrets-public.pem"
+# Read before handing the private key to the container user: the runner can no longer read it.
+body=$(sed -n '2p' "$keys/secrets-private.pem")
 if [ "$(uname -s)" = Linux ] && [ "$(id -u)" != 0 ]; then
     sudo -n chown 10001:10001 "$keys/secrets-private.pem"
 fi
@@ -77,7 +79,6 @@ else
 fi
 
 # 4. The private key's own text appears nowhere in the API container.
-body=$(sed -n '2p' "$keys/secrets-private.pem")
 if compose exec -T api sh -c "env | grep -qF '$body' || grep -rqsF '$body' / \
         --exclude-dir=proc --exclude-dir=sys --exclude-dir=dev"; then
     record private-key-absent-from-api false '""'

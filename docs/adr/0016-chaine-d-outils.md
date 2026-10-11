@@ -38,6 +38,12 @@ TECH_CHOICES fixe les familles d'outils mais laisse quelques choix ouverts (`myp
 - `hypothesis` et le greffon Pydantic de `mypy` ne sont pas encore installés : ils arrivent avec leurs premiers usages (Pydantic avec FastAPI en S6.4).
 - Crochets de pré-commit reportés en B04, avec l'intégration continue ; mis en place en B04 (`.pre-commit-config.yaml`, `pre-commit` verrouillé dans le groupe `dev`).
 
+## Écarts constatés pendant B08
+
+- Node 24 LTS (`frontend/.nvmrc`), utilisé seulement pour construire l'interface ; Node n'est pas installé sur le poste du mainteneur, les commandes `npm` tournent dans l'image officielle `node:24-slim`.
+- TypeScript 6.0 et non 7.0 : `typescript-eslint` 8.71 ne prend en charge que TypeScript < 6.1. Passage à 7 quand `typescript-eslint` le permettra.
+- ESLint en configuration `strictTypeChecked` de `typescript-eslint`, zéro avertissement toléré.
+
 ## Options écartées
 
 - `pyright` : plus rapide, mais `mypy` a le greffon Pydantic et reste la référence de SQLAlchemy 2.

@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Statut | Proposé à Joël le 2026-10-11 (point de décision P0) |
+| Statut | En vigueur depuis P0 (2026-10-11) ; dépôt créé, commit initial `e0b203d` |
 | Source | `ROADMAP.md` v1.0 §5.1, annexe B.1, §10, §13 ; `RISKS.md` v1.0 §8, §11.2 ; `TECH_CHOICES.md` v1.0 §21, §25 |
 | Effort | **248 h** de fonctions au plafond des preuves (enveloppe roadmap : 180 à 260 h, central 220 h) |
 | Fichiers du premier commit | `/mnt/project-files/repo-bootstrap/` |
@@ -16,7 +16,7 @@ Ce document n'ajoute aucune décision de conception. Il ordonne et découpe ce q
 | # | Question | Défaut retenu si rien n'est dit |
 |---|---|---|
 | **P0-a** | Nom du projet | **Tranché le 2026-10-11 : Otlet** (dépôt `otlet`, paquet Python `otlet`), sous réserve des vérifications TMview et WIPO faites par Joël. Justification : `IDENTITE_DECISION_FINALE.md` |
-| **P0-b** | Forge et intégration continue | **GitHub + GitHub Actions** (minutes gratuites pour un dépôt public, conteneurs de service PostgreSQL, signalement privé de vulnérabilités, visibilité pour d'éventuels contributeurs). Alternative : Codeberg + Forgejo Actions (forge libre, capacité d'intégration continue plus limitée). Sortie peu coûteuse dans les deux sens : Git + fichiers YAML. ADR-0015 |
+| **P0-b** | Forge et intégration continue | **Tranché le 2026-10-11 : GitHub + GitHub Actions** (minutes gratuites pour un dépôt public, conteneurs de service PostgreSQL, signalement privé de vulnérabilités, visibilité pour d'éventuels contributeurs). Alternative : Codeberg + Forgejo Actions (forge libre, capacité d'intégration continue plus limitée). Sortie peu coûteuse dans les deux sens : Git + fichiers YAML. ADR-0015 |
 | **P0-c** | Date de M0 (PP1) | **Lundi 12 octobre 2026**. P1 visé fin février 2027 (central), entre mi-janvier et mi-avril 2027 |
 | **P0-d** | Variante de licence | **AGPL-3.0-or-later** : sans accord de cession (DCO seulement), c'est la seule façon de pouvoir passer un jour à une version ultérieure de l'AGPL sans l'accord de chaque contributeur. ADR-0013 |
 
@@ -224,31 +224,24 @@ Estimations en heures de fonctions. Les tâches de preuve sont chiffrées **à l
 
 Définition complète : `docs/projet/journal-temps.md` ; outil : `tools/journal_temps.py` (bibliothèque standard Python, aucune dépendance).
 
-**Fichier** `docs/projet/journal-temps.csv`, une ligne par session de travail, saisie en fin de session :
-
-| Colonne | Format | Règle |
-|---|---|---|
-| `date` | AAAA-MM-JJ | Jour de la session |
-| `heures` | décimal, au quart d'heure | Temps de travail concentré, pauses exclues ; le temps passé avec un assistant de programmation compte |
-| `domaine` | `preuve`, `fonction`, `compte`, `entretien`, `projet`, `absence` | Voir ci-dessous |
-| `etape` | `E0`, `E1`… | Étape de la roadmap |
-| `tache` | ID du backlog (`S1.4`, `B05`) ou `-` | Obligatoire pour `preuve` et `fonction` |
-| `note` | texte court | Facultatif |
+**Fichier** `docs/projet/journal-temps.csv`, **une ligne par tâche terminée**, avec une estimation grossière des heures passées (décision de Joël du 2026-10-11 : pas de saisie par session). Colonnes inchangées : `date` (fin de la tâche), `heures`, `domaine`, `etape`, `tache`, `note`.
 
 | Domaine | Contenu | Critères alimentés |
 |---|---|---|
 | `preuve` | Tâches S1 à S7 | CA1, vélocité |
-| `fonction` | Code, tests et documentation des fonctions et du socle (B01 à B11) | CA1, vélocité |
-| `compte` | Parcours de compte (inscription, connexion, 2FA, récupération) ; vide en É0 | CA5 |
-| `entretien` | Mises à jour, CI cassée, correctifs | CA6 |
-| `projet` | Prérequis A1 à A3, revues du registre, financement, juridique, gouvernance | Part « projet » |
-| `absence` | Semaine non travaillée annoncée (0 h) : exclue des moyennes de CA2 | CA2 |
+| `fonction` | Tâches du socle (B01 à B11) | CA1, vélocité |
+| `compte` | Parcours de compte ; vide en É0 | CA5 |
+| `entretien` | Facultatif : un gros chantier d'entretien noté comme une tâche | CA6 (indicatif) |
 
-**Rituel** : 15 minutes le dimanche, `python tools/journal_temps.py` affiche les heures brutes par semaine, les alertes CA2 et CA3, la part par domaine sur le mois (CA5, CA6), les heures réelles contre l'estimation par tâche et le cumul d'É0 face aux seuils de CA1 (alerte à **275 h**, réduction à **330 h**, soit +25 % et +50 % du central de 220 h).
+**Ce qui reste mesuré** : heures réelles contre estimation par tâche, cumul d'É0 face aux seuils de CA1 (alerte à **275 h**, réduction à **330 h**, soit +25 % et +50 % du central de 220 h), vélocité.
+
+**Ce qui devient un jugement de Joël** : CA2 et CA3 (heures hebdomadaires trop basses ou au-delà du plafond de 20 h) et la part « entretien » de CA6. Ils ne sont plus calculés ; Joël les signale lui-même à chaque point de décision.
+
+**Rituel** : à chaque tâche terminée, une ligne ; `python tools/journal_temps.py` affiche le cumul, les écarts et la vélocité.
 
 **Vélocité** pour P1 = somme des estimations des tâches terminées ÷ somme des heures réelles passées dessus. Une tâche est terminée quand son « fini quand » est vrai ; le statut se tient dans `docs/projet/backlog-E0.csv`.
 
-Le journal est public avec le dépôt (date et durée seulement, jamais d'horaires). Si Joël préfère le garder privé, il suffit de l'ajouter à `.gitignore` ; le script fonctionne pareil.
+Le journal est public avec le dépôt (une durée par tâche, jamais d'horaires). Si Joël préfère le garder privé, il suffit de l'ajouter à `.gitignore` ; le script fonctionne pareil.
 
 ---
 
@@ -284,7 +277,7 @@ Aucun code à ce stade.
 Signed-off-by: Joël <adresse publique de commit>
 ```
 
-La première ligne du journal de temps est ce commit lui-même (`fonction`, `B01`).
+La première ligne du journal de temps est la tâche B01 elle-même (`fonction`, heures estimées).
 
 ---
 
@@ -301,7 +294,7 @@ La première ligne du journal de temps est ce commit lui-même (`fonction`, `B01
 | 5 | CI verte sur `main` : lint, `mypy --strict`, tests avec PostgreSQL réel, `import-linter` sans aucune exception, DCO, audit des dépendances, licences, construction de l'interface | Dernière exécution de la CI |
 | 6 | Le squelette de S6 est sur `main` et la documentation d'installation a été suivie sur un VPS vierge | Rapport S6 |
 | 7 | La liste ASVS niveau 2 du lot 1 est versionnée | `docs/security/asvs-l2.md` |
-| 8 | Le journal de temps couvre chaque semaine depuis M0, `absence` comprise | `tools/journal_temps.py` sans semaine manquante |
+| 8 | Chaque tâche terminée d'É0 a sa ligne d'heures au journal | `tools/journal_temps.py` : aucune tâche `fait` sans heures |
 | 9 | Vélocité mesurée, projection CA4 calculée, estimation d'É1 recalibrée | `docs/projet/P1.md` |
 | 10 | Revue du registre des risques faite ; risques touchés par les preuves recotés | Section dédiée de `P1.md` |
 | 11 | Aucun code de fonction d'É1 n'a été écrit en dehors du squelette | Revue de `backend/src/` |

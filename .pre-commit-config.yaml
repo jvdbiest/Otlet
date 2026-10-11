@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Local hooks (B04): the same locked tools and settings as the CI (backend/pyproject.toml).
+# Install once: cd backend; uv run pre-commit install
+default_install_hook_types: [pre-commit, commit-msg]
+
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check --fix
+        entry: uv run --project backend ruff check --fix --config backend/pyproject.toml
+        language: system
+        files: ^(backend|tools)/.*\.py$
+      - id: ruff-format
+        name: ruff format
+        entry: uv run --project backend ruff format --config backend/pyproject.toml
+        language: system
+        files: ^(backend|tools)/.*\.py$
+      - id: mypy
+        name: mypy --strict
+        entry: uv run --directory backend mypy
+        language: system
+        files: ^backend/.*\.py$
+        pass_filenames: false
+      - id: lint-imports
+        name: import-linter
+        entry: uv run --directory backend lint-imports
+        language: system
+        files: ^backend/(src/.*\.py|pyproject\.toml)$
+        pass_filenames: false
+      - id: dco-sign-off
+        name: Signed-off-by (git commit -s)
+        entry: "^Signed-off-by: .+ <.+>"
+        language: pygrep
+        args: [--negate]
+        stages: [commit-msg]

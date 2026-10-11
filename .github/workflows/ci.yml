@@ -1,0 +1,83 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Continuous integration (B04, ADR-0015). Every check is blocking, except the
+# job on the newest Python, which is informational (ADR-0016). The jobs call
+# repository commands; only first-party GitHub actions are used.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  UV_VERSION: "0.13.0"
+
+jobs:
+  dco:
+    name: Signature DCO
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Vérifier les « Signed-off-by »
+        run: >-
+          python3 tools/check_dco.py
+          "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+
+  backend:
+    name: Back-end (${{ matrix.os }}, Python ${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.informational }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.13"]
+        informational: [false]
+        include:
+          - os: ubuntu-latest
+            python: "3.15"
+            informational: true
+    env:
+      UV_PYTHON: ${{ matrix.python }}
+      UV_CACHE_DIR: ${{ github.workspace }}/.uv-cache
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Installer uv
+        run: pipx install "uv==${{ env.UV_VERSION }}"
+      - uses: actions/cache@v4
+        with:
+          path: ${{ env.UV_CACHE_DIR }}
+          key: uv-${{ runner.os }}-py${{ matrix.python }}-${{ hashFiles('backend/uv.lock') }}
+          restore-keys: uv-${{ runner.os }}-py${{ matrix.python }}-
+      - name: Installer les dépendances (verrou exact)
+        run: uv sync --locked
+      - name: Lint (ruff check)
+        run: uv run ruff check . ../tools
+      - name: Format (ruff format)
+        run: uv run ruff format --check . ../tools
+      - name: Typage (mypy --strict)
+        run: uv run mypy
+      - name: Contrats d'imports (import-linter)
+        run: uv run lint-imports
+      - name: Tests (pytest)
+        run: uv run pytest
+      - name: Réduire le cache uv
+        if: always()
+        run: uv cache prune --ci

@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import csv
 import datetime as dt
+import io
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -26,25 +27,34 @@ FEATURE_DOMAINS = {"preuve", "fonction", "compte"}
 CENTRAL_ESTIMATE = {"E0": 220, "E1": 640, "E2": 612.5}
 
 
+def read_csv(path: Path) -> csv.DictReader[str]:
+    """Read a CSV saved as UTF-8 (with or without BOM) or, by Windows editors, as cp1252."""
+    data = path.read_bytes()
+    try:
+        text = data.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        text = data.decode("cp1252")
+    return csv.DictReader(io.StringIO(text, newline=""))
+
+
 def read_log(path: Path) -> list[dict[str, object]]:
     entries = []
-    with path.open(newline="", encoding="utf-8") as f:
-        for n, row in enumerate(csv.DictReader(f), start=2):
-            try:
-                day = dt.date.fromisoformat(row["date"].strip())
-                hours = float(row["heures"].replace(",", "."))
-            except (KeyError, ValueError) as exc:
-                sys.exit(f"{path}:{n}: ligne invalide ({exc})")
-            domain = row["domaine"].strip()
-            if domain not in DOMAINS:
-                sys.exit(f"{path}:{n}: domaine inconnu « {domain} »")
-            task = (row.get("tache") or "-").strip()
-            if domain in {"preuve", "fonction"} and task in {"", "-"}:
-                sys.exit(f"{path}:{n}: tâche obligatoire pour le domaine « {domain} »")
-            entries.append(
-                {"date": day, "heures": hours, "domaine": domain,
-                 "etape": row["etape"].strip(), "tache": task}
-            )
+    for n, row in enumerate(read_csv(path), start=2):
+        try:
+            day = dt.date.fromisoformat(row["date"].strip())
+            hours = float(row["heures"].replace(",", "."))
+        except (KeyError, ValueError) as exc:
+            sys.exit(f"{path}:{n}: ligne invalide ({exc})")
+        domain = row["domaine"].strip()
+        if domain not in DOMAINS:
+            sys.exit(f"{path}:{n}: domaine inconnu « {domain} »")
+        task = (row.get("tache") or "-").strip()
+        if domain in {"preuve", "fonction"} and task in {"", "-"}:
+            sys.exit(f"{path}:{n}: tâche obligatoire pour le domaine « {domain} »")
+        entries.append(
+            {"date": day, "heures": hours, "domaine": domain,
+             "etape": row["etape"].strip(), "tache": task}
+        )
     return entries
 
 
@@ -64,8 +74,7 @@ def report_tasks(entries: list[dict[str, object]], backlog: Path, step: str) -> 
             print("  ALERTE CA1 (+25 %) : ré-estimer le reste de l'étape")
     if not backlog.exists():
         return
-    with backlog.open(newline="", encoding="utf-8") as f:
-        tasks = list(csv.DictReader(f))
+    tasks = list(read_csv(backlog))
     done_est = done_real = 0.0
     print("  Tâches commencées (réel / estimé)")
     for t in tasks:

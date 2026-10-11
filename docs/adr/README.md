@@ -23,6 +23,6 @@ La numérotation continue celle de l'architecture.
 | [0013](0013-licence-et-dco.md) | Licence AGPL-3.0-or-later et DCO | Accepté |
 | [0014](0014-structure-du-depot.md) | Structure du dépôt et isolement des preuves | Accepté |
 | [0015](0015-forge-et-integration-continue.md) | Forge et intégration continue | Accepté |
-| [0016](0016-chaine-d-outils.md) | Chaîne d'outils | Proposé |
+| [0016](0016-chaine-d-outils.md) | Chaîne d'outils | Accepté |
 | [0017](0017-contrats-d-imports.md) | Contrats d'imports | Proposé |
 | [0018](0018-protocole-des-preuves.md) | Protocole des preuves de concept | Accepté |

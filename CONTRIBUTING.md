@@ -19,6 +19,18 @@ L'intégration continue refuse les commits non signés. Il n'y a pas d'accord de
 - La CI doit être verte : lint, typage strict, tests, contrats d'imports (`import-linter`, sans exception), licences des dépendances.
 - Toute dépendance nouvelle doit avoir une licence compatible avec l'AGPL-3.0 (liste dans `docs/design/TECH_CHOICES.md` §1.1).
 
+## Vérifier en local
+
+Les crochets de pré-commit lancent les mêmes outils verrouillés que la CI (`ruff`, `mypy --strict`, `import-linter`) et refusent un message de commit sans `Signed-off-by`. À installer une fois :
+
+```sh
+cd backend
+uv sync
+uv run pre-commit install
+```
+
+La CI lance en plus `uv run pytest`, sous Linux et sous Windows.
+
 ## Conventions
 
 - Code, identifiants et commentaires en anglais ; documentation et messages de commit en français (l'anglais est accepté).

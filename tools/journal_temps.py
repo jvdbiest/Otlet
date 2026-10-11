@@ -52,8 +52,13 @@ def read_log(path: Path) -> list[dict[str, object]]:
         if domain in {"preuve", "fonction"} and task in {"", "-"}:
             sys.exit(f"{path}:{n}: tâche obligatoire pour le domaine « {domain} »")
         entries.append(
-            {"date": day, "heures": hours, "domaine": domain,
-             "etape": row["etape"].strip(), "tache": task}
+            {
+                "date": day,
+                "heures": hours,
+                "domaine": domain,
+                "etape": row["etape"].strip(),
+                "tache": task,
+            }
         )
     return entries
 

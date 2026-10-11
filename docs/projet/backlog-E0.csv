@@ -10,7 +10,7 @@ B08,socle,Interface : Vite + React + TypeScript strict + ESLint ; construction e
 B09,socle,"Banc de mesure commun spikes/bench/ : chronométrage, p50/p95, mémoire par conteneur, sortie JSON, exécution distante sur le VPS",5,a_faire
 B10,socle,"Liste de contrôle ASVS 5.0 niveau 2 restreinte au périmètre du lot 1, dans docs/security/asvs-l2.md",6,a_faire
 B11,socle,"Clôture : vélocité mesurée, projection CA4, ré-estimation d'É1, revue du registre des risques (ROADMAP §8.5), rapport P1 soumis à Joël",6,a_faire
-S6.1,S6,"Rapport ouvert : question, seuils, protocole de la mesure d'installation (commit avant mesure)",2,a_faire
+S6.1,S6,"Rapport ouvert : question, seuils, protocole de la mesure d'installation (commit avant mesure)",2,fait
 S6.2,S6,"Image OCI multi-étape et multirôle (api, worker, scheduler par argument), interface construite dedans, utilisateur non root",5,fait
 S6.3,S6,"compose.yaml solo (Caddy, application, worker, PostgreSQL), Caddyfile, contrôles de santé, .env.example",4,fait
 S6.4,S6,"FastAPI minimal, première migration Alembic, mise à jour avec migration et retour arrière documentés",4,fait

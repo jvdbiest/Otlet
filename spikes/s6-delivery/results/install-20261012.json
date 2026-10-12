@@ -1,0 +1,21 @@
+{
+  "criterion": "C1",
+  "threshold_seconds": 900,
+  "procedure": "docs/exploitation/installation.md (main, image built on the machine)",
+  "machine": {"kind": "VM on the maintainer's NAS (not a VPS)", "os": "Ubuntu 24.04.4 LTS (desktop install)", "vcpu": 2, "memory_gib": 3.8, "docker": "29.9.0"},
+  "domain": "none: reached by IP 192.168.129.249, certificate from Caddy's local authority",
+  "arrival_check": "from another machine: /health status ok with database ok, and / serving the interface",
+  "runs": [
+    {"run": 1, "started_utc": "2026-10-12T19:17:15Z", "valid": false, "procedure_seconds": 267,
+     "steps_seconds": {"docker": 84, "clone": 2, "configure": 0, "build_and_up": 181},
+     "reason": "HTTPS by IP refused (no SNI); default_sni added by hand on the machine, which invalidates the run; fixed in deploy/Caddyfile (PR #11)"},
+    {"run": "A", "started_utc": "2026-10-12T19:37:24Z", "valid": true, "total_seconds": 247,
+     "steps_seconds": {"docker": 82, "clone": 1, "configure": 0, "build_and_up": 163},
+     "idle_memory_mib": {"caddy": 60.6, "api": 138.9, "worker": 19.1, "db": 35.2}, "image_size_mb": 294},
+    {"run": "B", "started_utc": "2026-10-12T19:45:00Z", "valid": true, "total_seconds": 243,
+     "steps_seconds": {"docker": 81, "clone": 1, "configure": 0, "build_and_up": 160},
+     "idle_memory_mib": {"caddy": 18.8, "api": 143.6, "worker": 19.1, "db": 36.8}, "image_size_mb": 294}
+  ],
+  "verdict_seconds": 247,
+  "passed": true
+}

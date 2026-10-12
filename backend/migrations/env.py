@@ -19,6 +19,17 @@ def run_migrations_online() -> None:
         config.get_main_option("sqlalchemy.url") or "", poolclass=sa.pool.NullPool
     )
     with engine.connect() as connection:
+        # The migration role creates objects as the schema owner (M-12, otlet.platform.roles).
+        # Kept optional for a database that has not been provisioned yet.
+        is_member = connection.execute(
+            sa.text(
+                "SELECT pg_has_role(current_user, oid, 'MEMBER') AND current_user <> rolname"
+                " FROM pg_roles WHERE rolname = 'otlet_owner'"
+            )
+        ).scalar()
+        if is_member:
+            connection.execute(sa.text("SET ROLE otlet_owner"))
+        connection.commit()
         context.configure(connection=connection, transaction_per_migration=True)
         with context.begin_transaction():
             context.run_migrations()

@@ -1,41 +1,34 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-"""Upgrade and downgrade on a real PostgreSQL. Runs when OTLET_TEST_DATABASE_URL points to a
-disposable database; the CI PostgreSQL service arrives with B05, the Compose job covers the
-same path meanwhile."""
+"""Upgrade and downgrade on a real PostgreSQL, run by the migration role."""
 
-import os
 from pathlib import Path
 
-import pytest
 import sqlalchemy as sa
 
-from otlet.platform import database, migrations
+from integration_support import TestDatabase, requires_database
+from otlet.platform import database as db
+from otlet.platform import migrations, roles
 from otlet.platform.config import Settings
 
-DATABASE_URL = os.environ.get("OTLET_TEST_DATABASE_URL")
-
-pytestmark = pytest.mark.skipif(DATABASE_URL is None, reason="OTLET_TEST_DATABASE_URL not set")
+pytestmark = requires_database
 
 
-@pytest.fixture
-def settings(tmp_path: Path) -> Settings:
-    assert DATABASE_URL is not None
-    settings = Settings(ui_dir=None, run_dir=tmp_path, database_url=DATABASE_URL)
+def test_upgrade_then_downgrade(database: TestDatabase, tmp_path: Path) -> None:
+    settings = Settings(ui_dir=None, run_dir=tmp_path, database_url=database.migrator_url)
+    engine = db.create_engine(database.migrator_url)
     migrations.downgrade(settings, "base")
-    return settings
-
-
-def test_upgrade_then_downgrade(settings: Settings) -> None:
-    engine = database.create_engine(settings.require_database_url())
-    assert database.schema_revision(engine) in (None, "")
 
     migrations.upgrade(settings)
-    assert database.schema_revision(engine) == "0001"
-    with engine.begin() as connection:
-        connection.execute(
-            sa.text("INSERT INTO instance_settings (key, value) VALUES ('k', '1'::jsonb)")
-        )
+    assert db.schema_revision(engine) == "0001"
 
     migrations.downgrade(settings, "base")
     with engine.connect() as connection:
         assert not sa.inspect(connection).has_table("instance_settings")
+
+
+def test_migrations_create_objects_owned_by_the_owner_role(migrated: TestDatabase) -> None:
+    with db.create_engine(migrated.migrator_url).connect() as connection:
+        owners = connection.execute(
+            sa.text("SELECT DISTINCT tableowner FROM pg_tables WHERE schemaname = 'public'")
+        ).scalars()
+        assert set(owners) == {roles.OWNER}

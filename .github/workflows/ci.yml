@@ -18,6 +18,7 @@ concurrency:
 
 env:
   UV_VERSION: "0.13.0"
+  PIP_AUDIT_VERSION: "2.10.1"
 
 jobs:
   dco:
@@ -81,6 +82,86 @@ jobs:
       - name: Réduire le cache uv
         if: always()
         run: uv cache prune --ci
+
+  integration:
+    name: Intégration PostgreSQL
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:0.8.7-pg18-trixie
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: otlet_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      UV_PYTHON: "3.13"
+      UV_CACHE_DIR: ${{ github.workspace }}/.uv-cache
+      OTLET_TEST_ADMIN_URL: postgresql://postgres:postgres@localhost:5432/otlet_test
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Installer uv
+        run: pipx install "uv==${{ env.UV_VERSION }}"
+      - uses: actions/cache@v4
+        with:
+          path: ${{ env.UV_CACHE_DIR }}
+          key: uv-${{ runner.os }}-py3.13-${{ hashFiles('backend/uv.lock') }}
+          restore-keys: uv-${{ runner.os }}-py3.13-
+      - name: Installer les dépendances (verrou exact)
+        run: uv sync --locked
+      - name: Tests avec PostgreSQL réel (rôles M-12, migrations), aucun ignoré faute de base
+        run: |
+          uv run pytest -rs | tee "$RUNNER_TEMP/pytest.txt"
+          ! grep -q "OTLET_TEST_ADMIN_URL not set" "$RUNNER_TEMP/pytest.txt"
+
+  audit:
+    name: Audit des dépendances
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Installer uv
+        run: pipx install "uv==${{ env.UV_VERSION }}"
+      - name: Python (pip-audit sur le verrou exact, empreintes exigées)
+        working-directory: backend
+        run: |
+          uv export --frozen --format requirements-txt --no-emit-project > "$RUNNER_TEMP/requirements.txt"
+          uvx "pip-audit==${{ env.PIP_AUDIT_VERSION }}" --strict --require-hashes --disable-pip             --progress-spinner off -r "$RUNNER_TEMP/requirements.txt"
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: frontend/.nvmrc
+      - name: Interface (npm audit sur le verrou)
+        working-directory: frontend
+        run: npm audit --audit-level=moderate
+
+  licences:
+    name: Licences des dépendances
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Installer uv
+        run: pipx install "uv==${{ env.UV_VERSION }}"
+      - name: Python (environnement d'exécution, sans les outils de développement)
+        working-directory: backend
+        env:
+          UV_PROJECT_ENVIRONMENT: ${{ runner.temp }}/runtime
+          UV_PYTHON: "3.13"
+        run: |
+          uv sync --locked --no-dev
+          "$UV_PROJECT_ENVIRONMENT/bin/python" ../tools/check_licenses.py python
+      - name: Interface (paquets livrés dans le bundle)
+        run: python3 tools/check_licenses.py npm frontend/package-lock.json
 
   frontend:
     name: Interface (Node 24)

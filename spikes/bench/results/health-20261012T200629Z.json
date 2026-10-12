@@ -1,0 +1,22 @@
+{
+  "started": "2026-10-12T20:06:20+00:00",
+  "duration_s": 9.28,
+  "clients": 4,
+  "warmup_s": 5,
+  "seed": 1,
+  "executions_per_workload": 500,
+  "host": "ubuntu-joe-vm",
+  "workloads": {
+    "get": {
+      "count": 500,
+      "errors": 0,
+      "min_ms": 20.46,
+      "p50_ms": 64.43,
+      "p95_ms": 130.78,
+      "p99_ms": 248.93,
+      "max_ms": 468.46,
+      "mean_ms": 74.07
+    }
+  },
+  "target": "https://192.168.129.249/health"
+}

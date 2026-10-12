@@ -26,3 +26,5 @@ La numérotation continue celle de l'architecture.
 | [0016](0016-chaine-d-outils.md) | Chaîne d'outils | Accepté |
 | [0017](0017-contrats-d-imports.md) | Contrats d'imports | Accepté |
 | [0018](0018-protocole-des-preuves.md) | Protocole des preuves de concept | Accepté |
+| [0019](0019-secrets-dechiffres-par-le-worker.md) | Les secrets sont déchiffrés par le worker seul | Proposé (S6) |
+| [0020](0020-demarrage-et-tls-de-la-pile-solo.md) | Démarrage et TLS de la pile solo | Proposé (S6) |

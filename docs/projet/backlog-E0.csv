@@ -15,7 +15,7 @@ S6.2,S6,"Image OCI multi-étape et multirôle (api, worker, scheduler par argume
 S6.3,S6,"compose.yaml solo (Caddy, application, worker, PostgreSQL), Caddyfile, contrôles de santé, .env.example",4,fait
 S6.4,S6,"FastAPI minimal, première migration Alembic, mise à jour avec migration et retour arrière documentés",4,fait
 S6.5,S6,"Secrets chiffrés par clé publique côté API, déchiffrés par le worker seul (DR6)",5,fait
-S6.6,S6,Installation chronométrée sur VPS vierge en suivant la documentation ; rapport conclu,4,a_faire
+S6.6,S6,Installation chronométrée sur VPS vierge en suivant la documentation ; rapport conclu,4,fait
 S1.1,S1,Rapport ouvert ; schéma minimal couvrant les cinq lectures ; trois rôles séparés,4,a_faire
 S1.2,S1,"Générateur du jeu synthétique (200 sources, 100 000 éléments, 300 000 passages vectorisés, 2 000 articles), reproductible par graine",5,a_faire
 S1.3,S1,"RLS forcée, SET LOCAL par la fabrique de sessions, test « requête sans contexte = zéro ligne »",4,a_faire

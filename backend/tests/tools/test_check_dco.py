@@ -67,3 +67,47 @@ def test_rejects_a_commit_without_its_author_sign_off(repo: Path, message: str) 
     result = check(repo)
     assert result.returncode == 1
     assert message.splitlines()[0] in result.stdout
+
+
+def test_accepts_an_unsigned_commit_of_the_update_robot(repo: Path) -> None:
+    subprocess.run(  # noqa: S603
+        [  # noqa: S607
+            "git",
+            "-c",
+            "commit.gpgsign=false",
+            "-c",
+            "user.name=dependabot[bot]",
+            "-c",
+            "user.email=49699333+dependabot[bot]@users.noreply.github.com",
+            "commit",
+            "--allow-empty",
+            "-q",
+            "-m",
+            "Dépendances Python : mise à jour",
+        ],
+        cwd=repo,
+        check=True,
+    )
+    assert check(repo).returncode == 0
+
+
+def test_rejects_an_unsigned_commit_of_a_lookalike_robot(repo: Path) -> None:
+    subprocess.run(  # noqa: S603
+        [  # noqa: S607
+            "git",
+            "-c",
+            "commit.gpgsign=false",
+            "-c",
+            "user.name=dependabot[bot]",
+            "-c",
+            "user.email=dependabot@example.org",
+            "commit",
+            "--allow-empty",
+            "-q",
+            "-m",
+            "Pas le vrai robot",
+        ],
+        cwd=repo,
+        check=True,
+    )
+    assert check(repo).returncode == 1

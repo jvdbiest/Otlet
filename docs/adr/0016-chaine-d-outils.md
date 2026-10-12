@@ -44,6 +44,12 @@ TECH_CHOICES fixe les familles d'outils mais laisse quelques choix ouverts (`myp
 - TypeScript 6.0 et non 7.0 : `typescript-eslint` 8.71 ne prend en charge que TypeScript < 6.1. Passage à 7 quand `typescript-eslint` le permettra.
 - ESLint en configuration `strictTypeChecked` de `typescript-eslint`, zéro avertissement toléré.
 
+## Mise en œuvre en B06
+
+- Verrous à empreintes : `backend/uv.lock` (empreintes SHA-256, installé par `uv sync --locked` en CI et dans l'image), `frontend/package-lock.json` (champ `integrity`, installé par `npm ci`).
+- Robot de mises à jour : Dependabot (`.github/dependabot.yml`), hebdomadaire, groupé par écosystème (Python, interface, actions GitHub, images de base et de la pile), **quarantaine de 7 jours** (`cooldown`) après chaque publication.
+- Audit bloquant en CI (job « Audit des dépendances ») : `pip-audit` 2.10.1 sur l'export du verrou, empreintes exigées, et `npm audit --audit-level=moderate`. Un avis de vulnérabilité connu fait échouer la CI.
+
 ## Options écartées
 
 - `pyright` : plus rapide, mais `mypy` a le greffon Pydantic et reste la référence de SQLAlchemy 2.

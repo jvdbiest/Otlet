@@ -6,7 +6,9 @@ Usage: python tools/check_dco.py <base>..<head>
 
 Standard library only. A commit passes when one of its "Signed-off-by"
 trailers names its author's e-mail address (case-insensitive). Merge
-commits are skipped. Exits 1 and lists the offending commits otherwise.
+commits are skipped, and so are commits authored by the dependency update
+robot (B06): a version bump is not a contribution that the DCO certifies.
+Exits 1 and lists the offending commits otherwise.
 """
 
 from __future__ import annotations
@@ -19,6 +21,8 @@ FIELD = "\x1f"
 RECORD = "\x1e"
 LOG_FORMAT = FIELD.join(["%H", "%an", "%ae", "%s", "%(trailers:key=Signed-off-by,valueonly)"])
 EMAIL = re.compile(r"<([^<>]+)>\s*$")
+# Exact author address of GitHub's Dependabot; nobody else can commit under it on GitHub.
+ROBOT_AUTHORS = {"49699333+dependabot[bot]@users.noreply.github.com"}
 
 
 def unsigned_commits(revision_range: str) -> list[str]:
@@ -34,6 +38,8 @@ def unsigned_commits(revision_range: str) -> list[str]:
         if not record.strip():
             continue
         sha, name, email, subject, trailers = record.strip("\n").split(FIELD)
+        if email.strip().lower() in ROBOT_AUTHORS:
+            continue
         signers = {
             match.group(1).strip().lower()
             for line in trailers.splitlines()

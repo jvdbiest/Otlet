@@ -18,6 +18,7 @@ concurrency:
 
 env:
   UV_VERSION: "0.13.0"
+  PIP_AUDIT_VERSION: "2.10.1"
 
 jobs:
   dco:
@@ -81,6 +82,27 @@ jobs:
       - name: Réduire le cache uv
         if: always()
         run: uv cache prune --ci
+
+  audit:
+    name: Audit des dépendances
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Installer uv
+        run: pipx install "uv==${{ env.UV_VERSION }}"
+      - name: Python (pip-audit sur le verrou exact, empreintes exigées)
+        working-directory: backend
+        run: |
+          uv export --frozen --format requirements-txt --no-emit-project > "$RUNNER_TEMP/requirements.txt"
+          uvx "pip-audit==${{ env.PIP_AUDIT_VERSION }}" --strict --require-hashes --disable-pip             --progress-spinner off -r "$RUNNER_TEMP/requirements.txt"
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: frontend/.nvmrc
+      - name: Interface (npm audit sur le verrou)
+        working-directory: frontend
+        run: npm audit --audit-level=moderate
 
   frontend:
     name: Interface (Node 24)

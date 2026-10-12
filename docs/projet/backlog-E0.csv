@@ -4,7 +4,7 @@ B02,socle,"Projet Python : backend/pyproject.toml, uv, Python 3.13, ruff, mypy -
 B03,socle,Contrats import-linter de l'ADR-0017 ; un test qui introduit une violation et vérifie qu'elle est rejetée,4,fait
 B04,socle,"CI : lint, types, tests, import-linter, vérification DCO, cache uv ; toute vérification bloquante",5,fait
 B05,socle,"CI : PostgreSQL 18 + pgvector éphémère ; fixture pytest ; rôles propriétaire, migration et applicatif séparés (M-12)",4,a_faire
-B06,socle,"Chaîne d'approvisionnement : verrous à empreintes, robot de mises à jour avec quarantaine de 7 jours, pip-audit, npm audit",4,a_faire
+B06,socle,"Chaîne d'approvisionnement : verrous à empreintes, robot de mises à jour avec quarantaine de 7 jours, pip-audit, npm audit",4,fait
 B07,socle,Contrôle automatique des licences des dépendances (liste de TECH_CHOICES §1.1),3,a_faire
 B08,socle,Interface : Vite + React + TypeScript strict + ESLint ; construction en CI,4,fait
 B09,socle,"Banc de mesure commun spikes/bench/ : chronométrage, p50/p95, mémoire par conteneur, sortie JSON, exécution distante sur le VPS",5,a_faire

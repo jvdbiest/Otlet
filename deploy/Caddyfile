@@ -4,6 +4,12 @@
 # With OTLET_DOMAIN=localhost, Caddy issues a certificate from its own local authority;
 # otherwise from Let's Encrypt, which needs no account e-mail.
 
+{
+	# Clients send no SNI when the instance is reached by IP address (local network,
+	# no domain name): without a default, Caddy refuses the TLS handshake.
+	default_sni {$OTLET_DOMAIN}
+}
+
 {$OTLET_DOMAIN} {
 	encode zstd gzip
 

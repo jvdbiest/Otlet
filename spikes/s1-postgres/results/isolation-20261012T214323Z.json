@@ -1,0 +1,107 @@
+{
+  "criteria": "C4 C5",
+  "passed": true,
+  "checks": [
+    {
+      "check": "C4 workspaces: no context, zero rows",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "check": "C4 workspaces: context, own rows only",
+      "ok": true,
+      "detail": [
+        1,
+        1
+      ]
+    },
+    {
+      "check": "C4 sources: no context, zero rows",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "check": "C4 sources: context, own rows only",
+      "ok": true,
+      "detail": [
+        160,
+        160
+      ]
+    },
+    {
+      "check": "C4 items: no context, zero rows",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "check": "C4 items: context, own rows only",
+      "ok": true,
+      "detail": [
+        80000,
+        80000
+      ]
+    },
+    {
+      "check": "C4 passages: no context, zero rows",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "check": "C4 passages: context, own rows only",
+      "ok": true,
+      "detail": [
+        240000,
+        240000
+      ]
+    },
+    {
+      "check": "C4 articles: no context, zero rows",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "check": "C4 articles: context, own rows only",
+      "ok": true,
+      "detail": [
+        1600,
+        1600
+      ]
+    },
+    {
+      "check": "C4 article_sources: no context, zero rows",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "check": "C4 article_sources: context, own rows only",
+      "ok": true,
+      "detail": [
+        4800,
+        4800
+      ]
+    },
+    {
+      "check": "C5 application role: not superuser, no BYPASSRLS",
+      "ok": true,
+      "detail": [
+        false,
+        false
+      ]
+    },
+    {
+      "check": "C5 application role owns no table",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "check": "C4 RLS enabled and forced on every business table",
+      "ok": true,
+      "detail": 6
+    },
+    {
+      "check": "C5 application role cannot create a table",
+      "ok": true,
+      "detail": false
+    }
+  ]
+}

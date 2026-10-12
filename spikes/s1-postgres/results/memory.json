@@ -1,0 +1,24 @@
+{
+  "started": "2026-10-12T21:43:24+00:00",
+  "stopped": "2026-10-12T21:59:40+00:00",
+  "samples": 974,
+  "containers": {
+    "otlet-api-1": {
+      "max_mib": 163.5,
+      "mean_mib": 145.6
+    },
+    "otlet-caddy-1": {
+      "max_mib": 19.8,
+      "mean_mib": 15.3
+    },
+    "otlet-db-1": {
+      "max_mib": 891.4,
+      "mean_mib": 880.6
+    },
+    "otlet-worker-1": {
+      "max_mib": 39.1,
+      "mean_mib": 20.8
+    }
+  },
+  "stack_max_mib": 1100.7
+}

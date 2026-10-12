@@ -26,7 +26,7 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
@@ -57,12 +57,12 @@ jobs:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Installer uv
         run: pipx install "uv==${{ env.UV_VERSION }}"
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: ${{ env.UV_CACHE_DIR }}
           key: uv-${{ runner.os }}-py${{ matrix.python }}-${{ hashFiles('backend/uv.lock') }}
@@ -105,12 +105,12 @@ jobs:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Installer uv
         run: pipx install "uv==${{ env.UV_VERSION }}"
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: ${{ env.UV_CACHE_DIR }}
           key: uv-${{ runner.os }}-py3.13-${{ hashFiles('backend/uv.lock') }}
@@ -126,7 +126,7 @@ jobs:
     name: Audit des dépendances
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Installer uv
@@ -136,7 +136,7 @@ jobs:
         run: |
           uv export --frozen --format requirements-txt --no-emit-project > "$RUNNER_TEMP/requirements.txt"
           uvx "pip-audit==${{ env.PIP_AUDIT_VERSION }}" --strict --require-hashes --disable-pip             --progress-spinner off -r "$RUNNER_TEMP/requirements.txt"
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
           node-version-file: frontend/.nvmrc
       - name: Interface (npm audit sur le verrou)
@@ -147,7 +147,7 @@ jobs:
     name: Licences des dépendances
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Installer uv
@@ -170,10 +170,10 @@ jobs:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
           node-version-file: frontend/.nvmrc
           cache: npm
@@ -191,7 +191,7 @@ jobs:
     name: Image OCI
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Construire l'image multirôle
@@ -203,7 +203,7 @@ jobs:
     name: Pile Compose solo
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Générer la configuration locale
@@ -225,14 +225,14 @@ jobs:
     name: Mise à jour et retour arrière
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Jouer le scénario (docs/exploitation/mise-a-jour.md)
         run: sh spikes/s6-delivery/upgrade-rollback.sh
       - name: Conserver le résultat
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: s6-upgrade-rollback
           path: spikes/s6-delivery/results/
@@ -242,14 +242,14 @@ jobs:
     name: Séparation des secrets
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Jouer le scénario (rapport S6, critère C3)
         run: sh spikes/s6-delivery/secrets-separation.sh
       - name: Conserver le résultat
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: s6-secrets-separation
           path: spikes/s6-delivery/results/

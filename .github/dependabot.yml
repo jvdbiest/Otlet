@@ -25,6 +25,13 @@ updates:
       day: monday
     cooldown:
       default-days: 7
+    ignore:
+      # typescript-eslint supports TypeScript < 6.1 only (ADR-0016, B08).
+      - dependency-name: typescript
+        versions: [">=6.1"]
+      # Types follow the Node major version used to build (.nvmrc: Node 24 LTS).
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
     groups:
       interface:
         patterns: ["*"]

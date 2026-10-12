@@ -44,6 +44,11 @@ TECH_CHOICES fixe les familles d'outils mais laisse quelques choix ouverts (`myp
 - TypeScript 6.0 et non 7.0 : `typescript-eslint` 8.71 ne prend en charge que TypeScript < 6.1. Passage à 7 quand `typescript-eslint` le permettra.
 - ESLint en configuration `strictTypeChecked` de `typescript-eslint`, zéro avertissement toléré.
 
+## Mise en œuvre en B07
+
+- `tools/check_licenses.py` (bibliothèque standard) applique le filtre de `TECH_CHOICES.md` §1.1 à ce qui est livré : l'environnement Python synchronisé sans le groupe `dev`, et les paquets npm qui ne sont pas réservés au développement. Une licence absente ou non identifiée fait échouer la vérification ; une exception exige un ADR.
+- Job de CI bloquant « Licences des dépendances ». Un paquet sous SSPL fait échouer la vérification (test `test_shipped_sspl_package_fails`).
+
 ## Options écartées
 
 - `pyright` : plus rapide, mais `mypy` a le greffon Pydantic et reste la référence de SQLAlchemy 2.

@@ -82,6 +82,26 @@ jobs:
         if: always()
         run: uv cache prune --ci
 
+  licences:
+    name: Licences des dépendances
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Installer uv
+        run: pipx install "uv==${{ env.UV_VERSION }}"
+      - name: Python (environnement d'exécution, sans les outils de développement)
+        working-directory: backend
+        env:
+          UV_PROJECT_ENVIRONMENT: ${{ runner.temp }}/runtime
+          UV_PYTHON: "3.13"
+        run: |
+          uv sync --locked --no-dev
+          "$UV_PROJECT_ENVIRONMENT/bin/python" ../tools/check_licenses.py python
+      - name: Interface (paquets livrés dans le bundle)
+        run: python3 tools/check_licenses.py npm frontend/package-lock.json
+
   frontend:
     name: Interface (Node 24)
     runs-on: ubuntu-latest

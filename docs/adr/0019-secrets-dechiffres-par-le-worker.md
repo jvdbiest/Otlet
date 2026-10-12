@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Statut | Proposé |
+| Statut | Accepté (2026-10-12) |
 | Date | 2026-10-12 |
 | Décideur | Joël |
 | Documents touchés | `ARCHITECTURE.md` §25 (ADR-11) ; `RISKS.md` §4.12 (R-S03), M-06, DR6 |

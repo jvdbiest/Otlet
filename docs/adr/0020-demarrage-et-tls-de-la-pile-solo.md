@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Statut | Proposé |
+| Statut | Accepté (2026-10-12) |
 | Date | 2026-10-12 |
 | Décideur | Joël |
 | Documents touchés | `ARCHITECTURE.md` §20.3 et §20.4 |

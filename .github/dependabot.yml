@@ -1,0 +1,65 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Dependency update robot (B06). Every update waits 7 days after its publication
+# (cooldown), so that a compromised release has time to be spotted and withdrawn before it
+# reaches the lock files. Updates arrive grouped, once a week, as pull requests that go
+# through the whole CI like any other change.
+version: 2
+updates:
+  - package-ecosystem: uv
+    directory: /backend
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 7
+    groups:
+      python:
+        patterns: ["*"]
+    commit-message:
+      prefix: "Dépendances Python :"
+
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 7
+    groups:
+      interface:
+        patterns: ["*"]
+    commit-message:
+      prefix: "Dépendances de l'interface :"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "Actions GitHub :"
+
+  - package-ecosystem: docker
+    directory: /deploy
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: "Images de base :"
+
+  - package-ecosystem: docker-compose
+    directory: /deploy
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: "Images de la pile :"

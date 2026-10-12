@@ -29,3 +29,7 @@ D2 retient l'AGPL-3.0 ; DR8 et DRM7 imposent un dépôt public et le DCO dès le
 
 - `AGPL-3.0-only` : interdit toute évolution de licence sans accord unanime.
 - CLA : frein pour les contributeurs, et inutile tant qu'aucun double licenciement n'est envisagé.
+
+## Précision apportée en B06 (2026-10-12)
+
+Les commits du robot de mises à jour (Dependabot, adresse d'auteur `49699333+dependabot[bot]@users.noreply.github.com`) sont dispensés de `Signed-off-by` : un changement de numéro de version dans un verrou n'est pas une contribution que le DCO atteste, et le robot ne sait pas signer. La dispense porte sur cette adresse exacte, réservée par GitHub ; un auteur qui se fait seulement appeler « dependabot » reste soumis à la règle. Tout autre commit d'une demande du robot, par exemple une correction du mainteneur, doit être signé.

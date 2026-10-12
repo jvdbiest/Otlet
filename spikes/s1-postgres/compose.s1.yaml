@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# S1: PostgreSQL settings of the solo profile, fixed by docs/spikes/S1.md §3.4.
+# Used on top of deploy/compose.yaml: docker compose -f deploy/compose.yaml -f compose.s1.yaml
+services:
+  db:
+    command:
+      - postgres
+      - -c
+      - shared_buffers=768MB
+      - -c
+      - effective_cache_size=2GB
+      - -c
+      - work_mem=16MB
+      - -c
+      - maintenance_work_mem=256MB
+      - -c
+      - random_page_cost=1.1
+    shm_size: 1g

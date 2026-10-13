@@ -37,10 +37,13 @@ def plain_text(node: Node) -> str:
     return "".join(plain_text(child) for child in node.get("content", []))
 
 
-def render(doc: Node, mention: str = MENTION_IA) -> str:
+def render(doc: Node, mention: str = MENTION_IA, extras: bool = True) -> str:
+    """Whole rendering; `extras=False` gives the body only (what the editor renders too)."""
     sources = {s["id"]: s for s in doc["attrs"]["sources"]}
     numbers = {source_id: index + 1 for index, source_id in enumerate(sources)}
     parts = [render_block(block, sources, numbers) for block in doc["content"]]
+    if not extras:
+        return "\n".join(parts)
     if ai_share(doc) > 0:
         parts.append(f'<p class="otlet-mention-ia"><em>{escape(mention)}</em></p>')
     if sources:
@@ -76,11 +79,16 @@ def render_block(block: Node, sources: dict[str, Node], numbers: dict[str, int])
         paragraphs = "".join(
             f"<p>{render_inline(p.get('content', []), numbers)}</p>" for p in block["content"]
         )
+        # The attribution follows the quotation, outside <blockquote>: an editor can render
+        # it from the node alone, and a CMS that rewrites quotations keeps a plain paragraph.
         attribution = (
             f'<p class="otlet-citation-source">— <a href="{escape(source["url"])}">'
             f"{escape(source['titre'])}</a></p>"
         )
-        return f'<blockquote class="otlet-citation">{paragraphs}{attribution}</blockquote>'
+        return (
+            f'<div class="otlet-citation"><blockquote>{paragraphs}</blockquote>'
+            f"{attribution}</div>"
+        )
     if kind == "encadre":
         paragraphs = "".join(
             f"<p>{render_inline(p.get('content', []), numbers)}</p>" for p in block["content"]
@@ -120,7 +128,8 @@ def render_inline(content: list[Node], numbers: dict[str, int]) -> str:
         if "link" in marks:
             text = f'<a href="{escape(marks["link"]["href"])}">{text}</a>'
         if "source_ref" in marks:
-            number = numbers[marks["source_ref"]["source"]]
-            text = f'{text}<sup class="otlet-source-ref">[{number}]</sup>'
+            # Numbering the references is left to É1: the editor renders the same span.
+            source_id = escape(marks["source_ref"]["source"])
+            text = f'<span class="otlet-source-ref" data-source="{source_id}">{text}</span>'
         out.append(text)
     return "".join(out)

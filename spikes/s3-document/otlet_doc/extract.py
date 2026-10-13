@@ -5,7 +5,8 @@ Used on our own rendering (to write expected.json) and on what WordPress and Gho
 It relies on content, not on our CSS classes, which a CMS may strip:
 - Sources block: the first list after a heading whose text is "Sources";
 - AI mention: a paragraph whose text is the mention;
-- citations: <blockquote>; the last link inside is the citation's source;
+- citations: <blockquote>; its source is the link of the first "—" paragraph after it,
+  or else the last link inside it;
 - headings: h1 to h6 except the Sources heading;
 - links: every other <a href>.
 Texts are normalized: entities decoded, whitespace folded, non-breaking spaces as spaces.
@@ -105,14 +106,31 @@ def extract(html: str) -> dict[str, Any]:
         elif tag == "p" and normalize_text(text_of(node)) == normalize_text(MENTION_IA):
             mention = True
         elif tag == "blockquote":
+            inside = {id(n) for n in walk(node)}
             anchors = [a for a in walk(node) if a["tag"] == "a" and a["attrs"].get("href")]
-            source = anchors[-1]["attrs"]["href"] if anchors else None
-            if anchors:
-                excluded.add(id(anchors[-1]))
+            # Attribution: the first paragraph starting with "—" after the quotation.
+            position = next(i for i, e in enumerate(elements) if e is node)
+            attribution = next(
+                (
+                    p
+                    for p in elements[position + 1 :]
+                    if id(p) not in inside
+                    and p["tag"] == "p"
+                    and normalize_text(text_of(p)).startswith("—")
+                ),
+                None,
+            )
+            following = (
+                [a for a in walk(attribution) if a["tag"] == "a" and a["attrs"].get("href")]
+                if attribution is not None
+                else []
+            )
+            candidates = following or anchors
+            source = candidates[-1]["attrs"]["href"] if candidates else None
+            if candidates:
+                excluded.add(id(candidates[-1]))
             paragraphs = [
-                normalize_text(text_of(p))
-                for p in node["children"]
-                if not isinstance(p, str) and p["tag"] == "p"
+                normalize_text(text_of(p)) for p in walk(node) if p is not node and p["tag"] == "p"
             ]
             body = [p for p in paragraphs if not p.startswith("—")] or [normalize_text(text_of(node))]
             citations.append({"text": " ".join(body), "source": source})

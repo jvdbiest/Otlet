@@ -1,0 +1,262 @@
+{
+  "type": "doc",
+  "attrs": {
+    "version_schema": 1,
+    "langue": "fr",
+    "sources": [
+      {
+        "id": "S1",
+        "titre": "Dossier 07, document 1",
+        "editeur": "Revue des territoires",
+        "date": "2026-06-02",
+        "url": "https://exemple.org/dossiers/07/document-1"
+      },
+      {
+        "id": "S2",
+        "titre": "Dossier 07, document 2",
+        "editeur": "Le Courrier local",
+        "date": "2026-08-15",
+        "url": "https://exemple.org/dossiers/07/document-2"
+      },
+      {
+        "id": "S3",
+        "titre": "Dossier 07, document 3",
+        "editeur": "Revue des territoires",
+        "date": "2026-08-23",
+        "url": "https://exemple.org/dossiers/07/document-3"
+      },
+      {
+        "id": "S4",
+        "titre": "Dossier 07, document 4",
+        "editeur": "Agence régionale",
+        "date": "2026-08-06",
+        "url": "https://exemple.org/dossiers/07/document-4"
+      }
+    ]
+  },
+  "content": [
+    {
+      "type": "paragraph",
+      "attrs": {
+        "id": "b1",
+        "origine": "humain"
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "Le conseil a présenté mardi soir le projet consacré à la création d’un jardin partagé."
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": {
+        "id": "b2",
+        "origine": "humain",
+        "level": 2
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "Ce que prévoit le projet sur environnement"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "attrs": {
+        "id": "b3",
+        "origine": "humain"
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "Selon les documents consultés, "
+        },
+        {
+          "type": "text",
+          "text": "le coût total reste à confirmer",
+          "marks": [
+            {
+              "type": "source_ref",
+              "attrs": {
+                "source": "S1"
+              }
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": ". "
+        },
+        {
+          "type": "text",
+          "text": "Les premiers retours d’expérience venus d’autres communes sont jugés encourageants."
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "attrs": {
+        "id": "b4",
+        "origine": "humain"
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "La "
+        },
+        {
+          "type": "text",
+          "text": "fiche détaillée",
+          "marks": [
+            {
+              "type": "link",
+              "attrs": {
+                "href": "https://exemple.org/environnement/fiche-07"
+              }
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": " est disponible en ligne, et "
+        },
+        {
+          "type": "text",
+          "text": "plusieurs points restent ouverts",
+          "marks": [
+            {
+              "type": "bold"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "."
+        }
+      ]
+    },
+    {
+      "type": "citation",
+      "attrs": {
+        "id": "b5",
+        "origine": "humain",
+        "source": "S2"
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Le projet n’a de sens que s’il est construit avec celles et ceux qui l’utiliseront."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": {
+        "id": "b6",
+        "origine": "humain",
+        "level": 3
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "Les prochaines étapes"
+        }
+      ]
+    },
+    {
+      "type": "bullet_list",
+      "attrs": {
+        "id": "b7",
+        "origine": "humain"
+      },
+      "content": [
+        {
+          "type": "list_item",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "un budget de fonctionnement distinct"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "list_item",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "une consultation en ligne de six semaines"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "list_item",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "une étude de faisabilité"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "attrs": {
+        "id": "b8",
+        "origine": "humain"
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "Les montants annoncés restent provisoires tant que les subsides régionaux ne sont pas confirmés.",
+          "marks": [
+            {
+              "type": "italic"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "citation",
+      "attrs": {
+        "id": "b9",
+        "origine": "humain",
+        "source": "S1"
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Nous voulons des résultats mesurables, pas seulement des annonces."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

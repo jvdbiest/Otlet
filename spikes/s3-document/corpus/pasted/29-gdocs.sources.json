@@ -1,0 +1,16 @@
+[
+  {
+    "id": "S1",
+    "titre": "Dossier 29, document 1",
+    "editeur": "Le Courrier local",
+    "date": "2026-06-05",
+    "url": "https://exemple.org/dossiers/29/document-1"
+  },
+  {
+    "id": "S2",
+    "titre": "Dossier 29, document 2",
+    "editeur": "Le Courrier local",
+    "date": "2026-02-16",
+    "url": "https://exemple.org/dossiers/29/document-2"
+  }
+]

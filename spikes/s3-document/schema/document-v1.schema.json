@@ -1,0 +1,236 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jvdbiest/Otlet/spikes/s3-document/schema/document-v1.schema.json",
+  "title": "Document plateforme v1 (ébauche S3)",
+  "description": "Corps d'un article Otlet : un arbre ProseMirror au schéma du projet (TECH_CHOICES.md §10.3). Licence du schéma : CC0-1.0. Le bloc Sources et la mention IA ne sont pas dans le document : le moteur de rendu les insère à partir de `sources`, des marques `source_ref`, des citations et de l'origine des blocs (ARCHITECTURE.md §14.5).",
+  "type": "object",
+  "required": ["type", "attrs", "content"],
+  "additionalProperties": false,
+  "properties": {
+    "type": {"const": "doc"},
+    "attrs": {
+      "type": "object",
+      "required": ["version_schema", "langue", "sources"],
+      "additionalProperties": false,
+      "properties": {
+        "version_schema": {"const": 1},
+        "langue": {"type": "string", "pattern": "^[a-z]{2}(-[A-Z]{2})?$"},
+        "sources": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/source"},
+          "description": "Références de sources de l'article ; chaque `source_ref` et chaque citation pointe vers l'une d'elles."
+        }
+      }
+    },
+    "content": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/block"}}
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "required": ["id", "titre", "url"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "pattern": "^S[0-9]+$"},
+        "titre": {"type": "string", "minLength": 1},
+        "editeur": {"type": "string"},
+        "date": {"type": "string", "format": "date"},
+        "url": {"type": "string", "format": "uri", "pattern": "^https?://"}
+      }
+    },
+    "block_attrs": {
+      "type": "object",
+      "required": ["id", "origine"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^b[0-9a-z]+$", "description": "Identifiant stable du bloc (comparaison de versions)."},
+        "origine": {"enum": ["ia", "ia_modifie", "humain"], "description": "Base du calcul de la part d'IA (D8)."}
+      }
+    },
+    "block": {
+      "oneOf": [
+        {"$ref": "#/$defs/heading"},
+        {"$ref": "#/$defs/paragraph"},
+        {"$ref": "#/$defs/bullet_list"},
+        {"$ref": "#/$defs/ordered_list"},
+        {"$ref": "#/$defs/citation"},
+        {"$ref": "#/$defs/encadre"},
+        {"$ref": "#/$defs/image"},
+        {"$ref": "#/$defs/separateur"}
+      ]
+    },
+    "heading": {
+      "type": "object",
+      "required": ["type", "attrs", "content"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {"const": "heading"},
+        "attrs": {
+          "allOf": [{"$ref": "#/$defs/block_attrs"}],
+          "properties": {"id": true, "origine": true, "level": {"enum": [2, 3, 4]}},
+          "required": ["level"],
+          "unevaluatedProperties": false
+        },
+        "content": {"$ref": "#/$defs/inline_content"}
+      }
+    },
+    "paragraph": {
+      "type": "object",
+      "required": ["type", "attrs"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {"const": "paragraph"},
+        "attrs": {"allOf": [{"$ref": "#/$defs/block_attrs"}], "unevaluatedProperties": false},
+        "content": {"$ref": "#/$defs/inline_content"}
+      }
+    },
+    "inline_paragraph": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {"const": "paragraph"},
+        "content": {"$ref": "#/$defs/inline_content"}
+      }
+    },
+    "list_item": {
+      "type": "object",
+      "required": ["type", "content"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {"const": "list_item"},
+        "content": {
+          "type": "array",
+          "minItems": 1,
+          "prefixItems": [{"$ref": "#/$defs/inline_paragraph"}],
+          "items": {"anyOf": [{"$ref": "#/$defs/inline_paragraph"}, {"$ref": "#/$defs/nested_list"}]}
+        }
+      }
+    },
+    "nested_list": {
+      "type": "object",
+      "required": ["type", "content"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {"enum": ["bullet_list", "ordered_list"]},
+        "content": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/list_item"}}
+      }
+    },
+    "bullet_list": {
+      "type": "object",
+      "required": ["type", "attrs", "content"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {"const": "bullet_list"},
+        "attrs": {"allOf": [{"$ref": "#/$defs/block_attrs"}], "unevaluatedProperties": false},
+        "content": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/list_item"}}
+      }
+    },
+    "ordered_list": {
+      "type": "object",
+      "required": ["type", "attrs", "content"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {"const": "ordered_list"},
+        "attrs": {"allOf": [{"$ref": "#/$defs/block_attrs"}], "unevaluatedProperties": false},
+        "content": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/list_item"}}
+      }
+    },
+    "citation": {
+      "description": "Citation typée, comparable mot pour mot (F-RED-09) : la source est obligatoire.",
+      "type": "object",
+      "required": ["type", "attrs", "content"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {"const": "citation"},
+        "attrs": {
+          "allOf": [{"$ref": "#/$defs/block_attrs"}],
+          "properties": {"id": true, "origine": true, "source": {"type": "string", "pattern": "^S[0-9]+$"}},
+          "required": ["source"],
+          "unevaluatedProperties": false
+        },
+        "content": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/inline_paragraph"}}
+      }
+    },
+    "encadre": {
+      "type": "object",
+      "required": ["type", "attrs", "content"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {"const": "encadre"},
+        "attrs": {"allOf": [{"$ref": "#/$defs/block_attrs"}], "unevaluatedProperties": false},
+        "content": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/inline_paragraph"}}
+      }
+    },
+    "image": {
+      "type": "object",
+      "required": ["type", "attrs"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {"const": "image"},
+        "attrs": {
+          "allOf": [{"$ref": "#/$defs/block_attrs"}],
+          "properties": {"id": true, "origine": true, "media": {"type": "string"}, "alt": {"type": "string"}},
+          "required": ["media", "alt"],
+          "unevaluatedProperties": false
+        }
+      }
+    },
+    "separateur": {
+      "type": "object",
+      "required": ["type", "attrs"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {"const": "separateur"},
+        "attrs": {"allOf": [{"$ref": "#/$defs/block_attrs"}], "unevaluatedProperties": false}
+      }
+    },
+    "inline_content": {"type": "array", "items": {"$ref": "#/$defs/text"}},
+    "text": {
+      "type": "object",
+      "required": ["type", "text"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {"const": "text"},
+        "text": {"type": "string", "minLength": 1},
+        "marks": {"type": "array", "items": {"$ref": "#/$defs/mark"}}
+      }
+    },
+    "mark": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["type"],
+          "additionalProperties": false,
+          "properties": {"type": {"enum": ["bold", "italic"]}}
+        },
+        {
+          "type": "object",
+          "required": ["type", "attrs"],
+          "additionalProperties": false,
+          "properties": {
+            "type": {"const": "link"},
+            "attrs": {
+              "type": "object",
+              "required": ["href"],
+              "additionalProperties": false,
+              "properties": {"href": {"type": "string", "pattern": "^(https?://|mailto:)"}}
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "attrs"],
+          "additionalProperties": false,
+          "properties": {
+            "type": {"const": "source_ref"},
+            "attrs": {
+              "type": "object",
+              "required": ["source"],
+              "additionalProperties": false,
+              "properties": {"source": {"type": "string", "pattern": "^S[0-9]+$"}}
+            }
+          }
+        }
+      ]
+    }
+  }
+}

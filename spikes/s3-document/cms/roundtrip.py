@@ -63,7 +63,7 @@ def wordpress_roundtrip(base: str, user: str, password: str, title: str, html: s
 # --- Ghost ---------------------------------------------------------------------------------
 
 def ghost_token(key: str) -> str:
-    key_id, secret = key.split(":")
+    key_id, secret = key.split(":")[-2:]  # Ghost 6 already returns "id:secret" as the secret
     def b64(data: bytes) -> str:
         return base64.urlsafe_b64encode(data).rstrip(b"=").decode()
     now = int(time.time())
@@ -96,7 +96,8 @@ def setup_ghost() -> None:
         integration.add_header(header, value)
     payload = json.loads(opener.open(integration, timeout=60).read())
     admin = next(k for k in payload["integrations"][0]["api_keys"] if k["type"] == "admin")
-    print(f"{admin['id']}:{admin['secret']}")
+    secret = admin['secret']
+    print(secret if ':' in secret else f"{admin['id']}:{secret}")
 
 
 # --- comparison ----------------------------------------------------------------------------

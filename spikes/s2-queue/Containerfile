@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# S2 bench image: the application image plus the two queue engines compared by the spike.
+# Built on the measurement machine: docker build -t otlet-s2 spikes/s2-queue
+ARG BASE=otlet:dev
+FROM ghcr.io/astral-sh/uv:0.13.0 AS uv
+FROM ${BASE}
+USER root
+COPY --from=uv /uv /usr/local/bin/uv
+RUN uv pip install --python /opt/otlet/venv/bin/python --no-cache \
+        "procrastinate==3.10.0" "dbos==3.2.0" \
+    && rm /usr/local/bin/uv
+USER otlet:otlet

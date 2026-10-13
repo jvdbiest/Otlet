@@ -1,0 +1,254 @@
+{
+  "criterion": "C3",
+  "normalization": "reparse, sorted attributes, folded whitespace, data-* removed, entities decoded",
+  "tiptap": {
+    "documents": 30,
+    "concordant": 30,
+    "rate": 1.0,
+    "differences": []
+  },
+  "blocknote": {
+    "documents": 30,
+    "concordant": 0,
+    "rate": 0.0,
+    "differences": [
+      {
+        "document": "ai__11.html",
+        "python": " le projet sur budget</h2><p>Selon les documents consultés, <span class=\"otlet-source-ref\">le coût total reste à confirmer</span>. Le calend",
+        "blocknote": " le projet sur budget</h2><p>Selon les documents consultés, le coût total reste à confirmer. Le calendrier prévoit une première phase dès le"
+      },
+      {
+        "document": "ai__12.html",
+        "python": "e projet sur mobilité</h2><p>Selon les documents consultés, <span class=\"otlet-source-ref\">le coût total reste à confirmer</span>. L’opposit",
+        "blocknote": "e projet sur mobilité</h2><p>Selon les documents consultés, le coût total reste à confirmer. L’opposition salue l’intention mais s’interroge"
+      },
+      {
+        "document": "ai__13.html",
+        "python": " projet sur transport</h2><p>Selon les documents consultés, <span class=\"otlet-source-ref\">le coût total reste à confirmer</span>. Les monta",
+        "blocknote": " projet sur transport</h2><p>Selon les documents consultés, le coût total reste à confirmer. Les montants annoncés restent provisoires tant "
+      },
+      {
+        "document": "ai__14.html",
+        "python": "t le projet sur santé</h2><p>Selon les documents consultés, <span class=\"otlet-source-ref\">le coût total reste à confirmer</span>. Les monta",
+        "blocknote": "t le projet sur santé</h2><p>Selon les documents consultés, le coût total reste à confirmer. Les montants annoncés restent provisoires tant "
+      },
+      {
+        "document": "ai__15.html",
+        "python": " projet sur numérique</h2><p>Selon les documents consultés, <span class=\"otlet-source-ref\">le coût total reste à confirmer</span>. Un comité",
+        "blocknote": " projet sur numérique</h2><p>Selon les documents consultés, le coût total reste à confirmer. Un comité de suivi réunira élus, agents et rive"
+      },
+      {
+        "document": "ai__16.html",
+        "python": "r les ménages revient sur la table.</p><h2>Le projet sur <a href=\"https://exemple.org/eau/fiche-16#titre\">eau</a></h2><p>Selon les documents",
+        "blocknote": "r les ménages revient sur la table.</p><h2>Le projet sur <a classname=\"bn-inline-content-section\" href=\"https://exemple.org/eau/fiche-16#tit"
+      },
+      {
+        "document": "ai__17.html",
+        "python": "jet sur environnement</h2><p>Selon les documents consultés, <span class=\"otlet-source-ref\">le coût total reste à confirmer</span>. L’opposit",
+        "blocknote": "jet sur environnement</h2><p>Selon les documents consultés, le coût total reste à confirmer. L’opposition salue l’intention mais s’interroge"
+      },
+      {
+        "document": "ai__18.html",
+        "python": "e projet sur sécurité</h2><p>Selon les documents consultés, <span class=\"otlet-source-ref\">le coût total reste à confirmer</span>. Un comité",
+        "blocknote": "e projet sur sécurité</h2><p>Selon les documents consultés, le coût total reste à confirmer. Un comité de suivi réunira élus, agents et rive"
+      },
+      {
+        "document": "ai__19.html",
+        "python": " projet sur éducation</h2><p>Selon les documents consultés, <span class=\"otlet-source-ref\">le coût total reste à confirmer</span>. Le calend",
+        "blocknote": " projet sur éducation</h2><p>Selon les documents consultés, le coût total reste à confirmer. Le calendrier prévoit une première phase dès le"
+      },
+      {
+        "document": "ai__20.html",
+        "python": "le projet sur énergie</h2><p>Selon les documents consultés, <span class=\"otlet-source-ref\">le coût total reste à confirmer</span>. Les premi",
+        "blocknote": "le projet sur énergie</h2><p>Selon les documents consultés, le coût total reste à confirmer. Les premiers retours d’expérience venus d’autre"
+      },
+      {
+        "document": "pasted__21-word.html",
+        "python": "interroge sur le coût d’entretien à long terme.</p><p>La <a href=\"https://exemple.org/budget/fiche-21\">fiche détaillée</a> est disponible en",
+        "blocknote": "interroge sur le coût d’entretien à long terme.</p><p>La <a classname=\"bn-inline-content-section\" href=\"https://exemple.org/budget/fiche-21\""
+      },
+      {
+        "document": "pasted__22-word.html",
+        "python": " les données de suivi soient rendues publiques.</p><p>La <a href=\"https://exemple.org/mobilité/fiche-22\">fiche détaillée</a> est disponible ",
+        "blocknote": " les données de suivi soient rendues publiques.</p><p>La <a classname=\"bn-inline-content-section\" href=\"https://exemple.org/mobilité/fiche-2"
+      },
+      {
+        "document": "pasted__23-word.html",
+        "python": " le printemps, puis une évaluation à l’automne.</p><p>La <a href=\"https://exemple.org/transport/fiche-23\">fiche détaillée</a> est disponible",
+        "blocknote": " le printemps, puis une évaluation à l’automne.</p><p>La <a classname=\"bn-inline-content-section\" href=\"https://exemple.org/transport/fiche-"
+      },
+      {
+        "document": "pasted__24-word.html",
+        "python": "interroge sur le coût d’entretien à long terme.</p><p>La <a href=\"https://exemple.org/santé/fiche-24\">fiche détaillée</a> est disponible en ",
+        "blocknote": "interroge sur le coût d’entretien à long terme.</p><p>La <a classname=\"bn-inline-content-section\" href=\"https://exemple.org/santé/fiche-24\" "
+      },
+      {
+        "document": "pasted__25-word.html",
+        "python": " le printemps, puis une évaluation à l’automne.</p><p>La <a href=\"https://exemple.org/numérique/fiche-25\">fiche détaillée</a> est disponible",
+        "blocknote": " le printemps, puis une évaluation à l’automne.</p><p>La <a classname=\"bn-inline-content-section\" href=\"https://exemple.org/numérique/fiche-"
+      },
+      {
+        "document": "pasted__26-gdocs.html",
+        "python": " le prix de l’eau pour les ménages.</p><h2>Le projet sur <a href=\"https://exemple.org/eau/fiche-26#titre\">eau</a></h2><p>Selon les documents",
+        "blocknote": " le prix de l’eau pour les ménages.</p><h2>Le projet sur <a classname=\"bn-inline-content-section\" href=\"https://exemple.org/eau/fiche-26#tit"
+      },
+      {
+        "document": "pasted__27-gdocs.html",
+        "python": "e les subsides régionaux ne sont pas confirmés.</p><p>La <a href=\"https://exemple.org/environnement/fiche-27\">fiche détaillée</a> est dispon",
+        "blocknote": "e les subsides régionaux ne sont pas confirmés.</p><p>La <a classname=\"bn-inline-content-section\" href=\"https://exemple.org/environnement/fi"
+      },
+      {
+        "document": "pasted__28-gdocs.html",
+        "python": " les données de suivi soient rendues publiques.</p><p>La <a href=\"https://exemple.org/sécurité/fiche-28\">fiche détaillée</a> est disponible ",
+        "blocknote": " les données de suivi soient rendues publiques.</p><p>La <a classname=\"bn-inline-content-section\" href=\"https://exemple.org/sécurité/fiche-2"
+      },
+      {
+        "document": "pasted__29-gdocs.html",
+        "python": " les données de suivi soient rendues publiques.</p><p>La <a href=\"https://exemple.org/éducation/fiche-29\">fiche détaillée</a> est disponible",
+        "blocknote": " les données de suivi soient rendues publiques.</p><p>La <a classname=\"bn-inline-content-section\" href=\"https://exemple.org/éducation/fiche-"
+      },
+      {
+        "document": "pasted__30-gdocs.html",
+        "python": " le printemps, puis une évaluation à l’automne.</p><p>La <a href=\"https://exemple.org/énergie/fiche-30\">fiche détaillée</a> est disponible e",
+        "blocknote": " le printemps, puis une évaluation à l’automne.</p><p>La <a classname=\"bn-inline-content-section\" href=\"https://exemple.org/énergie/fiche-30"
+      },
+      {
+        "document": "written__01.html",
+        "python": " le projet sur budget</h2><p>Selon les documents consultés, <span class=\"otlet-source-ref\">le coût total reste à confirmer</span>. Un comité",
+        "blocknote": " le projet sur budget</h2><p>Selon les documents consultés, le coût total reste à confirmer. Un comité de suivi réunira élus, agents et rive"
+      },
+      {
+        "document": "written__02.html",
+        "python": "e projet sur mobilité</h2><p>Selon les documents consultés, <span class=\"otlet-source-ref\">le coût total reste à confirmer</span>. L’opposit",
+        "blocknote": "e projet sur mobilité</h2><p>Selon les documents consultés, le coût total reste à confirmer. L’opposition salue l’intention mais s’interroge"
+      },
+      {
+        "document": "written__03.html",
+        "python": " projet sur transport</h2><p>Selon les documents consultés, <span class=\"otlet-source-ref\">le coût total reste à confirmer</span>. L’opposit",
+        "blocknote": " projet sur transport</h2><p>Selon les documents consultés, le coût total reste à confirmer. L’opposition salue l’intention mais s’interroge"
+      },
+      {
+        "document": "written__04.html",
+        "python": "t le projet sur santé</h2><p>Selon les documents consultés, <span class=\"otlet-source-ref\">le coût total reste à confirmer</span>. Le calend",
+        "blocknote": "t le projet sur santé</h2><p>Selon les documents consultés, le coût total reste à confirmer. Le calendrier prévoit une première phase dès le"
+      },
+      {
+        "document": "written__05.html",
+        "python": " projet sur numérique</h2><p>Selon les documents consultés, <span class=\"otlet-source-ref\">le coût total reste à confirmer</span>. L’opposit",
+        "blocknote": " projet sur numérique</h2><p>Selon les documents consultés, le coût total reste à confirmer. L’opposition salue l’intention mais s’interroge"
+      },
+      {
+        "document": "written__06.html",
+        "python": " le prix de l’eau pour les ménages.</p><h2>Le projet sur <a href=\"https://exemple.org/eau/fiche-06#titre\">eau</a></h2><p>Selon les documents",
+        "blocknote": " le prix de l’eau pour les ménages.</p><h2>Le projet sur <a classname=\"bn-inline-content-section\" href=\"https://exemple.org/eau/fiche-06#tit"
+      },
+      {
+        "document": "written__07.html",
+        "python": "jet sur environnement</h2><p>Selon les documents consultés, <span class=\"otlet-source-ref\">le coût total reste à confirmer</span>. Les premi",
+        "blocknote": "jet sur environnement</h2><p>Selon les documents consultés, le coût total reste à confirmer. Les premiers retours d’expérience venus d’autre"
+      },
+      {
+        "document": "written__08.html",
+        "python": "e projet sur sécurité</h2><p>Selon les documents consultés, <span class=\"otlet-source-ref\">le coût total reste à confirmer</span>. Le calend",
+        "blocknote": "e projet sur sécurité</h2><p>Selon les documents consultés, le coût total reste à confirmer. Le calendrier prévoit une première phase dès le"
+      },
+      {
+        "document": "written__09.html",
+        "python": " projet sur éducation</h2><p>Selon les documents consultés, <span class=\"otlet-source-ref\">le coût total reste à confirmer</span>. Un comité",
+        "blocknote": " projet sur éducation</h2><p>Selon les documents consultés, le coût total reste à confirmer. Un comité de suivi réunira élus, agents et rive"
+      },
+      {
+        "document": "written__10.html",
+        "python": "le projet sur énergie</h2><p>Selon les documents consultés, <span class=\"otlet-source-ref\">le coût total reste à confirmer</span>. L’opposit",
+        "blocknote": "le projet sur énergie</h2><p>Selon les documents consultés, le coût total reste à confirmer. L’opposition salue l’intention mais s’interroge"
+      }
+    ]
+  },
+  "tiptap_paste_schema": {
+    "21-word.json": {
+      "valid": true,
+      "errors": [],
+      "block_types": [
+        "heading",
+        "paragraph"
+      ]
+    },
+    "22-word.json": {
+      "valid": true,
+      "errors": [],
+      "block_types": [
+        "heading",
+        "paragraph"
+      ]
+    },
+    "23-word.json": {
+      "valid": true,
+      "errors": [],
+      "block_types": [
+        "heading",
+        "paragraph"
+      ]
+    },
+    "24-word.json": {
+      "valid": true,
+      "errors": [],
+      "block_types": [
+        "heading",
+        "paragraph"
+      ]
+    },
+    "25-word.json": {
+      "valid": true,
+      "errors": [],
+      "block_types": [
+        "heading",
+        "paragraph"
+      ]
+    },
+    "26-gdocs.json": {
+      "valid": true,
+      "errors": [],
+      "block_types": [
+        "bullet_list",
+        "heading",
+        "paragraph"
+      ]
+    },
+    "27-gdocs.json": {
+      "valid": true,
+      "errors": [],
+      "block_types": [
+        "bullet_list",
+        "heading",
+        "paragraph"
+      ]
+    },
+    "28-gdocs.json": {
+      "valid": true,
+      "errors": [],
+      "block_types": [
+        "bullet_list",
+        "heading",
+        "paragraph"
+      ]
+    },
+    "29-gdocs.json": {
+      "valid": true,
+      "errors": [],
+      "block_types": [
+        "bullet_list",
+        "heading",
+        "paragraph"
+      ]
+    },
+    "30-gdocs.json": {
+      "valid": true,
+      "errors": [],
+      "block_types": [
+        "heading",
+        "ordered_list",
+        "paragraph"
+      ]
+    }
+  }
+}

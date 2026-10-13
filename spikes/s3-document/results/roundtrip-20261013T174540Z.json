@@ -1,0 +1,99 @@
+{
+  "criteria": "C1 C2",
+  "started": "2026-10-13T17:45:20+00:00",
+  "targets": {
+    "wordpress": {
+      "conservation": {
+        "headings": {
+          "found": 60,
+          "expected": 60,
+          "rate": 1.0
+        },
+        "links": {
+          "found": 33,
+          "expected": 33,
+          "rate": 1.0
+        },
+        "citations": {
+          "found": 33,
+          "expected": 33,
+          "rate": 1.0
+        },
+        "sources": {
+          "found": 92,
+          "expected": 92,
+          "rate": 1.0
+        },
+        "mention_ia": {
+          "found": 15,
+          "expected": 15,
+          "rate": 1.0
+        }
+      },
+      "documents_fully_conserved": 30,
+      "failures": []
+    },
+    "ghost": {
+      "conservation": {
+        "headings": {
+          "found": 60,
+          "expected": 60,
+          "rate": 1.0
+        },
+        "links": {
+          "found": 33,
+          "expected": 33,
+          "rate": 1.0
+        },
+        "citations": {
+          "found": 33,
+          "expected": 33,
+          "rate": 1.0
+        },
+        "sources": {
+          "found": 92,
+          "expected": 92,
+          "rate": 1.0
+        },
+        "mention_ia": {
+          "found": 15,
+          "expected": 15,
+          "rate": 1.0
+        }
+      },
+      "documents_fully_conserved": 30,
+      "failures": []
+    },
+    "wordpress_previous": {
+      "conservation": {
+        "headings": {
+          "found": 60,
+          "expected": 60,
+          "rate": 1.0
+        },
+        "links": {
+          "found": 33,
+          "expected": 33,
+          "rate": 1.0
+        },
+        "citations": {
+          "found": 33,
+          "expected": 33,
+          "rate": 1.0
+        },
+        "sources": {
+          "found": 92,
+          "expected": 92,
+          "rate": 1.0
+        },
+        "mention_ia": {
+          "found": 15,
+          "expected": 15,
+          "rate": 1.0
+        }
+      },
+      "documents_fully_conserved": 30,
+      "failures": []
+    }
+  }
+}

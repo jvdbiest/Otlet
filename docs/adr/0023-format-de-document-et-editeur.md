@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Statut | Proposé |
+| Statut | Accepté (2026-10-13) |
 | Date | 2026-10-13 |
 | Décideur | Joël |
 | Documents touchés | `TECH_CHOICES.md` §10.3 (TC-07) ; `ARCHITECTURE.md` §14.2, §14.5 |
@@ -12,7 +12,7 @@
 
 S3 a fait passer un corpus de 30 documents (`docs/spikes/S3.md` §4), rendus par un moteur Python, par WordPress 7.1, WordPress 6.9 et Ghost 6.69. Tous les éléments obligatoires y ont survécu : titres, liens, citations avec leur source, bloc Sources, mention IA. Le même document, rendu par Tiptap avec le schéma du projet, est identique au rendu Python pour 30 documents sur 30. BlockNote, qui impose son propre modèle de blocs, ne l'est pour aucun.
 
-## Décision proposée
+## Décision
 
 1. **Format** : « Document plateforme v1 », un JSON au schéma ProseMirror défini par le projet. Le schéma est publié en JSON Schema, avec des blocs à identifiant et origine, une citation à source obligatoire et une marque de référence de source. L'ébauche est `spikes/s3-document/schema/document-v1.schema.json`, réécrite en É1 dans le module de rédaction.
 2. **Rendu** : le moteur Python fait foi. Il insère la mention IA et le bloc Sources. Une citation est rendue en `<blockquote>` suivie de son attribution « — titre lié » hors de la citation. Une référence de source est rendue en `<span class="otlet-source-ref">` ; sa numérotation éventuelle sera décidée en É1, dans le moteur et dans l'éditeur à la fois.

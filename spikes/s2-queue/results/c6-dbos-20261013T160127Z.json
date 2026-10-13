@@ -1,0 +1,15 @@
+{
+  "criterion": "C6",
+  "readers_done": 200,
+  "readers_with_foreign_rows": 0,
+  "readers_seeing_nothing": 0,
+  "witnesses_done": 20,
+  "witnesses_seeing_rows_without_context": 0,
+  "listen_connections_of_app_role": 2,
+  "details": {
+    "leaks": [],
+    "probe_leaks": []
+  },
+  "passed": true,
+  "engine": "dbos"
+}

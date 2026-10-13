@@ -15,6 +15,7 @@ Each check writes results/<scenario>-<engine>-<time>.json and prints a summary.
 from __future__ import annotations
 
 import json
+import os
 import random
 import sys
 import time
@@ -38,7 +39,9 @@ def write(name: str, result: dict[str, object]) -> None:
     result["engine"] = engine.NAME
     RESULTS.mkdir(exist_ok=True)
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
-    path = RESULTS / f"{name}-{engine.NAME}-{stamp}.json"
+    label = os.environ.get("S2_LABEL", "")
+    result["label"] = label or "protocol"
+    path = RESULTS / f"{name}{'-' + label if label else ''}-{engine.NAME}-{stamp}.json"
     path.write_text(json.dumps(result, indent=2, default=str) + "\n", encoding="utf-8")
     print(json.dumps({k: v for k, v in result.items() if k != "details"}, default=str))
     print(f"Result: {path}")

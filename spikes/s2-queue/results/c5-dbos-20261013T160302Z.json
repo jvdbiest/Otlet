@@ -1,0 +1,22 @@
+{
+  "criterion": "C5",
+  "cancel_calls_succeeded": 10,
+  "cancelled_that_ran": 0,
+  "others_done": 90,
+  "details": {
+    "cancelled": [
+      "c5-085",
+      "c5-022",
+      "c5-042",
+      "c5-047",
+      "c5-099",
+      "c5-035",
+      "c5-058",
+      "c5-056",
+      "c5-074",
+      "c5-025"
+    ]
+  },
+  "passed": true,
+  "engine": "dbos"
+}

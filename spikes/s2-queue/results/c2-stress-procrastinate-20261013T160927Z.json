@@ -1,0 +1,18 @@
+{
+  "criterion": "C2 C3 C4",
+  "tasks": 1000,
+  "kills": 31,
+  "attempts": 1039,
+  "effects": 1000,
+  "lost": 0,
+  "double_effects": 0,
+  "attempts_neutralized_by_key": 0,
+  "interrupted_tasks": 54,
+  "worst_resume_seconds": 90.9,
+  "jobs_by_status": {
+    "succeeded": 1000
+  },
+  "passed": true,
+  "engine": "procrastinate",
+  "label": "stress"
+}

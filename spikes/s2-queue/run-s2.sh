@@ -28,5 +28,5 @@ fi
 tar -cf - --exclude=results --exclude=__pycache__ spikes/s2-queue backend/src \
     | ssh $ssh_opts "$target" 'rm -rf ~/otlet-s2 && mkdir -p ~/otlet-s2 && tar -xf - -C ~/otlet-s2'
 # shellcheck disable=SC2086
-ssh $ssh_opts "$target" "cd ~/otlet-s2/spikes/s2-queue && nohup sh remote-s2.sh $engine > ~/otlet-s2/run.log 2>&1 < /dev/null &"
+ssh $ssh_opts "$target" "cd ~/otlet-s2/spikes/s2-queue && S2_KILL_MIN=${S2_KILL_MIN:-5} S2_KILL_MAX=${S2_KILL_MAX:-30} S2_LABEL=${S2_LABEL:-} nohup sh remote-s2.sh $engine > ~/otlet-s2/run.log 2>&1 < /dev/null &"
 echo "Started on $target; follow with: ssh $target tail -f otlet-s2/run.log"

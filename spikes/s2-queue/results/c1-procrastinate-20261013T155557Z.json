@@ -1,0 +1,11 @@
+{
+  "criterion": "C1",
+  "rolled_back_trials": 100,
+  "jobs_after_rollback": 0,
+  "notes_after_rollback": 0,
+  "committed_trials": 100,
+  "jobs_after_commit": 100,
+  "notes_after_commit": 100,
+  "passed": true,
+  "engine": "procrastinate"
+}

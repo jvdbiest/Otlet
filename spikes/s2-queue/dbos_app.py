@@ -19,7 +19,7 @@ import threading
 from functools import cache
 from typing import Any
 
-from dbos import DBOS, DBOSClient, DBOSConfig, EnqueueOptions, Queue
+from dbos import DBOS, DBOSClient, DBOSConfig, EnqueueOptions
 
 import common
 
@@ -50,7 +50,7 @@ def options(name: str, workflow_id: str, delay: float | None = None) -> EnqueueO
 
 
 def register() -> None:
-    Queue(QUEUE, worker_concurrency=CONCURRENCY)
+    """Workflows and steps; the queue is registered after launch (persisted in the database)."""
 
     @DBOS.step()
     def effect_step(key: str, workspace: str, ref: str, read: bool) -> None:
@@ -80,6 +80,7 @@ def apply_schema() -> None:
     register()
     DBOS(config=config(run_migrations=True, url_variable="S2_ADMIN_URL"))
     DBOS.launch()
+    DBOS.register_queue(QUEUE, worker_concurrency=CONCURRENCY)
     DBOS.destroy()
     with common.admin_engine().begin() as connection:
         for statement in (
@@ -95,6 +96,7 @@ def worker() -> None:
     register()
     DBOS(config=config(run_migrations=False))
     DBOS.launch()
+    DBOS.register_queue(QUEUE, worker_concurrency=CONCURRENCY)
     threading.Event().wait()
 
 

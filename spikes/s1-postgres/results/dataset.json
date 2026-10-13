@@ -1,0 +1,22 @@
+{
+  "seed": 1,
+  "scale": 1,
+  "generated_at": "2026-10-12T20:28:31+00:00",
+  "workspaces": [
+    "21b8b2ee-4359-4eb5-8c43-33e8b72e6ecd",
+    "6a1a1348-822c-4ae4-a90e-712497f1b7a3",
+    "5ede47c8-6e9d-4b74-bf6c-21fa591baff9"
+  ],
+  "rows": {
+    "alembic_version": 1,
+    "article_sources": 6000,
+    "articles": 2000,
+    "instance_settings": 0,
+    "items": 100000,
+    "passages": 299999,
+    "sources": 200,
+    "workspaces": 3
+  },
+  "database_size": "1209 MB",
+  "load_seconds": 4487
+}

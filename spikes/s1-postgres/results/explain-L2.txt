@@ -1,0 +1,36 @@
+S1, analysis of L2 (full-text search), 2026-10-12, VM 2 vCPU, data set seed 1.
+Query terms: 'énergie budget'; measured workspace 21b8b2ee-4359-4eb5-8c43-33e8b72e6ecd.
+EXPLAIN (ANALYZE, BUFFERS, COSTS OFF), one execution each, no concurrent load.
+
+-- With RLS (role otlet_app, set_config('app.workspace_id', …, true))
+ Limit (actual time=977.221..977.231 rows=20.00 loops=1)
+   Buffers: shared hit=235302
+   ->  Sort (actual time=977.218..977.224 rows=20.00 loops=1)
+         Sort Key: (ts_rank(items.search, '''énerg'' & ''budget'''::tsquery)) DESC
+         Sort Method: top-N heapsort  Memory: 29kB
+         ->  Result (actual time=0.340..948.733 rows=24653.00 loops=1)
+               One-Time Filter: ((NULLIF(current_setting('app.workspace_id'::text, true), ''::text))::uuid = '21b8b2ee-…'::uuid)
+               ->  Index Scan using items_published on items (actual time=0.303..668.644 rows=24653.00 loops=1)
+                     Index Cond: ((workspace_id = '21b8b2ee-…'::uuid) AND (published_at > (now() - '30 days'::interval)))
+                     Filter: (search @@ '''énerg'' & ''budget'''::tsquery)
+                     Rows Removed by Filter: 1857
+ Planning Time: 5.364 ms
+ Execution Time: 977.373 ms
+
+-- Without RLS (superuser, same query)
+ Limit (actual time=754.250..754.260 rows=20.00 loops=1)
+   Buffers: shared hit=235276
+   ->  Sort (actual time=754.248..754.253 rows=20.00 loops=1)
+         Sort Key: (ts_rank(items.search, '''énerg'' & ''budget'''::tsquery)) DESC
+         Sort Method: top-N heapsort  Memory: 29kB
+         ->  Index Scan using items_published on items (actual time=0.069..736.077 rows=24653.00 loops=1)
+               Index Cond: ((workspace_id = '21b8b2ee-…'::uuid) AND (published_at > (now() - '30 days'::interval)))
+               Filter: (search @@ '''énerg'' & ''budget'''::tsquery)
+               Rows Removed by Filter: 1857
+ Planning Time: 0.355 ms
+ Execution Time: 754.309 ms
+
+Reading: same plan in both cases; the policy becomes a one-time filter. 24 653 of the
+26 510 items of the window match (93 %): the synthetic vocabulary is too small, so any two
+words match almost every document, and ts_rank is computed on 24 653 large tsvectors
+(235 000 buffers read from the cache). The cost is in the ranking, not in the RLS.

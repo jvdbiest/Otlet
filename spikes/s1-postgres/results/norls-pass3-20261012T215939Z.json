@@ -1,0 +1,64 @@
+{
+  "started": "2026-10-12T21:58:11+00:00",
+  "duration_s": 88.06,
+  "clients": 4,
+  "warmup_s": 30,
+  "seed": 4,
+  "executions_per_workload": 500,
+  "host": "504e11032e61",
+  "workloads": {
+    "L1_triage_feed": {
+      "count": 500,
+      "errors": 0,
+      "min_ms": 5.47,
+      "p50_ms": 12.08,
+      "p95_ms": 23.8,
+      "p99_ms": 37.6,
+      "max_ms": 51.22,
+      "mean_ms": 13.79
+    },
+    "L2_full_text": {
+      "count": 500,
+      "errors": 0,
+      "min_ms": 246.46,
+      "p50_ms": 580.93,
+      "p95_ms": 1164.75,
+      "p99_ms": 1647.53,
+      "max_ms": 1827.07,
+      "mean_ms": 654.92
+    },
+    "L3_vector_top20": {
+      "count": 500,
+      "errors": 0,
+      "min_ms": 7.62,
+      "p50_ms": 18.69,
+      "p95_ms": 37.94,
+      "p99_ms": 57.37,
+      "max_ms": 100.49,
+      "mean_ms": 21.24
+    },
+    "L4_library": {
+      "count": 500,
+      "errors": 0,
+      "min_ms": 2.09,
+      "p50_ms": 5.75,
+      "p95_ms": 11.69,
+      "p99_ms": 25.25,
+      "max_ms": 67.9,
+      "mean_ms": 6.51
+    },
+    "L5_article_detail": {
+      "count": 500,
+      "errors": 0,
+      "min_ms": 1.92,
+      "p50_ms": 6.32,
+      "p95_ms": 12.11,
+      "p99_ms": 24.74,
+      "max_ms": 76.43,
+      "mean_ms": 7.11
+    }
+  },
+  "variant": "norls",
+  "pass_number": 3,
+  "dataset_seed": 1
+}

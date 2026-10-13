@@ -23,7 +23,7 @@ export S2_APP_URL="postgresql://otlet_app:$app_password@db:5432/otlet_s2"
 
 image=otlet-s2
 network=otlet_default
-environment="-e S2_SERVER_URL -e S2_ADMIN_URL -e S2_MIGRATOR_URL -e S2_APP_URL -e PYTHONPATH=/work/backend/src"
+environment="-e S2_SERVER_URL -e S2_ADMIN_URL -e S2_MIGRATOR_URL -e S2_APP_URL -e S2_ENGINE=$engine -e PYTHONPATH=/work/backend/src"
 
 run_py() {
     # shellcheck disable=SC2086

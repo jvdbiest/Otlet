@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-"""S2: scenarios of docs/spikes/S2.md §3.2 to §3.5, for Procrastinate.
+"""S2: scenarios of docs/spikes/S2.md §3.2 to §3.5, for the engine named by S2_ENGINE.
 
     python scenarios.py setup            fresh database otlet_s2, roles, schemas
     python scenarios.py c1               100 rollbacks + 100 commits (transactional enqueue)
@@ -9,7 +9,7 @@
     python scenarios.py c6-enqueue       200 tasks on two workspaces + 20 witnesses
     python scenarios.py c6-check         leaks between workspaces, witnesses
 
-Each check writes results/<scenario>-<time>.json and prints a summary.
+Each check writes results/<scenario>-<engine>-<time>.json and prints a summary.
 """
 
 from __future__ import annotations
@@ -26,6 +26,7 @@ import psycopg
 import sqlalchemy as sa
 
 import common
+import engine
 from otlet.platform import database, roles
 
 HERE = Path(__file__).parent
@@ -34,9 +35,10 @@ SEED = 2026
 
 
 def write(name: str, result: dict[str, object]) -> None:
+    result["engine"] = engine.NAME
     RESULTS.mkdir(exist_ok=True)
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
-    path = RESULTS / f"{name}-{stamp}.json"
+    path = RESULTS / f"{name}-{engine.NAME}-{stamp}.json"
     path.write_text(json.dumps(result, indent=2, default=str) + "\n", encoding="utf-8")
     print(json.dumps({k: v for k, v in result.items() if k != "details"}, default=str))
     print(f"Result: {path}")
@@ -48,60 +50,49 @@ def scalar(query: str, **params: object) -> object:
 
 
 def setup() -> None:
-    server_url = common.env("S2_SERVER_URL")  # superuser on the maintenance database
-    with psycopg.connect(server_url, autocommit=True) as connection:
+    with psycopg.connect(common.env("S2_SERVER_URL"), autocommit=True) as connection:
         connection.execute("DROP DATABASE IF EXISTS otlet_s2 WITH (FORCE)")
         connection.execute("CREATE DATABASE otlet_s2")
     migrator = psycopg.conninfo.conninfo_to_dict(common.env("S2_MIGRATOR_URL"))
     app = psycopg.conninfo.conninfo_to_dict(common.env("S2_APP_URL"))
     roles.provision(common.env("S2_ADMIN_URL"), str(migrator["password"]), str(app["password"]))
-    import procrastinate_app
-
-    procrastinate_app.apply_schema()
     common.apply_bench_schema()
-    print("otlet_s2 ready")
+    engine.apply_schema()
+    print(f"otlet_s2 ready for {engine.NAME}")
 
 
 def c1() -> None:
-    import procrastinate_app
-
-    engine = common.app_engine()
     rng = random.Random(SEED)
 
-    def trial(commit: bool) -> None:
+    def trial(commit: bool, index: int) -> None:
         workspace = rng.choice(common.WORKSPACES)
-        marker = f"c1-{'commit' if commit else 'rollback'}-{uuid.uuid4()}"
-        connection = engine.connect()
-        transaction = connection.begin()
-        connection.execute(
-            sa.text("SELECT set_config(:n, :v, true)"),
-            {"n": database.WORKSPACE_SETTING, "v": str(workspace)},
-        )
-        connection.execute(
-            sa.text("INSERT INTO notes (workspace_id, body) VALUES (:w, :b)"),
-            {"w": workspace, "b": marker},
-        )
-        driver = connection.connection.driver_connection
-        procrastinate_app.effect.configure(connection=driver).defer(
-            key=marker, workspace=str(workspace), ref=marker
-        )
-        if commit:
-            transaction.commit()
-        else:
-            transaction.rollback()
-        connection.close()
+        ref = f"c1-{'commit' if commit else 'rollback'}-{index:03d}"
+        with common.app_engine().connect() as connection:
+            transaction = connection.begin()
+            connection.execute(
+                sa.text("SELECT set_config(:n, :v, true)"),
+                {"n": database.WORKSPACE_SETTING, "v": str(workspace)},
+            )
+            connection.execute(
+                sa.text("INSERT INTO notes (workspace_id, body) VALUES (:w, :b)"),
+                {"w": workspace, "b": ref},
+            )
+            engine.defer("effect", ref, str(workspace), connection=connection)
+            if commit:
+                transaction.commit()
+            else:
+                transaction.rollback()
 
-    with procrastinate_app.app.open():
-        for _ in range(100):
-            trial(commit=False)
-        for _ in range(100):
-            trial(commit=True)
+    with engine.opened():
+        for index in range(100):
+            trial(commit=False, index=index)
+        for index in range(100):
+            trial(commit=True, index=index)
 
-    count_jobs = "SELECT count(*) FROM procrastinate_jobs WHERE args->>'ref' LIKE :p"
+    count_jobs = engine.count_jobs_query()
     count_notes = "SELECT count(*) FROM notes WHERE body LIKE :p"
-    result = {
+    result: dict[str, object] = {
         "criterion": "C1",
-        "engine": "procrastinate",
         "rolled_back_trials": 100,
         "jobs_after_rollback": scalar(count_jobs, p="c1-rollback-%"),
         "notes_after_rollback": scalar(count_notes, p="c1-rollback-%"),
@@ -114,17 +105,13 @@ def c1() -> None:
         and result["notes_after_rollback"] == 0
         and result["jobs_after_commit"] == 100
     )
-    write("c1-procrastinate", result)
+    write("c1", result)
 
 
 def c2_enqueue() -> None:
-    import procrastinate_app
-
-    with procrastinate_app.app.open():
+    with engine.opened():
         for index in range(1_000):
-            workspace = common.WORKSPACES[index % 2]
-            ref = f"c2-{index:04d}"
-            procrastinate_app.effect.defer(key=f"key-{ref}", workspace=str(workspace), ref=ref)
+            engine.defer("effect", f"c2-{index:04d}", str(common.WORKSPACES[index % 2]))
     print("1000 tasks enqueued")
 
 
@@ -139,18 +126,11 @@ def c2_check() -> None:
                 " GROUP BY task_ref HAVING count(*) > 1) d"
             )
         ).scalar()
-        jobs = dict(
-            connection.execute(
-                sa.text(
-                    "SELECT status, count(*) FROM procrastinate_jobs"
-                    " WHERE task_name = 'effect' AND args->>'ref' LIKE 'c2-%' GROUP BY status"
-                )
-            ).all()
-        )
+        jobs = dict(connection.execute(sa.text(engine.jobs_by_status_query())).all())
         attempts = connection.execute(
             sa.text("SELECT count(*) FROM attempts WHERE task_ref LIKE 'c2-%'")
         ).scalar()
-        # Attempts made after the effect already existed: the idempotency key did its job.
+        # Attempts started after the effect existed: the idempotency key did its job.
         neutralized = connection.execute(
             sa.text(
                 "SELECT count(*) FROM attempts a JOIN effects e USING (task_ref)"
@@ -158,8 +138,8 @@ def c2_check() -> None:
             )
         ).scalar()
         kills = connection.execute(sa.text("SELECT count(*) FROM kills")).scalar()
-        # Resume delay: for each task with an attempt started before a kill of its worker
-        # and finished after it, time from that kill to its effect.
+        # Resume delay: for each task with an attempt on a worker killed after that attempt
+        # started and before the task's effect, time from that kill to the effect.
         delays = (
             connection.execute(
                 sa.text(
@@ -176,9 +156,8 @@ def c2_check() -> None:
             .all()
         )
     worst = max((float(d["seconds"]) for d in delays), default=0.0)
-    result = {
+    result: dict[str, object] = {
         "criterion": "C2 C3 C4",
-        "engine": "procrastinate",
         "tasks": 1000,
         "kills": kills,
         "attempts": attempts,
@@ -191,37 +170,25 @@ def c2_check() -> None:
         "jobs_by_status": jobs,
     }
     result["passed"] = result["lost"] == 0 and doubles == 0 and worst <= 300
-    write("c2-procrastinate", result)
+    write("c2", result)
 
 
 def c5() -> None:
-    import procrastinate_app
-
     rng = random.Random(SEED + 5)
-    with procrastinate_app.app.open():
-        ids = []
-        for index in range(100):
-            ref = f"c5-{index:03d}"
-            ids.append(
-                (
-                    ref,
-                    procrastinate_app.effect.configure(schedule_in={"seconds": 60}).defer(
-                        key=f"key-{ref}", workspace=str(common.WORKSPACES[0]), ref=ref
-                    ),
-                )
-            )
+    with engine.opened():
+        ids = [
+            (ref, engine.defer("effect", ref, str(common.WORKSPACES[0]), delay=60))
+            for ref in (f"c5-{index:03d}" for index in range(100))
+        ]
         cancelled = rng.sample(ids, 10)
-        outcomes = {
-            ref: procrastinate_app.app.job_manager.cancel_job_by_id(job_id)
-            for ref, job_id in cancelled
-        }
-    deadline = time.monotonic() + 240
+        outcomes = [engine.cancel(job_id) for _, job_id in cancelled]
+    cancelled_refs = [ref for ref, _ in cancelled]
+    deadline = time.monotonic() + 300
     while time.monotonic() < deadline:
         if scalar("SELECT count(*) FROM effects WHERE task_ref LIKE 'c5-%'") == 90:
             break
         time.sleep(5)
-    time.sleep(10)
-    cancelled_refs = [ref for ref, _ in cancelled]
+    time.sleep(15)
     with common.admin_engine().connect() as connection:
         ran_cancelled = connection.execute(
             sa.text("SELECT count(*) FROM attempts WHERE task_ref = ANY(:r)"),
@@ -234,22 +201,18 @@ def c5() -> None:
             ),
             {"r": cancelled_refs},
         ).scalar()
-    result = {
+    result: dict[str, object] = {
         "criterion": "C5",
-        "engine": "procrastinate",
-        "cancel_calls_succeeded": sum(1 for ok in outcomes.values() if ok),
+        "cancel_calls_succeeded": sum(1 for ok in outcomes if ok),
         "cancelled_that_ran": ran_cancelled,
         "others_done": others_done,
         "details": {"cancelled": cancelled_refs},
     }
     result["passed"] = ran_cancelled == 0 and others_done == 90
-    write("c5-procrastinate", result)
+    write("c5", result)
 
 
 def c6_enqueue() -> None:
-    import procrastinate_app
-
-    # A few notes in each workspace, written under their own context.
     for workspace in common.WORKSPACES:
         with database.workspace_transaction(common.app_engine(), workspace) as connection:
             for index in range(5):
@@ -257,14 +220,12 @@ def c6_enqueue() -> None:
                     sa.text("INSERT INTO notes (workspace_id, body) VALUES (:w, :b)"),
                     {"w": workspace, "b": f"c6-note-{index}"},
                 )
-    with procrastinate_app.app.open():
+    with engine.opened():
         for index in range(200):
-            workspace = common.WORKSPACES[index % 2]
-            ref = f"c6-{index:03d}"
-            procrastinate_app.read_notes.defer(key=f"key-{ref}", workspace=str(workspace), ref=ref)
+            workspace = str(common.WORKSPACES[index % 2])
+            engine.defer("read_notes", f"c6-{index:03d}", workspace)
             if index % 10 == 9:
-                probe = f"c6-probe-{index:03d}"
-                procrastinate_app.probe.defer(key=f"key-{probe}", workspace=str(workspace), ref=probe)
+                engine.defer("probe", f"c6-probe-{index:03d}", workspace)
     print("220 tasks enqueued")
 
 
@@ -276,30 +237,31 @@ def c6_check() -> None:
                 " WHERE task_ref LIKE 'c6-%'"
             )
         ).all()
-        notify_listening = connection.execute(
-            sa.text("SELECT count(*) FROM pg_stat_activity WHERE usename = 'otlet_app'"
-                    " AND query ILIKE 'LISTEN%'")
+        listening = connection.execute(
+            sa.text(
+                "SELECT count(*) FROM pg_stat_activity WHERE usename = 'otlet_app'"
+                " AND query ILIKE 'LISTEN%'"
+            )
         ).scalar()
     readers = [r for r in rows if not r.task_ref.startswith("c6-probe")]
     probes = [r for r in rows if r.task_ref.startswith("c6-probe")]
     leaks = [r.task_ref for r in readers if set(r.seen_workspaces) - {r.workspace_id}]
     blind = [r.task_ref for r in readers if not r.seen_workspaces]
     probe_leaks = [r.task_ref for r in probes if str(r.workspace_id).startswith("00000000")]
-    result = {
+    result: dict[str, object] = {
         "criterion": "C6",
-        "engine": "procrastinate",
         "readers_done": len(readers),
         "readers_with_foreign_rows": len(leaks),
         "readers_seeing_nothing": len(blind),
         "witnesses_done": len(probes),
         "witnesses_seeing_rows_without_context": len(probe_leaks),
-        "listen_connections_of_app_role": notify_listening,
+        "listen_connections_of_app_role": listening,
         "details": {"leaks": leaks, "probe_leaks": probe_leaks},
     }
     result["passed"] = (
         len(readers) == 200 and not leaks and not blind and len(probes) == 20 and not probe_leaks
     )
-    write("c6-procrastinate", result)
+    write("c6", result)
 
 
 COMMANDS = {

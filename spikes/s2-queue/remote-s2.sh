@@ -47,7 +47,7 @@ cleanup() { sudo docker rm -f s2-worker-1 s2-worker-2 > /dev/null 2>&1 || true; 
 trap cleanup EXIT
 
 log "image"
-sudo docker build -q -t "$image" . > /dev/null
+sudo docker build -q -f Containerfile -t "$image" . > /dev/null
 cleanup
 
 log "setup ($engine)"

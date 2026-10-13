@@ -1,0 +1,16 @@
+[
+  {
+    "id": "S1",
+    "titre": "Dossier 30, document 1",
+    "editeur": "Bulletin communal",
+    "date": "2026-06-18",
+    "url": "https://exemple.org/dossiers/30/document-1"
+  },
+  {
+    "id": "S2",
+    "titre": "Dossier 30, document 2",
+    "editeur": "Agence régionale",
+    "date": "2026-06-22",
+    "url": "https://exemple.org/dossiers/30/document-2"
+  }
+]

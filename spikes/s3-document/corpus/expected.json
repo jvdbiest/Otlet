@@ -1,0 +1,1234 @@
+{
+  "written/01.json": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Ce que prévoit le projet sur budget"
+      },
+      {
+        "level": 3,
+        "text": "Les prochaines étapes"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/budget/fiche-01",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Les chiffres sont encourageants, mais il faut rester prudent.",
+        "source": "https://exemple.org/dossiers/01/document-2"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/01/document-1",
+        "titre": "Dossier 01, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/01/document-2",
+        "titre": "Dossier 01, document 2"
+      }
+    ],
+    "mention_ia": false,
+    "source_refs_kept": true
+  },
+  "written/02.json": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Ce que prévoit le projet sur mobilité"
+      },
+      {
+        "level": 3,
+        "text": "Les prochaines étapes"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/mobilité/fiche-02",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Le projet n’a de sens que s’il est construit avec celles et ceux qui l’utiliseront.",
+        "source": "https://exemple.org/dossiers/02/document-2"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/02/document-1",
+        "titre": "Dossier 02, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/02/document-2",
+        "titre": "Dossier 02, document 2"
+      }
+    ],
+    "mention_ia": true,
+    "source_refs_kept": true
+  },
+  "written/03.json": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Ce que prévoit le projet sur transport"
+      },
+      {
+        "level": 3,
+        "text": "Les prochaines étapes"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/transport/fiche-03",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Nous voulons des résultats mesurables, pas seulement des annonces.",
+        "source": "https://exemple.org/dossiers/03/document-2"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/03/document-1",
+        "titre": "Dossier 03, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/03/document-2",
+        "titre": "Dossier 03, document 2"
+      },
+      {
+        "href": "https://exemple.org/dossiers/03/document-3",
+        "titre": "Dossier 03, document 3"
+      },
+      {
+        "href": "https://exemple.org/dossiers/03/document-4",
+        "titre": "Dossier 03, document 4"
+      }
+    ],
+    "mention_ia": false,
+    "source_refs_kept": true
+  },
+  "written/04.json": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Ce que prévoit le projet sur santé"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/santé/fiche-04",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Nous voulons des résultats mesurables, pas seulement des annonces.",
+        "source": "https://exemple.org/dossiers/04/document-2"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/04/document-1",
+        "titre": "Dossier 04, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/04/document-2",
+        "titre": "Dossier 04, document 2"
+      },
+      {
+        "href": "https://exemple.org/dossiers/04/document-3",
+        "titre": "Dossier 04, document 3"
+      },
+      {
+        "href": "https://exemple.org/dossiers/04/document-4",
+        "titre": "Dossier 04, document 4"
+      }
+    ],
+    "mention_ia": true,
+    "source_refs_kept": true
+  },
+  "written/05.json": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Ce que prévoit le projet sur numérique"
+      },
+      {
+        "level": 3,
+        "text": "Les prochaines étapes"
+      },
+      {
+        "level": 2,
+        "text": "Contexte"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/numérique/fiche-05",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Les chiffres sont encourageants, mais il faut rester prudent.",
+        "source": "https://exemple.org/dossiers/05/document-2"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/05/document-1",
+        "titre": "Dossier 05, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/05/document-2",
+        "titre": "Dossier 05, document 2"
+      },
+      {
+        "href": "https://exemple.org/dossiers/05/document-3",
+        "titre": "Dossier 05, document 3"
+      }
+    ],
+    "mention_ia": false,
+    "source_refs_kept": true
+  },
+  "written/06.json": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Le projet sur eau"
+      },
+      {
+        "level": 3,
+        "text": "Les prochaines étapes"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/eau/fiche-06#titre",
+        "text": "eau"
+      },
+      {
+        "href": "https://exemple.org/eau/fiche-06",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Les chiffres sont encourageants, mais il faut rester prudent.",
+        "source": "https://exemple.org/dossiers/06/document-2"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/06/document-1",
+        "titre": "Dossier 06, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/06/document-2",
+        "titre": "Dossier 06, document 2"
+      }
+    ],
+    "mention_ia": true,
+    "source_refs_kept": true
+  },
+  "written/07.json": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Ce que prévoit le projet sur environnement"
+      },
+      {
+        "level": 3,
+        "text": "Les prochaines étapes"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/environnement/fiche-07",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Le projet n’a de sens que s’il est construit avec celles et ceux qui l’utiliseront.",
+        "source": "https://exemple.org/dossiers/07/document-2"
+      },
+      {
+        "text": "Nous voulons des résultats mesurables, pas seulement des annonces.",
+        "source": "https://exemple.org/dossiers/07/document-1"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/07/document-1",
+        "titre": "Dossier 07, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/07/document-2",
+        "titre": "Dossier 07, document 2"
+      },
+      {
+        "href": "https://exemple.org/dossiers/07/document-3",
+        "titre": "Dossier 07, document 3"
+      },
+      {
+        "href": "https://exemple.org/dossiers/07/document-4",
+        "titre": "Dossier 07, document 4"
+      }
+    ],
+    "mention_ia": false,
+    "source_refs_kept": true
+  },
+  "written/08.json": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Ce que prévoit le projet sur sécurité"
+      },
+      {
+        "level": 3,
+        "text": "Les prochaines étapes"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/sécurité/fiche-08",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Nous voulons des résultats mesurables, pas seulement des annonces.",
+        "source": "https://exemple.org/dossiers/08/document-2"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/08/document-1",
+        "titre": "Dossier 08, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/08/document-2",
+        "titre": "Dossier 08, document 2"
+      },
+      {
+        "href": "https://exemple.org/dossiers/08/document-3",
+        "titre": "Dossier 08, document 3"
+      },
+      {
+        "href": "https://exemple.org/dossiers/08/document-4",
+        "titre": "Dossier 08, document 4"
+      }
+    ],
+    "mention_ia": true,
+    "source_refs_kept": true
+  },
+  "written/09.json": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Ce que prévoit le projet sur éducation"
+      },
+      {
+        "level": 3,
+        "text": "Les prochaines étapes"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/éducation/fiche-09",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Le projet n’a de sens que s’il est construit avec celles et ceux qui l’utiliseront.",
+        "source": "https://exemple.org/dossiers/09/document-2"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/09/document-1",
+        "titre": "Dossier 09, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/09/document-2",
+        "titre": "Dossier 09, document 2"
+      },
+      {
+        "href": "https://exemple.org/dossiers/09/document-3",
+        "titre": "Dossier 09, document 3"
+      }
+    ],
+    "mention_ia": false,
+    "source_refs_kept": true
+  },
+  "written/10.json": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Ce que prévoit le projet sur énergie"
+      },
+      {
+        "level": 3,
+        "text": "Les prochaines étapes"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/énergie/fiche-10",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Nous voulons des résultats mesurables, pas seulement des annonces.",
+        "source": "https://exemple.org/dossiers/10/document-2"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/10/document-1",
+        "titre": "Dossier 10, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/10/document-2",
+        "titre": "Dossier 10, document 2"
+      }
+    ],
+    "mention_ia": true,
+    "source_refs_kept": true
+  },
+  "ai/11.md": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Ce que prévoit le projet sur budget"
+      },
+      {
+        "level": 3,
+        "text": "Les prochaines étapes"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/budget/fiche-11",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Les chiffres sont encourageants, mais il faut rester prudent.",
+        "source": "https://exemple.org/dossiers/11/document-2"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/11/document-1",
+        "titre": "Dossier 11, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/11/document-2",
+        "titre": "Dossier 11, document 2"
+      },
+      {
+        "href": "https://exemple.org/dossiers/11/document-3",
+        "titre": "Dossier 11, document 3"
+      }
+    ],
+    "mention_ia": true,
+    "source_refs_kept": true
+  },
+  "ai/12.md": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Ce que prévoit le projet sur mobilité"
+      },
+      {
+        "level": 3,
+        "text": "Les prochaines étapes"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/mobilité/fiche-12",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Chaque euro dépensé doit pouvoir être expliqué aux habitants.",
+        "source": "https://exemple.org/dossiers/12/document-2"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/12/document-1",
+        "titre": "Dossier 12, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/12/document-2",
+        "titre": "Dossier 12, document 2"
+      },
+      {
+        "href": "https://exemple.org/dossiers/12/document-3",
+        "titre": "Dossier 12, document 3"
+      },
+      {
+        "href": "https://exemple.org/dossiers/12/document-4",
+        "titre": "Dossier 12, document 4"
+      }
+    ],
+    "mention_ia": true,
+    "source_refs_kept": true
+  },
+  "ai/13.md": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Ce que prévoit le projet sur transport"
+      },
+      {
+        "level": 3,
+        "text": "Les prochaines étapes"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/transport/fiche-13",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Le projet n’a de sens que s’il est construit avec celles et ceux qui l’utiliseront.",
+        "source": "https://exemple.org/dossiers/13/document-2"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/13/document-1",
+        "titre": "Dossier 13, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/13/document-2",
+        "titre": "Dossier 13, document 2"
+      },
+      {
+        "href": "https://exemple.org/dossiers/13/document-3",
+        "titre": "Dossier 13, document 3"
+      },
+      {
+        "href": "https://exemple.org/dossiers/13/document-4",
+        "titre": "Dossier 13, document 4"
+      }
+    ],
+    "mention_ia": true,
+    "source_refs_kept": true
+  },
+  "ai/14.md": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Ce que prévoit le projet sur santé"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/santé/fiche-14",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Nous voulons des résultats mesurables, pas seulement des annonces.",
+        "source": "https://exemple.org/dossiers/14/document-2"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/14/document-1",
+        "titre": "Dossier 14, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/14/document-2",
+        "titre": "Dossier 14, document 2"
+      },
+      {
+        "href": "https://exemple.org/dossiers/14/document-3",
+        "titre": "Dossier 14, document 3"
+      }
+    ],
+    "mention_ia": true,
+    "source_refs_kept": true
+  },
+  "ai/15.md": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Ce que prévoit le projet sur numérique"
+      },
+      {
+        "level": 3,
+        "text": "Les prochaines étapes"
+      },
+      {
+        "level": 2,
+        "text": "Contexte"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/numérique/fiche-15",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Chaque euro dépensé doit pouvoir être expliqué aux habitants.",
+        "source": "https://exemple.org/dossiers/15/document-2"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/15/document-1",
+        "titre": "Dossier 15, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/15/document-2",
+        "titre": "Dossier 15, document 2"
+      },
+      {
+        "href": "https://exemple.org/dossiers/15/document-3",
+        "titre": "Dossier 15, document 3"
+      }
+    ],
+    "mention_ia": true,
+    "source_refs_kept": true
+  },
+  "ai/16.md": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Le projet sur eau"
+      },
+      {
+        "level": 3,
+        "text": "Les prochaines étapes"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/eau/fiche-16#titre",
+        "text": "eau"
+      },
+      {
+        "href": "https://exemple.org/eau/fiche-16",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Nous voulons des résultats mesurables, pas seulement des annonces.",
+        "source": "https://exemple.org/dossiers/16/document-2"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/16/document-1",
+        "titre": "Dossier 16, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/16/document-2",
+        "titre": "Dossier 16, document 2"
+      },
+      {
+        "href": "https://exemple.org/dossiers/16/document-3",
+        "titre": "Dossier 16, document 3"
+      },
+      {
+        "href": "https://exemple.org/dossiers/16/document-4",
+        "titre": "Dossier 16, document 4"
+      }
+    ],
+    "mention_ia": true,
+    "source_refs_kept": true
+  },
+  "ai/17.md": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Ce que prévoit le projet sur environnement"
+      },
+      {
+        "level": 3,
+        "text": "Les prochaines étapes"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/environnement/fiche-17",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Le projet n’a de sens que s’il est construit avec celles et ceux qui l’utiliseront.",
+        "source": "https://exemple.org/dossiers/17/document-2"
+      },
+      {
+        "text": "Nous voulons des résultats mesurables, pas seulement des annonces.",
+        "source": "https://exemple.org/dossiers/17/document-1"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/17/document-1",
+        "titre": "Dossier 17, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/17/document-2",
+        "titre": "Dossier 17, document 2"
+      }
+    ],
+    "mention_ia": true,
+    "source_refs_kept": true
+  },
+  "ai/18.md": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Ce que prévoit le projet sur sécurité"
+      },
+      {
+        "level": 3,
+        "text": "Les prochaines étapes"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/sécurité/fiche-18",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Nous voulons des résultats mesurables, pas seulement des annonces.",
+        "source": "https://exemple.org/dossiers/18/document-2"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/18/document-1",
+        "titre": "Dossier 18, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/18/document-2",
+        "titre": "Dossier 18, document 2"
+      }
+    ],
+    "mention_ia": true,
+    "source_refs_kept": true
+  },
+  "ai/19.md": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Ce que prévoit le projet sur éducation"
+      },
+      {
+        "level": 3,
+        "text": "Les prochaines étapes"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/éducation/fiche-19",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Le projet n’a de sens que s’il est construit avec celles et ceux qui l’utiliseront.",
+        "source": "https://exemple.org/dossiers/19/document-2"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/19/document-1",
+        "titre": "Dossier 19, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/19/document-2",
+        "titre": "Dossier 19, document 2"
+      },
+      {
+        "href": "https://exemple.org/dossiers/19/document-3",
+        "titre": "Dossier 19, document 3"
+      },
+      {
+        "href": "https://exemple.org/dossiers/19/document-4",
+        "titre": "Dossier 19, document 4"
+      }
+    ],
+    "mention_ia": true,
+    "source_refs_kept": true
+  },
+  "ai/20.md": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Ce que prévoit le projet sur énergie"
+      },
+      {
+        "level": 3,
+        "text": "Les prochaines étapes"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/énergie/fiche-20",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Nous voulons des résultats mesurables, pas seulement des annonces.",
+        "source": "https://exemple.org/dossiers/20/document-2"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/20/document-1",
+        "titre": "Dossier 20, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/20/document-2",
+        "titre": "Dossier 20, document 2"
+      },
+      {
+        "href": "https://exemple.org/dossiers/20/document-3",
+        "titre": "Dossier 20, document 3"
+      }
+    ],
+    "mention_ia": true,
+    "source_refs_kept": true
+  },
+  "pasted/21-word.html": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Ce que prévoit le projet sur budget"
+      },
+      {
+        "level": 3,
+        "text": "Les prochaines étapes"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/budget/fiche-21",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Les chiffres sont encourageants, mais il faut rester prudent.",
+        "source": "https://exemple.org/dossiers/21/document-2"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/21/document-1",
+        "titre": "Dossier 21, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/21/document-2",
+        "titre": "Dossier 21, document 2"
+      }
+    ],
+    "mention_ia": false,
+    "source_refs_kept": false
+  },
+  "pasted/22-word.html": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Ce que prévoit le projet sur mobilité"
+      },
+      {
+        "level": 3,
+        "text": "Les prochaines étapes"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/mobilité/fiche-22",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Chaque euro dépensé doit pouvoir être expliqué aux habitants.",
+        "source": "https://exemple.org/dossiers/22/document-2"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/22/document-1",
+        "titre": "Dossier 22, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/22/document-2",
+        "titre": "Dossier 22, document 2"
+      }
+    ],
+    "mention_ia": false,
+    "source_refs_kept": false
+  },
+  "pasted/23-word.html": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Ce que prévoit le projet sur transport"
+      },
+      {
+        "level": 3,
+        "text": "Les prochaines étapes"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/transport/fiche-23",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Nous voulons des résultats mesurables, pas seulement des annonces.",
+        "source": "https://exemple.org/dossiers/23/document-2"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/23/document-1",
+        "titre": "Dossier 23, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/23/document-2",
+        "titre": "Dossier 23, document 2"
+      },
+      {
+        "href": "https://exemple.org/dossiers/23/document-3",
+        "titre": "Dossier 23, document 3"
+      },
+      {
+        "href": "https://exemple.org/dossiers/23/document-4",
+        "titre": "Dossier 23, document 4"
+      }
+    ],
+    "mention_ia": false,
+    "source_refs_kept": false
+  },
+  "pasted/24-word.html": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Ce que prévoit le projet sur santé"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/santé/fiche-24",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Les chiffres sont encourageants, mais il faut rester prudent.",
+        "source": "https://exemple.org/dossiers/24/document-2"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/24/document-1",
+        "titre": "Dossier 24, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/24/document-2",
+        "titre": "Dossier 24, document 2"
+      },
+      {
+        "href": "https://exemple.org/dossiers/24/document-3",
+        "titre": "Dossier 24, document 3"
+      },
+      {
+        "href": "https://exemple.org/dossiers/24/document-4",
+        "titre": "Dossier 24, document 4"
+      }
+    ],
+    "mention_ia": false,
+    "source_refs_kept": false
+  },
+  "pasted/25-word.html": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Ce que prévoit le projet sur numérique"
+      },
+      {
+        "level": 3,
+        "text": "Les prochaines étapes"
+      },
+      {
+        "level": 2,
+        "text": "Contexte"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/numérique/fiche-25",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Le projet n’a de sens que s’il est construit avec celles et ceux qui l’utiliseront.",
+        "source": "https://exemple.org/dossiers/25/document-2"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/25/document-1",
+        "titre": "Dossier 25, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/25/document-2",
+        "titre": "Dossier 25, document 2"
+      },
+      {
+        "href": "https://exemple.org/dossiers/25/document-3",
+        "titre": "Dossier 25, document 3"
+      }
+    ],
+    "mention_ia": false,
+    "source_refs_kept": false
+  },
+  "pasted/26-gdocs.html": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Le projet sur eau"
+      },
+      {
+        "level": 3,
+        "text": "Les prochaines étapes"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/eau/fiche-26#titre",
+        "text": "eau"
+      },
+      {
+        "href": "https://exemple.org/eau/fiche-26",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Chaque euro dépensé doit pouvoir être expliqué aux habitants.",
+        "source": "https://exemple.org/dossiers/26/document-2"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/26/document-1",
+        "titre": "Dossier 26, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/26/document-2",
+        "titre": "Dossier 26, document 2"
+      },
+      {
+        "href": "https://exemple.org/dossiers/26/document-3",
+        "titre": "Dossier 26, document 3"
+      },
+      {
+        "href": "https://exemple.org/dossiers/26/document-4",
+        "titre": "Dossier 26, document 4"
+      }
+    ],
+    "mention_ia": false,
+    "source_refs_kept": false
+  },
+  "pasted/27-gdocs.html": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Ce que prévoit le projet sur environnement"
+      },
+      {
+        "level": 3,
+        "text": "Les prochaines étapes"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/environnement/fiche-27",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Nous voulons des résultats mesurables, pas seulement des annonces.",
+        "source": "https://exemple.org/dossiers/27/document-2"
+      },
+      {
+        "text": "Nous voulons des résultats mesurables, pas seulement des annonces.",
+        "source": "https://exemple.org/dossiers/27/document-1"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/27/document-1",
+        "titre": "Dossier 27, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/27/document-2",
+        "titre": "Dossier 27, document 2"
+      },
+      {
+        "href": "https://exemple.org/dossiers/27/document-3",
+        "titre": "Dossier 27, document 3"
+      }
+    ],
+    "mention_ia": false,
+    "source_refs_kept": false
+  },
+  "pasted/28-gdocs.html": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Ce que prévoit le projet sur sécurité"
+      },
+      {
+        "level": 3,
+        "text": "Les prochaines étapes"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/sécurité/fiche-28",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Le projet n’a de sens que s’il est construit avec celles et ceux qui l’utiliseront.",
+        "source": "https://exemple.org/dossiers/28/document-2"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/28/document-1",
+        "titre": "Dossier 28, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/28/document-2",
+        "titre": "Dossier 28, document 2"
+      },
+      {
+        "href": "https://exemple.org/dossiers/28/document-3",
+        "titre": "Dossier 28, document 3"
+      },
+      {
+        "href": "https://exemple.org/dossiers/28/document-4",
+        "titre": "Dossier 28, document 4"
+      }
+    ],
+    "mention_ia": false,
+    "source_refs_kept": false
+  },
+  "pasted/29-gdocs.html": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Ce que prévoit le projet sur éducation"
+      },
+      {
+        "level": 3,
+        "text": "Les prochaines étapes"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/éducation/fiche-29",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Le projet n’a de sens que s’il est construit avec celles et ceux qui l’utiliseront.",
+        "source": "https://exemple.org/dossiers/29/document-2"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/29/document-1",
+        "titre": "Dossier 29, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/29/document-2",
+        "titre": "Dossier 29, document 2"
+      }
+    ],
+    "mention_ia": false,
+    "source_refs_kept": false
+  },
+  "pasted/30-gdocs.html": {
+    "headings": [
+      {
+        "level": 2,
+        "text": "Ce que prévoit le projet sur énergie"
+      },
+      {
+        "level": 3,
+        "text": "Les prochaines étapes"
+      }
+    ],
+    "links": [
+      {
+        "href": "https://exemple.org/énergie/fiche-30",
+        "text": "fiche détaillée"
+      }
+    ],
+    "citations": [
+      {
+        "text": "Nous voulons des résultats mesurables, pas seulement des annonces.",
+        "source": "https://exemple.org/dossiers/30/document-2"
+      }
+    ],
+    "sources": [
+      {
+        "href": "https://exemple.org/dossiers/30/document-1",
+        "titre": "Dossier 30, document 1"
+      },
+      {
+        "href": "https://exemple.org/dossiers/30/document-2",
+        "titre": "Dossier 30, document 2"
+      }
+    ],
+    "mention_ia": false,
+    "source_refs_kept": false
+  }
+}

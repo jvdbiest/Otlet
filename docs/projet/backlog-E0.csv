@@ -27,13 +27,13 @@ S2.3,S2,"Procrastinate : 1 000 tâches, arrêts brutaux aléatoires du worker, r
 S2.4,S2,Procrastinate sous RLS avec SET LOCAL (V8),3,fait
 S2.5,S2,"DBOS : mêmes scénarios, au besoin réduits",5,fait
 S2.6,S2,"Conclusion, ADR de la file",2,fait
-S3.1,S3,"Rapport ouvert ; corpus de 30 documents (10 collés depuis Word et Google Docs, 10 sorties IA en Markdown restreint, 10 rédigés)",5,a_faire
-S3.2,S3,"Schéma « Document plateforme v1 » en ébauche, avec nœuds obligatoires (bloc Sources, mention IA)",5,a_faire
-S3.3,S3,Rendu Python JSON → HTML ; conversion Markdown restreint → JSON,6,a_faire
-S3.4,S3,"Éditeur Tiptap minimal : collage, export JSON ; test de concordance rendu Python / rendu éditeur",7,a_faire
-S3.5,S3,"BlockNote sur le même corpus, comparaison courte",3,a_faire
-S3.6,S3,WordPress et Ghost en conteneurs locaux ; aller-retour et contrôle des éléments obligatoires,4,a_faire
-S3.7,S3,"Conclusion, décision Tiptap ou BlockNote, ADR",2,a_faire
+S3.1,S3,"Rapport ouvert ; corpus de 30 documents (10 collés depuis Word et Google Docs, 10 sorties IA en Markdown restreint, 10 rédigés)",5,fait
+S3.2,S3,"Schéma « Document plateforme v1 » en ébauche, avec nœuds obligatoires (bloc Sources, mention IA)",5,fait
+S3.3,S3,Rendu Python JSON → HTML ; conversion Markdown restreint → JSON,6,fait
+S3.4,S3,"Éditeur Tiptap minimal : collage, export JSON ; test de concordance rendu Python / rendu éditeur",7,fait
+S3.5,S3,"BlockNote sur le même corpus, comparaison courte",3,fait
+S3.6,S3,WordPress et Ghost en conteneurs locaux ; aller-retour et contrôle des éléments obligatoires,4,fait
+S3.7,S3,"Conclusion, décision Tiptap ou BlockNote, ADR",2,fait
 S5.1,S5,Rapport ouvert ; définitions de « quasi-copie » et « traduction détectée »,2,a_faire
 S5.2,S5,"Corpus de 200 paires FR / EN sous licence libre (50 traductions, 50 paraphrases, 100 indépendants), réutilisable par M-14",8,a_faire
 S5.3,S5,fastembed : deux ou trois modèles multilingues compacts ; mémoire et débit sur 2 vCPU,6,a_faire

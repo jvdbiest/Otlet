@@ -1,0 +1,56 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# S3.6 (reused by S7): WordPress (current and previous major) and Ghost, official images, on
+# the measurement machine. Throw-away credentials come from the environment (setup.sh).
+name: otlet-cms
+
+services:
+  mariadb:
+    image: mariadb:11.8
+    environment:
+      MARIADB_ROOT_PASSWORD: ${CMS_DB_PASSWORD:?}
+    command: ["--max-connections=50", "--innodb-buffer-pool-size=128M"]
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      retries: 20
+
+  wordpress:
+    image: wordpress:7.1.3-php8.4-apache
+    environment:
+      WORDPRESS_DB_HOST: mariadb
+      WORDPRESS_DB_USER: root
+      WORDPRESS_DB_PASSWORD: ${CMS_DB_PASSWORD:?}
+      WORDPRESS_DB_NAME: wp_current
+    ports: ["8081:80"]
+    volumes: [wp_current:/var/www/html]
+    depends_on:
+      mariadb: {condition: service_healthy}
+
+  wordpress-previous:
+    image: wordpress:6-php8.4-apache
+    environment:
+      WORDPRESS_DB_HOST: mariadb
+      WORDPRESS_DB_USER: root
+      WORDPRESS_DB_PASSWORD: ${CMS_DB_PASSWORD:?}
+      WORDPRESS_DB_NAME: wp_previous
+    ports: ["8082:80"]
+    volumes: [wp_previous:/var/www/html]
+    depends_on:
+      mariadb: {condition: service_healthy}
+
+  ghost:
+    image: ghost:6.69.0
+    environment:
+      url: http://ghost:2368
+      NODE_ENV: development   # SQLite, enough for a functional round trip
+      database__client: sqlite3
+      database__connection__filename: /var/lib/ghost/content/data/ghost.db
+    ports: ["2368:2368"]
+    volumes: [ghost_content:/var/lib/ghost/content]
+
+volumes:
+  wp_current:
+  wp_previous:
+  ghost_content:

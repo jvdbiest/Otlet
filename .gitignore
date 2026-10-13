@@ -36,3 +36,4 @@ spikes/**/models/
 .idea/
 .vscode/
 .DS_Store
+spikes/s3-document/build/

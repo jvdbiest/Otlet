@@ -30,3 +30,4 @@ La numérotation continue celle de l'architecture.
 | [0020](0020-demarrage-et-tls-de-la-pile-solo.md) | Démarrage et TLS de la pile solo | Accepté (S6) |
 | [0021](0021-rls-et-recherche-plein-texte-apres-s1.md) | RLS maintenue, recherche plein texte à classement borné | Accepté (S1) |
 | [0022](0022-file-de-taches-procrastinate.md) | File de tâches : Procrastinate, avec relance des tâches bloquées | Accepté (S2) |
+| [0023](0023-format-de-document-et-editeur.md) | Format « Document plateforme v1 » et éditeur Tiptap | Proposé (S3) |

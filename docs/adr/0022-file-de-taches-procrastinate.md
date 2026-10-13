@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Statut | Proposé |
+| Statut | Accepté (2026-10-13) |
 | Date | 2026-10-13 |
 | Décideur | Joël |
 | Documents touchés | `TECH_CHOICES.md` §9.3 (TC-06) ; `RISKS.md` R-T12, V8 |
@@ -12,7 +12,7 @@
 
 S2 a soumis Procrastinate 3.10 et DBOS Transact 3.2 aux mêmes scénarios (`docs/spikes/S2.md` §4) : enfilage dans la transaction applicative, 1 000 tâches sous arrêts brutaux, annulation ciblée, connexions soumises à la RLS. Les deux tiennent tous les seuils. DBOS reprend plus vite (5 à 14 s contre 41 à 91 s), mais seulement quand l'exécuteur arrêté redémarre sous le même identifiant. Son modèle de flux de travail recouvre le moteur de pipelines du projet. Procrastinate demande une relance périodique des tâches bloquées, qu'il ne fait pas lui-même.
 
-## Décision proposée
+## Décision
 
 1. **Procrastinate** reste le moteur de la file, derrière l'interface du module `jobs` ; aucun autre module ne l'importe (contrat d'imports à ajouter avec le module).
 2. Le module `jobs` fournit une **tâche périodique de relance des tâches bloquées**. Un worker est déclaré disparu après 30 s sans battement, envoyé toutes les 10 s, et la relance tourne chaque minute. La reprise attendue est donc d'au plus 2 minutes, sous le seuil de 5 minutes.

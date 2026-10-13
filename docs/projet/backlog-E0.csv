@@ -21,12 +21,12 @@ S1.2,S1,"Générateur du jeu synthétique (200 sources, 100 000 éléments, 300 
 S1.3,S1,"RLS forcée, SET LOCAL par la fabrique de sessions, test « requête sans contexte = zéro ligne »",4,fait
 S1.4,S1,"Mesures p95 des cinq lectures avec et sans RLS, mémoire de la pile sous charge",7,fait
 S1.5,S1,Analyse et conclusion ; ADR du profil solo si un seuil change,4,fait
-S2.1,S2,Rapport ouvert ; banc de tâches à clé d'idempotence avec compteur d'effets,4,a_faire
-S2.2,S2,"Procrastinate : enfilage dans la transaction SQLAlchemy, 100 annulations",4,a_faire
-S2.3,S2,"Procrastinate : 1 000 tâches, arrêts brutaux aléatoires du worker, reprise, annulation ciblée",6,a_faire
-S2.4,S2,Procrastinate sous RLS avec SET LOCAL (V8),3,a_faire
-S2.5,S2,"DBOS : mêmes scénarios, au besoin réduits",5,a_faire
-S2.6,S2,"Conclusion, ADR de la file",2,a_faire
+S2.1,S2,Rapport ouvert ; banc de tâches à clé d'idempotence avec compteur d'effets,4,fait
+S2.2,S2,"Procrastinate : enfilage dans la transaction SQLAlchemy, 100 annulations",4,fait
+S2.3,S2,"Procrastinate : 1 000 tâches, arrêts brutaux aléatoires du worker, reprise, annulation ciblée",6,fait
+S2.4,S2,Procrastinate sous RLS avec SET LOCAL (V8),3,fait
+S2.5,S2,"DBOS : mêmes scénarios, au besoin réduits",5,fait
+S2.6,S2,"Conclusion, ADR de la file",2,fait
 S3.1,S3,"Rapport ouvert ; corpus de 30 documents (10 collés depuis Word et Google Docs, 10 sorties IA en Markdown restreint, 10 rédigés)",5,a_faire
 S3.2,S3,"Schéma « Document plateforme v1 » en ébauche, avec nœuds obligatoires (bloc Sources, mention IA)",5,a_faire
 S3.3,S3,Rendu Python JSON → HTML ; conversion Markdown restreint → JSON,6,a_faire

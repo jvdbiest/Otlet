@@ -1,0 +1,17 @@
+{
+  "criterion": "C2 C3 C4",
+  "tasks": 1000,
+  "kills": 4,
+  "attempts": 1008,
+  "effects": 1000,
+  "lost": 0,
+  "double_effects": 0,
+  "attempts_neutralized_by_key": 0,
+  "interrupted_tasks": 10,
+  "worst_resume_seconds": 41.2,
+  "jobs_by_status": {
+    "succeeded": 1000
+  },
+  "passed": true,
+  "engine": "procrastinate"
+}

@@ -1,0 +1,18 @@
+{
+  "criterion": "C2 C3 C4",
+  "tasks": 1000,
+  "kills": 66,
+  "attempts": 1041,
+  "effects": 1000,
+  "lost": 0,
+  "double_effects": 0,
+  "attempts_neutralized_by_key": 1,
+  "interrupted_tasks": 55,
+  "worst_resume_seconds": 13.7,
+  "jobs_by_status": {
+    "SUCCESS": 1000
+  },
+  "passed": true,
+  "engine": "dbos",
+  "label": "stress"
+}

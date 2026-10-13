@@ -29,3 +29,4 @@ La numérotation continue celle de l'architecture.
 | [0019](0019-secrets-dechiffres-par-le-worker.md) | Les secrets sont déchiffrés par le worker seul | Accepté (S6) |
 | [0020](0020-demarrage-et-tls-de-la-pile-solo.md) | Démarrage et TLS de la pile solo | Accepté (S6) |
 | [0021](0021-rls-et-recherche-plein-texte-apres-s1.md) | RLS maintenue, recherche plein texte à classement borné | Accepté (S1) |
+| [0022](0022-file-de-taches-procrastinate.md) | File de tâches : Procrastinate, avec relance des tâches bloquées | Proposé (S2) |

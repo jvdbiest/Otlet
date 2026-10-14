@@ -1,6 +1,6 @@
 # État du projet Otlet
 
-Mis à jour le 2026-10-13. Une page : ce qu'il faut savoir pour reprendre le travail tout de suite. L'historique est dans Git, les décisions sont dans `docs/adr/`, les mesures dans `docs/spikes/`.
+Mis à jour le 2026-10-14. Une page : ce qu'il faut savoir pour reprendre le travail tout de suite. L'historique est dans Git, les décisions sont dans `docs/adr/`, les mesures dans `docs/spikes/`.
 
 ## Où on en est
 
@@ -13,15 +13,15 @@ Mis à jour le 2026-10-13. Une page : ce qu'il faut savoir pour reprendre le tra
 | S1 PostgreSQL et RLS | Conclue : partiel. La recherche plein texte reste un **échec ouvert** jusqu'à une remesure sur corpus réel. ADR-0021 |
 | S2 File de tâches | Conclue : succès (Procrastinate). ADR-0022 |
 | S3 Format et éditeur | Conclue : succès (Tiptap). ADR-0023 |
-| **S5 Similarité** | **En cours** : rapport, corpus et banc prêts ; mesures à lancer |
+| **S5 Similarité** | **En cours** : mesures lancées sur la VM le 2026-10-14. MiniLM mesuré (échoue C1, C2, C3) ; e5-small puis potion en cours |
 | S4 Passerelle IA | À faire. Prérequis A3 : clés d'API plafonnées, **accord de Joël avant toute dépense** |
 | S7 Connecteurs CMS | À faire. Réutilise WordPress et Ghost de la VM. Prérequis A2 : hébergement mutualisé, **accord de Joël** |
 | B11 Clôture (rapport P1) | À faire, en dernier |
 
 ## Prochaine action
 
-1. Joël fusionne le rapport S5 (branche `spike/S5.1-rapport`) et l'acceptation d'ADR-0023 (branche `docs/S3-adr-acceptee`).
-2. Lancer S5 sur la VM, détaché : copier `spikes/s5-similarity` dans `~/otlet-s5`, puis `nohup sh run-s5.sh > ~/otlet-s5/run.log 2>&1 &`. Le banc est sur la branche `spike/S5-banc`.
+1. Attendre la fin du banc sur la VM (`~/otlet-s5/run.log`, résultats dans `~/otlet-s5/results/`). Le banc vient de la branche `spike/S5-banc`.
+2. Le NAS (Celeron J4025, sans AVX) ne fausse que C2. Joël exportera ensuite la VM en OVA vers VMware Workstation sur son PC principal (i5) : C2 y sera remesuré à part, comme complément hors protocole, 2 vCPU. Prévenir Joël avant de lancer.
 3. Rapatrier `results/`, conclure `docs/spikes/S5.md` (sections 4 à 7) et proposer l'ADR du modèle et des seuils.
 
 ## Règles de travail

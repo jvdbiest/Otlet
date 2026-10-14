@@ -34,8 +34,8 @@ S3.4,S3,"Éditeur Tiptap minimal : collage, export JSON ; test de concordance re
 S3.5,S3,"BlockNote sur le même corpus, comparaison courte",3,fait
 S3.6,S3,WordPress et Ghost en conteneurs locaux ; aller-retour et contrôle des éléments obligatoires,4,fait
 S3.7,S3,"Conclusion, décision Tiptap ou BlockNote, ADR",2,fait
-S5.1,S5,Rapport ouvert ; définitions de « quasi-copie » et « traduction détectée »,2,a_faire
-S5.2,S5,"Corpus de 200 paires FR / EN sous licence libre (50 traductions, 50 paraphrases, 100 indépendants), réutilisable par M-14",8,a_faire
+S5.1,S5,Rapport ouvert ; définitions de « quasi-copie » et « traduction détectée »,2,fait
+S5.2,S5,"Corpus de 200 paires FR / EN sous licence libre (50 traductions, 50 paraphrases, 100 indépendants), réutilisable par M-14",8,fait
 S5.3,S5,fastembed : deux ou trois modèles multilingues compacts ; mémoire et débit sur 2 vCPU,6,a_faire
 S5.4,S5,"Volet lexical : n-grammes, MinHash / LSH, rapidfuzz",5,a_faire
 S5.5,S5,"Calibration des seuils, courbes rappel / faux positifs, seuils inter-langues (DR4)",7,a_faire

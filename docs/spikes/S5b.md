@@ -2,10 +2,10 @@
 
 | | |
 |---|---|
-| Statut | Ouverte |
+| Statut | Conclue : échec (mémoire), qualité inchangée ; potion int8 retenu selon l'ADR-0024 |
 | Durée maximale | 4 h (ADR-0024, point 2) |
 | Temps passé | journal de temps, tâche S5b |
-| Ouverte le / conclue le | 2026-10-15 / — |
+| Ouverte le / conclue le | 2026-10-15 / 2026-10-15 |
 | Choix concernés | TC-10, budget mémoire solo (`TECH_CHOICES.md` §3.2), ADR-0024 |
 | Commande de rejeu | sur la machine de mesure, depuis une copie de `spikes/s5-similarity` : `nohup sh run-s5b.sh > run-s5b.log 2>&1 &` |
 
@@ -46,8 +46,37 @@ Application de l'ADR-0024 tel qu'accepté : potion reste le modèle par défaut 
 
 ## 4. Mesures
 
-À remplir après la mesure.
+Exécution du 2026-10-15 sur la VM du NAS (Celeron J4025, 2 vCPU), conteneur limité à 2 vCPU, `model2vec` 0.9.0. Résultats bruts : `spikes/s5-similarity/results/s5b-*.json` et `run-s5b.log`.
+
+| Critère | Seuil | float32 | float16 | int8 |
+|---|---|---|---|---|
+| D1 mémoire du modèle | ≤ 500 Mo | 1 236 Mio ✗ | 993 Mio ✗ | 870 Mio ✗ |
+| D2 détection (moitié de mesure) | ≥ 90 % | 90 % ✓ | 90 % ✓ | 90 % ✓ |
+| D3 faux positifs | ≤ 5 % | 0 % ✓ | 0 % ✓ | 0 % ✓ |
+| D4 2 000 éléments (47 251 passages) | ≤ 30 min | 21 s ✓ | 25 s ✓ | 21 s ✓ |
+| Seuils calibrés (même langue / langues différentes) | — | 0,640 / 0,549 | 0,640 / 0,549 | 0,639 / 0,548 |
+
+**Information** : écart des scores sémantiques avec la variante float32, sur les 200 paires : au plus 0,0007 en float16 et 0,011 en int8 (en moyenne 0,0002 et 0,002). Les paires détectées sont les mêmes pour les trois variantes : 88 % en même langue, 92 % en langues différentes. Pour mémoire, le chargement ONNX de `fastembed` mesuré en S5 occupait 1 344 Mio.
+
+**Durée** : environ 1 h de travail sur 4 h ; le calcul a pris 3 min.
 
 ## 5. Conclusion
 
-À rédiger.
+**Échec.** Aucune variante ne descend sous 500 Mo. La qualité, elle, ne bouge pas.
+
+- Réduire les poids ne gagne que ce qu'ils pèsent : 512 Mo en float32, 256 en float16, 128 en int8. La mémoire passe ainsi de 1 236 à 870 Mio. Il reste environ 740 Mio, qui ne viennent pas des poids. Ils viennent vraisemblablement du tokenizer et de son vocabulaire de 500 353 jetons. C'est une déduction : la mémoire du tokenizer seul n'a pas été mesurée.
+- La réduction du vocabulaire, écartée du protocole, est donc le seul levier restant sous 500 Mo. Elle n'est plus nécessaire à la décision.
+- **Application de l'ADR-0024 (§3.1)** : potion reste le modèle par défaut, chargé par `model2vec` en **int8**, le plus léger des chargements qui tiennent D2 à D4 (870 Mio). La pile complète, déduite en additionnant des mesures séparées, resterait à environ 1,1 Go au repos et à 2,4 Go en charge réelle estimée (S1 1,10 Go + 870 Mio + 400 Mo de travail du worker), sous les 3,4 Go du profil solo. Cette somme doit être vérifiée par une mesure de la pile entière quand le worker chargera le modèle.
+
+## 6. Conséquences
+
+| Document ou choix | Conséquence | ADR |
+|---|---|---|
+| TC-10 | Modèle par défaut : potion-multilingual-128M chargé par `model2vec` (MIT) en int8, à la place du chargement ONNX de `fastembed` | ADR-0024 (accepté), point 3 tel que validé par Joël |
+| Budget mémoire solo (`TECH_CHOICES.md` §3.2) | La ligne du modèle passe de 150 à 500 Mo à environ 870 Mio ; le total de la pile reste le critère | ADR-0024 (accepté) |
+
+## 7. Ce que la preuve n'a pas couvert
+
+- La mémoire de la pile entière avec le modèle chargé dans le worker, qui reste à mesurer.
+- La mémoire du tokenizer seul, et la réduction du vocabulaire au français et à l'anglais.
+- Une mesure dans le worker réel, où le modèle partagerait le processus avec les autres tâches.

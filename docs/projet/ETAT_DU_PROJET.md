@@ -13,16 +13,16 @@ Mis à jour le 2026-10-15. Une page : ce qu'il faut savoir pour reprendre le tra
 | S1 PostgreSQL et RLS | Conclue : partiel. La recherche plein texte reste un **échec ouvert** jusqu'à une remesure sur corpus réel. ADR-0021 |
 | S2 File de tâches | Conclue : succès (Procrastinate). ADR-0022 |
 | S3 Format et éditeur | Conclue : succès (Tiptap). ADR-0023 |
-| S5 Similarité | Conclue : échec, de peu. potion-multilingual-128M tient C2 à C5 mais pas la mémoire (1,3 Go pour 500 Mo). ADR-0024 accepté : potion par défaut tant que la pile complète tient sous 3,4 Go |
+| S5 Similarité | Conclue : échec, de peu ; complément S5b conclu en échec sur la mémoire seule. Modèle retenu (ADR-0024) : potion-multilingual-128M par `model2vec` en int8, 870 Mio, qualité inchangée. Pile complète estimée à 2,4 Go en charge, sous 3,4 Go (déduction) |
 | S4 Passerelle IA | À faire. Prérequis A3 : clés d'API plafonnées, **accord de Joël avant toute dépense** |
 | S7 Connecteurs CMS | À faire. Réutilise WordPress et Ghost de la VM. Prérequis A2 : hébergement mutualisé, **accord de Joël** |
 | B11 Clôture (rapport P1) | À faire, en dernier |
 
 ## Prochaine action
 
-1. Joël fusionne la branche `spike/S5-conclusion` (conclusion S5, ADR-0024 accepté, protocole du complément S5b).
-2. Mesurer S5b : complément court sur la mémoire (potion en float16 ou à vocabulaire réduit), protocole commité avant la mesure, sur la VM du NAS.
-3. Puis S4 ou S7, chacun après l'accord de Joël sur ses prérequis (clés d'API plafonnées, hébergement mutualisé).
+1. Joël fusionne la branche `spike/S5b-conclusion`.
+2. Choisir la suite : S4 (passerelle IA) ou S7 (connecteurs CMS), chacun après l'accord de Joël sur ses prérequis (clés d'API plafonnées, hébergement mutualisé).
+3. Puis B11, la clôture d'É0.
 
 ## Règles de travail
 
@@ -49,5 +49,6 @@ Mis à jour le 2026-10-15. Une page : ce qu'il faut savoir pour reprendre le tra
 - Écrire un nettoyeur de collage Word et Google Docs pour Tiptap (ADR-0023).
 - ASVS V12.3 : chiffrer ou non les liaisons internes de la pile Compose (`docs/security/asvs-l2.md`).
 - Volet lexical du garde-fou : remplacer les 5-grammes par la plus longue séquence commune, seuil à fixer avant mesure (ADR-0024).
+- Mesurer la mémoire de la pile entière quand le worker chargera potion (S5b §5).
 - Remesurer les seuils de similarité sur un corpus réel à la tranche verticale d'É1 (ADR-0024).
 - Plus tard : redirection du port 443 vers la VM pour un certificat Let's Encrypt. Joël aura besoin d'aide pour la marche à suivre.

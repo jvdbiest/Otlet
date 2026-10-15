@@ -197,6 +197,7 @@ def generate(brief: draft.Brief, profile: list[str], budget: Budget | None = Non
                 result, errors = draft.validate(answer.text, brief)
                 outcome.repaired = True
             outcome.provider = provider
+            outcome.error = None  # an earlier provider's error is superseded by this answer
             if result is None:
                 outcome.error = "invalid: " + "; ".join(errors)[:300]
             else:

@@ -1,6 +1,6 @@
 # État du projet Otlet
 
-Mis à jour le 2026-10-14. Une page : ce qu'il faut savoir pour reprendre le travail tout de suite. L'historique est dans Git, les décisions sont dans `docs/adr/`, les mesures dans `docs/spikes/`.
+Mis à jour le 2026-10-15. Une page : ce qu'il faut savoir pour reprendre le travail tout de suite. L'historique est dans Git, les décisions sont dans `docs/adr/`, les mesures dans `docs/spikes/`.
 
 ## Où on en est
 
@@ -13,16 +13,16 @@ Mis à jour le 2026-10-14. Une page : ce qu'il faut savoir pour reprendre le tra
 | S1 PostgreSQL et RLS | Conclue : partiel. La recherche plein texte reste un **échec ouvert** jusqu'à une remesure sur corpus réel. ADR-0021 |
 | S2 File de tâches | Conclue : succès (Procrastinate). ADR-0022 |
 | S3 Format et éditeur | Conclue : succès (Tiptap). ADR-0023 |
-| **S5 Similarité** | **En cours** : mesures lancées sur la VM le 2026-10-14. MiniLM mesuré (échoue C1, C2, C3) ; e5-small puis potion en cours |
+| S5 Similarité | Conclue : échec, de peu. potion-multilingual-128M tient C2 à C5 mais pas la mémoire (1,3 Go pour 500 Mo). ADR-0024 **proposé**, en attente du « oui » de Joël |
 | S4 Passerelle IA | À faire. Prérequis A3 : clés d'API plafonnées, **accord de Joël avant toute dépense** |
 | S7 Connecteurs CMS | À faire. Réutilise WordPress et Ghost de la VM. Prérequis A2 : hébergement mutualisé, **accord de Joël** |
 | B11 Clôture (rapport P1) | À faire, en dernier |
 
 ## Prochaine action
 
-1. Attendre la fin du banc sur la VM (`~/otlet-s5/run.log`, résultats dans `~/otlet-s5/results/`). Le banc vient de la branche `spike/S5-banc`.
-2. Le NAS (Celeron J4025, sans AVX) ne fausse que C2. Joël exportera ensuite la VM en OVA vers VMware Workstation sur son PC principal (i5) : C2 y sera remesuré à part, comme complément hors protocole, 2 vCPU. Prévenir Joël avant de lancer.
-3. Rapatrier `results/`, conclure `docs/spikes/S5.md` (sections 4 à 7) et proposer l'ADR du modèle et des seuils.
+1. Joël fusionne la branche `spike/S5-conclusion` et répond sur ADR-0024.
+2. S'il l'accepte : complément court sur C1 (potion en float16 ou à vocabulaire réduit), protocole commité avant la mesure, sur la VM du NAS.
+3. Puis S4 ou S7, chacun après l'accord de Joël sur ses prérequis (clés d'API plafonnées, hébergement mutualisé).
 
 ## Règles de travail
 
@@ -48,4 +48,6 @@ Mis à jour le 2026-10-14. Une page : ce qu'il faut savoir pour reprendre le tra
 - Remesurer la recherche plein texte (S1, L2) sur un corpus réaliste avant toute conclusion définitive (ADR-0021).
 - Écrire un nettoyeur de collage Word et Google Docs pour Tiptap (ADR-0023).
 - ASVS V12.3 : chiffrer ou non les liaisons internes de la pile Compose (`docs/security/asvs-l2.md`).
+- Volet lexical du garde-fou : remplacer les 5-grammes par la plus longue séquence commune, seuil à fixer avant mesure (ADR-0024).
+- Remesurer les seuils de similarité sur un corpus réel à la tranche verticale d'É1 (ADR-0024).
 - Plus tard : redirection du port 443 vers la VM pour un certificat Let's Encrypt. Joël aura besoin d'aide pour la marche à suivre.

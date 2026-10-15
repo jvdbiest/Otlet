@@ -1,0 +1,51 @@
+# État du projet Otlet
+
+Mis à jour le 2026-10-14. Une page : ce qu'il faut savoir pour reprendre le travail tout de suite. L'historique est dans Git, les décisions sont dans `docs/adr/`, les mesures dans `docs/spikes/`.
+
+## Où on en est
+
+Étape **É0** (preuves de concept et socle), plan : `docs/projet/plan-E0.md`, suivi : `docs/projet/backlog-E0.csv`.
+
+| Bloc | État |
+|---|---|
+| Socle B02 à B10 | Fait. B01 (création du dépôt) n'est pas coché au backlog, mais il est réalisé |
+| S6 Squelette de livraison | Conclue : partiel (mesurée sur VM, pas sur VPS). ADR-0019, ADR-0020 |
+| S1 PostgreSQL et RLS | Conclue : partiel. La recherche plein texte reste un **échec ouvert** jusqu'à une remesure sur corpus réel. ADR-0021 |
+| S2 File de tâches | Conclue : succès (Procrastinate). ADR-0022 |
+| S3 Format et éditeur | Conclue : succès (Tiptap). ADR-0023 |
+| **S5 Similarité** | **En cours** : mesures lancées sur la VM le 2026-10-14. MiniLM mesuré (échoue C1, C2, C3) ; e5-small puis potion en cours |
+| S4 Passerelle IA | À faire. Prérequis A3 : clés d'API plafonnées, **accord de Joël avant toute dépense** |
+| S7 Connecteurs CMS | À faire. Réutilise WordPress et Ghost de la VM. Prérequis A2 : hébergement mutualisé, **accord de Joël** |
+| B11 Clôture (rapport P1) | À faire, en dernier |
+
+## Prochaine action
+
+1. Attendre la fin du banc sur la VM (`~/otlet-s5/run.log`, résultats dans `~/otlet-s5/results/`). Le banc vient de la branche `spike/S5-banc`.
+2. Le NAS (Celeron J4025, sans AVX) ne fausse que C2. Joël exportera ensuite la VM en OVA vers VMware Workstation sur son PC principal (i5) : C2 y sera remesuré à part, comme complément hors protocole, 2 vCPU. Prévenir Joël avant de lancer.
+3. Rapatrier `results/`, conclure `docs/spikes/S5.md` (sections 4 à 7) et proposer l'ADR du modèle et des seuils.
+
+## Règles de travail
+
+- **Protocole des preuves (ADR-0018)** : rapport avec ses seuils fusionné sur `main` **avant** toute mesure ; seuils jamais modifiés après ; durée maximale tenue ; conclusion obligatoire.
+- **Git** : une branche par tâche, commits signés DCO (`git commit -s`), messages en français, code en anglais. Jamais de poussée sur `main`, qui est protégée (12 vérifications de CI obligatoires).
+- **Demandes de fusion** : Claude pousse et donne un lien de comparaison prérempli. Joël crée la demande et fusionne lui-même : le navigateur de l'app n'est pas connecté à GitHub, et les fusions par Claude sont bloquées.
+- **ADR** : « Proposé » tant que Joël n'a pas répondu explicitement « oui ». Une fusion ne vaut pas acceptation.
+- **Heures** : Claude ajoute une estimation grossière par tâche terminée dans `docs/projet/journal-temps.csv`.
+- **Dépenses et logiciels système** : accord de Joël avant toute dépense, service externe ou installation sur son poste.
+
+## Environnement
+
+| Élément | Détail |
+|---|---|
+| Dépôt | https://github.com/jvdbiest/Otlet (AGPL-3.0-or-later, DCO) |
+| Poste de Joël | Windows 11, PowerShell 5.1 (encodage cp1252, CRLF). Docker Desktop installé : prévenir avant de le démarrer, et ne pas toucher aux conteneurs `wyoming-*`. Pas de Node : `npm` tourne dans `node:24-slim` |
+| VM de mesure | NAS de Joël, `192.168.129.249`, Ubuntu 24.04, 2 vCPU, 3,8 Go. SSH : `ssh -i ~/.ssh/otlet_nas otlet@192.168.129.249`, `sudo` sans mot de passe. Instantané restaurable par Joël |
+| Sur la VM | Pile Otlet dans `/opt/otlet` (PostgreSQL de la pile réglé pour S1). CMS de test dans le projet Compose `otlet-cms` : WordPress 7.1 (port 8081), WordPress 6.9 (8082), Ghost 6.69 (2368) ; identifiants dans `~/otlet-cms.env` |
+| Mesures longues | Toujours détachées sur la VM (`nohup`), jamais liées à une session SSH depuis le poste |
+
+## Points ouverts à garder en tête
+
+- Remesurer la recherche plein texte (S1, L2) sur un corpus réaliste avant toute conclusion définitive (ADR-0021).
+- Écrire un nettoyeur de collage Word et Google Docs pour Tiptap (ADR-0023).
+- ASVS V12.3 : chiffrer ou non les liaisons internes de la pile Compose (`docs/security/asvs-l2.md`).
+- Plus tard : redirection du port 443 vers la VM pour un certificat Let's Encrypt. Joël aura besoin d'aide pour la marche à suivre.

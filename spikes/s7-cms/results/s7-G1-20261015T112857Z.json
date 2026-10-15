@@ -1,0 +1,2641 @@
+{
+  "config": "G1",
+  "label": "G1",
+  "started": "2026-10-15T11:18:52+00:00",
+  "purged": 10,
+  "summary": {
+    "publications": 100,
+    "faults": {
+      "cut_response": 15,
+      "cut_before": 15,
+      "none": 50,
+      "timeout_after": 20
+    },
+    "remote_posts": 100,
+    "duplicates_by_title": 0,
+    "duplicates_by_key": 0,
+    "missing": 0,
+    "states": {
+      "published": 100
+    },
+    "reconciled_automatically": 1.0,
+    "how": {
+      "marker": 35,
+      "direct": 65
+    },
+    "resends": 15,
+    "blind_resends": 0,
+    "by_fault": {
+      "none": {
+        "published": 50
+      },
+      "cut_before": {
+        "published": 15
+      },
+      "timeout_after": {
+        "published": 20
+      },
+      "cut_response": {
+        "published": 15
+      }
+    },
+    "seconds_per_publication_max": 15.6
+  },
+  "publications": [
+    {
+      "title": "S7 G1 111855 n001 ai/11.md",
+      "key": "b4de5ddbc6004508b6ae551c78af46d2",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b6a0b7535f00011be88b",
+      "seconds": 6.0,
+      "events": [
+        {
+          "t": 1792063136.489,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792063141.744,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b6a0b7535f00011be88b"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n002 ai/12.md",
+      "key": "0c852c9a7cfe4bf8a8c497cff8e23331",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b6b0b7535f00011be892",
+      "seconds": 11.0,
+      "events": [
+        {
+          "t": 1792063141.75,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792063152.182,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792063152.572,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 G1 111855 n003 ai/13.md",
+      "key": "8e890405ec3745b696b6acb74fbd8227",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b6b1b7535f00011be899",
+      "seconds": 0.7,
+      "events": [
+        {
+          "t": 1792063153.288,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n004 ai/14.md",
+      "key": "a3bae2dbf70a4e18bb3f91642f79f9ea",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b6b1b7535f00011be8a0",
+      "seconds": 0.6,
+      "events": [
+        {
+          "t": 1792063153.846,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n005 ai/15.md",
+      "key": "c2e5d1a5cd924ac8ae117b2d5b7fdb97",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b6bcb7535f00011be8a7",
+      "seconds": 10.6,
+      "events": [
+        {
+          "t": 1792063153.987,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792063164.186,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792063164.466,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 G1 111855 n006 ai/16.md",
+      "key": "2f1efb8116604a3aa2c79d262d3d8973",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b6bdb7535f00011be8ae",
+      "seconds": 5.8,
+      "events": [
+        {
+          "t": 1792063165.271,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792063170.371,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b6bdb7535f00011be8ae"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n007 ai/17.md",
+      "key": "8cc39f9b427c4e008242f8763aaa543d",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b6c2b7535f00011be8b5",
+      "seconds": 0.6,
+      "events": [
+        {
+          "t": 1792063170.673,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n008 ai/18.md",
+      "key": "5f739bd0f1ca4693b0a4446a4e4982ff",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b6c3b7535f00011be8bc",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792063180.949,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792063186.066,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b6c3b7535f00011be8bc"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n009 ai/19.md",
+      "key": "678184775cad4f13b8531d6af4249484",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b6dcb7535f00011be8c3",
+      "seconds": 10.6,
+      "events": [
+        {
+          "t": 1792063186.073,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792063196.287,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792063196.566,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 G1 111855 n010 ai/20.md",
+      "key": "136d2d36209c491895aa289addf367e6",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b6dcb7535f00011be8ca",
+      "seconds": 0.7,
+      "events": [
+        {
+          "t": 1792063197.183,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n011 pasted/21-word.html",
+      "key": "b13ceee2644d4ffea24242d9d6ef59eb",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b6ddb7535f00011be8d1",
+      "seconds": 0.4,
+      "events": [
+        {
+          "t": 1792063197.625,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n012 pasted/22-word.html",
+      "key": "6b9666239d0048c7a6f36d4ef7e829f8",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b6ddb7535f00011be8d8",
+      "seconds": 0.5,
+      "events": [
+        {
+          "t": 1792063198.098,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n013 pasted/23-word.html",
+      "key": "21047232ca4d4c0fa6fb5db46b0f18b8",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b6deb7535f00011be8df",
+      "seconds": 15.5,
+      "events": [
+        {
+          "t": 1792063208.235,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792063213.746,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b6deb7535f00011be8df"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n014 pasted/24-word.html",
+      "key": "558a2bedd2f7466c9d77b39bc2f1c333",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b6edb7535f00011be8e6",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792063223.76,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792063228.851,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b6edb7535f00011be8e6"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n015 pasted/25-word.html",
+      "key": "d3400a5f5e5041f382ae01208d02f33e",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b6fcb7535f00011be8ed",
+      "seconds": 0.4,
+      "events": [
+        {
+          "t": 1792063229.121,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n016 pasted/26-gdocs.html",
+      "key": "c79e882355334c00aa69840baad51070",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b6fdb7535f00011be8f4",
+      "seconds": 15.3,
+      "events": [
+        {
+          "t": 1792063239.249,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792063244.501,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b6fdb7535f00011be8f4"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n017 pasted/27-gdocs.html",
+      "key": "5ce9a6abe14f41459c2318f07119e48c",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b70cb7535f00011be8fb",
+      "seconds": 6.0,
+      "events": [
+        {
+          "t": 1792063245.335,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792063250.457,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b70cb7535f00011be8fb"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n018 pasted/28-gdocs.html",
+      "key": "b6387174cac84e78b5d773f0b1dbae4f",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b712b7535f00011be902",
+      "seconds": 0.7,
+      "events": [
+        {
+          "t": 1792063250.899,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n019 pasted/29-gdocs.html",
+      "key": "6932da4fa1f84c899c9757db565fdd65",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b713b7535f00011be909",
+      "seconds": 0.5,
+      "events": [
+        {
+          "t": 1792063251.442,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n020 pasted/30-gdocs.html",
+      "key": "e38413fea15b4ab1bdcc15a3bcf1b33c",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b713b7535f00011be910",
+      "seconds": 0.8,
+      "events": [
+        {
+          "t": 1792063252.143,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n021 written/01.json",
+      "key": "06cf7b70d5574bce9aef1cb6dcdec420",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b71eb7535f00011be917",
+      "seconds": 11.0,
+      "events": [
+        {
+          "t": 1792063252.367,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792063262.708,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792063263.01,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 G1 111855 n022 written/02.json",
+      "key": "fe8c7bb4e2244825b7dd8f5544c61591",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b71fb7535f00011be91e",
+      "seconds": 5.4,
+      "events": [
+        {
+          "t": 1792063263.636,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792063268.738,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b71fb7535f00011be91e"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n023 written/03.json",
+      "key": "6e8abeccc8964bbaaa4a39216dd1eed7",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b724b7535f00011be925",
+      "seconds": 0.5,
+      "events": [
+        {
+          "t": 1792063269.054,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n024 written/04.json",
+      "key": "14480c506ace4a2385a65ed36450a953",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b730b7535f00011be92c",
+      "seconds": 11.6,
+      "events": [
+        {
+          "t": 1792063269.199,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792063280.001,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792063280.477,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 G1 111855 n025 written/05.json",
+      "key": "f81ab74421c8427b8feb1c9b5e2887d2",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b731b7535f00011be933",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792063290.808,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792063295.914,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b731b7535f00011be933"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n026 written/06.json",
+      "key": "62698fe34b734e0ba24c22be9209b6a4",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b740b7535f00011be93a",
+      "seconds": 5.8,
+      "events": [
+        {
+          "t": 1792063296.526,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792063301.691,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b740b7535f00011be93a"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n027 written/07.json",
+      "key": "95e097ca089948b3ba595cbf780b3901",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b745b7535f00011be941",
+      "seconds": 0.9,
+      "events": [
+        {
+          "t": 1792063302.255,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n028 written/08.json",
+      "key": "284200ab7dff47dcb49fc5d36c5aabce",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b747b7535f00011be948",
+      "seconds": 0.8,
+      "events": [
+        {
+          "t": 1792063303.214,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n029 written/09.json",
+      "key": "71515fdaac63466193f085e66cc85235",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b747b7535f00011be94f",
+      "seconds": 0.5,
+      "events": [
+        {
+          "t": 1792063303.649,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n030 written/10.json",
+      "key": "bcdcd9d028df46239d0f2ae5a71e5e50",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b748b7535f00011be956",
+      "seconds": 1.3,
+      "events": [
+        {
+          "t": 1792063304.979,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n031 ai/11.md",
+      "key": "80df7bf987b54944a216f178eb3c46eb",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b749b7535f00011be95d",
+      "seconds": 0.4,
+      "events": [
+        {
+          "t": 1792063305.392,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n032 ai/12.md",
+      "key": "cbcd3278bdc24096b3b7bd97539ca50e",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b749b7535f00011be964",
+      "seconds": 0.7,
+      "events": [
+        {
+          "t": 1792063305.811,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n033 ai/13.md",
+      "key": "659270d8478a4940a5f5234ddb7d27f0",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b74ab7535f00011be96b",
+      "seconds": 0.8,
+      "events": [
+        {
+          "t": 1792063306.815,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n034 ai/14.md",
+      "key": "6541601958c44dfd90de94fe8d6e17fe",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b74bb7535f00011be972",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792063316.99,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792063322.102,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b74bb7535f00011be972"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n035 ai/15.md",
+      "key": "2f3b4724598243eaacb3e8dda3adaf08",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b75ab7535f00011be979",
+      "seconds": 15.2,
+      "events": [
+        {
+          "t": 1792063332.129,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792063337.315,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b75ab7535f00011be979"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n036 ai/16.md",
+      "key": "e0748805be1b48988594dcb2e81a95d2",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b769b7535f00011be980",
+      "seconds": 0.8,
+      "events": [
+        {
+          "t": 1792063337.727,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n037 ai/17.md",
+      "key": "bdfba35669ba42109dc8b415149852a1",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b76ab7535f00011be987",
+      "seconds": 1.2,
+      "events": [
+        {
+          "t": 1792063339.105,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n038 ai/18.md",
+      "key": "afd65fe3984d4061b9334d95441cf310",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b76bb7535f00011be98e",
+      "seconds": 0.5,
+      "events": [
+        {
+          "t": 1792063339.577,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n039 ai/19.md",
+      "key": "974b192043854d3ca1e1cecc0c670cda",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b76bb7535f00011be995",
+      "seconds": 5.9,
+      "events": [
+        {
+          "t": 1792063340.372,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792063345.654,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b76bb7535f00011be995"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n040 ai/20.md",
+      "key": "6cc621d4dc2043ada070b769ec008c74",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b77bb7535f00011be99c",
+      "seconds": 10.9,
+      "events": [
+        {
+          "t": 1792063345.658,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792063355.847,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792063356.47,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 G1 111855 n041 pasted/21-word.html",
+      "key": "7deae461af4f46c385bb7e259d3c7788",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b77cb7535f00011be9a3",
+      "seconds": 15.6,
+      "events": [
+        {
+          "t": 1792063366.611,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792063372.242,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b77cb7535f00011be9a3"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n042 pasted/22-word.html",
+      "key": "95681e7e9659405ebbd191f5e842ccf8",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b78cb7535f00011be9aa",
+      "seconds": 0.8,
+      "events": [
+        {
+          "t": 1792063372.928,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n043 pasted/23-word.html",
+      "key": "0a89c12874c8411c94d3858e9e3c7d7b",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b78db7535f00011be9b1",
+      "seconds": 5.4,
+      "events": [
+        {
+          "t": 1792063373.322,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792063378.436,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b78db7535f00011be9b1"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n044 pasted/24-word.html",
+      "key": "903699be0aed43bfae84d0bb3fa27b0a",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b792b7535f00011be9b8",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792063388.453,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792063393.559,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b792b7535f00011be9b8"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n045 pasted/25-word.html",
+      "key": "2972cb63c97642439e0bba1da4484290",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b7abb7535f00011be9bf",
+      "seconds": 10.8,
+      "events": [
+        {
+          "t": 1792063393.563,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792063403.826,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792063404.219,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 G1 111855 n046 pasted/26-gdocs.html",
+      "key": "76047b3c7d8c46af899272f1a6647756",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b7acb7535f00011be9c6",
+      "seconds": 15.2,
+      "events": [
+        {
+          "t": 1792063414.37,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792063419.554,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b7acb7535f00011be9c6"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n047 pasted/27-gdocs.html",
+      "key": "0e699a71de644fb3a11ae09d5e28d123",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b7bbb7535f00011be9cd",
+      "seconds": 0.4,
+      "events": [
+        {
+          "t": 1792063419.861,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n048 pasted/28-gdocs.html",
+      "key": "f8f77057c94e4f75ba96cd99c92299b8",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b7bcb7535f00011be9d4",
+      "seconds": 0.5,
+      "events": [
+        {
+          "t": 1792063420.318,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n049 pasted/29-gdocs.html",
+      "key": "9c0a21f7d4e14ac199d4c32996248577",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b7bcb7535f00011be9db",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792063430.459,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792063435.551,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b7bcb7535f00011be9db"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n050 pasted/30-gdocs.html",
+      "key": "50a519a63b254e22a69b9eec03136216",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b7cbb7535f00011be9e2",
+      "seconds": 0.4,
+      "events": [
+        {
+          "t": 1792063435.808,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n051 written/01.json",
+      "key": "aeb8a77286ed4985a03095f4cd6b38f0",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b7ccb7535f00011be9e9",
+      "seconds": 0.5,
+      "events": [
+        {
+          "t": 1792063436.326,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n052 written/02.json",
+      "key": "a1414ec3bad24e7a983894ff704cd229",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b7ccb7535f00011be9f0",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792063446.454,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792063451.547,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b7ccb7535f00011be9f0"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n053 written/03.json",
+      "key": "afebcd50552b4728bfaca1f445786320",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b7dbb7535f00011be9f7",
+      "seconds": 0.4,
+      "events": [
+        {
+          "t": 1792063451.805,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n054 written/04.json",
+      "key": "d21573453e3c457d82a4bb1b8a25a074",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b7dcb7535f00011be9fe",
+      "seconds": 0.5,
+      "events": [
+        {
+          "t": 1792063452.271,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n055 written/05.json",
+      "key": "1b6a8adc154f4f758f1a655cb8f1661e",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b7dcb7535f00011bea05",
+      "seconds": 0.9,
+      "events": [
+        {
+          "t": 1792063452.788,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n056 written/06.json",
+      "key": "b1ed2f2ddfc4462f97387bad9017abe9",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b7ddb7535f00011bea0c",
+      "seconds": 5.5,
+      "events": [
+        {
+          "t": 1792063453.607,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792063458.762,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b7ddb7535f00011bea0c"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n057 written/07.json",
+      "key": "44dae13b1a8544cab789ecfe8350e9b5",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b7e2b7535f00011bea13",
+      "seconds": 0.5,
+      "events": [
+        {
+          "t": 1792063459.101,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n058 written/08.json",
+      "key": "0340b00a601f4a038432c5407d21a2a1",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b7e3b7535f00011bea1a",
+      "seconds": 0.5,
+      "events": [
+        {
+          "t": 1792063459.574,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n059 written/09.json",
+      "key": "79fc2bd6cb7c4e4ca8c7d7ac3fbecfb1",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b7e3b7535f00011bea21",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792063469.719,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792063474.815,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b7e3b7535f00011bea21"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n060 written/10.json",
+      "key": "c86a29c6953a4a14870ff485043e384f",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b7f2b7535f00011bea28",
+      "seconds": 0.4,
+      "events": [
+        {
+          "t": 1792063475.057,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n061 ai/11.md",
+      "key": "9798fe8118dc44e7a28592e72af714b4",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b7f3b7535f00011bea2f",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792063485.186,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792063490.279,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b7f3b7535f00011bea2f"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n062 ai/12.md",
+      "key": "1cc04d3abf924e98848a959531ebdab7",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b802b7535f00011bea36",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792063500.292,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792063505.423,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b802b7535f00011bea36"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n063 ai/13.md",
+      "key": "0ca08bcf86c34b179a648949067a1d98",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b811b7535f00011bea3d",
+      "seconds": 5.6,
+      "events": [
+        {
+          "t": 1792063505.838,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792063511.009,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b811b7535f00011bea3d"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n064 ai/14.md",
+      "key": "242da82bff5440e4aff80da5e5035795",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b821b7535f00011bea44",
+      "seconds": 11.2,
+      "events": [
+        {
+          "t": 1792063511.015,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792063521.685,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792063522.047,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 G1 111855 n065 ai/15.md",
+      "key": "ed8293b8792d44a78a8d9f10fcccaa20",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b822b7535f00011bea4b",
+      "seconds": 5.7,
+      "events": [
+        {
+          "t": 1792063522.744,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792063527.895,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b822b7535f00011bea4b"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n066 ai/16.md",
+      "key": "c3374d9283d945dcadf7fa4df042dc6b",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b832b7535f00011bea52",
+      "seconds": 10.8,
+      "events": [
+        {
+          "t": 1792063527.9,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792063538.104,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792063538.51,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 G1 111855 n067 ai/17.md",
+      "key": "9eda277a748e4582bb7bcea405779c9f",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b833b7535f00011bea59",
+      "seconds": 1.4,
+      "events": [
+        {
+          "t": 1792063539.802,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n068 ai/18.md",
+      "key": "1a195f43b88340f7af35ae2f2260afd5",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b834b7535f00011bea60",
+      "seconds": 5.4,
+      "events": [
+        {
+          "t": 1792063540.439,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792063545.546,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b834b7535f00011bea60"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n069 ai/19.md",
+      "key": "dbc496842c7f46f2b6df17892435d3da",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b839b7535f00011bea67",
+      "seconds": 5.4,
+      "events": [
+        {
+          "t": 1792063545.874,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792063550.969,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b839b7535f00011bea67"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n070 ai/20.md",
+      "key": "aafa6509c4074df39028f0d782756cd4",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b83fb7535f00011bea6e",
+      "seconds": 5.4,
+      "events": [
+        {
+          "t": 1792063551.282,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792063556.378,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b83fb7535f00011bea6e"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n071 pasted/21-word.html",
+      "key": "3fcfbd8081bc439f8d7c93853b89e7cd",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b844b7535f00011bea75",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792063566.391,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792063571.488,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b844b7535f00011bea75"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n072 pasted/22-word.html",
+      "key": "cc3381c0952f473d822d6e47997bea4d",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b853b7535f00011bea7c",
+      "seconds": 0.5,
+      "events": [
+        {
+          "t": 1792063571.856,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n073 pasted/23-word.html",
+      "key": "9cad6d537d7046f0b5c4d30ec6b569b6",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b854b7535f00011bea83",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792063581.991,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792063587.077,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b854b7535f00011bea83"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n074 pasted/24-word.html",
+      "key": "850c7916230a44248b664d5ec06d2623",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b863b7535f00011bea8a",
+      "seconds": 0.4,
+      "events": [
+        {
+          "t": 1792063587.345,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n075 pasted/25-word.html",
+      "key": "fac83fb4979d46da80103abceaec5d8c",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b863b7535f00011bea91",
+      "seconds": 0.7,
+      "events": [
+        {
+          "t": 1792063588.053,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n076 pasted/26-gdocs.html",
+      "key": "61c9ad5d5cc7484d959e9de9caff0649",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b86eb7535f00011bea98",
+      "seconds": 10.7,
+      "events": [
+        {
+          "t": 1792063588.176,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792063598.418,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792063598.716,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 G1 111855 n077 pasted/27-gdocs.html",
+      "key": "d817122defa9492485a11961d1a936ce",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b86fb7535f00011bea9f",
+      "seconds": 0.5,
+      "events": [
+        {
+          "t": 1792063599.164,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n078 pasted/28-gdocs.html",
+      "key": "276c79a32b5245608a9210c8d9cf138f",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b879b7535f00011beaa6",
+      "seconds": 10.7,
+      "events": [
+        {
+          "t": 1792063599.297,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792063609.641,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792063609.911,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 G1 111855 n079 pasted/29-gdocs.html",
+      "key": "6711bb182e044d5ba0bcc70a4ce2fbf8",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b87ab7535f00011beaad",
+      "seconds": 5.8,
+      "events": [
+        {
+          "t": 1792063610.581,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792063615.775,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b87ab7535f00011beaad"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n080 pasted/30-gdocs.html",
+      "key": "387bbce8532944e48be03b32d2d62c80",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b88ab7535f00011beab4",
+      "seconds": 10.8,
+      "events": [
+        {
+          "t": 1792063615.788,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792063625.989,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792063626.446,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 G1 111855 n081 written/01.json",
+      "key": "8f5c3a74c5094114ac0b7ef746611c9e",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b894b7535f00011beabb",
+      "seconds": 10.9,
+      "events": [
+        {
+          "t": 1792063626.656,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792063636.837,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792063637.404,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 G1 111855 n082 written/02.json",
+      "key": "1c731fa5721b4ee29d7afbf6edc828aa",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b895b7535f00011beac2",
+      "seconds": 0.4,
+      "events": [
+        {
+          "t": 1792063637.816,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n083 written/03.json",
+      "key": "f742ffb2919d4000abd554e1a316e239",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b8a0b7535f00011beac9",
+      "seconds": 11.4,
+      "events": [
+        {
+          "t": 1792063637.942,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792063648.135,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792063649.164,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 G1 111855 n084 written/04.json",
+      "key": "874c342328414fd29eea4166062f23b8",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b8a1b7535f00011bead0",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792063659.324,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792063664.423,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b8a1b7535f00011bead0"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n085 written/05.json",
+      "key": "1afd775da386496eb098314498207be2",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b8b0b7535f00011bead7",
+      "seconds": 0.4,
+      "events": [
+        {
+          "t": 1792063664.677,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n086 written/06.json",
+      "key": "7cf90890b4284a97a8796f59e2c26977",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b8b0b7535f00011beade",
+      "seconds": 0.5,
+      "events": [
+        {
+          "t": 1792063665.137,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n087 written/07.json",
+      "key": "a954be3c7627460ab7f9fda08a787eae",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b8b1b7535f00011beae5",
+      "seconds": 0.4,
+      "events": [
+        {
+          "t": 1792063665.602,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n088 written/08.json",
+      "key": "e88fcdaa326e4ab79de65e2332afe88b",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b8b1b7535f00011beaec",
+      "seconds": 0.6,
+      "events": [
+        {
+          "t": 1792063666.226,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n089 written/09.json",
+      "key": "e26e44af118b494fb6ee0856c9b83b72",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b8b2b7535f00011beaf3",
+      "seconds": 0.4,
+      "events": [
+        {
+          "t": 1792063666.678,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n090 written/10.json",
+      "key": "363a35d353494537b514c12f285c5229",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b8b2b7535f00011beafa",
+      "seconds": 0.7,
+      "events": [
+        {
+          "t": 1792063667.229,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n091 ai/11.md",
+      "key": "51fff34d7ef248fab0d5b4d341c6c376",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b8b3b7535f00011beb01",
+      "seconds": 0.6,
+      "events": [
+        {
+          "t": 1792063667.898,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n092 ai/12.md",
+      "key": "524163bcf9154f35bbf2e61a439f6b3d",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b8b4b7535f00011beb08",
+      "seconds": 0.4,
+      "events": [
+        {
+          "t": 1792063668.283,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n093 ai/13.md",
+      "key": "7187338b1f6643ee9e036cf4b4446e17",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b8b4b7535f00011beb0f",
+      "seconds": 0.4,
+      "events": [
+        {
+          "t": 1792063668.688,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n094 ai/14.md",
+      "key": "1f592989f8b04d4c8173179a5cced40c",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b8b4b7535f00011beb16",
+      "seconds": 15.2,
+      "events": [
+        {
+          "t": 1792063678.824,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792063684.061,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b8b4b7535f00011beb16"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n095 ai/15.md",
+      "key": "a407c8e5af9941089078e9f7c2fabfad",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b8ceb7535f00011beb1d",
+      "seconds": 11.5,
+      "events": [
+        {
+          "t": 1792063684.069,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792063694.473,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792063695.272,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 G1 111855 n096 ai/16.md",
+      "key": "82f1abf720e94417b067350167e6bb51",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b8cfb7535f00011beb24",
+      "seconds": 0.6,
+      "events": [
+        {
+          "t": 1792063695.963,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n097 ai/17.md",
+      "key": "c133d8c810294348b5f7c3c01ed5a7e9",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b8d0b7535f00011beb2b",
+      "seconds": 0.4,
+      "events": [
+        {
+          "t": 1792063696.409,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n098 ai/18.md",
+      "key": "67ce91a613004828a3fda443a9c95060",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6ad0b8d0b7535f00011beb32",
+      "seconds": 0.4,
+      "events": [
+        {
+          "t": 1792063696.781,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n099 ai/19.md",
+      "key": "e737118a99a342eca39f8aa5bd9b0b2d",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b8d1b7535f00011beb39",
+      "seconds": 5.5,
+      "events": [
+        {
+          "t": 1792063697.28,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792063702.372,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b8d1b7535f00011beb39"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 G1 111855 n100 ai/20.md",
+      "key": "1e08dd80aa194c11b4059955b89f9f1c",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "6ad0b8d6b7535f00011beb40",
+      "seconds": 15.2,
+      "events": [
+        {
+          "t": 1792063712.386,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792063717.588,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "6ad0b8d6b7535f00011beb40"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    }
+  ]
+}

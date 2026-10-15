@@ -1,0 +1,1061 @@
+{
+  "model": "minishlab/potion-multilingual-128M",
+  "variant": "int8",
+  "started": "2026-10-15T05:33:14+00:00",
+  "cpus": 2,
+  "model_info": {
+    "dim": 256,
+    "dtype": "int8",
+    "vocabulary": 500353
+  },
+  "throughput": {
+    "items": 2000,
+    "passages": 47251,
+    "wall_seconds": 20.5,
+    "cpu_seconds": 30.9
+  },
+  "memory": {
+    "rss_before_mib": 27.7,
+    "rss_after_mib": 897.3,
+    "model_mib": 869.6,
+    "load_seconds": 21.7
+  },
+  "calibration": {
+    "semantic_same": {
+      "threshold": 0.6393,
+      "recall": 0.92,
+      "false_positive_rate": 0.0,
+      "positives": 25,
+      "negatives": 25
+    },
+    "semantic_cross": {
+      "threshold": 0.5478,
+      "recall": 0.92,
+      "false_positive_rate": 0.0,
+      "positives": 25,
+      "negatives": 25
+    }
+  },
+  "measure": {
+    "all": {
+      "recall": 0.9,
+      "false_positive_rate": 0.0,
+      "positives": 50,
+      "negatives": 50
+    },
+    "same": {
+      "recall": 0.88,
+      "false_positive_rate": 0.0,
+      "positives": 25,
+      "negatives": 25
+    },
+    "cross": {
+      "recall": 0.92,
+      "false_positive_rate": 0.0,
+      "positives": 25,
+      "negatives": 25
+    }
+  },
+  "pairs": [
+    {
+      "topic": 1,
+      "category": "translation",
+      "semantic": 0.6429
+    },
+    {
+      "topic": 1,
+      "category": "paraphrase",
+      "semantic": 0.704
+    },
+    {
+      "topic": 1,
+      "category": "independent_same",
+      "semantic": 0.3026
+    },
+    {
+      "topic": 1,
+      "category": "independent_other",
+      "semantic": 0.2686
+    },
+    {
+      "topic": 2,
+      "category": "translation",
+      "semantic": 0.6352
+    },
+    {
+      "topic": 2,
+      "category": "paraphrase",
+      "semantic": 0.6621
+    },
+    {
+      "topic": 2,
+      "category": "independent_same",
+      "semantic": 0.386
+    },
+    {
+      "topic": 2,
+      "category": "independent_other",
+      "semantic": 0.2895
+    },
+    {
+      "topic": 3,
+      "category": "translation",
+      "semantic": 0.5795
+    },
+    {
+      "topic": 3,
+      "category": "paraphrase",
+      "semantic": 0.681
+    },
+    {
+      "topic": 3,
+      "category": "independent_same",
+      "semantic": 0.3374
+    },
+    {
+      "topic": 3,
+      "category": "independent_other",
+      "semantic": 0.3236
+    },
+    {
+      "topic": 4,
+      "category": "translation",
+      "semantic": 0.5517
+    },
+    {
+      "topic": 4,
+      "category": "paraphrase",
+      "semantic": 0.6051
+    },
+    {
+      "topic": 4,
+      "category": "independent_same",
+      "semantic": 0.2929
+    },
+    {
+      "topic": 4,
+      "category": "independent_other",
+      "semantic": 0.2008
+    },
+    {
+      "topic": 5,
+      "category": "translation",
+      "semantic": 0.7167
+    },
+    {
+      "topic": 5,
+      "category": "paraphrase",
+      "semantic": 0.6344
+    },
+    {
+      "topic": 5,
+      "category": "independent_same",
+      "semantic": 0.3971
+    },
+    {
+      "topic": 5,
+      "category": "independent_other",
+      "semantic": 0.3644
+    },
+    {
+      "topic": 6,
+      "category": "translation",
+      "semantic": 0.5285
+    },
+    {
+      "topic": 6,
+      "category": "paraphrase",
+      "semantic": 0.684
+    },
+    {
+      "topic": 6,
+      "category": "independent_same",
+      "semantic": 0.2892
+    },
+    {
+      "topic": 6,
+      "category": "independent_other",
+      "semantic": 0.2015
+    },
+    {
+      "topic": 7,
+      "category": "translation",
+      "semantic": 0.5478
+    },
+    {
+      "topic": 7,
+      "category": "paraphrase",
+      "semantic": 0.6393
+    },
+    {
+      "topic": 7,
+      "category": "independent_same",
+      "semantic": 0.3512
+    },
+    {
+      "topic": 7,
+      "category": "independent_other",
+      "semantic": 0.3127
+    },
+    {
+      "topic": 8,
+      "category": "translation",
+      "semantic": 0.5816
+    },
+    {
+      "topic": 8,
+      "category": "paraphrase",
+      "semantic": 0.6525
+    },
+    {
+      "topic": 8,
+      "category": "independent_same",
+      "semantic": 0.2325
+    },
+    {
+      "topic": 8,
+      "category": "independent_other",
+      "semantic": 0.2383
+    },
+    {
+      "topic": 9,
+      "category": "translation",
+      "semantic": 0.6289
+    },
+    {
+      "topic": 9,
+      "category": "paraphrase",
+      "semantic": 0.6325
+    },
+    {
+      "topic": 9,
+      "category": "independent_same",
+      "semantic": 0.4074
+    },
+    {
+      "topic": 9,
+      "category": "independent_other",
+      "semantic": 0.2174
+    },
+    {
+      "topic": 10,
+      "category": "translation",
+      "semantic": 0.5824
+    },
+    {
+      "topic": 10,
+      "category": "paraphrase",
+      "semantic": 0.69
+    },
+    {
+      "topic": 10,
+      "category": "independent_same",
+      "semantic": 0.2329
+    },
+    {
+      "topic": 10,
+      "category": "independent_other",
+      "semantic": 0.2679
+    },
+    {
+      "topic": 11,
+      "category": "translation",
+      "semantic": 0.555
+    },
+    {
+      "topic": 11,
+      "category": "paraphrase",
+      "semantic": 0.7059
+    },
+    {
+      "topic": 11,
+      "category": "independent_same",
+      "semantic": 0.3704
+    },
+    {
+      "topic": 11,
+      "category": "independent_other",
+      "semantic": 0.2144
+    },
+    {
+      "topic": 12,
+      "category": "translation",
+      "semantic": 0.6419
+    },
+    {
+      "topic": 12,
+      "category": "paraphrase",
+      "semantic": 0.6172
+    },
+    {
+      "topic": 12,
+      "category": "independent_same",
+      "semantic": 0.257
+    },
+    {
+      "topic": 12,
+      "category": "independent_other",
+      "semantic": 0.3498
+    },
+    {
+      "topic": 13,
+      "category": "translation",
+      "semantic": 0.6147
+    },
+    {
+      "topic": 13,
+      "category": "paraphrase",
+      "semantic": 0.7832
+    },
+    {
+      "topic": 13,
+      "category": "independent_same",
+      "semantic": 0.3314
+    },
+    {
+      "topic": 13,
+      "category": "independent_other",
+      "semantic": 0.3349
+    },
+    {
+      "topic": 14,
+      "category": "translation",
+      "semantic": 0.6723
+    },
+    {
+      "topic": 14,
+      "category": "paraphrase",
+      "semantic": 0.6285
+    },
+    {
+      "topic": 14,
+      "category": "independent_same",
+      "semantic": 0.4296
+    },
+    {
+      "topic": 14,
+      "category": "independent_other",
+      "semantic": 0.3042
+    },
+    {
+      "topic": 15,
+      "category": "translation",
+      "semantic": 0.6828
+    },
+    {
+      "topic": 15,
+      "category": "paraphrase",
+      "semantic": 0.6557
+    },
+    {
+      "topic": 15,
+      "category": "independent_same",
+      "semantic": 0.3394
+    },
+    {
+      "topic": 15,
+      "category": "independent_other",
+      "semantic": 0.2286
+    },
+    {
+      "topic": 16,
+      "category": "translation",
+      "semantic": 0.5677
+    },
+    {
+      "topic": 16,
+      "category": "paraphrase",
+      "semantic": 0.6797
+    },
+    {
+      "topic": 16,
+      "category": "independent_same",
+      "semantic": 0.3951
+    },
+    {
+      "topic": 16,
+      "category": "independent_other",
+      "semantic": 0.2383
+    },
+    {
+      "topic": 17,
+      "category": "translation",
+      "semantic": 0.6852
+    },
+    {
+      "topic": 17,
+      "category": "paraphrase",
+      "semantic": 0.7811
+    },
+    {
+      "topic": 17,
+      "category": "independent_same",
+      "semantic": 0.4257
+    },
+    {
+      "topic": 17,
+      "category": "independent_other",
+      "semantic": 0.2668
+    },
+    {
+      "topic": 18,
+      "category": "translation",
+      "semantic": 0.646
+    },
+    {
+      "topic": 18,
+      "category": "paraphrase",
+      "semantic": 0.7253
+    },
+    {
+      "topic": 18,
+      "category": "independent_same",
+      "semantic": 0.4566
+    },
+    {
+      "topic": 18,
+      "category": "independent_other",
+      "semantic": 0.1969
+    },
+    {
+      "topic": 19,
+      "category": "translation",
+      "semantic": 0.6062
+    },
+    {
+      "topic": 19,
+      "category": "paraphrase",
+      "semantic": 0.7133
+    },
+    {
+      "topic": 19,
+      "category": "independent_same",
+      "semantic": 0.3563
+    },
+    {
+      "topic": 19,
+      "category": "independent_other",
+      "semantic": 0.3018
+    },
+    {
+      "topic": 20,
+      "category": "translation",
+      "semantic": 0.5793
+    },
+    {
+      "topic": 20,
+      "category": "paraphrase",
+      "semantic": 0.7528
+    },
+    {
+      "topic": 20,
+      "category": "independent_same",
+      "semantic": 0.3202
+    },
+    {
+      "topic": 20,
+      "category": "independent_other",
+      "semantic": 0.3054
+    },
+    {
+      "topic": 21,
+      "category": "translation",
+      "semantic": 0.5958
+    },
+    {
+      "topic": 21,
+      "category": "paraphrase",
+      "semantic": 0.6513
+    },
+    {
+      "topic": 21,
+      "category": "independent_same",
+      "semantic": 0.4092
+    },
+    {
+      "topic": 21,
+      "category": "independent_other",
+      "semantic": 0.3051
+    },
+    {
+      "topic": 22,
+      "category": "translation",
+      "semantic": 0.6186
+    },
+    {
+      "topic": 22,
+      "category": "paraphrase",
+      "semantic": 0.7096
+    },
+    {
+      "topic": 22,
+      "category": "independent_same",
+      "semantic": 0.2831
+    },
+    {
+      "topic": 22,
+      "category": "independent_other",
+      "semantic": 0.2463
+    },
+    {
+      "topic": 23,
+      "category": "translation",
+      "semantic": 0.5399
+    },
+    {
+      "topic": 23,
+      "category": "paraphrase",
+      "semantic": 0.6966
+    },
+    {
+      "topic": 23,
+      "category": "independent_same",
+      "semantic": 0.2749
+    },
+    {
+      "topic": 23,
+      "category": "independent_other",
+      "semantic": 0.2488
+    },
+    {
+      "topic": 24,
+      "category": "translation",
+      "semantic": 0.5193
+    },
+    {
+      "topic": 24,
+      "category": "paraphrase",
+      "semantic": 0.7039
+    },
+    {
+      "topic": 24,
+      "category": "independent_same",
+      "semantic": 0.2707
+    },
+    {
+      "topic": 24,
+      "category": "independent_other",
+      "semantic": 0.3105
+    },
+    {
+      "topic": 25,
+      "category": "translation",
+      "semantic": 0.6314
+    },
+    {
+      "topic": 25,
+      "category": "paraphrase",
+      "semantic": 0.7758
+    },
+    {
+      "topic": 25,
+      "category": "independent_same",
+      "semantic": 0.2392
+    },
+    {
+      "topic": 25,
+      "category": "independent_other",
+      "semantic": 0.2024
+    },
+    {
+      "topic": 26,
+      "category": "translation",
+      "semantic": 0.6414
+    },
+    {
+      "topic": 26,
+      "category": "paraphrase",
+      "semantic": 0.7894
+    },
+    {
+      "topic": 26,
+      "category": "independent_same",
+      "semantic": 0.3149
+    },
+    {
+      "topic": 26,
+      "category": "independent_other",
+      "semantic": 0.3378
+    },
+    {
+      "topic": 27,
+      "category": "translation",
+      "semantic": 0.6108
+    },
+    {
+      "topic": 27,
+      "category": "paraphrase",
+      "semantic": 0.797
+    },
+    {
+      "topic": 27,
+      "category": "independent_same",
+      "semantic": 0.3739
+    },
+    {
+      "topic": 27,
+      "category": "independent_other",
+      "semantic": 0.2975
+    },
+    {
+      "topic": 28,
+      "category": "translation",
+      "semantic": 0.6374
+    },
+    {
+      "topic": 28,
+      "category": "paraphrase",
+      "semantic": 0.7997
+    },
+    {
+      "topic": 28,
+      "category": "independent_same",
+      "semantic": 0.3227
+    },
+    {
+      "topic": 28,
+      "category": "independent_other",
+      "semantic": 0.2626
+    },
+    {
+      "topic": 29,
+      "category": "translation",
+      "semantic": 0.6775
+    },
+    {
+      "topic": 29,
+      "category": "paraphrase",
+      "semantic": 0.7768
+    },
+    {
+      "topic": 29,
+      "category": "independent_same",
+      "semantic": 0.3474
+    },
+    {
+      "topic": 29,
+      "category": "independent_other",
+      "semantic": 0.2558
+    },
+    {
+      "topic": 30,
+      "category": "translation",
+      "semantic": 0.6358
+    },
+    {
+      "topic": 30,
+      "category": "paraphrase",
+      "semantic": 0.7537
+    },
+    {
+      "topic": 30,
+      "category": "independent_same",
+      "semantic": 0.3792
+    },
+    {
+      "topic": 30,
+      "category": "independent_other",
+      "semantic": 0.2194
+    },
+    {
+      "topic": 31,
+      "category": "translation",
+      "semantic": 0.7114
+    },
+    {
+      "topic": 31,
+      "category": "paraphrase",
+      "semantic": 0.8716
+    },
+    {
+      "topic": 31,
+      "category": "independent_same",
+      "semantic": 0.4595
+    },
+    {
+      "topic": 31,
+      "category": "independent_other",
+      "semantic": 0.3023
+    },
+    {
+      "topic": 32,
+      "category": "translation",
+      "semantic": 0.6516
+    },
+    {
+      "topic": 32,
+      "category": "paraphrase",
+      "semantic": 0.8379
+    },
+    {
+      "topic": 32,
+      "category": "independent_same",
+      "semantic": 0.525
+    },
+    {
+      "topic": 32,
+      "category": "independent_other",
+      "semantic": 0.2958
+    },
+    {
+      "topic": 33,
+      "category": "translation",
+      "semantic": 0.6391
+    },
+    {
+      "topic": 33,
+      "category": "paraphrase",
+      "semantic": 0.7713
+    },
+    {
+      "topic": 33,
+      "category": "independent_same",
+      "semantic": 0.3373
+    },
+    {
+      "topic": 33,
+      "category": "independent_other",
+      "semantic": 0.2597
+    },
+    {
+      "topic": 34,
+      "category": "translation",
+      "semantic": 0.5628
+    },
+    {
+      "topic": 34,
+      "category": "paraphrase",
+      "semantic": 0.7812
+    },
+    {
+      "topic": 34,
+      "category": "independent_same",
+      "semantic": 0.4522
+    },
+    {
+      "topic": 34,
+      "category": "independent_other",
+      "semantic": 0.2526
+    },
+    {
+      "topic": 35,
+      "category": "translation",
+      "semantic": 0.6143
+    },
+    {
+      "topic": 35,
+      "category": "paraphrase",
+      "semantic": 0.7728
+    },
+    {
+      "topic": 35,
+      "category": "independent_same",
+      "semantic": 0.3029
+    },
+    {
+      "topic": 35,
+      "category": "independent_other",
+      "semantic": 0.179
+    },
+    {
+      "topic": 36,
+      "category": "translation",
+      "semantic": 0.6562
+    },
+    {
+      "topic": 36,
+      "category": "paraphrase",
+      "semantic": 0.7284
+    },
+    {
+      "topic": 36,
+      "category": "independent_same",
+      "semantic": 0.3135
+    },
+    {
+      "topic": 36,
+      "category": "independent_other",
+      "semantic": 0.315
+    },
+    {
+      "topic": 37,
+      "category": "translation",
+      "semantic": 0.5923
+    },
+    {
+      "topic": 37,
+      "category": "paraphrase",
+      "semantic": 0.7095
+    },
+    {
+      "topic": 37,
+      "category": "independent_same",
+      "semantic": 0.3407
+    },
+    {
+      "topic": 37,
+      "category": "independent_other",
+      "semantic": 0.2948
+    },
+    {
+      "topic": 38,
+      "category": "translation",
+      "semantic": 0.6352
+    },
+    {
+      "topic": 38,
+      "category": "paraphrase",
+      "semantic": 0.7994
+    },
+    {
+      "topic": 38,
+      "category": "independent_same",
+      "semantic": 0.369
+    },
+    {
+      "topic": 38,
+      "category": "independent_other",
+      "semantic": 0.2749
+    },
+    {
+      "topic": 39,
+      "category": "translation",
+      "semantic": 0.683
+    },
+    {
+      "topic": 39,
+      "category": "paraphrase",
+      "semantic": 0.7896
+    },
+    {
+      "topic": 39,
+      "category": "independent_same",
+      "semantic": 0.3819
+    },
+    {
+      "topic": 39,
+      "category": "independent_other",
+      "semantic": 0.3385
+    },
+    {
+      "topic": 40,
+      "category": "translation",
+      "semantic": 0.5875
+    },
+    {
+      "topic": 40,
+      "category": "paraphrase",
+      "semantic": 0.8344
+    },
+    {
+      "topic": 40,
+      "category": "independent_same",
+      "semantic": 0.3452
+    },
+    {
+      "topic": 40,
+      "category": "independent_other",
+      "semantic": 0.2427
+    },
+    {
+      "topic": 41,
+      "category": "translation",
+      "semantic": 0.616
+    },
+    {
+      "topic": 41,
+      "category": "paraphrase",
+      "semantic": 0.742
+    },
+    {
+      "topic": 41,
+      "category": "independent_same",
+      "semantic": 0.3163
+    },
+    {
+      "topic": 41,
+      "category": "independent_other",
+      "semantic": 0.2352
+    },
+    {
+      "topic": 42,
+      "category": "translation",
+      "semantic": 0.5737
+    },
+    {
+      "topic": 42,
+      "category": "paraphrase",
+      "semantic": 0.7851
+    },
+    {
+      "topic": 42,
+      "category": "independent_same",
+      "semantic": 0.4245
+    },
+    {
+      "topic": 42,
+      "category": "independent_other",
+      "semantic": 0.2474
+    },
+    {
+      "topic": 43,
+      "category": "translation",
+      "semantic": 0.6359
+    },
+    {
+      "topic": 43,
+      "category": "paraphrase",
+      "semantic": 0.7832
+    },
+    {
+      "topic": 43,
+      "category": "independent_same",
+      "semantic": 0.3517
+    },
+    {
+      "topic": 43,
+      "category": "independent_other",
+      "semantic": 0.2635
+    },
+    {
+      "topic": 44,
+      "category": "translation",
+      "semantic": 0.6256
+    },
+    {
+      "topic": 44,
+      "category": "paraphrase",
+      "semantic": 0.6983
+    },
+    {
+      "topic": 44,
+      "category": "independent_same",
+      "semantic": 0.3631
+    },
+    {
+      "topic": 44,
+      "category": "independent_other",
+      "semantic": 0.2337
+    },
+    {
+      "topic": 45,
+      "category": "translation",
+      "semantic": 0.5473
+    },
+    {
+      "topic": 45,
+      "category": "paraphrase",
+      "semantic": 0.7578
+    },
+    {
+      "topic": 45,
+      "category": "independent_same",
+      "semantic": 0.2952
+    },
+    {
+      "topic": 45,
+      "category": "independent_other",
+      "semantic": 0.3679
+    },
+    {
+      "topic": 46,
+      "category": "translation",
+      "semantic": 0.5905
+    },
+    {
+      "topic": 46,
+      "category": "paraphrase",
+      "semantic": 0.7771
+    },
+    {
+      "topic": 46,
+      "category": "independent_same",
+      "semantic": 0.357
+    },
+    {
+      "topic": 46,
+      "category": "independent_other",
+      "semantic": 0.3312
+    },
+    {
+      "topic": 47,
+      "category": "translation",
+      "semantic": 0.6413
+    },
+    {
+      "topic": 47,
+      "category": "paraphrase",
+      "semantic": 0.7986
+    },
+    {
+      "topic": 47,
+      "category": "independent_same",
+      "semantic": 0.3432
+    },
+    {
+      "topic": 47,
+      "category": "independent_other",
+      "semantic": 0.2835
+    },
+    {
+      "topic": 48,
+      "category": "translation",
+      "semantic": 0.5847
+    },
+    {
+      "topic": 48,
+      "category": "paraphrase",
+      "semantic": 0.7737
+    },
+    {
+      "topic": 48,
+      "category": "independent_same",
+      "semantic": 0.3673
+    },
+    {
+      "topic": 48,
+      "category": "independent_other",
+      "semantic": 0.1875
+    },
+    {
+      "topic": 49,
+      "category": "translation",
+      "semantic": 0.6884
+    },
+    {
+      "topic": 49,
+      "category": "paraphrase",
+      "semantic": 0.7535
+    },
+    {
+      "topic": 49,
+      "category": "independent_same",
+      "semantic": 0.4022
+    },
+    {
+      "topic": 49,
+      "category": "independent_other",
+      "semantic": 0.2465
+    },
+    {
+      "topic": 50,
+      "category": "translation",
+      "semantic": 0.6847
+    },
+    {
+      "topic": 50,
+      "category": "paraphrase",
+      "semantic": 0.8597
+    },
+    {
+      "topic": 50,
+      "category": "independent_same",
+      "semantic": 0.4617
+    },
+    {
+      "topic": 50,
+      "category": "independent_other",
+      "semantic": 0.2817
+    }
+  ]
+}

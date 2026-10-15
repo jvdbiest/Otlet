@@ -1,0 +1,2329 @@
+{
+  "config": "W3",
+  "label": "W3",
+  "started": "2026-10-15T11:28:59+00:00",
+  "purged": 0,
+  "summary": {
+    "publications": 100,
+    "faults": {
+      "cut_response": 15,
+      "cut_before": 15,
+      "none": 50,
+      "timeout_after": 20
+    },
+    "remote_posts": 0,
+    "duplicates_by_title": 0,
+    "duplicates_by_key": 0,
+    "missing": 0,
+    "states": {
+      "refused": 65,
+      "to_verify": 35
+    },
+    "reconciled_automatically": 0.0,
+    "how": {},
+    "resends": 0,
+    "blind_resends": 0,
+    "by_fault": {
+      "none": {
+        "refused": 50
+      },
+      "cut_before": {
+        "to_verify": 15
+      },
+      "timeout_after": {
+        "to_verify": 20
+      },
+      "cut_response": {
+        "refused": 15
+      }
+    },
+    "seconds_per_publication_max": 21.6
+  },
+  "publications": [
+    {
+      "title": "S7 W3 112900 n001 ai/11.md",
+      "key": "7873ff8423ca425fa0d460a7c2a8cb36",
+      "fault": "cut_response",
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792063741.016,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n002 ai/12.md",
+      "key": "ab293be384e9497f94e599b55e9e49e2",
+      "fault": "cut_before",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 11.3,
+      "events": [
+        {
+          "t": 1792063741.021,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792063752.356,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n003 ai/13.md",
+      "key": "4a88738610e34642adfd195ebbc57f7a",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792063752.538,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n004 ai/14.md",
+      "key": "bbc0c178db7441569f9ae0d74fbdcbe7",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792063752.612,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n005 ai/15.md",
+      "key": "2b673cd046a048e2be6ea8f65323a148",
+      "fault": "cut_before",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 10.3,
+      "events": [
+        {
+          "t": 1792063752.62,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792063762.949,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n006 ai/16.md",
+      "key": "ec4779b86c9549e9a501ae2c8b562e4b",
+      "fault": "cut_response",
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.4,
+      "events": [
+        {
+          "t": 1792063763.394,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n007 ai/17.md",
+      "key": "471eef29100b43d3b3679ef110c902d5",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792063763.5,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n008 ai/18.md",
+      "key": "86f2259a8df2439eaf5ec7fe6f7da120",
+      "fault": "timeout_after",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 20.3,
+      "events": [
+        {
+          "t": 1792063773.51,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792063783.818,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n009 ai/19.md",
+      "key": "0a37a3b35f7d44ea9fcad9fcc339487c",
+      "fault": "cut_before",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 10.3,
+      "events": [
+        {
+          "t": 1792063783.821,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792063794.072,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n010 ai/20.md",
+      "key": "1836d81f5dd940659b1147fb4b0a7a70",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792063794.148,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n011 pasted/21-word.html",
+      "key": "922265bcb08e478a927b1d0d4c34d47b",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792063794.228,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n012 pasted/22-word.html",
+      "key": "af01f53ccfee4c818511c4e22f50e68e",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792063794.353,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n013 pasted/23-word.html",
+      "key": "17ea449065bf442d9eef013e536fc04e",
+      "fault": "timeout_after",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 20.3,
+      "events": [
+        {
+          "t": 1792063804.364,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792063814.648,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n014 pasted/24-word.html",
+      "key": "63f56cafb6c24c61a03ad6e8febee56b",
+      "fault": "timeout_after",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 20.2,
+      "events": [
+        {
+          "t": 1792063824.661,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792063834.896,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n015 pasted/25-word.html",
+      "key": "2be4e2f2085d4da58ef71a70a00dae3e",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792063834.956,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n016 pasted/26-gdocs.html",
+      "key": "ab03a3f6a7374ee1b0a456bbc650b7f7",
+      "fault": "timeout_after",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 20.3,
+      "events": [
+        {
+          "t": 1792063844.966,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792063855.207,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n017 pasted/27-gdocs.html",
+      "key": "c7f0564c2f884061a1a9309568dc5c7b",
+      "fault": "cut_response",
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792063855.268,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n018 pasted/28-gdocs.html",
+      "key": "877d95b13c9b4e1bb17a73fcdc7932ad",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792063855.329,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n019 pasted/29-gdocs.html",
+      "key": "3b486ef6c52a4375b76aa2278b855f67",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792063855.392,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n020 pasted/30-gdocs.html",
+      "key": "1e5ddafcf8f44ecdb8143ca624cc4d15",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792063855.452,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n021 written/01.json",
+      "key": "46accf76bc174c85839a668ca6fc79ae",
+      "fault": "cut_before",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 10.3,
+      "events": [
+        {
+          "t": 1792063855.456,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792063865.739,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n022 written/02.json",
+      "key": "940a2532e4a64f5c9552f4b4c338fe5b",
+      "fault": "cut_response",
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792063865.835,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n023 written/03.json",
+      "key": "43f4599919a149b2bec8259134e20c35",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792063865.9,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n024 written/04.json",
+      "key": "21dd45feff7d4fecbd3082f153c28dc2",
+      "fault": "cut_before",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 10.5,
+      "events": [
+        {
+          "t": 1792063865.903,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792063876.362,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n025 written/05.json",
+      "key": "da85e4741ac347328d674bf8de7271e9",
+      "fault": "timeout_after",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 20.2,
+      "events": [
+        {
+          "t": 1792063886.375,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792063896.595,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n026 written/06.json",
+      "key": "10ff07e2ac164ba0a0d253e06a3733fd",
+      "fault": "cut_response",
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792063896.658,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n027 written/07.json",
+      "key": "5df9b70ea01447f3b2d46f0a56a5fd68",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792063896.718,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n028 written/08.json",
+      "key": "68ad29881a3a4dafb6798b4ef9e08372",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792063896.782,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n029 written/09.json",
+      "key": "b92ac59695b045fcb4d7ee020fd21532",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792063896.841,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n030 written/10.json",
+      "key": "1d5a5fee9d914f4499476e3a4ee6e72c",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792063896.903,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n031 ai/11.md",
+      "key": "f65774e1024f4a0eb01e1670cc3acd87",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792063896.964,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n032 ai/12.md",
+      "key": "b417dcf0f9da489e998696ef79e4ece7",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792063897.039,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n033 ai/13.md",
+      "key": "bfaf3230fc744d579dbd5cc4c195a905",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792063897.111,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n034 ai/14.md",
+      "key": "50245eb1ab54455da007c807198de8be",
+      "fault": "timeout_after",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 20.2,
+      "events": [
+        {
+          "t": 1792063907.116,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792063917.33,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n035 ai/15.md",
+      "key": "935e912cc98c4f22a35e73f55a50c8bb",
+      "fault": "timeout_after",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 20.2,
+      "events": [
+        {
+          "t": 1792063927.336,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792063937.574,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n036 ai/16.md",
+      "key": "5621aa43ddf84fb2bc997c0b27c0e23a",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792063937.635,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n037 ai/17.md",
+      "key": "7da63e801b2e4a67a82856c59724ebdf",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792063937.694,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n038 ai/18.md",
+      "key": "cca3d7d128a74ca28b8521a6da040a69",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792063937.755,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n039 ai/19.md",
+      "key": "ae508857e84148c6a1493e4d43aa413f",
+      "fault": "cut_response",
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792063937.823,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n040 ai/20.md",
+      "key": "744e46d653e2471eb8d20297dd127dd6",
+      "fault": "cut_before",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 10.2,
+      "events": [
+        {
+          "t": 1792063937.826,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792063948.053,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n041 pasted/21-word.html",
+      "key": "5c03d8054d5a412c834372cbea2288e8",
+      "fault": "timeout_after",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 20.2,
+      "events": [
+        {
+          "t": 1792063958.066,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792063968.3,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n042 pasted/22-word.html",
+      "key": "6d787661108b4c11af75fa2746630441",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792063968.362,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n043 pasted/23-word.html",
+      "key": "d17088335ee1452eba6b526fd9938641",
+      "fault": "cut_response",
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792063968.422,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n044 pasted/24-word.html",
+      "key": "7c74ef33b3c64f7f9b66a65c0a7024c4",
+      "fault": "timeout_after",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 20.6,
+      "events": [
+        {
+          "t": 1792063978.425,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792063989.022,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n045 pasted/25-word.html",
+      "key": "e39566c0d1b24df7a3c0bd0bcc8785fc",
+      "fault": "cut_before",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 10.4,
+      "events": [
+        {
+          "t": 1792063989.026,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792063999.445,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n046 pasted/26-gdocs.html",
+      "key": "5f10162de74c4ad093342789373ffdfc",
+      "fault": "timeout_after",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 20.3,
+      "events": [
+        {
+          "t": 1792064009.45,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064019.762,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n047 pasted/27-gdocs.html",
+      "key": "e27b2db3d0064be59568862ab429bbdd",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064019.846,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n048 pasted/28-gdocs.html",
+      "key": "fbe537efe60d48a19f05713344e31f56",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064019.914,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n049 pasted/29-gdocs.html",
+      "key": "f745490f6b3448faa0aed17c1800eb37",
+      "fault": "timeout_after",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 20.2,
+      "events": [
+        {
+          "t": 1792064029.926,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064040.147,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n050 pasted/30-gdocs.html",
+      "key": "ced7855318804114b661d3a0e9d4eccf",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064040.206,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n051 written/01.json",
+      "key": "fa5115191ad04e1785d524736247e872",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064040.267,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n052 written/02.json",
+      "key": "3a1fb7e0a5844230b588eddd6b05c54c",
+      "fault": "timeout_after",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 21.6,
+      "events": [
+        {
+          "t": 1792064050.279,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064061.866,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n053 written/03.json",
+      "key": "0e88309e983f4574a71f4d14a8ed22da",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064061.926,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n054 written/04.json",
+      "key": "c719f70847ec444f9d4d5018093f2062",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064061.986,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n055 written/05.json",
+      "key": "297df159e8034e36a90318afc03e3658",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064062.046,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n056 written/06.json",
+      "key": "6ffb0a506c94479d8bfb8efdb962a9ca",
+      "fault": "cut_response",
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064062.106,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n057 written/07.json",
+      "key": "1e70eadf679c464fa871166ae651296f",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064062.169,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n058 written/08.json",
+      "key": "a3c24bc7c5d2415e83d733e5cca5e690",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064062.231,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n059 written/09.json",
+      "key": "3f4a266728b14b5e82809127a935c599",
+      "fault": "timeout_after",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 20.2,
+      "events": [
+        {
+          "t": 1792064072.243,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064082.455,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n060 written/10.json",
+      "key": "7ba5dd4b477e4c67b85190dd6cae8dbd",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064082.518,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n061 ai/11.md",
+      "key": "93b5669860bd4277823efc8d8562ed87",
+      "fault": "timeout_after",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 20.2,
+      "events": [
+        {
+          "t": 1792064092.528,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064102.728,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n062 ai/12.md",
+      "key": "29e3672dc5fe49e58bb882eae61b3fd3",
+      "fault": "timeout_after",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 20.3,
+      "events": [
+        {
+          "t": 1792064112.742,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064123.052,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n063 ai/13.md",
+      "key": "c83fcd0bef0345feaae599d6a1921c44",
+      "fault": "cut_response",
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064123.122,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n064 ai/14.md",
+      "key": "beb5ebdaf39141a1b5c44adaa94d56e9",
+      "fault": "cut_before",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 10.2,
+      "events": [
+        {
+          "t": 1792064123.125,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792064133.334,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n065 ai/15.md",
+      "key": "00c918a14a3c40589b701b06c2adfea0",
+      "fault": "cut_response",
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064133.394,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n066 ai/16.md",
+      "key": "6455508a4a3a4217a4f78a33a437e0b9",
+      "fault": "cut_before",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 10.2,
+      "events": [
+        {
+          "t": 1792064133.397,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792064143.643,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n067 ai/17.md",
+      "key": "5799d35caffd4bb8aaf83668c1e50be6",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064143.711,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n068 ai/18.md",
+      "key": "4b0f09c5fa72444586ae087c3b604245",
+      "fault": "cut_response",
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064143.777,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n069 ai/19.md",
+      "key": "ef8a4b9a53a9476fbb15bfa4bb4ffa62",
+      "fault": "cut_response",
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064143.841,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n070 ai/20.md",
+      "key": "b27804e1dc5e410f97bc2059b60a927b",
+      "fault": "cut_response",
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064143.905,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n071 pasted/21-word.html",
+      "key": "5c329f31e9094f5882ff24243edbeb22",
+      "fault": "timeout_after",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 20.3,
+      "events": [
+        {
+          "t": 1792064153.916,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064164.167,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n072 pasted/22-word.html",
+      "key": "d096ecbef6234e3d9ee9ebf84e0aa452",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064164.23,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n073 pasted/23-word.html",
+      "key": "f180bb00265748b4ad50e4fd111016dd",
+      "fault": "timeout_after",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 20.2,
+      "events": [
+        {
+          "t": 1792064174.233,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064184.441,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n074 pasted/24-word.html",
+      "key": "add75c7736bb40e1a2c49f6026ff2a8d",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064184.502,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n075 pasted/25-word.html",
+      "key": "d4e587d056244ce9846988e470bf008b",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064184.563,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n076 pasted/26-gdocs.html",
+      "key": "5ebe8c3a94934a9eb78feb1a55abb9c2",
+      "fault": "cut_before",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 10.2,
+      "events": [
+        {
+          "t": 1792064184.566,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792064194.779,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n077 pasted/27-gdocs.html",
+      "key": "78d09d8420f14bb095ac90c6b5900e56",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064194.84,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n078 pasted/28-gdocs.html",
+      "key": "5ead10e52ee64236aa9f4de9e7df514c",
+      "fault": "cut_before",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 10.2,
+      "events": [
+        {
+          "t": 1792064194.843,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792064205.049,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n079 pasted/29-gdocs.html",
+      "key": "81b7cc8514134fa7bf433d1b93ef446e",
+      "fault": "cut_response",
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064205.129,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n080 pasted/30-gdocs.html",
+      "key": "935d08db9e5443eeb4858b92c999be33",
+      "fault": "cut_before",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 10.2,
+      "events": [
+        {
+          "t": 1792064205.132,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792064215.332,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n081 written/01.json",
+      "key": "40b6619b4211434ea1f96665e46ae317",
+      "fault": "cut_before",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 10.4,
+      "events": [
+        {
+          "t": 1792064215.335,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792064225.685,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n082 written/02.json",
+      "key": "f8541c082e864f8ea144c868e3514cc5",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064225.748,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n083 written/03.json",
+      "key": "9d4a3002389443c39375e0d8378dbe7b",
+      "fault": "cut_before",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 10.2,
+      "events": [
+        {
+          "t": 1792064225.752,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792064235.972,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n084 written/04.json",
+      "key": "999cb6b07f48457db6872761d515e188",
+      "fault": "timeout_after",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 20.2,
+      "events": [
+        {
+          "t": 1792064245.979,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064256.193,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n085 written/05.json",
+      "key": "98a936a0795242e0935efe66aaf26ee2",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064256.254,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n086 written/06.json",
+      "key": "b4077d1ebe04435db191e8deb0c551d0",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064256.315,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n087 written/07.json",
+      "key": "3292a5286b4447d09137e4265acf01a2",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064256.38,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n088 written/08.json",
+      "key": "84e696515f1d4e62b7260e4741ab8949",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064256.442,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n089 written/09.json",
+      "key": "3cd5d7288a524c52adb79785022d4654",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064256.501,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n090 written/10.json",
+      "key": "996e2be10a4c438ba8d360c3a587fc34",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064256.567,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n091 ai/11.md",
+      "key": "a6b3c0214c684bcfb36f27c1af749817",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064256.629,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n092 ai/12.md",
+      "key": "34fbdd8d9a834ed7a9e07418fead9c93",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064256.687,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n093 ai/13.md",
+      "key": "67260e56348c4682a2657f13c43e5908",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064256.747,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n094 ai/14.md",
+      "key": "ab6a8bc97c6d4a86b24d243e9323c069",
+      "fault": "timeout_after",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 20.2,
+      "events": [
+        {
+          "t": 1792064266.754,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064276.965,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n095 ai/15.md",
+      "key": "75772d0fc2df41ed909f72a511e9a40e",
+      "fault": "cut_before",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 10.3,
+      "events": [
+        {
+          "t": 1792064276.967,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792064287.223,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n096 ai/16.md",
+      "key": "57c8eeeda89b4598bdc79d938b456b42",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064287.284,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n097 ai/17.md",
+      "key": "7a18cdf3add94fad9fd67e527253e9e3",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064287.344,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n098 ai/18.md",
+      "key": "673384b5962b45bb8520cb8a3b0cdd0d",
+      "fault": null,
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064287.405,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n099 ai/19.md",
+      "key": "90ecfff5b6404004a565efc2153e02b1",
+      "fault": "cut_response",
+      "state": "refused",
+      "how": null,
+      "remote_id": null,
+      "seconds": 0.1,
+      "events": [
+        {
+          "t": 1792064287.466,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 401
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3 112900 n100 ai/20.md",
+      "key": "0a7ddbb4bbef495a807f740cf4104103",
+      "fault": "timeout_after",
+      "state": "to_verify",
+      "how": null,
+      "remote_id": null,
+      "seconds": 20.2,
+      "events": [
+        {
+          "t": 1792064297.47,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064307.687,
+          "event": "heuristic",
+          "lookups": [
+            "error: lookup refused: HTTP 400",
+            "error: lookup refused: HTTP 400"
+          ],
+          "candidates": [
+            "error: lookup refused: HTTP 400"
+          ]
+        }
+      ],
+      "resends": []
+    }
+  ]
+}

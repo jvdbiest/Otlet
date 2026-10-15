@@ -1,0 +1,2641 @@
+{
+  "config": "W3",
+  "label": "W3-apppw",
+  "started": "2026-10-15T11:38:49+00:00",
+  "purged": 1,
+  "summary": {
+    "publications": 100,
+    "faults": {
+      "cut_response": 15,
+      "cut_before": 15,
+      "none": 50,
+      "timeout_after": 20
+    },
+    "remote_posts": 100,
+    "duplicates_by_title": 0,
+    "duplicates_by_key": 0,
+    "missing": 0,
+    "states": {
+      "published": 100
+    },
+    "reconciled_automatically": 1.0,
+    "how": {
+      "marker": 35,
+      "direct": 65
+    },
+    "resends": 15,
+    "blind_resends": 0,
+    "by_fault": {
+      "none": {
+        "published": 50
+      },
+      "cut_before": {
+        "published": 15
+      },
+      "timeout_after": {
+        "published": 20
+      },
+      "cut_response": {
+        "published": 15
+      }
+    },
+    "seconds_per_publication_max": 16.1
+  },
+  "publications": [
+    {
+      "title": "S7 W3-apppw 113849 n001 ai/11.md",
+      "key": "8f03338f49124d14b36bef12eb3f5ac9",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "5",
+      "seconds": 5.2,
+      "events": [
+        {
+          "t": 1792064329.497,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792064334.591,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "5"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n002 ai/12.md",
+      "key": "db1d1a6746304d50b92ea03a33e49e71",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "6",
+      "seconds": 10.4,
+      "events": [
+        {
+          "t": 1792064334.593,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792064344.75,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792064344.87,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 W3-apppw 113849 n003 ai/13.md",
+      "key": "21912a9c5ebc476b90d6cc33610369b3",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "7",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064345.049,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n004 ai/14.md",
+      "key": "84ea39d427444438a36984233dd5a3cc",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "8",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064345.215,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n005 ai/15.md",
+      "key": "502299254f31482cafbdc56df30d7375",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "9",
+      "seconds": 10.5,
+      "events": [
+        {
+          "t": 1792064345.297,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792064355.63,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792064355.722,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 W3-apppw 113849 n006 ai/16.md",
+      "key": "f1ca3a1c2caa41649abac910a7f352cc",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "10",
+      "seconds": 6.2,
+      "events": [
+        {
+          "t": 1792064355.889,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792064361.997,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "10"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n007 ai/17.md",
+      "key": "1a24441b546c4b9a904b2d1f4837a4a4",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "11",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064362.104,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n008 ai/18.md",
+      "key": "6ff22015e05e4a99af0c9928cb9b2a67",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "12",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792064372.189,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064377.282,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "12"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n009 ai/19.md",
+      "key": "62c73424e896403685691aad39b3e4ed",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "13",
+      "seconds": 10.4,
+      "events": [
+        {
+          "t": 1792064377.285,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792064387.463,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792064387.568,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 W3-apppw 113849 n010 ai/20.md",
+      "key": "1f759ab0f6b4449f98a8e54fc877fcac",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "14",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064387.743,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n011 pasted/21-word.html",
+      "key": "d02a207f6e164800b49e561fffe3b965",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "15",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064387.946,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n012 pasted/22-word.html",
+      "key": "f759599cdef24210bb517ceadcdf8e5a",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "16",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064388.118,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n013 pasted/23-word.html",
+      "key": "ff213df44fda4a1b8b571570dd934b3d",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "17",
+      "seconds": 15.2,
+      "events": [
+        {
+          "t": 1792064398.22,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064403.408,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "17"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n014 pasted/24-word.html",
+      "key": "457d8e2861554996a5dfe01203cce2f2",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "18",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792064413.42,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064418.514,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "18"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n015 pasted/25-word.html",
+      "key": "01f01352d7764194ac03ff8a54125c93",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "19",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064418.611,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n016 pasted/26-gdocs.html",
+      "key": "a34052646db74bc983e77125305c3023",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "20",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792064428.715,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064433.806,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "20"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n017 pasted/27-gdocs.html",
+      "key": "de5f0c16db2747fea342e1055bc764d9",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "21",
+      "seconds": 5.2,
+      "events": [
+        {
+          "t": 1792064433.896,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792064438.991,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "21"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n018 pasted/28-gdocs.html",
+      "key": "688aedbc85c347109784556b4d96c597",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "22",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064439.092,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n019 pasted/29-gdocs.html",
+      "key": "abdb4b5dba3b47a78c87d569485d535a",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "23",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064439.26,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n020 pasted/30-gdocs.html",
+      "key": "9ae5d841b8224345a57c19e6ce97d3cf",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "24",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064439.442,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n021 written/01.json",
+      "key": "4e37a4ad79dc489a8c2cb2e727398413",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "25",
+      "seconds": 10.4,
+      "events": [
+        {
+          "t": 1792064439.534,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792064449.703,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792064449.806,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 W3-apppw 113849 n022 written/02.json",
+      "key": "ec56500537e74eb380734ffee0272dca",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "26",
+      "seconds": 5.2,
+      "events": [
+        {
+          "t": 1792064450.018,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792064455.123,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "26"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n023 written/03.json",
+      "key": "f40c5b25164e4dbda1964af1fa57f4d6",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "27",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064455.216,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n024 written/04.json",
+      "key": "01795d482db44a70a8fa2875e3359e62",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "28",
+      "seconds": 10.4,
+      "events": [
+        {
+          "t": 1792064455.316,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792064465.486,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792064465.582,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 W3-apppw 113849 n025 written/05.json",
+      "key": "14e36cb0458d450b9db746cad1ff4c79",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "29",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792064475.689,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064480.813,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "29"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n026 written/06.json",
+      "key": "34405071bca34e78b47f99571fe53f70",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "30",
+      "seconds": 5.4,
+      "events": [
+        {
+          "t": 1792064481.107,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792064486.201,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "30"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n027 written/07.json",
+      "key": "60b3423bac144ddb9588e704df30efe0",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "31",
+      "seconds": 0.3,
+      "events": [
+        {
+          "t": 1792064486.333,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n028 written/08.json",
+      "key": "dea52242265049c6ae6fbd45c9283cf1",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "32",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064486.584,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n029 written/09.json",
+      "key": "aa986c2cd8a34b37863eb63850e936c5",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "33",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064486.749,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n030 written/10.json",
+      "key": "7ab263e177e94c1eba4ac4cdafa0c181",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "34",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064486.931,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n031 ai/11.md",
+      "key": "4022f39eb7ee4c66b480c85d5c4e7bc7",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "35",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064487.095,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n032 ai/12.md",
+      "key": "586ce0f0f1194ba787c3dbef05be33e1",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "36",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064487.27,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n033 ai/13.md",
+      "key": "a59827ba672e40b59ae2c747f7855f66",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "37",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064487.438,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n034 ai/14.md",
+      "key": "ec7d76188f6b405ead2b52193f23a5bf",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "38",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792064497.52,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064502.607,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "38"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n035 ai/15.md",
+      "key": "23cba714e233434cb58c37e10760a392",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "39",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792064512.614,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064517.72,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "39"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n036 ai/16.md",
+      "key": "1853e60b8ed4428e82790786db6772b4",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "40",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064517.806,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n037 ai/17.md",
+      "key": "4ce1b0daf7064876a2a0856c23b86765",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "41",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064517.973,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n038 ai/18.md",
+      "key": "a9be4b3d38834857a5c0b65080d27ffb",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "42",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064518.141,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n039 ai/19.md",
+      "key": "47bd1a1220814a7b9622a31d373cd971",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "43",
+      "seconds": 5.2,
+      "events": [
+        {
+          "t": 1792064518.31,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792064523.402,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "43"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n040 ai/20.md",
+      "key": "e4a6de608f954a08a946c2789cc756cf",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "44",
+      "seconds": 10.4,
+      "events": [
+        {
+          "t": 1792064523.405,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792064533.571,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792064533.67,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 W3-apppw 113849 n041 pasted/21-word.html",
+      "key": "0161c4ae78964356a4789304918ef484",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "45",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792064543.766,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064548.854,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "45"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n042 pasted/22-word.html",
+      "key": "fcaac46f0ecf468aaae6f66e7ffff89d",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "46",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064548.941,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n043 pasted/23-word.html",
+      "key": "3386be18cb8f4925b644c78950ca745d",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "47",
+      "seconds": 5.2,
+      "events": [
+        {
+          "t": 1792064549.112,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792064554.205,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "47"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n044 pasted/24-word.html",
+      "key": "cdf204c0184f4ee28d52c5187d232336",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "48",
+      "seconds": 15.9,
+      "events": [
+        {
+          "t": 1792064564.217,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064570.091,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "48"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n045 pasted/25-word.html",
+      "key": "867f56783444479cbd5d5bf05d13b745",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "49",
+      "seconds": 10.4,
+      "events": [
+        {
+          "t": 1792064570.095,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792064580.257,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792064580.363,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 W3-apppw 113849 n046 pasted/26-gdocs.html",
+      "key": "d41f99aeb7ce42c193e8f2343196a529",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "50",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792064590.476,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064595.567,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "50"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n047 pasted/27-gdocs.html",
+      "key": "aa964085ae594df6904a697bceac76a7",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "51",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064595.655,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n048 pasted/28-gdocs.html",
+      "key": "2bc0ccbbfd9045f5988f9a8048dbd53a",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "52",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064595.825,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n049 pasted/29-gdocs.html",
+      "key": "e4b8dd87d656446b97a32af109b45f86",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "53",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792064605.91,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064611.009,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "53"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n050 pasted/30-gdocs.html",
+      "key": "6c545c05d3bf4c128aeed0a0eeecca86",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "54",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064611.106,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n051 written/01.json",
+      "key": "d14b91c9169f451a9b63301d0308fea3",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "55",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064611.278,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n052 written/02.json",
+      "key": "c7bcabd50854416fbb17fb6cfd44ffad",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "56",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792064621.367,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064626.492,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "56"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n053 written/03.json",
+      "key": "2427ffc65e8a4e23a42ce01a652c2deb",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "57",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064626.589,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n054 written/04.json",
+      "key": "a446624884a747d290bcc6b08c877ee7",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "58",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064626.768,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n055 written/05.json",
+      "key": "fa4ac90a1312498a8d73b2de9e8db7f1",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "59",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064626.949,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n056 written/06.json",
+      "key": "4b2a2ab35d954ec0a32fa04caac68034",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "60",
+      "seconds": 5.2,
+      "events": [
+        {
+          "t": 1792064627.126,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792064632.223,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "60"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n057 written/07.json",
+      "key": "9aa1a0ea7b7c40eeb284fda9a7efc2c3",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "61",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064632.325,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n058 written/08.json",
+      "key": "f4df7bc0cacd417f90f9b1ca3702af86",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "62",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064632.513,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n059 written/09.json",
+      "key": "559092092e834a97ad5ad106b9580b65",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "63",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792064642.618,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064647.719,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "63"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n060 written/10.json",
+      "key": "d9156fbedc124c87a3ec1090d010e007",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "64",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064647.809,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n061 ai/11.md",
+      "key": "7768c920e6c64362914e6247e05730b3",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "65",
+      "seconds": 16.1,
+      "events": [
+        {
+          "t": 1792064657.902,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064664.007,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "65"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n062 ai/12.md",
+      "key": "424f53d74e92479ea2b625283402b542",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "66",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792064674.013,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064679.111,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "66"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n063 ai/13.md",
+      "key": "f7e75c9e9fdf47ecab831e271c5d59e6",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "67",
+      "seconds": 5.2,
+      "events": [
+        {
+          "t": 1792064679.216,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792064684.313,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "67"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n064 ai/14.md",
+      "key": "65fbf8b8ee504478a13708f3ca26be9d",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "68",
+      "seconds": 10.3,
+      "events": [
+        {
+          "t": 1792064684.316,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792064694.477,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792064694.569,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 W3-apppw 113849 n065 ai/15.md",
+      "key": "a44aeb33bfc5421b87e8235c6fc4dd3c",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "69",
+      "seconds": 5.2,
+      "events": [
+        {
+          "t": 1792064694.732,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792064699.836,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "69"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n066 ai/16.md",
+      "key": "b4d5a2fdefdb42c19c67a1ac1c5fb572",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "70",
+      "seconds": 10.4,
+      "events": [
+        {
+          "t": 1792064699.839,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792064710.034,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792064710.127,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 W3-apppw 113849 n067 ai/17.md",
+      "key": "6f9611e6110d4513bea0512698c01203",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "71",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064710.296,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n068 ai/18.md",
+      "key": "227bd6c6fea94eb7878daf91b5d5f3e7",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "72",
+      "seconds": 5.2,
+      "events": [
+        {
+          "t": 1792064710.459,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792064715.547,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "72"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n069 ai/19.md",
+      "key": "f0540c5817b04b5d97ea1b4e9ccfc73c",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "73",
+      "seconds": 5.2,
+      "events": [
+        {
+          "t": 1792064715.639,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792064720.731,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "73"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n070 ai/20.md",
+      "key": "514019f3563f4a5eb43b31e8980abaec",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "74",
+      "seconds": 5.2,
+      "events": [
+        {
+          "t": 1792064720.825,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792064725.949,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "74"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n071 pasted/21-word.html",
+      "key": "c9251da1caa5451691407de02600b736",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "75",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792064735.953,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064741.043,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "75"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n072 pasted/22-word.html",
+      "key": "778d4c5d6c324d6c9429fe51cee40ed4",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "76",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064741.135,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n073 pasted/23-word.html",
+      "key": "79bf0e46287a43ac9cae117eb4fe2bff",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "77",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792064751.222,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064756.317,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "77"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n074 pasted/24-word.html",
+      "key": "3c4d43684f5240bd8b6514150960fbfc",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "78",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064756.428,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n075 pasted/25-word.html",
+      "key": "ae95c207ad45438c8d86d6d3dd460467",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "79",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064756.616,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n076 pasted/26-gdocs.html",
+      "key": "1e256e4205de4f29b5f062ba3e915378",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "80",
+      "seconds": 10.3,
+      "events": [
+        {
+          "t": 1792064756.704,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792064766.855,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792064766.944,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 W3-apppw 113849 n077 pasted/27-gdocs.html",
+      "key": "2b23b6691c7e47b2ae32bae10ce230a1",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "81",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064767.108,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n078 pasted/28-gdocs.html",
+      "key": "1977c822d29b45f0b0552fd5bac7b2fc",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "82",
+      "seconds": 10.4,
+      "events": [
+        {
+          "t": 1792064767.185,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792064777.462,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792064777.55,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 W3-apppw 113849 n079 pasted/29-gdocs.html",
+      "key": "b006f6e6ae67436dbf4ff594100dcad6",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "83",
+      "seconds": 5.2,
+      "events": [
+        {
+          "t": 1792064777.714,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792064782.867,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "83"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n080 pasted/30-gdocs.html",
+      "key": "542c47dddca043c39e560a0acf5417ab",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "84",
+      "seconds": 10.4,
+      "events": [
+        {
+          "t": 1792064782.869,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792064793.051,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792064793.141,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 W3-apppw 113849 n081 written/01.json",
+      "key": "6d1f9a92cb5547fcb3ec373190cf84f9",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "85",
+      "seconds": 10.4,
+      "events": [
+        {
+          "t": 1792064793.224,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792064803.397,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792064803.502,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 W3-apppw 113849 n082 written/02.json",
+      "key": "55e8d7e301f74ff0a845524a94202653",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "86",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064803.67,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n083 written/03.json",
+      "key": "8224555fe3c54970b63229fde5f9b24b",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "87",
+      "seconds": 10.3,
+      "events": [
+        {
+          "t": 1792064803.757,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792064813.923,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792064814.021,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 W3-apppw 113849 n084 written/04.json",
+      "key": "2b7d1008b63e4221835e669b57b0a99f",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "88",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792064824.109,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064829.203,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "88"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n085 written/05.json",
+      "key": "bcf8bf3ebce44af998b37bb00702b349",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "89",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064829.3,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n086 written/06.json",
+      "key": "e6235e248e3f4e788f41b28859846c08",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "90",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064829.472,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n087 written/07.json",
+      "key": "83f8903d20e444ee9d926ace67cbaf06",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "91",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064829.641,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n088 written/08.json",
+      "key": "40f5fb15da0b4522b5662b348ffbaf6e",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "92",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064829.84,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n089 written/09.json",
+      "key": "01027ca110644f53aac728986bcb2f4c",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "93",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064830.027,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n090 written/10.json",
+      "key": "74fbcf2750c84235a4e28d74c96fc31c",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "94",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064830.214,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n091 ai/11.md",
+      "key": "ffb8e950fc3f479e84e63c81fd9f7390",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "95",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064830.395,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n092 ai/12.md",
+      "key": "daae68b335eb4b30bf5f992f5006b0f4",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "96",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064830.581,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n093 ai/13.md",
+      "key": "5e7bec95075247a3a1c79aba0f85f130",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "97",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064830.759,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n094 ai/14.md",
+      "key": "26ed5d77fdd84b7886eddf32b3f0e4e0",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "98",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792064840.866,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064845.958,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "98"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n095 ai/15.md",
+      "key": "4921e392930d40c0901ec8ee7272fbce",
+      "fault": "cut_before",
+      "state": "published",
+      "how": "direct",
+      "remote_id": "99",
+      "seconds": 10.3,
+      "events": [
+        {
+          "t": 1792064845.96,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "cut_before",
+          "error": "RemoteDisconnected"
+        },
+        {
+          "t": 1792064856.121,
+          "event": "absent",
+          "lookups": [
+            [],
+            []
+          ]
+        },
+        {
+          "t": 1792064856.219,
+          "event": "sent",
+          "attempt": 2,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": [
+        {
+          "attempt": 2,
+          "lookups": [
+            [],
+            []
+          ]
+        }
+      ]
+    },
+    {
+      "title": "S7 W3-apppw 113849 n096 ai/16.md",
+      "key": "06af27ff0d5e42d0acf8e7cf259e15b7",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "100",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064856.404,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n097 ai/17.md",
+      "key": "c3a5af77e52341eb866ef2c4bb8efbb8",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "101",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064856.605,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n098 ai/18.md",
+      "key": "bd7a24c90fc54772a191bb6ba417c80c",
+      "fault": null,
+      "state": "published",
+      "how": "direct",
+      "remote_id": "102",
+      "seconds": 0.2,
+      "events": [
+        {
+          "t": 1792064856.812,
+          "event": "sent",
+          "attempt": 1,
+          "fault": null,
+          "status": 201
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n099 ai/19.md",
+      "key": "74244349980b4ad8ac52318502cbd557",
+      "fault": "cut_response",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "103",
+      "seconds": 5.2,
+      "events": [
+        {
+          "t": 1792064856.98,
+          "event": "sent",
+          "attempt": 1,
+          "fault": "cut_response",
+          "status": 201
+        },
+        {
+          "t": 1792064862.07,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "103"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    },
+    {
+      "title": "S7 W3-apppw 113849 n100 ai/20.md",
+      "key": "36164f17c18644799b5f30288726f366",
+      "fault": "timeout_after",
+      "state": "published",
+      "how": "marker",
+      "remote_id": "104",
+      "seconds": 15.1,
+      "events": [
+        {
+          "t": 1792064872.083,
+          "event": "send_failed",
+          "attempt": 1,
+          "fault": "timeout_after",
+          "error": "TimeoutError"
+        },
+        {
+          "t": 1792064877.173,
+          "event": "reconciled",
+          "how": "marker",
+          "lookups": [
+            [
+              "104"
+            ]
+          ]
+        }
+      ],
+      "resends": []
+    }
+  ]
+}

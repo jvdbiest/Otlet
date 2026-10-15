@@ -40,6 +40,7 @@ S5.3,S5,fastembed : deux ou trois modèles multilingues compacts ; mémoire et d
 S5.4,S5,"Volet lexical : n-grammes, MinHash / LSH, rapidfuzz",5,fait
 S5.5,S5,"Calibration des seuils, courbes rappel / faux positifs, seuils inter-langues (DR4)",7,fait
 S5.6,S5,Conclusion ; ADR du modèle et des seuils ; DR4 confirmé ou soumis à Joël,4,fait
+S5b,S5,"Complément : mémoire de potion chargé en float16 ou int8 (ADR-0024)",4,a_faire
 S4.1,S4,Rapport ouvert ; 50 briefs ; schéma de sortie structurée ; plafonds de dépense posés chez chaque fournisseur,4,a_faire
 S4.2,S4,"Port de passerelle et adaptateur générique compatible OpenAI (Ollama, Groq ou OpenRouter)",6,a_faire
 S4.3,S4,Adaptateur Anthropic natif,3,a_faire

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# S5 bench image: fastembed (ONNX on CPU), datasketch, rapidfuzz. No PyTorch.
+# S5 bench image: fastembed (ONNX on CPU), model2vec (S5b), datasketch, rapidfuzz. No PyTorch.
 FROM python:3.13-slim
-RUN pip install --no-cache-dir "fastembed==0.9.0" "datasketch==2.0.0" "rapidfuzz==3.14.6"
+RUN pip install --no-cache-dir "fastembed==0.9.0" "datasketch==2.0.0" "rapidfuzz==3.14.6" "model2vec==0.9.0"
 WORKDIR /work
 ENTRYPOINT ["python"]

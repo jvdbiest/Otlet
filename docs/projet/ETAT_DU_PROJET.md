@@ -13,15 +13,15 @@ Mis à jour le 2026-10-15. Une page : ce qu'il faut savoir pour reprendre le tra
 | S1 PostgreSQL et RLS | Conclue : partiel. La recherche plein texte reste un **échec ouvert** jusqu'à une remesure sur corpus réel. ADR-0021 |
 | S2 File de tâches | Conclue : succès (Procrastinate). ADR-0022 |
 | S3 Format et éditeur | Conclue : succès (Tiptap). ADR-0023 |
-| S5 Similarité | Conclue : échec, de peu. potion-multilingual-128M tient C2 à C5 mais pas la mémoire (1,3 Go pour 500 Mo). ADR-0024 **proposé**, en attente du « oui » de Joël |
+| S5 Similarité | Conclue : échec, de peu. potion-multilingual-128M tient C2 à C5 mais pas la mémoire (1,3 Go pour 500 Mo). ADR-0024 accepté : potion par défaut tant que la pile complète tient sous 3,4 Go |
 | S4 Passerelle IA | À faire. Prérequis A3 : clés d'API plafonnées, **accord de Joël avant toute dépense** |
 | S7 Connecteurs CMS | À faire. Réutilise WordPress et Ghost de la VM. Prérequis A2 : hébergement mutualisé, **accord de Joël** |
 | B11 Clôture (rapport P1) | À faire, en dernier |
 
 ## Prochaine action
 
-1. Joël fusionne la branche `spike/S5-conclusion` et répond sur ADR-0024.
-2. S'il l'accepte : complément court sur C1 (potion en float16 ou à vocabulaire réduit), protocole commité avant la mesure, sur la VM du NAS.
+1. Joël fusionne la branche `spike/S5-conclusion` (conclusion S5, ADR-0024 accepté, protocole du complément S5b).
+2. Mesurer S5b : complément court sur la mémoire (potion en float16 ou à vocabulaire réduit), protocole commité avant la mesure, sur la VM du NAS.
 3. Puis S4 ou S7, chacun après l'accord de Joël sur ses prérequis (clés d'API plafonnées, hébergement mutualisé).
 
 ## Règles de travail

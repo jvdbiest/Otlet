@@ -50,4 +50,5 @@ Mis à jour le 2026-10-15. Une page : ce qu'il faut savoir pour reprendre le tra
 - ASVS V12.3 : chiffrer ou non les liaisons internes de la pile Compose (`docs/security/asvs-l2.md`).
 - Volet lexical du garde-fou : remplacer les 5-grammes par la plus longue séquence commune, seuil à fixer avant mesure (ADR-0024).
 - Remesurer les seuils de similarité sur un corpus réel à la tranche verticale d'É1 (ADR-0024).
+- **Piste pour É1** (demande de Joël, sans changer la roadmap) : évaluer un agent local consultatif pour enrichir la veille, chercher des sources complémentaires, proposer des sujets et aider à la rédaction. Il ne publie jamais et ne contourne aucune validation humaine.
 - Plus tard : redirection du port 443 vers la VM pour un certificat Let's Encrypt. Joël aura besoin d'aide pour la marche à suivre.

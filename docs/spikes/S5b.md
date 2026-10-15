@@ -80,3 +80,7 @@ Exécution du 2026-10-15 sur la VM du NAS (Celeron J4025, 2 vCPU), conteneur lim
 - La mémoire de la pile entière avec le modèle chargé dans le worker, qui reste à mesurer.
 - La mémoire du tokenizer seul, et la réduction du vocabulaire au français et à l'anglais.
 - Une mesure dans le worker réel, où le modèle partagerait le processus avec les autres tâches.
+
+## Validation de Joël (2026-10-15)
+
+Conclusion validée. Potion est retenu, et le chargement int8 devient le mode par défaut, puisqu'il donne les mêmes résultats que float32 et float16 avec moins de mémoire. Le critère déterminant est le fonctionnement correct de la pile complète sur une configuration réaliste (ADR-0025).

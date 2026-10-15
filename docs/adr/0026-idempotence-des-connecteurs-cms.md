@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Statut | Proposé |
+| Statut | Accepté (2026-10-15) |
 | Date | 2026-10-15 |
 | Décideur | Joël |
 | Documents touchés | `ARCHITECTURE.md` §12.4 (ADR-08, machine à états de publication) ; `RISKS.md` R-T18, R-T08, R-S03, DR1 ; `ROADMAP.md` (connecteur WordPress du lot 1a) |
@@ -12,7 +12,7 @@
 
 S7 a soumis un connecteur prototype à 100 publications par configuration, dont 50 avec une panne au premier envoi (`docs/spikes/S7.md` §4). Sur WordPress 7.1, WordPress 6.9 et Ghost 6.69, il n'y a eu aucun doublon, 100 % des publications ont été rapprochées automatiquement, et aucune n'a été renvoyée à l'aveugle. WordPress n'offre pas de recherche par métadonnée (V1), ni Ghost de champ personnalisé (V2), mais des champs natifs suffisent à porter la clé d'idempotence. Wordfence, dans ses réglages par défaut, bloque les mots de passe d'application : le connecteur est alors refusé, sans explication pour l'utilisateur.
 
-## Décision proposée
+## Décision
 
 1. **Clé d'idempotence portée par un marqueur natif**, sans extension côté CMS :
    - **WordPress** : `slug` `otlet-<clé>` pour les brouillons, plus un commentaire HTML `<!-- otlet:<clé> -->` en tête du contenu. En publication immédiate, le commentaire porte seul le marqueur, et le `slug` reste celui choisi par l'utilisateur.

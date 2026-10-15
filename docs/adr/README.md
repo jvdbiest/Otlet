@@ -33,4 +33,4 @@ La numérotation continue celle de l'architecture.
 | [0023](0023-format-de-document-et-editeur.md) | Format « Document plateforme v1 » et éditeur Tiptap | Accepté (S3) |
 | [0024](0024-modele-d-embeddings-et-seuils-apres-s5.md) | Modèle d'embeddings statique et seuils du garde-fou | Accepté (S5) |
 | [0025](0025-qualite-avant-profil-materiel.md) | La qualité du produit prime sur le profil matériel | Accepté |
-| [0026](0026-idempotence-des-connecteurs-cms.md) | Idempotence des connecteurs CMS par marqueur natif, « WordPress d'abord » confirmé | Proposé (S7) |
+| [0026](0026-idempotence-des-connecteurs-cms.md) | Idempotence des connecteurs CMS par marqueur natif, « WordPress d'abord » confirmé | Accepté (S7) |

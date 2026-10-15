@@ -15,13 +15,13 @@ Mis à jour le 2026-10-15. Une page : ce qu'il faut savoir pour reprendre le tra
 | S3 Format et éditeur | Conclue : succès (Tiptap). ADR-0023 |
 | S5 Similarité | Conclue : échec, de peu ; complément S5b conclu en échec sur la mémoire seule. Modèle retenu (ADR-0024) : potion-multilingual-128M par `model2vec` en int8, 870 Mio, qualité inchangée. Pile complète estimée à 2,4 Go en charge, sous 3,4 Go (déduction) |
 | S4 Passerelle IA | À faire. Prérequis A3 : clés d'API plafonnées, **accord de Joël avant toute dépense** |
-| S7 Connecteurs CMS | Conclue : partiel. 0 doublon et 100 % de rapprochement sur WordPress 7.1, 6.9 et Ghost ; Wordfence par défaut bloque les mots de passe d'application ; mutualisé non démontré. ADR-0026 **proposé** |
+| S7 Connecteurs CMS | Conclue : partiel. 0 doublon et 100 % de rapprochement sur WordPress 7.1, 6.9 et Ghost ; Wordfence par défaut bloque les mots de passe d'application ; mutualisé non démontré. ADR-0026 accepté |
 | B11 Clôture (rapport P1) | À faire, en dernier |
 
 ## Prochaine action
 
-1. Joël fusionne la branche `spike/S7-banc` (S5b, ADR-0025, banc et conclusion de S7) et répond sur ADR-0026.
-2. S4 (passerelle IA) : Joël a choisi de reporter les dépenses d'API. Les parties sans dépense (passerelle, adaptateur générique avec Ollama local, faux fournisseur de S4.5) peuvent avancer ; les fournisseurs payants attendent son accord (prérequis A3).
+1. Joël fusionne la branche `spike/S7-banc` (S5b, ADR-0025, banc et conclusion de S7).
+2. S4 (passerelle IA) sans dépense, accord de Joël du 2026-10-15 : passerelle, adaptateur générique, fournisseur de test, Ollama local, budget et sélection des modèles. Les fournisseurs payants (OpenAI, Anthropic ou autres) restent bloqués jusqu'à son accord explicite.
 3. B11, clôture d'É0, en dernier.
 
 ## Règles de travail

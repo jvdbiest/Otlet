@@ -1,0 +1,13 @@
+### 05:31:44 float32
+{"variant": "float32", "model_info": {"dim": 256, "dtype": "float32", "vocabulary": 500353}, "memory": {"rss_before_mib": 28.8, "rss_after_mib": 1265.0, "model_mib": 1236.2, "load_seconds": 12.8}, "throughput": {"items": 2000, "passages": 47251, "wall_seconds": 21.2, "cpu_seconds": 31.3}}
+{"thresholds": {"semantic_same": 0.6402, "semantic_cross": 0.5487, "ngram5_same": 0.5}, "measure": {"recall": 0.9, "false_positive_rate": 0.0, "positives": 50, "negatives": 50}}
+Result: /work/results/s5b-float32-20261015T053225Z.json
+### 05:32:28 float16
+{"variant": "float16", "model_info": {"dim": 256, "dtype": "float16", "vocabulary": 500353}, "memory": {"rss_before_mib": 27.6, "rss_after_mib": 1020.2, "model_mib": 992.6, "load_seconds": 12.6}, "throughput": {"items": 2000, "passages": 47251, "wall_seconds": 25.0, "cpu_seconds": 35.0}}
+{"thresholds": {"semantic_same": 0.6401, "semantic_cross": 0.5488, "ngram5_same": 0.5}, "measure": {"recall": 0.9, "false_positive_rate": 0.0, "positives": 50, "negatives": 50}}
+Result: /work/results/s5b-float16-20261015T053311Z.json
+### 05:33:13 int8
+{"variant": "int8", "model_info": {"dim": 256, "dtype": "int8", "vocabulary": 500353}, "memory": {"rss_before_mib": 27.7, "rss_after_mib": 897.3, "model_mib": 869.6, "load_seconds": 21.7}, "throughput": {"items": 2000, "passages": 47251, "wall_seconds": 20.5, "cpu_seconds": 30.9}}
+{"thresholds": {"semantic_same": 0.6393, "semantic_cross": 0.5478, "ngram5_same": 0.5}, "measure": {"recall": 0.9, "false_positive_rate": 0.0, "positives": 50, "negatives": 50}}
+Result: /work/results/s5b-int8-20261015T053400Z.json
+### 05:34:04 done

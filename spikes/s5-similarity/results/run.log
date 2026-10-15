@@ -1,0 +1,19 @@
+### 14:57:45 sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+Fetching 5 files:   0%|          | 0/5 [00:00<?, ?it/s]Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Fetching 5 files:  20%|██        | 1/5 [00:00<00:00,  5.65it/s]Fetching 5 files:  80%|████████  | 4/5 [00:12<00:03,  3.31s/it]Fetching 5 files: 100%|██████████| 5/5 [00:26<00:00,  6.36s/it]Fetching 5 files: 100%|██████████| 5/5 [00:26<00:00,  5.32s/it]
+{"model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2", "memory": {"rss_before_mib": 84.2, "rss_after_mib": 939.6, "model_mib": 855.4, "load_seconds": 34.8}, "throughput": {"items": 2000, "passages": 47251, "wall_seconds": 10418.4, "cpu_seconds": 17753.5}}
+{"thresholds": {"semantic_same": 0.7631, "semantic_cross": 0.8083, "ngram5_same": 0.5}, "measure": {"recall": 0.86, "false_positive_rate": 0.0, "positives": 50, "negatives": 50, "by_category": {"translation": 0.92, "paraphrase": 0.8, "independent_same": 0.0, "independent_other": 0.0}}}
+Result: /work/results/s5-sentence-transformers-paraphrase-multilingual-minilm-l12-v2-20261014T175353Z.json
+### 17:53:56 intfloat/multilingual-e5-small
+Fetching 5 files:   0%|          | 0/5 [00:00<?, ?it/s]Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Fetching 5 files:  20%|██        | 1/5 [00:00<00:00,  4.03it/s]Fetching 5 files:  80%|████████  | 4/5 [00:20<00:05,  5.44s/it]Fetching 5 files: 100%|██████████| 5/5 [00:35<00:00,  8.15s/it]Fetching 5 files: 100%|██████████| 5/5 [00:35<00:00,  7.08s/it]
+{"model": "intfloat/multilingual-e5-small", "memory": {"rss_before_mib": 83.8, "rss_after_mib": 1090.9, "model_mib": 1007.2, "load_seconds": 41.5}, "throughput": {"items": 2000, "passages": 47251, "wall_seconds": 10702.8, "cpu_seconds": 18199.4}}
+{"thresholds": {"semantic_same": 0.9542, "semantic_cross": 0.9243, "ngram5_same": 0.5}, "measure": {"recall": 0.76, "false_positive_rate": 0.0, "positives": 50, "negatives": 50, "by_category": {"translation": 0.64, "paraphrase": 0.88, "independent_same": 0.0, "independent_other": 0.0}}}
+Result: /work/results/s5-intfloat-multilingual-e5-small-20261014T205505Z.json
+### 20:55:09 minishlab/potion-multilingual-128M
+Fetching 5 files:   0%|          | 0/5 [00:00<?, ?it/s]Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Fetching 5 files:  20%|██        | 1/5 [00:00<00:00,  4.37it/s]Fetching 5 files:  80%|████████  | 4/5 [00:02<00:00,  1.41it/s]Fetching 5 files: 100%|██████████| 5/5 [00:46<00:00, 12.62s/it]Fetching 5 files: 100%|██████████| 5/5 [00:46<00:00,  9.24s/it]
+{"model": "minishlab/potion-multilingual-128M", "memory": {"rss_before_mib": 83.9, "rss_after_mib": 1427.5, "model_mib": 1343.7, "load_seconds": 56.0}, "throughput": {"items": 2000, "passages": 47251, "wall_seconds": 36.3, "cpu_seconds": 60.4}}
+{"thresholds": {"semantic_same": 0.6402, "semantic_cross": 0.5487, "ngram5_same": 0.5}, "measure": {"recall": 0.9, "false_positive_rate": 0.0, "positives": 50, "negatives": 50, "by_category": {"translation": 0.92, "paraphrase": 0.88, "independent_same": 0.0, "independent_other": 0.0}}}
+Result: /work/results/s5-minishlab-potion-multilingual-128m-20261014T205653Z.json
+### 20:56:57 done

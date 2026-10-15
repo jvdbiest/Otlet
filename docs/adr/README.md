@@ -31,3 +31,4 @@ La numérotation continue celle de l'architecture.
 | [0021](0021-rls-et-recherche-plein-texte-apres-s1.md) | RLS maintenue, recherche plein texte à classement borné | Accepté (S1) |
 | [0022](0022-file-de-taches-procrastinate.md) | File de tâches : Procrastinate, avec relance des tâches bloquées | Accepté (S2) |
 | [0023](0023-format-de-document-et-editeur.md) | Format « Document plateforme v1 » et éditeur Tiptap | Accepté (S3) |
+| [0024](0024-modele-d-embeddings-et-seuils-apres-s5.md) | Modèle d'embeddings statique et seuils du garde-fou | Accepté (S5) |

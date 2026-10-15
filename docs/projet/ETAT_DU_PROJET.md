@@ -15,14 +15,14 @@ Mis à jour le 2026-10-15. Une page : ce qu'il faut savoir pour reprendre le tra
 | S3 Format et éditeur | Conclue : succès (Tiptap). ADR-0023 |
 | S5 Similarité | Conclue : échec, de peu ; complément S5b conclu en échec sur la mémoire seule. Modèle retenu (ADR-0024) : potion-multilingual-128M par `model2vec` en int8, 870 Mio, qualité inchangée. Pile complète estimée à 2,4 Go en charge, sous 3,4 Go (déduction) |
 | S4 Passerelle IA | À faire. Prérequis A3 : clés d'API plafonnées, **accord de Joël avant toute dépense** |
-| S7 Connecteurs CMS | À faire. Réutilise WordPress et Ghost de la VM. Prérequis A2 : hébergement mutualisé, **accord de Joël** |
+| S7 Connecteurs CMS | Conclue : partiel. 0 doublon et 100 % de rapprochement sur WordPress 7.1, 6.9 et Ghost ; Wordfence par défaut bloque les mots de passe d'application ; mutualisé non démontré. ADR-0026 **proposé** |
 | B11 Clôture (rapport P1) | À faire, en dernier |
 
 ## Prochaine action
 
-1. Joël fusionne la branche `spike/S5b-conclusion`.
-2. Choisir la suite : S4 (passerelle IA) ou S7 (connecteurs CMS), chacun après l'accord de Joël sur ses prérequis (clés d'API plafonnées, hébergement mutualisé).
-3. Puis B11, la clôture d'É0.
+1. Joël fusionne la branche `spike/S7-banc` (S5b, ADR-0025, banc et conclusion de S7) et répond sur ADR-0026.
+2. S4 (passerelle IA) : Joël a choisi de reporter les dépenses d'API. Les parties sans dépense (passerelle, adaptateur générique avec Ollama local, faux fournisseur de S4.5) peuvent avancer ; les fournisseurs payants attendent son accord (prérequis A3).
+3. B11, clôture d'É0, en dernier.
 
 ## Règles de travail
 
@@ -50,6 +50,7 @@ Mis à jour le 2026-10-15. Une page : ce qu'il faut savoir pour reprendre le tra
 - Écrire un nettoyeur de collage Word et Google Docs pour Tiptap (ADR-0023).
 - ASVS V12.3 : chiffrer ou non les liaisons internes de la pile Compose (`docs/security/asvs-l2.md`).
 - Volet lexical du garde-fou : remplacer les 5-grammes par la plus longue séquence commune, seuil à fixer avant mesure (ADR-0024).
+- S7 : test court de connexion et de publication sur un hébergement mutualisé réel, pendant É1 ou dès qu'il y en aura un ; aucune dépense d'ici là (ADR-0026).
 - Mesurer la mémoire de la pile entière quand le worker chargera potion (S5b §5).
 - Remesurer les seuils de similarité sur un corpus réel à la tranche verticale d'É1 (ADR-0024).
 - **Piste pour É1** (demande de Joël, sans changer la roadmap) : évaluer un agent local consultatif pour enrichir la veille, chercher des sources complémentaires, proposer des sujets et aider à la rédaction. Il ne publie jamais et ne contourne aucune validation humaine.

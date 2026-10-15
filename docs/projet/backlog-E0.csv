@@ -47,10 +47,10 @@ S4.3,S4,Adaptateur Anthropic natif,3,a_faire
 S4.4,S4,Validation et réparation unique ; 50 briefs × 4 fournisseurs,4,a_faire
 S4.5,S4,Budget à réservation sur 200 appels concurrents (faux fournisseur) ; replis sur 429 et 5xx simulés,5,a_faire
 S4.6,S4,Conclusion ; profils « testés » et « non testés » ; ADR,2,a_faire
-S7.1,S7,"Rapport ouvert ; quatre environnements : WordPress récent, WordPress version majeure précédente, WordPress mutualisé avec extension de sécurité (A2), Ghost",6,a_faire
-S7.2,S7,"Vérification de V1, V2, V3 (RISKS §11.2)",5,a_faire
-S7.3,S7,"Prototype WordPress : machine à états minimale, clé d'idempotence, rapprochement",8,a_faire
-S7.4,S7,Prototype Ghost : idem,6,a_faire
-S7.5,S7,"Injecteur de pannes (délai dépassé après envoi, coupure) ; 100 publications par configuration",7,a_faire
-S7.6,S7,Extension WordPress compagnon facultative : évaluation courte,4,a_faire
-S7.7,S7,Conclusion ; « WordPress d'abord » confirmé ou inversé ; ADR,4,a_faire
+S7.1,S7,"Rapport ouvert ; quatre environnements : WordPress récent, WordPress version majeure précédente, WordPress mutualisé avec extension de sécurité (A2), Ghost",6,fait
+S7.2,S7,"Vérification de V1, V2, V3 (RISKS §11.2)",5,fait
+S7.3,S7,"Prototype WordPress : machine à états minimale, clé d'idempotence, rapprochement",8,fait
+S7.4,S7,Prototype Ghost : idem,6,fait
+S7.5,S7,"Injecteur de pannes (délai dépassé après envoi, coupure) ; 100 publications par configuration",7,fait
+S7.6,S7,Extension WordPress compagnon facultative : évaluation courte,4,fait
+S7.7,S7,Conclusion ; « WordPress d'abord » confirmé ou inversé ; ADR,4,fait

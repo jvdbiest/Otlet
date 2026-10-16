@@ -1,0 +1,15 @@
+{
+  "summary": {
+    "calls": 200,
+    "limit": 1.0,
+    "estimated_demand": 3.1817,
+    "succeeded": 85,
+    "refused_for_budget": 115,
+    "other_errors": {},
+    "spent": 0.859302,
+    "reserved_left": -0.0,
+    "peak_committed": 0.899583,
+    "never_exceeded": true
+  },
+  "scope": "s4-4d0b8df6"
+}

@@ -1,0 +1,164 @@
+### 19:44:46 conformity
+{"fake-a": true, "fake-anthropic": true, "anthropic (blocked)": "refused: anthropic is blocked until Joël agrees (docs/spikes/S4.md §2)"}
+Result: /spikes/s4-gateway/results/s4-conformity-20261015T194456Z.json
+### 19:44:57 budget
+{"calls": 200, "limit": 1.0, "estimated_demand": 3.1817, "succeeded": 85, "refused_for_budget": 115, "other_errors": {}, "spent": 0.859302, "reserved_left": -0.0, "peak_committed": 0.899583, "never_exceeded": true}
+Result: /spikes/s4-gateway/results/s4-budget-20261015T194512Z.json
+### 19:45:14 fallbacks
+  1 429_repeated  WRONG [('fake-a', 'quota'), ('fake-a', 'quota'), ('fake-a', 'quota'), ('fake-b', None)]
+  2 429_short     ok [('fake-a', 'quota'), ('fake-a', None)]
+  3 5xx_repeated  WRONG [('fake-a', 'unavailable'), ('fake-a', 'unavailable'), ('fake-b', None)]
+  4 5xx_repeated  WRONG [('fake-a', 'unavailable'), ('fake-a', 'unavailable'), ('fake-b', None)]
+  5 429_short     ok [('fake-a', 'quota'), ('fake-a', None)]
+  6 5xx_once      ok [('fake-a', 'unavailable'), ('fake-a', None)]
+  7 timeout       WRONG [('fake-a', 'unavailable'), ('fake-a', 'unavailable'), ('fake-b', None)]
+  8 429_short     ok [('fake-a', 'quota'), ('fake-a', None)]
+  9 429_short     ok [('fake-a', 'quota'), ('fake-a', None)]
+ 10 5xx_once      ok [('fake-a', 'unavailable'), ('fake-a', None)]
+ 11 timeout       WRONG [('fake-a', 'unavailable'), ('fake-a', 'unavailable'), ('fake-b', None)]
+ 12 400           ok [('fake-a', 'refused')]
+ 13 429_short     ok [('fake-a', 'quota'), ('fake-a', None)]
+ 14 429_short     ok [('fake-a', 'quota'), ('fake-a', None)]
+ 15 timeout       WRONG [('fake-a', 'unavailable'), ('fake-a', 'unavailable'), ('fake-b', None)]
+ 16 429_short     ok [('fake-a', 'quota'), ('fake-a', None)]
+ 17 5xx_once      ok [('fake-a', 'unavailable'), ('fake-a', None)]
+ 18 timeout       WRONG [('fake-a', 'unavailable'), ('fake-a', 'unavailable'), ('fake-b', None)]
+ 19 timeout       WRONG [('fake-a', 'unavailable'), ('fake-a', 'unavailable'), ('fake-b', None)]
+ 20 5xx_once      ok [('fake-a', 'unavailable'), ('fake-a', None)]
+ 21 429_short     ok [('fake-a', 'quota'), ('fake-a', None)]
+ 22 5xx_once      ok [('fake-a', 'unavailable'), ('fake-a', None)]
+ 23 timeout       WRONG [('fake-a', 'unavailable'), ('fake-a', 'unavailable'), ('fake-b', None)]
+ 24 429_short     ok [('fake-a', 'quota'), ('fake-a', None)]
+ 25 429_short     ok [('fake-a', 'quota'), ('fake-a', None)]
+ 26 429_repeated  WRONG [('fake-a', 'quota'), ('fake-a', 'quota'), ('fake-a', 'quota'), ('fake-b', None)]
+ 27 5xx_once      ok [('fake-a', 'unavailable'), ('fake-a', None)]
+ 28 timeout       WRONG [('fake-a', 'unavailable'), ('fake-a', 'unavailable'), ('fake-b', None)]
+ 29 5xx_once      ok [('fake-a', 'unavailable'), ('fake-a', None)]
+ 30 5xx_once      ok [('fake-a', 'unavailable'), ('fake-a', None)]
+ 31 5xx_once      ok [('fake-a', 'unavailable'), ('fake-a', None)]
+ 32 400           ok [('fake-a', 'refused')]
+ 33 5xx_repeated  WRONG [('fake-a', 'unavailable'), ('fake-a', 'unavailable'), ('fake-b', None)]
+ 34 429_short     ok [('fake-a', 'quota'), ('fake-a', None)]
+ 35 429_repeated  WRONG [('fake-a', 'quota'), ('fake-a', 'quota'), ('fake-a', 'quota'), ('fake-b', None)]
+ 36 timeout       WRONG [('fake-a', 'unavailable'), ('fake-a', 'unavailable'), ('fake-b', None)]
+ 37 400           ok [('fake-a', 'refused')]
+ 38 400           ok [('fake-a', 'refused')]
+ 39 5xx_once      ok [('fake-a', 'unavailable'), ('fake-a', None)]
+ 40 429_short     ok [('fake-a', 'quota'), ('fake-a', None)]
+ 41 429_repeated  WRONG [('fake-a', 'quota'), ('fake-a', 'quota'), ('fake-a', 'quota'), ('fake-b', None)]
+ 42 5xx_repeated  WRONG [('fake-a', 'unavailable'), ('fake-a', 'unavailable'), ('fake-b', None)]
+ 43 429_repeated  WRONG [('fake-a', 'quota'), ('fake-a', 'quota'), ('fake-a', 'quota'), ('fake-b', None)]
+ 44 429_repeated  WRONG [('fake-a', 'quota'), ('fake-a', 'quota'), ('fake-a', 'quota'), ('fake-b', None)]
+ 45 429_short     ok [('fake-a', 'quota'), ('fake-a', None)]
+ 46 429_repeated  WRONG [('fake-a', 'quota'), ('fake-a', 'quota'), ('fake-a', 'quota'), ('fake-b', None)]
+ 47 5xx_once      ok [('fake-a', 'unavailable'), ('fake-a', None)]
+ 48 5xx_repeated  WRONG [('fake-a', 'unavailable'), ('fake-a', 'unavailable'), ('fake-b', None)]
+ 49 429_short     ok [('fake-a', 'quota'), ('fake-a', None)]
+ 50 400           ok [('fake-a', 'refused')]
+ 51 400           ok [('fake-a', 'refused')]
+ 52 429_short     ok [('fake-a', 'quota'), ('fake-a', None)]
+ 53 400           ok [('fake-a', 'refused')]
+ 54 5xx_once      ok [('fake-a', 'unavailable'), ('fake-a', None)]
+ 55 5xx_repeated  WRONG [('fake-a', 'unavailable'), ('fake-a', 'unavailable'), ('fake-b', None)]
+ 56 5xx_once      ok [('fake-a', 'unavailable'), ('fake-a', None)]
+ 57 400           ok [('fake-a', 'refused')]
+ 58 5xx_repeated  WRONG [('fake-a', 'unavailable'), ('fake-a', 'unavailable'), ('fake-b', None)]
+ 59 429_repeated  WRONG [('fake-a', 'quota'), ('fake-a', 'quota'), ('fake-a', 'quota'), ('fake-b', None)]
+ 60 5xx_once      ok [('fake-a', 'unavailable'), ('fake-a', None)]
+ 61 429_short     ok [('fake-a', 'quota'), ('fake-a', None)]
+ 62 429_repeated  WRONG [('fake-a', 'quota'), ('fake-a', 'quota'), ('fake-a', 'quota'), ('fake-b', None)]
+ 63 429_repeated  WRONG [('fake-a', 'quota'), ('fake-a', 'quota'), ('fake-a', 'quota'), ('fake-b', None)]
+ 64 429_short     ok [('fake-a', 'quota'), ('fake-a', None)]
+ 65 5xx_once      ok [('fake-a', 'unavailable'), ('fake-a', None)]
+ 66 429_short     ok [('fake-a', 'quota'), ('fake-a', None)]
+ 67 timeout       WRONG [('fake-a', 'unavailable'), ('fake-a', None)]
+ 68 5xx_once      ok [('fake-a', 'unavailable'), ('fake-a', None)]
+ 69 5xx_once      ok [('fake-a', 'unavailable'), ('fake-a', None)]
+ 70 5xx_once      WRONG [('fake-a', None)]
+ 71 429_repeated  WRONG [('fake-a', 'quota'), ('fake-a', None)]
+ 72 5xx_once      ok [('fake-a', 'unavailable'), ('fake-a', None)]
+ 73 429_repeated  WRONG [('fake-a', 'quota'), ('fake-a', 'quota'), ('fake-a', 'unavailable'), ('fake-a', None)]
+ 74 timeout       WRONG [('fake-a', 'unavailable'), ('fake-a', None)]
+ 75 400           ok [('fake-a', 'refused')]
+ 76 429_short     ok [('fake-a', 'quota'), ('fake-a', None)]
+ 77 5xx_once      ok [('fake-a', 'unavailable'), ('fake-a', None)]
+ 78 429_short     WRONG [('fake-a', None)]
+ 79 429_repeated  WRONG [('fake-a', 'quota'), ('fake-a', 'unavailable'), ('fake-a', None)]
+ 80 429_short     ok [('fake-a', 'quota'), ('fake-a', None)]
+ 81 429_short     WRONG [('fake-a', 'quota'), ('fake-a', 'unavailable'), ('fake-a', None)]
+ 82 5xx_repeated  WRONG [('fake-a', 'unavailable'), ('fake-a', 'unavailable'), ('fake-b', None)]
+ 83 429_short     WRONG [('fake-a', 'unavailable'), ('fake-a', None)]
+ 84 429_repeated  WRONG [('fake-a', 'quota'), ('fake-a', None)]
+ 85 5xx_once      ok [('fake-a', 'unavailable'), ('fake-a', None)]
+ 86 5xx_repeated  WRONG [('fake-a', 'unavailable'), ('fake-a', None)]
+ 87 5xx_once      WRONG [('fake-a', 'unavailable'), ('fake-a', 'unavailable'), ('fake-b', None)]
+ 88 5xx_repeated  WRONG [('fake-a', 'unavailable'), ('fake-a', None)]
+ 89 5xx_repeated  WRONG [('fake-a', 'unavailable'), ('fake-a', 'unavailable'), ('fake-b', None)]
+ 90 5xx_once      ok [('fake-a', 'unavailable'), ('fake-a', None)]
+ 91 5xx_repeated  WRONG [('fake-a', 'unavailable'), ('fake-a', None)]
+ 92 5xx_repeated  WRONG [('fake-a', 'unavailable'), ('fake-a', None)]
+ 93 5xx_repeated  WRONG [('fake-a', 'unavailable'), ('fake-a', None)]
+ 94 429_repeated  WRONG [('fake-a', 'quota'), ('fake-a', 'quota'), ('fake-a', None)]
+ 95 429_short     WRONG [('fake-a', 'quota'), ('fake-a', 'quota'), ('fake-a', None)]
+ 96 400           ok [('fake-a', 'refused')]
+ 97 5xx_repeated  WRONG [('fake-a', 'unavailable'), ('fake-a', None)]
+ 98 5xx_once      WRONG [('fake-a', None)]
+ 99 5xx_once      WRONG [('fake-a', 'unavailable'), ('fake-a', 'unavailable'), ('fake-b', None)]
+100 429_short     WRONG [('fake-a', None)]
+{"scenarios": 100, "correct": 51, "by_scenario": {"429_short": "20/25", "429_repeated": "0/15", "5xx_once": "21/25", "5xx_repeated": "0/15", "400": "10/10", "timeout": "0/10"}}
+Result: /spikes/s4-gateway/results/s4-fallbacks-20261015T194837Z.json
+### 19:48:39 briefs ollama
+FROM /root/.ollama/models/blobs/sha256-183715c435899236895da3869489cc30ac241476b4971a20285b1a462818a5b4
+ 1 valid=False repaired=True 2706.3 s invalid: unknown source ids: La piscine communale fermera ses portes le 1er mars pour huit mois de travaux. Le chantier prévoit le remplacement complet de la toit
+ 2 valid=True repaired=False 486.4 s 
+ 3 valid=True repaired=False 410.2 s 
+ 4 valid=True repaired=False 364.1 s 
+ 5 valid=True repaired=False 396.7 s 
+ 6 valid=True repaired=False 538.2 s 
+ 7 valid=True repaired=False 490.1 s 
+ 8 valid=True repaired=False 621.7 s 
+ 9 valid=True repaired=False 537.0 s 
+10 valid=False repaired=True 1651.3 s invalid: unknown source ids: Le gouvernement a attribué la construction d'un nouveau parc éolien en mer à un consortium européen. Les soixante éoliennes fourniron
+11 valid=True repaired=False 666.9 s 
+12 valid=True repaired=False 490.4 s 
+13 valid=True repaired=False 507.3 s 
+14 valid=True repaired=False 494.9 s 
+15 valid=True repaired=False 712.5 s 
+16 valid=True repaired=False 442.0 s 
+17 valid=True repaired=False 410.4 s 
+18 valid=True repaired=False 404.6 s 
+19 valid=True repaired=False 467.4 s 
+20 valid=True repaired=False 606.9 s 
+21 valid=True repaired=False 639.9 s 
+22 valid=True repaired=False 419.9 s 
+23 valid=True repaired=False 423.5 s 
+24 valid=True repaired=False 419.5 s 
+25 valid=True repaired=False 635.4 s 
+26 valid=True repaired=False 386.6 s 
+27 valid=True repaired=False 413.8 s 
+28 valid=True repaired=False 525.8 s 
+29 valid=True repaired=False 465.8 s 
+30 valid=True repaired=False 475.2 s 
+31 valid=True repaired=False 443.5 s 
+32 valid=True repaired=False 501.6 s 
+33 valid=True repaired=False 296.3 s 
+34 valid=True repaired=False 431.7 s 
+35 valid=True repaired=False 347.7 s 
+36 valid=True repaired=False 353.5 s 
+37 valid=True repaired=False 416.8 s 
+38 valid=True repaired=False 396.8 s 
+39 valid=True repaired=False 481.3 s 
+40 valid=True repaired=False 282.7 s 
+41 valid=True repaired=False 318.7 s 
+42 valid=True repaired=False 288.7 s 
+43 valid=True repaired=False 456.6 s 
+44 valid=True repaired=False 319.7 s 
+45 valid=True repaired=False 420.7 s 
+46 valid=True repaired=False 595.6 s 
+47 valid=True repaired=False 387.7 s 
+48 valid=True repaired=False 286.6 s 
+49 valid=True repaired=False 347.3 s 
+50 valid=True repaired=False 493.6 s 
+{"provider": "ollama", "model": "qwen2.5:1.5b-instruct", "briefs": 50, "valid_without_repair": 0.96, "valid_after_one_repair": 0.96, "errors": {"invalid": 2}, "seconds_median": 443.5, "seconds_max": 2706.3, "tokens_out_median": 479}
+Result: /spikes/s4-gateway/results/s4-briefs-ollama-20261016T030324Z.json
+### 03:03:29 done

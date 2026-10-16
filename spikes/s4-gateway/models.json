@@ -1,0 +1,12 @@
+{
+  "_comment": "S4 capability and price table (docs/spikes/S4.md §3.1). Prices per million tokens, fictitious units for the test providers; 0 for local models.",
+  "models": [
+    {"provider": "ollama", "protocol": "openai", "model": "qwen2.5:1.5b-instruct", "structured_output": "json_schema", "context": 32768, "price_in": 0, "price_out": 0, "status": "untested", "paid": false},
+    {"provider": "fake-a", "protocol": "openai", "model": "fake-draft", "structured_output": "json_schema", "context": 32768, "price_in": 3, "price_out": 12, "status": "test", "paid": false},
+    {"provider": "fake-b", "protocol": "openai", "model": "fake-draft", "structured_output": "json_schema", "context": 32768, "price_in": 3, "price_out": 12, "status": "test", "paid": false},
+    {"provider": "fake-anthropic", "protocol": "anthropic", "model": "fake-claude", "structured_output": "tool", "context": 200000, "price_in": 3, "price_out": 12, "status": "test", "paid": false},
+    {"provider": "groq", "protocol": "openai", "model": "to be chosen", "structured_output": "json_schema", "context": 0, "price_in": 0, "price_out": 0, "status": "blocked", "paid": false},
+    {"provider": "anthropic", "protocol": "anthropic", "model": "to be chosen", "structured_output": "tool", "context": 0, "price_in": 0, "price_out": 0, "status": "blocked", "paid": true},
+    {"provider": "openai", "protocol": "openai", "model": "to be chosen", "structured_output": "json_schema", "context": 0, "price_in": 0, "price_out": 0, "status": "blocked", "paid": true}
+  ]
+}

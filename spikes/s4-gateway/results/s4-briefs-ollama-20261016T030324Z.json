@@ -1,0 +1,3691 @@
+{
+  "summary": {
+    "provider": "ollama",
+    "model": "qwen2.5:1.5b-instruct",
+    "briefs": 50,
+    "valid_without_repair": 0.96,
+    "valid_after_one_repair": 0.96,
+    "errors": {
+      "invalid": 2
+    },
+    "seconds_median": 443.5,
+    "seconds_max": 2706.3,
+    "tokens_out_median": 479
+  },
+  "rows": [
+    {
+      "brief": 1,
+      "language": "fr",
+      "valid": false,
+      "repaired": true,
+      "error": "invalid: unknown source ids: La piscine communale fermera ses portes le 1er mars pour huit mois de travaux. Le chantier prévoit le remplacement complet de la toiture et l'isolation des bassins. La commune estime le coût total à 3,2 millions d'euros, dont la moitié financée par la région. Pendant la fermeture",
+      "seconds": 2706.3,
+      "tokens_out": 2034,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 416,
+          "tokens_out": 1017,
+          "seconds": 1206.11
+        },
+        {
+          "provider": "ollama",
+          "tokens_in": 1780,
+          "tokens_out": 1017,
+          "seconds": 1500.18
+        }
+      ],
+      "draft": null
+    },
+    {
+      "brief": 2,
+      "language": "fr",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 486.4,
+      "tokens_out": 501,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 363,
+          "tokens_out": 501,
+          "seconds": 486.36
+        }
+      ],
+      "draft": {
+        "title": "Un marché fermier s'installe chaque samedi matin à la gare",
+        "lead": "Un marché fermier s'installe chaque samedi matin sur la place de la gare à partir d'avril. Les producteurs de la région vendront des fruits, légumes, fromages et pain. La commune met l'emplacement à disposition gratuitement pendant la première année. Les organisateurs veulent favoriser les circuits courts et rapprocher les habitants des agriculteurs.",
+        "sections": [
+          {
+            "heading": "Commune met l'emplacement à disposition gratuitement pendant la première année",
+            "paragraphs": [
+              {
+                "text": "La commune met l'emplacement à disposition gratuitement pendant la première année. Les organisateurs veulent favoriser les circuits courts et rapprocher les habitants des agriculteurs.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Organisateurs proposent des animations le dimanche",
+            "paragraphs": [
+              {
+                "text": "Les organisateurs proposent d'organiser des animations le dimanche. Ils demandent aussi une révision du prix du stationnement.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Commers piétons inquiets de la baisse de fréquentation",
+            "paragraphs": [
+              {
+                "text": "Les commers piétons s'inquiètent de la baisse de fréquentation des rues piétonnes. Plusieurs boutiques ont fermé depuis l'automne, faute de clients.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Association des commerçants propose des animations le dimanche",
+            "paragraphs": [
+              {
+                "text": "L'association des commerçants propose d'organiser des animations le dimanche. Elle demande aussi une révision du prix du stationnement.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 3,
+      "language": "fr",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 410.2,
+      "tokens_out": 409,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 382,
+          "tokens_out": 409,
+          "seconds": 410.17
+        }
+      ],
+      "draft": {
+        "title": "Panne électrique paralysant le réseau de tramway",
+        "lead": "Une panne électrique a paralysé le réseau de tramway de la ville pendant près de trois heures mardi matin. Des milliers de voyageurs ont dû rejoindre leur travail à pied ou en bus.",
+        "sections": [
+          {
+            "heading": "Exploitant",
+            "paragraphs": [
+              {
+                "text": "Selon l'exploitant, un câble d'alimentation a cédé près du dépôt central. Les rames ont été remorquées une à une jusqu'aux stations les plus proches.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Les rames ont été remorquées une à une jusqu'aux stations les plus proches. L'exploitant promet un rapport détaillé d'ici la fin du mois.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Société de transport en commun",
+            "paragraphs": [
+              {
+                "text": "La société de transport en commun annonce l'achat de vingt nouvelles rames de tramway. Ces véhicules plus longs pourront transporter un tiers de passagers en plus.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Les premières livraisons sont attendues dans deux ans. Le contrat, d'un montant de 90 millions d'euros, a été attribué après un appel d'offres européen. Les syndicats demandent que la maintenance reste assurée en interne.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 4,
+      "language": "fr",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 364.1,
+      "tokens_out": 346,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 387,
+          "tokens_out": 346,
+          "seconds": 364.07
+        }
+      ],
+      "draft": {
+        "title": "Papeterie à fermeture : Cent quarante emplois menacés",
+        "lead": "Le groupe propriétaire de la papeterie a annoncé la fermeture du site d'ici la fin de l'année, menaçant un cent quatre-vingt-dix-sept emploi. La direction invoque la hausse du prix de l'énergie et la baisse de la demande de papier journal.",
+        "sections": [
+          {
+            "heading": "Les syndicats contestent les arguments de la direction",
+            "paragraphs": [
+              {
+                "text": "Les syndicats contestent les arguments de la direction et réclament un plan de reprise. Une réunion avec le ministre de l'Économie est prévue lundi.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "La région lance un fonds pour aider les entreprises industrielles à réduire leur consommation d'énergie",
+            "paragraphs": [
+              {
+                "text": "La région a lancé un fonds de 20 millions d'euros pour aider les entreprises industrielles à réduire leur consommation d'énergie. Les sociétés pourront financer l'isolation de leurs bâtiments ou l'achat de machines plus sobres.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 5,
+      "language": "fr",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 396.7,
+      "tokens_out": 405,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 351,
+          "tokens_out": 405,
+          "seconds": 396.69
+        }
+      ],
+      "draft": {
+        "title": "Festival de musique en plein air attire plus de 45 000 spectateurs",
+        "lead": "Le festival de musique en plein air a attiré plus de 45 000 spectateurs en trois jours, selon les organisateurs. Les points d'eau gratuits avaient été installés sur tout le site, et la programmation mêlait des groupes locaux et internationaux. La prochaine édition se tiendra fin juin de l'année prochaine.",
+        "sections": [
+          {
+            "heading": "Édition 2023",
+            "paragraphs": [
+              {
+                "text": "Le festival de musique en plein air a attiré plus de 45 000 spectateurs en trois jours, selon les organisateurs. Les points d'eau gratuits avaient été installés sur tout le site, et la programmation mêlait des groupes locaux et internationaux. La prochaine édition se tiendra fin juin de l'année prochaine.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Complaints from nearby residents",
+            "paragraphs": [
+              {
+                "text": "Les riverains du parc où se tient le festival se plaignent du bruit tard dans la nuit. Certains habitants disent ne pas avoir pu dormir pendant trois jours. Un collectif demande que les concerts se terminent à minuit. La commune rappelle que le festival respecte les normes acoustiques en vigueur. Une rencontre entre riverains et organisateurs est envisagée.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 6,
+      "language": "fr",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 538.2,
+      "tokens_out": 573,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 345,
+          "tokens_out": 573,
+          "seconds": 538.15
+        }
+      ],
+      "draft": {
+        "title": "Glissement de terrain sur la route nationale entre deux villages",
+        "lead": "Un glissement de terrain a coupé la route nationale entre les deux villages dimanche soir, selon les sources S1 et S2. Les travaux de déblaiement pourraient durer au moins une semaine, selon S1 et S2.",
+        "sections": [
+          {
+            "heading": "Sources",
+            "paragraphs": [
+              {
+                "text": "Les sources S1 et S2 ont indiqué que le glissement de terrain a coupé la route nationale entre les deux villages dimanche soir. Les travaux de déblaiement pourraient durer au moins une semaine.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Événement",
+            "paragraphs": [
+              {
+                "text": "Un glissement de terrain a coupé la route nationale entre les deux villages dimanche soir. Personne n'a été blessée, mais une voiture a été endommagée par des pierres.",
+                "source_ids": [
+                  "S1"
+                ]
+              },
+              {
+                "text": "Les fortes pluies des derniers jours ont fragilisé le talus. Une déviation de quinze kilomètres a été mise en place.",
+                "source_ids": [
+                  "S1"
+                ]
+              },
+              {
+                "text": "Les travaux de déblaiement devraient durer au moins une semaine.",
+                "source_ids": [
+                  "S1"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Carte des zones exposées aux glissements de terrain",
+            "paragraphs": [
+              {
+                "text": "Le service géologique publie une carte des zones exposées aux glissements de terrain. Près de deux cents communes sont concernées à des degrés divers.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "La carte servira à orienter les nouveaux permis de bâtir.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Les propriétaires pourront consulter gratuitement le niveau de risque de leur parcelle.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Une campagne d'information débutera au printemps.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 7,
+      "language": "fr",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 490.1,
+      "tokens_out": 498,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 383,
+          "tokens_out": 498,
+          "seconds": 490.1
+        }
+      ],
+      "draft": {
+        "title": "Bibliothèque ouverte le dimanche",
+        "lead": "La bibliothèque principale de la ville ouvrira désormais le dimanche après-midi, de 14 heures à 18 heures, répondant à une forte demande des étudiants et des familles.",
+        "sections": [
+          {
+            "heading": "Extension des horaires",
+            "paragraphs": [
+              {
+                "text": "La bibliothèque principale de la ville ouvrira désormais le dimanche après-midi, de 14 heures à 18 heures.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Cette extension des horaires répond à une demande forte des étudiants et des familles.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Recrutement des bibliothécaires",
+            "paragraphs": [
+              {
+                "text": "Deux bibliothécaires supplémentaires ont été recrutés pour assurer cette extension des horaires.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Le nombre de livres empruntés dans les bibliothèques publiques a légèrement augmenté l'an dernier.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Les bandes dessinées et les romans pour adolescents restent les plus demandés.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Les prêts de livres numériques ont, eux, presque doublé.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Les bibliothécaires notent aussi une forte demande d'aide pour les démarches administratives en ligne.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Des permanences numériques sont organisées chaque semaine.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 8,
+      "language": "fr",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 621.7,
+      "tokens_out": 659,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 371,
+          "tokens_out": 659,
+          "seconds": 621.67
+        }
+      ],
+      "draft": {
+        "title": "Alerte orange pour la canicule : températures supérieures à 35 degrés prévues",
+        "lead": "L'institut météorologique a déclenché l'alerte orange pour la canicule pour toute la semaine. Les températures pourraient dépasser 35 degrés jeudi et vendredi. Les autorités recommandent de boire régulièrement et de se protéger des efforts aux heures les plus chaudes. Les maisons de repos ont reçu des consignes particulières. Un numéro d'information gratuit a été ouvert.",
+        "sections": [
+          {
+            "heading": "Alerte orange pour la canicule",
+            "paragraphs": [
+              {
+                "text": "L'institut météorologique a déclenché l'alerte orange pour la canicule pour toute la semaine.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Les températures pourraient dépasser 35 degrés jeudi et vendredi.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Les autorités recommandent de boire régulièrement et de se protéger des efforts aux heures les plus chaudes.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Les maisons de repos ont reçu des consignes particulières.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Un numéro d'information gratuit a été ouvert.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Effets de la sécheresse sur les cultures de maïs",
+            "paragraphs": [
+              {
+                "text": "Les agriculteurs redoutent les effets de la sécheresse sur les cultures de maïs.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Les nappes phréatiques sont à un niveau inférieur à la normale pour la saison.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Certaines communes ont déjà interdit l'arrosage des jardins.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Les pompiers mettent en garde contre les risques d'incendie de broussailles.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Un comité de crise se réunira si la situation s'aggrave.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 9,
+      "language": "fr",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 537.0,
+      "tokens_out": 568,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 347,
+          "tokens_out": 568,
+          "seconds": 536.98
+        }
+      ],
+      "draft": {
+        "title": "Réforme des rythmes scolaires: Les enseignants et les parents se partagent les perspectives",
+        "lead": "Le gouvernement envisage de réformer les rythmes scolaires en raccourcissant les vacances d'été de deux semaines et en allongeant celles d'automne et de printemps. Les syndicats d'enseignants et les fédérations de parents sont partagées sur la question, tandis que les fédérations de parents sont divisées.",
+        "sections": [
+          {
+            "heading": "Les enseignants",
+            "paragraphs": [
+              {
+                "text": "Le ministère envisage d'accélérer la formation des personnes en reconversion pour répondre aux besoins croissants de professeurs manquants en mathématiques et sciences. Les directeurs d'école demandent également une revalorisation des salaires.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Les parents",
+            "paragraphs": [
+              {
+                "text": "Les fédérations de parents sont partagées sur la question des vacances scolaires. Certaines demandent une répartition plus équilibrée des périodes de vacances, tandis que d'autres souhaitent maintenir les traditions familiales.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Les élèves",
+            "paragraphs": [
+              {
+                "text": "Les enseignants et les parents sont partagés sur la question des vacances d'été. Certains souhaitent une réduction des vacances, tandis que d'autres demandent une prolongation des vacances d'automne et de printemps.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Les professeurs",
+            "paragraphs": [
+              {
+                "text": "Les professeurs manquent de professeurs de mathématiques et de sciences. Dans certaines classes, des cours n'ont pas été donnés pendant plusieurs semaines. Le ministère envisage d'accélérer la formation des personnes en reconversion pour répondre aux besoins croissants de professeurs manquants.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 10,
+      "language": "fr",
+      "valid": false,
+      "repaired": true,
+      "error": "invalid: unknown source ids: Le gouvernement a attribué la construction d'un nouveau parc éolien en mer à un consortium européen. Les soixante éoliennes fourniront l'équivalent de la consommation de 500 000 ménages. Les travaux commenceront dans deux ans au large de la côte. Les pêcheurs ont obtenu des compe",
+      "seconds": 1651.3,
+      "tokens_out": 1452,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 376,
+          "tokens_out": 726,
+          "seconds": 695.0
+        },
+        {
+          "provider": "ollama",
+          "tokens_in": 1411,
+          "tokens_out": 726,
+          "seconds": 956.34
+        }
+      ],
+      "draft": null
+    },
+    {
+      "brief": 11,
+      "language": "fr",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 666.9,
+      "tokens_out": 704,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 367,
+          "tokens_out": 704,
+          "seconds": 666.9
+        }
+      ],
+      "draft": {
+        "title": "Maison médicale de garde ouvrira en janvier dans les locaux de l'ancienne poste",
+        "lead": "Une maison médicale de garde ouvrira en janvier dans les locaux de l'ancienne poste, en vue de désengorger les urgences de l'hôpital régional. Une quinzaine de médecins généralistes se relaieront pour assurer les consultations, via un numéro unique.",
+        "sections": [
+          {
+            "heading": "Objet de la maison médicale de garde",
+            "paragraphs": [
+              {
+                "text": "L'objectif est de désengorger les urgences de l'hôpital régional.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Les consultations se feront sur rendez-vous via un numéro unique.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Localisation et date de l'ouverture",
+            "paragraphs": [
+              {
+                "text": "L'ouverture de la maison médicale de garde se fera en janvier dans les locaux de l'ancienne poste.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Les locaux de l'ancienne poste seront utilisés pour l'ouverture de la maison médicale de garde.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Personnel et objectifs",
+            "paragraphs": [
+              {
+                "text": "Une quinzaine de médecins généralistes se relaieront pour assurer les consultations.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "L'objectif est de désengorger les urgences de l'hôpital régional.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Chargement de travail",
+            "paragraphs": [
+              {
+                "text": "L'hôpital régional peine à recruter des infirmiers pour son service de pédiatrie.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Plusieurs lits ont été temporairement fermés faute de personnel.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "La direction propose des primes et des horaires plus souples.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Les syndicats dénoncent une charge de travail trop lourde.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Le ministre de la Santé doit visiter l'établissement le mois prochain.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 12,
+      "language": "fr",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 490.4,
+      "tokens_out": 519,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 346,
+          "tokens_out": 519,
+          "seconds": 490.4
+        }
+      ],
+      "draft": {
+        "title": "Investisseur étranger rachète le club de football de la ville",
+        "lead": "Un investisseur étranger a racheté le club de football de la ville pour un montant non dévoilé. Les supporters ont accueilli la nouvelle avec prudence après plusieurs années difficiles. L'ancien président restera conseiller pendant une saison. La transaction doit encore être validée par la fédération.",
+        "sections": [
+          {
+            "heading": "Investisseur étranger rachète le club de football",
+            "paragraphs": [
+              {
+                "text": "Un investisseur étranger a racheté le club de football de la ville pour un montant non dévoilé. Il promet de moderniser le stade et de développer le centre de formation.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Les supporters sont accueillant la nouvelle avec prudence après plusieurs années difficiles. L'ancien président restera conseiller pendant une saison.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "La transaction doit encore être validée par la fédération.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Équipe féminine de football qualifiée",
+            "paragraphs": [
+              {
+                "text": "L'équipe féminine de football de la ville s'est qualifiée pour la première fois en demi-finale de la coupe nationale. Les joueuses ont battu le tenant du titre aux tirs au but.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Plus de trois mille spectateurs assistaient à la rencontre.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "La capitaine salue l'esprit collectif du groupe.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "La demi-finale se jouera à domicile dans quinze jours.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 13,
+      "language": "fr",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 507.3,
+      "tokens_out": 557,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 337,
+          "tokens_out": 557,
+          "seconds": 507.29
+        }
+      ],
+      "draft": {
+        "title": "Inondations dans la Vallée: Des Efforts Continus pour les Sinistrés",
+        "lead": "Les pluies torrentielles de la nuit ont provoqué des inondations dans plusieurs communes de la vallée, causant la déplacement de centaines d'habitants et des interventions de plus de trois cents pompiers. La rivière a atteint son plus haut niveau depuis vingt ans, selon les autorités. Le gouverneur a demandé la reconnaissance de l'état de calamité naturelle.",
+        "sections": [
+          {
+            "heading": "Evacuations et Interventions",
+            "paragraphs": [
+              {
+                "text": "Une centaine d'habitations ont été évacuées.",
+                "source_ids": [
+                  "S1"
+                ]
+              },
+              {
+                "text": "Les pompiers ont effectué plus de trois cents interventions.",
+                "source_ids": [
+                  "S1"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Impact et Réactions",
+            "paragraphs": [
+              {
+                "text": "La rivière a atteint son plus haut niveau depuis vingt ans.",
+                "source_ids": [
+                  "S1"
+                ]
+              },
+              {
+                "text": "Le gouverneur a demandé la reconnaissance de l'état de calamité naturelle.",
+                "source_ids": [
+                  "S1"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Requêtes et Réponses",
+            "paragraphs": [
+              {
+                "text": "Un an après les inondations, de nombreux sinistrés attendent toujours d'être indemnisés.",
+                "source_ids": [
+                  "S2"
+                ]
+              },
+              {
+                "text": "Certaines familles vivent encore dans des logements provisoires.",
+                "source_ids": [
+                  "S2"
+                ]
+              },
+              {
+                "text": "Les assureurs expliquent les retards par le nombre très élevé de dossiers.",
+                "source_ids": [
+                  "S2"
+                ]
+              },
+              {
+                "text": "Une association d'aide aux victimes a ouvert une permanence juridique.",
+                "source_ids": [
+                  "S2"
+                ]
+              },
+              {
+                "text": "Le parlement régional doit débattre d'un fonds d'urgence.",
+                "source_ids": [
+                  "S2"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 14,
+      "language": "fr",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 494.9,
+      "tokens_out": 534,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 347,
+          "tokens_out": 534,
+          "seconds": 494.89
+        }
+      ],
+      "draft": {
+        "title": "Commune de la région adopte une politique alimentaire écologique et éducatif",
+        "lead": "La commune de la région a annoncé la mise en place d'une politique alimentaire écologique et éducatif à partir de septembre. Les cantines des écoles communales serviront 50% de produits biologiques, préparés dans une cuisine rénovée. Des ateliers sur l'alimentation seront proposés aux élèves.",
+        "sections": [
+          {
+            "heading": "Politique alimentaire écologique",
+            "paragraphs": [
+              {
+                "text": "La commune de la région a signé des contrats avec des maraîchers de la région pour fournir les produits biologiques à ses cantines. Les repas seront préparés dans une cuisine rénovée, ce qui permettra de réduire les coûts et d'améliorer l'atmosphère de travail.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Les parents de famille seront informés de la nouvelle politique alimentaire, qui ne changera pas le prix des repas pour les familles. Des ateliers sur l'alimentation seront proposés aux élèves pour les aider à comprendre comment cuisiner et manger sainement.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Économie et réduction du gaspillage alimentaire",
+            "paragraphs": [
+              {
+                "text": "Une étude régionale a montré que près d'un tiers des repas servis dans les écoles atteignent le gaspillage alimentaire. Les légumes et le poisson sont les aliments les plus souvent jetés. Les auteurs recommandent de laisser les enfants choisir leurs portions pour réduire le gaspillage.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Des écoles ont déjà testé des balances pour peser les restes et ont présenté les résultats aux parents en fin d'année. Ces tests montrent que la réduction du gaspillage alimentaire peut être réalisée avec succès.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 15,
+      "language": "fr",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 712.5,
+      "tokens_out": 767,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 342,
+          "tokens_out": 767,
+          "seconds": 712.52
+        }
+      ],
+      "draft": {
+        "title": "Cyberattaque contre une administration: Les petites entreprises restent vulnérables",
+        "lead": "Les petites entreprises restent vulnérables aux rançongiciels, selon une enquête de la chambre de commerce. Une étude a révélé que sur trois entreprises, aucune sauvegarde régulière de données n'est effectuée.",
+        "sections": [
+          {
+            "heading": "Sources",
+            "paragraphs": [
+              {
+                "text": "[S1] L'administration provinciale a été victime d'une cyberattaque lundi. Les serveurs ont été mis hors ligne par précaution et plusieurs services en ligne sont indisponibles. Aucune donnée personnelle n'aurait été dérobée selon les premières analyses. Une équipe spécialisée du centre fédéral de cybersécurité est sur place. Le retour à la normale pourrait prendre plusieurs jours.",
+                "source_ids": [
+                  "S1"
+                ]
+              },
+              {
+                "text": "[S2] The provincial administration was the victim of a cyberattack on Monday. The servers were taken offline as a precaution and several online services are unavailable. According to initial analyses, no personal data appears to have been stolen. A specialised team from the federal cybersecurity centre is on site. A return to normal could take several days.",
+                "source_ids": [
+                  "S2"
+                ]
+              },
+              {
+                "text": "[S3] Les petites entreprises restent mal protégées contre les rançongiciels, selon une enquête de la chambre de commerce. Une sur trois ne fait aucune sauvegarde régulière de ses données. Beaucoup ignorent à qui s'adresser en cas d'attaque. La chambre propose des formations gratuites d'une demi-journée. Un guide pratique est disponible sur son site.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Sources",
+            "paragraphs": [
+              {
+                "text": "[S1] L'administration provinciale a été victime d'une cyberattaque lundi. Les serveurs ont été mis hors ligne par précaution et plusieurs services en ligne sont indisponibles. Aucune donnée personnelle n'aurait été dérobée selon les premières analyses. Une équipe spécialisée du centre fédéral de cybersécurité est sur place. Le retour à la normale pourrait prendre plusieurs jours.",
+                "source_ids": [
+                  "S1"
+                ]
+              },
+              {
+                "text": "[S2] The provincial administration was the victim of a cyberattack on Monday. The servers were taken offline as a precaution and several online services are unavailable. According to initial analyses, no personal data appears to have been stolen. A specialised team from the federal cybersecurity centre is on site. A return to normal could take several days.",
+                "source_ids": [
+                  "S2"
+                ]
+              },
+              {
+                "text": "[S3] Les petites entreprises restent mal protégées contre les rançongiciels, selon une enquête de la chambre de commerce. Une étude a révélé que sur trois entreprises, aucune sauvegarde régulière de données n'est effectuée. Beaucoup ignorent à qui s'adresser en cas d'attaque. La chambre propose des formations gratuites d'une demi-journée. Un guide pratique est disponible sur son site.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 16,
+      "language": "fr",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 442.0,
+      "tokens_out": 452,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 365,
+          "tokens_out": 452,
+          "seconds": 441.98
+        }
+      ],
+      "draft": {
+        "title": "Une nouvelle ressourcerie ouverte dans la commune",
+        "lead": "Une ressourcerie a été inaugurée dans l'ancien hangar municipal de la commune. Les habitants peuvent y déposer des meubles, vêtements et appareils dont ils ne possèdent plus. Les objets sont réparés et revendus à un prix réduit. Le projet emploie dix personnes en réinsertion professionnelle. La commune espère réduire de 15% le volume des encombrants.",
+        "sections": [
+          {
+            "heading": "Commune de la Résourcerie",
+            "paragraphs": [
+              {
+                "text": "Une ressourcerie a été inaugurée dans l'ancien hangar municipal de la commune. Les habitants peuvent y déposer des meubles, vêtements et appareils dont ils ne possèdent plus. Les objets sont réparés et revendus à un prix réduit. Le projet emploie dix personnes en réinsertion professionnelle. La commune espère réduire de 15% le volume des encombrants.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Changements à l'Intercommunale",
+            "paragraphs": [
+              {
+                "text": "Le parc à conteneurs modifie ses horaires à partir du mois prochain. Il sera fermé le lundi mais ouvert plus tard le jeudi soir. Les habitants devront présenter leur carte d'identité à l'entrée. Les dépôts de déchets verts seront limités à deux mètres cubes par semaine. L'intercommunale justifie ces changements par la hausse de la fréquentation.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 17,
+      "language": "fr",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 410.4,
+      "tokens_out": 417,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 360,
+          "tokens_out": 417,
+          "seconds": 410.37
+        }
+      ],
+      "draft": {
+        "title": "Les loyers des étudiants augmentent dans la ville universitaire",
+        "lead": "Les loyers des chambres étudiantes ont augmenté de 8% en un an dans la ville universitaire, selon une étude récente. Le prix moyen d'un kot dépasse désormais 500 euros par mois. Les associations étudiantes dénoncent une situation intenable pour de nombreux jeunes. L'université annonce la construction de trois cents logements supplémentaires, mais ils ne seront pas disponibles avant trois ans.",
+        "sections": [
+          {
+            "heading": "Impact des augmentations des loyers sur les étudiants",
+            "paragraphs": [
+              {
+                "text": "Les associations étudiantes dénoncent une situation intenable pour de nombreux jeunes. Les étudiants travaillent souvent pendant leurs études pour financer leur logement, selon une enquête. Les syndicats étudiants craignent un impact sur la réussite.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "L'université a annoncé la construction de trois cents logements supplémentaires, mais ils ne seront pas disponibles avant trois ans. Un service d'aide sociale renforcé a également été annoncé.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Actions de l'université pour répondre aux besoins des étudiants",
+            "paragraphs": [
+              {
+                "text": "L'université a annoncé la construction de trois cents logements supplémentaires, mais ils ne seront pas disponibles avant trois ans. Un service d'aide sociale renforcé a également été annoncé.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2"
+        ]
+      }
+    },
+    {
+      "brief": 18,
+      "language": "fr",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 404.6,
+      "tokens_out": 432,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 334,
+          "tokens_out": 432,
+          "seconds": 404.59
+        }
+      ],
+      "draft": {
+        "title": "Archéologie Romaine: Un site archéologique découvert dans une ville de province",
+        "lead": "Archéologues ont mis au jour des vestiges d'une villa romaine lors de travaux de voirie dans une ville de province. Les fouilles ont révélé des mosaïques et des fragments de céramique bien conservés. Le chantier routier est suspendu pour au moins deux mois. Les objets seront exposés au musée provincial après restauration. Les habitants pourront visiter le site lors d'une journée portes ouvertes.",
+        "sections": [
+          {
+            "heading": "Archéologie Romaine: Un site archéologique découvert dans une ville de province",
+            "paragraphs": [
+              {
+                "text": "Archéologues ont mis au jour des vestiges d'une villa romaine lors de travaux de voirie dans une ville de province. Les fouilles ont révélé des mosaïques et des fragments de céramique bien conservés. Le chantier routier est suspendu pour au moins deux mois. Les objets seront exposés au musée provincial après restauration. Les habitants pourront visiter le site lors d'une journée portes ouvertes.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Musée Provincial: Réouverture après rénovation",
+            "paragraphs": [
+              {
+                "text": "Le musée provincial rouvre après deux ans de rénovation. Les salles ont été entièrement repensées et les collections enrichies. Un parcours interactif a été conçu pour les familles. L'entrée sera gratuite le premier dimanche de chaque mois. La direction espère doubler le nombre de visiteurs.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 19,
+      "language": "fr",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 467.4,
+      "tokens_out": 500,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 355,
+          "tokens_out": 500,
+          "seconds": 467.43
+        }
+      ],
+      "draft": {
+        "title": "App Appelée à Réduire les Embouteillages: Covoiturage Domicile-Travail",
+        "lead": "Une application de covoiturage destinée aux trajets domicile-travail sera lancée dans le zoning industriel. Les salariés pourront proposer ou réserver des places dans les voitures de leurs collègues. Les entreprises participantes offriront des places de parking réservées aux covoitureurs. La région prendra en charge une partie des frais de lancement. L'objectif est de retirer mille voitures des routes chaque jour.",
+        "sections": [
+          {
+            "heading": "Objectif de la Solution",
+            "paragraphs": [
+              {
+                "text": "L'objectif est de retirer mille voitures des routes chaque jour.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Participants",
+            "paragraphs": [
+              {
+                "text": "Les salariés pourront proposer ou réserver des places dans les voitures de leurs collègues.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Les entreprises participantes offriront des places de parking réservées aux covoitureurs.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Ressources",
+            "paragraphs": [
+              {
+                "text": "La région prendra en charge une partie des frais de lancement.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Impact",
+            "paragraphs": [
+              {
+                "text": "Les entreprises se plaignent de retards de livraison et de salariés arrivés en retard.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Les travaux ne pourraient pas débuter avant deux ans.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 20,
+      "language": "fr",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 606.9,
+      "tokens_out": 653,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 346,
+          "tokens_out": 653,
+          "seconds": 606.91
+        }
+      ],
+      "draft": {
+        "title": "Élections Municipales: Une Participation Record, Mais Une Réduction Suggérée",
+        "lead": "Les élections communales de cette année ont connu un taux de participation record de 87%, selon les données officielles. Cela représente une légère baisse par rapport aux élections précédentes. Le bourgmestre sortant a maintenu sa majorité absolue, tandis que les écologistes ont progressé de trois sièges au conseil communal. Le dépouillement électronique a été un peu retardé dans deux bureaux, mais les jeunes électeurs ont joué un rôle important dans la campagne. Les débats locaux ont été centrés sur la mobilité et le logement, et plusieurs listes citoyennes ont été présentées pour la première fois, avec deux d'entre elles ayant obtenu un élu.",
+        "sections": [
+          {
+            "heading": "Participation Record",
+            "paragraphs": [
+              {
+                "text": "Les élections communales de cette année ont connu un taux de participation record de 87%, selon les données officielles.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Cela représente une légère baisse par rapport aux élections précédentes.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Majuscule Maintenue",
+            "paragraphs": [
+              {
+                "text": "Le bourgmestre sortant a maintenu sa majorité absolue.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Les écologistes ont progressé de trois sièges au conseil communal.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Mobilisation des Jeunes",
+            "paragraphs": [
+              {
+                "text": "Les jeunes électeurs se sont davantage mobilisés lors de ce scrutin, selon une étude universitaire.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Les réseaux sociaux ont joué un rôle important dans la campagne.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Les débats locaux ont surtout porté sur la mobilité et le logement.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Plusieurs listes citoyennes se présentaient pour la première fois.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Deux d'entre elles ont obtenu un élu.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 21,
+      "language": "fr",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 639.9,
+      "tokens_out": 671,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 373,
+          "tokens_out": 671,
+          "seconds": 639.93
+        }
+      ],
+      "draft": {
+        "title": "Réouverture d'une gare rurale : un projet ambitieux",
+        "lead": "La petite gare du village va rouvrir ses portes en décembre, après quinze ans de fermeture. Un projet ambitieux qui a été longtemps mené par les élus locaux après des années de mobilisation. Les trains seront plus fréquents, avec quatre en direction de la capitale provinciale par jour. Un parking de quarante places et un abri pour vélos seront également aménagés. Les usagers sont ravis de cette décision, qui a été obtenue après des années de mobilisation. Les élus locaux se réjouissent de cette nouvelle étape dans la vie du village. Les usagers sont également déçus par les retards constatés sur la ligne vers la capitale, qui ont été causés par des travaux sur les voies et un manque de conducteurs. Les usagers réclament un dédommagement pour les abonnés. Une rencontre avec la direction est prévue pour aborder ces problèmes.",
+        "sections": [
+          {
+            "heading": "Réouverture de la gare",
+            "paragraphs": [
+              {
+                "text": "La petite gare du village rouvrira ses portes en décembre, après quinze ans de fermeture. Un projet ambitieux qui a été longtemps mené par les élus locaux après des années de mobilisation. Les trains seront plus fréquents, avec quatre en direction de la capitale provinciale par jour. Un parking de quarante places et un abri pour vélos seront également aménagés. Les usagers sont ravis de cette décision, qui a été obtenue après des années de mobilisation. Les élus locaux se réjouissent de cette nouvelle étape dans la vie du village. Les usagers sont également déçus par les retards constatés sur la ligne vers la capitale, qui ont été causés par des travaux sur les voies et un manque de conducteurs. Les usagers réclament un dédommagement pour les abonnés. Une rencontre avec la direction est prévue pour aborder ces problèmes.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Problèmes sur la ligne vers la capitale",
+            "paragraphs": [
+              {
+                "text": "Les navetteurs dénoncent la multiplication des retards sur la ligne vers la capitale. Selon leur association, un train sur cinq arrive avec plus de dix minutes de retard. La compagnie ferroviaire évoque des travaux sur les voies et un manque de conducteurs. Les usagers réclament un dédommagement pour les abonnés. Une rencontre avec la direction est prévue pour aborder ces problèmes.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 22,
+      "language": "fr",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 419.9,
+      "tokens_out": 424,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 366,
+          "tokens_out": 424,
+          "seconds": 419.86
+        }
+      ],
+      "draft": {
+        "title": "Prix de l'eau augmentera de 6% au 1er janvier",
+        "lead": "Le prix de l'eau de distribution dans plusieurs communes de la région augmentera de 6% à partir du 1er janvier 2023, selon les informations de plusieurs sources.",
+        "sections": [
+          {
+            "heading": "Intercommunale justifie hausse",
+            "paragraphs": [
+              {
+                "text": "L'intercommunale a expliqué que cette augmentation est due à la nécessité de remplacer les conduites vieillissantes. Près de 40 kilomètres de canalisations doivent être renouvelées d'ici cinq ans.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Un tarif social reste accessible aux ménages à faibles revenus. Les associations de consommateurs demandent plus de transparence sur les investissements.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Fuite importante affecte trois quartiers",
+            "paragraphs": [
+              {
+                "text": "Une fuite importante a privé d'eau trois quartiers pendant toute une journée. Les équipes de l'intercommunale ont travaillé de nuit pour réparer la conduite principale.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Des bouteilles d'eau ont été distribuées aux personnes âgées. Les commerçants se plaignent d'un manque à gagner. L'intercommunale promet un geste commercial pour les clients touchés.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 23,
+      "language": "fr",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 423.5,
+      "tokens_out": 438,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 364,
+          "tokens_out": 438,
+          "seconds": 423.53
+        }
+      ],
+      "draft": {
+        "title": "Sauvetage d'animaux sauvages: Des centres de revalidation en activité",
+        "lead": "Des centres de revalidation pour animaux sauvages sont en activité pour aider les animaux en détresse. Le centre de revalidation pour animaux sauvages a recueilli un nombre record de hérissons cet été, et les soigneurs bénévoles se relaient jour et nuit pour les nourrir. Le centre lance un appel aux dons pour agrandir ses installations. Il rappelle qu'il ne faut pas donner de lait aux hérissons.",
+        "sections": [
+          {
+            "heading": "Hérissons",
+            "paragraphs": [
+              {
+                "text": "Le centre de revalidation pour animaux sauvages a recueilli un nombre record de hérissons cet été. Beaucoup souffraient de déshydratation à cause de la sécheresse. Les soigneurs bénévoles se relaient jour et nuit pour les nourrir. Le centre lance un appel aux dons pour agrandir ses installations. Il rappelle qu'il ne faut pas donner de lait aux hérissons.",
+                "source_ids": [
+                  "S1"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Chauves-souris",
+            "paragraphs": [
+              {
+                "text": "Les chauves-souris ont fait leur retour dans le clocher de l'église après des travaux de rénovation. Les ouvriers avaient installé des nichoirs spécialement conçus pour elles. Une association de protection de la nature suit la colonie depuis dix ans. Elle compte désormais près de deux cents individus. Des sorties nocturnes d'observation seront organisées en août.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 24,
+      "language": "fr",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 419.5,
+      "tokens_out": 431,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 355,
+          "tokens_out": 431,
+          "seconds": 419.5
+        }
+      ],
+      "draft": {
+        "title": "Nouvelle zone piétonne à la Place du Marché",
+        "lead": "La ville de Paris prévoit de transformer la Place du Marché en zone piétonne à partir du printemps 2023. Les livraisons seront autorisées uniquement le matin, avant 11 heures, et les riverains seront invités à obtenir une carte d'accès pour accéder à leur garage. Les commerçants restent divisés sur l'effet attendu sur leur chiffre d'affaires.",
+        "sections": [
+          {
+            "heading": "Plan d'action",
+            "paragraphs": [
+              {
+                "text": "La ville a prévu de planter quarante arbres et d'installer des bancs pour rendre la zone plus agréable.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Les commerçants restent divisés sur l'effet attendu sur leur chiffre d'affaires.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Événements spécifiques",
+            "paragraphs": [
+              {
+                "text": "Le parking souterrain de la Place du Marché sera fermé six mois pour rénovation.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Un parking provisoire sera mis en place en périphérie, relié à la zone piétonne par une navette gratuite.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Les abonnés recevront un remboursement partiel pour les travaux de rénovation.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 25,
+      "language": "fr",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 635.4,
+      "tokens_out": 479,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 340,
+          "tokens_out": 479,
+          "seconds": 635.4
+        }
+      ],
+      "draft": {
+        "title": "Explosion Industrielle dans le Port: Un Accident Industriel",
+        "lead": "Une explosion s'est produite jeudi après-midi dans un entrepôt de produits chimiques du port, causant deux blessés légers et la fumée noire visible à plusieurs kilomètres. Les autorités ont demandé aux riverains de fermer les portes et les fenêtres pendant quelques heures pour une enquête sur l'origine de l'explosion.",
+        "sections": [
+          {
+            "heading": "Explosion Industrielle",
+            "paragraphs": [
+              {
+                "text": "Une explosion s'est produite jeudi après-midi dans un entrepôt de produits chimiques du port, causant deux blessés légers et la fumée noire visible à plusieurs kilomètres.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Les autorités ont demandé aux riverains de fermer les portes et les fenêtres pendant quelques heures pour une enquête sur l'origine de l'explosion.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Projet Portuaire",
+            "paragraphs": [
+              {
+                "text": "Le port prévoit d'agrandir son terminal à conteneurs d'ici cinq ans. Le projet nécessite le dragage d'une partie du bassin.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Les associations environnementales s'inquiètent pour une zone humide voisine.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "L'autorité portuaire promet des mesures de compensation.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Une étude d'incidences sera publiée cet automne.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 26,
+      "language": "en",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 386.6,
+      "tokens_out": 328,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 340,
+          "tokens_out": 328,
+          "seconds": 386.63
+        }
+      ],
+      "draft": {
+        "title": "Community Energy Cooperative Launches Solar Panels for Public Buildings",
+        "lead": "Residents of a small town have launched an energy cooperative to install solar panels on public buildings, aiming to provide clean energy to the community at a fixed price. The first installations will be on the sports hall and two schools this summer, with plans to expand to wind power within five years.",
+        "sections": [
+          {
+            "heading": "Community Energy Cooperative Launches Solar Panels for Public Buildings",
+            "paragraphs": [
+              {
+                "text": "Residents of a small town have launched an energy cooperative to install solar panels on public buildings, aiming to provide clean energy to the community at a fixed price. The first installations will be on the sports hall and two schools this summer, with plans to expand to wind power within five years.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Energy Bills Concern for Rural Areas",
+            "paragraphs": [
+              {
+                "text": "Energy bills remain a major concern for families in rural areas, according to a charity survey. Many homes are poorly insulated and heated with oil. The charity calls for grants that cover the full cost of insulation for low-income households. It also recommends free energy audits. The government says new support will be announced in the budget.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 27,
+      "language": "en",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 413.8,
+      "tokens_out": 440,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 344,
+          "tokens_out": 440,
+          "seconds": 413.78
+        }
+      ],
+      "draft": {
+        "title": "Hospital Waiting Times in Regional Emergency Department Reach New High",
+        "lead": "The regional hospital's emergency department has seen a significant increase in waiting times, with patients averaging six hours before being seen last month. Staff shortages and an increase in winter infections are cited as the main causes. To address the issue, the hospital has opened an extra ward to free up beds and is urging patients with minor problems to visit their GP first.",
+        "sections": [
+          {
+            "heading": "Staff Shortages and Infections",
+            "paragraphs": [
+              {
+                "text": "Staff shortages and an increase in winter infections are blamed for the delays.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "The hospital has opened an extra ward to free up beds.",
+                "source_ids": [
+                  "S1"
+                ]
+              },
+              {
+                "text": "The hospital is urging patients with minor problems to visit their GP first.",
+                "source_ids": [
+                  "S1"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Training Programme for Retired Nurses",
+            "paragraphs": [
+              {
+                "text": "A new training programme aims to bring retired nurses back to the regional hospital part-time.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Participants can choose flexible shifts and receive a refresher course.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Unions welcome the idea but warn it will not solve staff shortages alone.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "The hospital also wants to recruit more foreign-trained nurses.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Recruitment events are planned in the spring.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 28,
+      "language": "en",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 525.8,
+      "tokens_out": 568,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 328,
+          "tokens_out": 568,
+          "seconds": 525.83
+        }
+      ],
+      "draft": {
+        "title": "City Archive Launches Digitization Project to Digitize Historical Documents",
+        "lead": "The city archive has started digitizing more than a million pages of historical documents, including old newspapers, maps, and parish registers. Volunteers will help check the scanned pages for errors. The digitized documents will be available online for free. The project is expected to take four years and is funded by a national heritage grant.",
+        "sections": [
+          {
+            "heading": "Digitization Project Overview",
+            "paragraphs": [
+              {
+                "text": "The city archive has launched a digitization project to digitize more than a million pages of historical documents. The collection includes old newspapers, maps, and parish registers. Volunteers will help check the scanned pages for errors. The digitized documents will be available online for free.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "The project is expected to take four years and is funded by a national heritage grant.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Volunteers Needed",
+            "paragraphs": [
+              {
+                "text": "Volunteers will help check the scanned pages for errors.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "The digitized documents will be available online for free.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Family History Research",
+            "paragraphs": [
+              {
+                "text": "Family history research has become a popular hobby, with archive visits rising steadily.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Many visitors come looking for information about grandparents who emigrated.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Archivists offer introductory workshops on reading old handwriting.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Waiting lists for the workshops are long.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Online Tutorials",
+            "paragraphs": [
+              {
+                "text": "The archive plans to record online tutorials.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 29,
+      "language": "en",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 465.8,
+      "tokens_out": 499,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 326,
+          "tokens_out": 499,
+          "seconds": 465.77
+        }
+      ],
+      "draft": {
+        "title": "Bus Fare Reduction for Young People in Region",
+        "lead": "The regional government has announced a significant change in bus fare policy, reducing fares for young people under the age of twenty-five by half. This initiative aims to encourage public transport use and reduce car traffic.",
+        "sections": [
+          {
+            "heading": "Overview",
+            "paragraphs": [
+              {
+                "text": "The regional government has announced a significant change in bus fare policy, reducing fares for young people under the age of twenty-five by half. This initiative aims to encourage public transport use and reduce car traffic.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Implementation Details",
+            "paragraphs": [
+              {
+                "text": "The measure is meant to encourage public transport use and reduce car traffic. The regional government will cover the cost, estimated at twelve million a year. Students will need to register for a new travel card.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "The scheme will be reviewed after two years.",
+                "source_ids": [
+                  "S1"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Impact on Students",
+            "paragraphs": [
+              {
+                "text": "Students will need to register for a new travel card.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "The operator has offered to install protective screens in all buses.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Strikes and Safety Concerns",
+            "paragraphs": [
+              {
+                "text": "Bus drivers in the region have voted to strike over working hours and safety.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "They say late-night shifts have become dangerous on some routes.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "The operator has offered to install protective screens in all buses.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 30,
+      "language": "en",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 475.2,
+      "tokens_out": 502,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 342,
+          "tokens_out": 502,
+          "seconds": 475.24
+        }
+      ],
+      "draft": {
+        "title": "City Bans Single-Use Plastics at Public Events",
+        "lead": "The city of [City Name] has announced a ban on single-use plastics at all public events starting next year. Organisers will be required to use either reusable or compostable alternatives, with fines of up to five hundred euros for offenders. Environmental groups have welcomed the decision as a significant step towards reducing plastic waste.",
+        "sections": [
+          {
+            "heading": "Event Ban on Single-Use Plastics",
+            "paragraphs": [
+              {
+                "text": "The city of [City Name] has announced a ban on single-use plastics at all public events starting next year. Organisers will be required to use either reusable or compostable alternatives, with fines of up to five hundred euros for offenders.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "The ban will apply to all public events, including festivals, meetings, and other gatherings. Organisers will be required to provide reusable or compostable alternatives for cups, plates, and other single-use items.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "The city will also provide free reusable cups to small associations, with the aim of encouraging more people to use reusable items.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Fines of up to five hundred euros are planned for those who do not comply with the ban.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Plastic Waste Reduction Efforts",
+            "paragraphs": [
+              {
+                "text": "The city has seen a significant reduction in litter collected in the parks since new bins were installed. The bins separate plastic, paper, and general waste, and park staff say visitors are making more effort to sort their rubbish.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Cigarette butts remain the most common type of litter, but the city plans a campaign against them.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 31,
+      "language": "en",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 443.5,
+      "tokens_out": 481,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 333,
+          "tokens_out": 481,
+          "seconds": 443.5
+        }
+      ],
+      "draft": {
+        "title": "School Renovation Project Announced",
+        "lead": "The town's secondary school will undergo a significant renovation over the next three years, focusing on new science laboratories, a library, and improved insulation. Classes will continue during the works, with temporary classrooms in place. The project is expected to cost approximately eighteen million, with most funding coming from regional funds. Parents have been invited to an information evening next week.",
+        "sections": [
+          {
+            "heading": "Project Details",
+            "paragraphs": [
+              {
+                "text": "The project includes new science laboratories, a library, and better insulation.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Classes will continue during the works, with temporary classrooms in place.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "The total cost is estimated at dix-huit millions, taken in part by des fonds régionaux.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Parents are invited to an information evening next week.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Teacher's Initiative",
+            "paragraphs": [
+              {
+                "text": "Teachers at the secondary school have launched a project to reduce screen time among pupils.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Phones must now be kept in lockers during the school day.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Staff report calmer breaks and more conversation between students.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Some parents worry about being unable to reach their children.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "The school will review the rule at the end of the year.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 32,
+      "language": "en",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 501.6,
+      "tokens_out": 529,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 345,
+          "tokens_out": 529,
+          "seconds": 501.57
+        }
+      ],
+      "draft": {
+        "title": "Bicycle Theft Rises in City Centre",
+        "lead": "Bicycle thefts have risen by thirty percent in the city centre this year, according to police figures. Most thefts take place near the railway station and the university. Police advise cyclists to use two locks and register their bikes. A secure parking facility for five hundred bikes will open at the station next spring. Officers have also increased patrols in the evening.",
+        "sections": [
+          {
+            "heading": "Bicycle Theft Increases",
+            "paragraphs": [
+              {
+                "text": "Bicycle thefts have risen by thirty percent in the city centre this year, police figures show.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Most thefts take place near the railway station and the university.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Safety Measures",
+            "paragraphs": [
+              {
+                "text": "Police advise cyclists to use two locks and register their bikes.",
+                "source_ids": [
+                  "S1"
+                ]
+              },
+              {
+                "text": "A secure parking facility for five hundred bikes will open at the station next spring.",
+                "source_ids": [
+                  "S1"
+                ]
+              },
+              {
+                "text": "Officers have also increased patrols in the evening.",
+                "source_ids": [
+                  "S1"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "New Bike-Sharing Scheme",
+            "paragraphs": [
+              {
+                "text": "A new bike-sharing scheme with electric bicycles will be launched in the city in May.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Users will be able to unlock bikes with a smartphone app.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Stations will be located near tram stops and car parks.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "The first thirty minutes of each ride will be free for subscribers.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "The operator plans to add cargo bikes later.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 33,
+      "language": "en",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 296.3,
+      "tokens_out": 286,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 334,
+          "tokens_out": 286,
+          "seconds": 296.27
+        }
+      ],
+      "draft": {
+        "title": "End of an Era: The Final Issue of the Town's Weekly Newspaper",
+        "lead": "The town's weekly newspaper, L'hebdomadaire de la ville, will publish its final edition at the end of the month after ninety years of existence. The owners cite falling advertising revenue and rising printing costs as reasons for the closure.",
+        "sections": [
+          {
+            "heading": "Journalists and Staff Losing Jobs",
+            "paragraphs": [
+              {
+                "text": "Eight journalists and staff will lose their jobs as a result of the closure. The town's readers have expressed their sadness on social media, and a group of former employees is considering launching an online news site.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Public Support for Local Journalism",
+            "paragraphs": [
+              {
+                "text": "A national survey finds that trust in local news remains higher than trust in national media. However, fewer young people pay for news subscriptions. Publishers are experimenting with newsletters and podcasts, and some are asking for public support for local journalism.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 34,
+      "language": "en",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 431.7,
+      "tokens_out": 457,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 335,
+          "tokens_out": 457,
+          "seconds": 431.68
+        }
+      ],
+      "draft": {
+        "title": "Water Restrictions Introduce Drought-Related Challenges",
+        "lead": "Water restrictions have been introduced in twelve municipalities following weeks without significant rain, leading to a significant water shortage. Farmers are switching to drought-resistant crops, and agricultural schools are teaching new irrigation techniques. The regional government offers grants for water-saving equipment.",
+        "sections": [
+          {
+            "heading": "Water Restrictions Introduce Drought-Related Challenges",
+            "paragraphs": [
+              {
+                "text": "Water restrictions have been introduced in twelve municipalities following weeks without significant rain, leading to a significant water shortage.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Farmers are switching to drought-resistant crops, and agricultural schools are teaching new irrigation techniques.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "The regional government offers grants for water-saving equipment.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Impact on Agriculture",
+            "paragraphs": [
+              {
+                "text": "As summers become drier, farmers are switching to drought-resistant crops, such as sorghum and certain varieties of wheat, which need less water than maize.",
+                "source_ids": [
+                  "S1"
+                ]
+              },
+              {
+                "text": "Agricultural schools are teaching new irrigation techniques to help farmers manage water more efficiently.",
+                "source_ids": [
+                  "S1"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Community Response",
+            "paragraphs": [
+              {
+                "text": "Some farmers are building small ponds to store winter rain, which can be used during the dry season.",
+                "source_ids": [
+                  "S1"
+                ]
+              },
+              {
+                "text": "The regional government is offering grants for water-saving equipment, which can help farmers conserve water.",
+                "source_ids": [
+                  "S1"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 35,
+      "language": "en",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 347.7,
+      "tokens_out": 352,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 337,
+          "tokens_out": 352,
+          "seconds": 347.7
+        }
+      ],
+      "draft": {
+        "title": "New Cancer Screening Programme Launched",
+        "lead": "A new cancer screening programme has been launched to help detect and treat cancer at an early stage, improving the chances of recovery.",
+        "sections": [
+          {
+            "heading": "Eligibility and Testing",
+            "paragraphs": [
+              {
+                "text": "A free bowel cancer screening programme will be offered to everyone aged fifty to seventy-four. Eligible residents will receive a home test kit by post.",
+                "source_ids": [
+                  "S1"
+                ]
+              },
+              {
+                "text": "The test is simple and takes only a few minutes. Doctors say early detection greatly improves the chances of recovery.",
+                "source_ids": [
+                  "S1"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "University Hospital Cancer Centre",
+            "paragraphs": [
+              {
+                "text": "A new cancer centre will open at the university hospital next year. It will bring together diagnosis, treatment and support services in one building.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Patients will be able to see several specialists on the same day.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "A garden and a quiet room have been designed for families.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "The centre was partly funded by public donations.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 36,
+      "language": "en",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 353.5,
+      "tokens_out": 376,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 323,
+          "tokens_out": 376,
+          "seconds": 353.53
+        }
+      ],
+      "draft": {
+        "title": "City Council Approves Housing Construction Plan",
+        "lead": "The city council has approved a plan to build two thousand new homes over ten years, with a third of the homes designated as affordable rental housing. The project will reuse former industrial land near the canal, and residents' groups are concerned about green spaces and school places. The construction of the first phase should start in eighteen months.",
+        "sections": [
+          {
+            "heading": "Housing Construction Plan",
+            "paragraphs": [
+              {
+                "text": "The city council has approved a plan to build two thousand new homes over ten years, with a third of the homes designated as affordable rental housing. The project will reuse former industrial land near the canal, and residents' groups are concerned about green spaces and school places.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Construction of the first phase should start in eighteen months.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Impact on Housing Prices",
+            "paragraphs": [
+              {
+                "text": "House prices in the city have risen faster than wages for the fifth year in a row. First-time buyers now need almost ten years of savings for a deposit. Estate agents report strong demand for small flats near the station. Some young families are moving to surrounding villages.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Economists expect prices to stabilise next year.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 37,
+      "language": "en",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 416.8,
+      "tokens_out": 443,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 334,
+          "tokens_out": 443,
+          "seconds": 416.8
+        }
+      ],
+      "draft": {
+        "title": "Regional Airport Increases Night Flights Amid Community Concerns",
+        "lead": "The regional airport has been granted permission to increase night flights by twenty percent, sparking debate among local residents and environmental groups.",
+        "sections": [
+          {
+            "heading": "Residents' Concerns",
+            "paragraphs": [
+              {
+                "text": "Local residents are expressing concern about the increased noise levels caused by the night flights.",
+                "source_ids": [
+                  "S1"
+                ]
+              },
+              {
+                "text": "They argue that the noise already disturbs their sleep, and the airport claims that cargo flights are essential for jobs in the region.",
+                "source_ids": [
+                  "S1"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Airport's Arguments",
+            "paragraphs": [
+              {
+                "text": "The airport argues that cargo flights are essential for jobs in the region.",
+                "source_ids": [
+                  "S1"
+                ]
+              },
+              {
+                "text": "Under the new permit, the noisiest aircraft will be banned between midnight and six in the morning.",
+                "source_ids": [
+                  "S1"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Environmental Impact",
+            "paragraphs": [
+              {
+                "text": "The airport plans to build a new terminal to handle growing passenger numbers.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "The terminal will be powered partly by solar panels.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Passengers will have direct access to a new train station.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Airlines' Reaction",
+            "paragraphs": [
+              {
+                "text": "Airlines have welcomed the announcement.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 38,
+      "language": "en",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 396.8,
+      "tokens_out": 422,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 320,
+          "tokens_out": 422,
+          "seconds": 396.83
+        }
+      ],
+      "draft": {
+        "title": "Volunteer Firefighters Shortage in Rural Areas",
+        "lead": "Rural fire stations are facing a shortage of volunteer firefighters, with several stations unable to guarantee a full crew during working hours. The government plans to offer tax benefits to employers who release volunteers, while a recruitment campaign is set to start next month.",
+        "sections": [
+          {
+            "heading": "Government Plan",
+            "paragraphs": [
+              {
+                "text": "The government plans to offer tax benefits to employers who release volunteers. This initiative aims to encourage more people to join the ranks of volunteer firefighters.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "A recruitment campaign will start next month, with the aim of attracting more young people to the ranks of volunteer firefighters.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Fire Station Challenges",
+            "paragraphs": [
+              {
+                "text": "Several rural fire stations are struggling to recruit volunteer firefighters. The government plans to offer tax benefits to employers who release volunteers.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Fire chiefs say fewer young people live and work in the same village, making it difficult to find qualified candidates for the job.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "The fire service is asking residents not to light barbecues near vegetation, as it can cause fires.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "New water tankers have been ordered to help with firefighting efforts.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 39,
+      "language": "en",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 481.3,
+      "tokens_out": 528,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 315,
+          "tokens_out": 528,
+          "seconds": 481.27
+        }
+      ],
+      "draft": {
+        "title": "Minimum Wage Increase Announced",
+        "lead": "The national minimum wage in the United Kingdom is set to rise by four percent in January, marking the fourth consecutive increase in the past year. The government has stated that the rise will help workers cope with higher living costs, while business organizations warn that small companies may hire fewer people. Trade unions have argued that the increase does not go far enough, with around three hundred thousand workers expected to benefit.",
+        "sections": [
+          {
+            "heading": "Government's Perspective",
+            "paragraphs": [
+              {
+                "text": "The government has announced that the national minimum wage will rise by four percent in January. The increase is expected to help workers cope with higher living costs. The government has stated that the rise will help workers to manage the increased costs of living.",
+                "source_ids": [
+                  "S1"
+                ]
+              },
+              {
+                "text": "Business organizations have warned that small companies may hire fewer people as a result of the increase. The organizations have expressed concern that the rise in the minimum wage may not be enough to support small businesses.",
+                "source_ids": [
+                  "S1"
+                ]
+              },
+              {
+                "text": "Trade unions have argued that the increase does not go far enough. The unions have stated that the rise in the minimum wage is not sufficient to help workers and that the increase is not enough to support small businesses.",
+                "source_ids": [
+                  "S1"
+                ]
+              },
+              {
+                "text": "Around three hundred thousand workers are expected to benefit from the increase. The unions have stated that the increase will help workers to manage the increased costs of living.",
+                "source_ids": [
+                  "S1"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Economic Impact",
+            "paragraphs": [
+              {
+                "text": "The national statistics office has reported that inflation slowed for the third month in a row. Food prices rose less quickly, while energy prices fell. However, rents continued to increase. Economists have predicted that inflation will return to normal levels by next year.",
+                "source_ids": [
+                  "S2"
+                ]
+              },
+              {
+                "text": "The central bank will meet next week to discuss interest rates. The central bank has stated that it will meet next week to discuss interest rates.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 40,
+      "language": "en",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 282.7,
+      "tokens_out": 278,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 321,
+          "tokens_out": 278,
+          "seconds": 282.75
+        }
+      ],
+      "draft": {
+        "title": "Rare Panda Cub Born at City Zoo",
+        "lead": "The city zoo has announced the birth of a rare red panda cub, which has only now left its nest box. Keepers say the mother and baby are in good health and the zoo participates in a European breeding programme for the endangered species.",
+        "sections": [
+          {
+            "heading": "Details of the Birth",
+            "paragraphs": [
+              {
+                "text": "The cub was born in July but has only now left its nest box. Keepers say mother and baby are in good health. The zoo takes part in a European breeding programme for the endangered species.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Project for Elephants",
+            "paragraphs": [
+              {
+                "text": "The city zoo is building a new enclosure for its elephants. The area will be three times larger and include a pool. The project follows criticism from animal welfare groups. Construction will cost around eight million. The elephants will move to the new enclosure next summer.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 41,
+      "language": "en",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 318.7,
+      "tokens_out": 320,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 333,
+          "tokens_out": 320,
+          "seconds": 318.74
+        }
+      ],
+      "draft": {
+        "title": "Storm Damage and Power Cuts: A Region Struggles to Recover",
+        "lead": "A violent storm swept across the region overnight, causing widespread damage and power outages. More than forty thousand homes were left without electricity, and several roads were blocked, leading to train service disruptions. Emergency crews worked tirelessly to restore power, and most customers should be reconnected by the evening.",
+        "sections": [
+          {
+            "heading": "Damage and Outages",
+            "paragraphs": [
+              {
+                "text": "A violent storm swept across the region overnight, bringing down trees and power lines. More than forty thousand homes were left without electricity. Several roads were blocked and train services were suspended for the morning. Emergency crews worked through the night to restore power. Most customers should be reconnected by the evening.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Community Response",
+            "paragraphs": [
+              {
+                "text": "Insurers expect thousands of claims after the storm, mainly for damaged roofs and fallen trees. They advise policyholders to take photographs before any repair. Builders are already overwhelmed with requests. Some residents have been offered temporary tarpaulins by the council. The government is considering a special support fund.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 42,
+      "language": "en",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 288.7,
+      "tokens_out": 288,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 323,
+          "tokens_out": 288,
+          "seconds": 288.66
+        }
+      ],
+      "draft": {
+        "title": "New Public Swimming Lake to Open in Municipality",
+        "lead": "The municipality plans to transform an old gravel pit into a public swimming lake, featuring a sandy beach, changing rooms, and a lifeguard station. Water quality will be tested weekly during the season, and entry will be free for residents.",
+        "sections": [
+          {
+            "heading": "Project Details",
+            "paragraphs": [
+              {
+                "text": "The project will include a sandy beach, changing rooms, and a lifeguard station.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Water quality will be tested every week during the season.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Entry will be free for residents of the municipality.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Environmental Impact",
+            "paragraphs": [
+              {
+                "text": "The project also creates a protected area for birds on the opposite shore.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 43,
+      "language": "en",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 456.6,
+      "tokens_out": 498,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 315,
+          "tokens_out": 498,
+          "seconds": 456.64
+        }
+      ],
+      "draft": {
+        "title": "Teenage Mental Health Service Opens in Town Centre",
+        "lead": "A new mental health service for teenagers has opened in the town centre, offering free and confidential support to those aged twelve to eighteen. The service, created after a sharp rise in requests from schools, will be open four afternoons a week, including Saturday.",
+        "sections": [
+          {
+            "heading": "Service Overview",
+            "paragraphs": [
+              {
+                "text": "The service, located in the town centre, offers free and confidential support to teenagers aged twelve to eighteen. It was created after a significant increase in requests from schools.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "The service will be open four afternoons a week, including Saturday, providing a convenient option for teenagers who may not have the time to visit a psychologist or youth worker.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Programme Development",
+            "paragraphs": [
+              {
+                "text": "Schools are training teachers to recognize early signs of anxiety and depression in pupils. The programme includes a two-day course and regular follow-up sessions.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Teachers feel more confident discussing emotional problems, and parents can also attend evening workshops. The education ministry plans to extend the programme nationwide.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Impact on Schools",
+            "paragraphs": [
+              {
+                "text": "The service aims to address the rising demand for mental health support from schools, providing a more accessible option for teenagers who may not have the time to visit a psychologist or youth worker.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "The programme has been developed in collaboration with schools, teachers, and parents, with the goal of providing comprehensive support for teenagers' mental health.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 44,
+      "language": "en",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 319.7,
+      "tokens_out": 326,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 318,
+          "tokens_out": 326,
+          "seconds": 319.67
+        }
+      ],
+      "draft": {
+        "title": "Factory Expansion and Job Creation",
+        "lead": "A bicycle manufacturer is set to double the size of its factory and hire two hundred workers, aiming to meet the growing demand for electric bikes across Europe. The company plans to build the new facility on land next to its existing plant and will offer training programmes to unemployed people in the area. The expansion is expected to start production in two years.",
+        "sections": [
+          {
+            "heading": "Factory Expansion and Job Creation",
+            "paragraphs": [
+              {
+                "text": "A bicycle manufacturer is set to double the size of its factory and hire two hundred workers, aiming to meet the growing demand for electric bikes across Europe. The company plans to build the new facility on land next to its existing plant and will offer training programmes to unemployed people in the area. The expansion is expected to start production in two years.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Regional Employment Trends",
+            "paragraphs": [
+              {
+                "text": "Unemployment in the region fell to its lowest level in fifteen years last quarter. Construction and healthcare recorded the strongest job growth. Employers still report difficulty finding qualified technicians. The employment agency is expanding evening courses. Youth unemployment, however, remains above the national average.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 45,
+      "language": "en",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 420.7,
+      "tokens_out": 443,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 337,
+          "tokens_out": 443,
+          "seconds": 420.72
+        }
+      ],
+      "draft": {
+        "title": "Museum Free Entry: A New Initiative for Families and Regular Visitors",
+        "lead": "All municipal museums will offer free entry on the first Sunday of every month from January, aiming to attract families and people who rarely visit museums. Guided tours and children's workshops will be organised on those days, with the loss of ticket revenue partly offset by sponsorship. Attendance figures will be published after one year.",
+        "sections": [
+          {
+            "heading": "Free Entry Initiative",
+            "paragraphs": [
+              {
+                "text": "All municipal museums will offer free entry on the first Sunday of every month from January, with the aim of attracting families and people who rarely visit museums.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Guided tours and children's workshops will be organised on those days, with the loss of ticket revenue partly offset by sponsorship.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Attendance figures will be published after one year.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Art Museum Acquires a Painting",
+            "paragraphs": [
+              {
+                "text": "The art museum has acquired a painting by a local artist from the nineteenth century, which was bought at auction with the help of a private foundation.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "It shows the town's harbour at sunset.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Restorers will clean the painting before it goes on display.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "A special exhibition about the artist is planned for next year.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 46,
+      "language": "en",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 595.6,
+      "tokens_out": 666,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 313,
+          "tokens_out": 666,
+          "seconds": 595.64
+        }
+      ],
+      "draft": {
+        "title": "Speed Cameras in Residential Streets: A Step Towards Improved Road Safety",
+        "lead": "The city of [City Name] is introducing a new initiative aimed at enhancing road safety in residential areas. Twenty new speed cameras will be installed across the city, with the speed limit reduced to thirty kilometers per hour. This move comes after a slight decrease in road deaths last year, but an increase in injured cyclists. The institute recommends more protected crossings and better lighting on rural roads. A national awareness campaign will begin in autumn.",
+        "sections": [
+          {
+            "heading": "New Speed Cameras in Residential Streets",
+            "paragraphs": [
+              {
+                "text": "The city of [City Name] is introducing a new initiative aimed at enhancing road safety in residential areas. Twenty new speed cameras will be installed across the city, with the speed limit reduced to thirty kilometers per hour. This move comes after a slight decrease in road deaths last year, but an increase in injured cyclists. The institute recommends more protected crossings and better lighting on rural roads. A national awareness campaign will begin in autumn.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Road Safety Improvements",
+            "paragraphs": [
+              {
+                "text": "The city of [City Name] is introducing a new initiative aimed at enhancing road safety in residential areas. Twenty new speed cameras will be installed across the city, with the speed limit reduced to thirty kilometers per hour. This move comes after a slight decrease in road deaths last year, but an increase in injured cyclists. The institute recommends more protected crossings and better lighting on rural roads. A national awareness campaign will begin in autumn.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Road Safety Challenges",
+            "paragraphs": [
+              {
+                "text": "The city of [City Name] is introducing a new initiative aimed at enhancing road safety in residential areas. Twenty new speed cameras will be installed across the city, with the speed limit reduced to thirty kilometers per hour. This move comes after a slight decrease in road deaths last year, but an increase in injured cyclists. The institute recommends more protected crossings and better lighting on rural roads. A national awareness campaign will begin in autumn.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Road Safety Campaigns",
+            "paragraphs": [
+              {
+                "text": "The city of [City Name] is introducing a new initiative aimed at enhancing road safety in residential areas. Twenty new speed cameras will be installed across the city, with the speed limit reduced to thirty kilometers per hour. This move comes after a slight decrease in road deaths last year, but an increase in injured cyclists. The institute recommends more protected crossings and better lighting on rural roads. A national awareness campaign will begin in autumn.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 47,
+      "language": "en",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 387.7,
+      "tokens_out": 399,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 339,
+          "tokens_out": 399,
+          "seconds": 387.67
+        }
+      ],
+      "draft": {
+        "title": "Rural Broadband Rollout: A Step Forward for Connectivity in the Province",
+        "lead": "The province is set to see a significant improvement in internet connectivity for rural residents, with the launch of a fibre broadband network. This rollout, supported by a public subsidy of forty million, aims to reach every village by the end of next year. The new network will allow residents to choose between several internet providers, and works in the streets will be announced village by village.",
+        "sections": [
+          {
+            "heading": "Public Support and Subsidy",
+            "paragraphs": [
+              {
+                "text": "The rollout is supported by a public subsidy of forty million, which is expected to help bridge the digital divide for many residents.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "The subsidy is intended to help residents who still have very slow connections, allowing them to choose between several internet providers on the new network.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Coverage Challenges",
+            "paragraphs": [
+              {
+                "text": "Mobile phone coverage remains poor in parts of the countryside, a consumer survey finds.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "Many residents cannot make calls inside their homes, and operators blame planning rules that slow down the building of new masts.",
+                "source_ids": [
+                  "S3"
+                ]
+              },
+              {
+                "text": "The regulator wants to oblige operators to share infrastructure, which could help improve mobile phone coverage in rural areas.",
+                "source_ids": [
+                  "S3"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 48,
+      "language": "en",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 286.6,
+      "tokens_out": 281,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 325,
+          "tokens_out": 281,
+          "seconds": 286.59
+        }
+      ],
+      "draft": {
+        "title": "Food Bank Demand Soars Amidst Supermarket Donations Drop",
+        "lead": "The local food bank is experiencing a significant increase in demand, with more working families seeking assistance for groceries. Donations from supermarkets have declined at the same time, prompting the food bank to seek new volunteers and storage space. The organization has launched a collection in schools before the winter holidays.",
+        "sections": [
+          {
+            "heading": "Demand for Assistance",
+            "paragraphs": [
+              {
+                "text": "The local food bank is experiencing a significant increase in demand, with more working families seeking assistance for groceries.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Donations from supermarkets have declined at the same time, prompting the food bank to seek new volunteers and storage space.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "School Collection Initiative",
+            "paragraphs": [
+              {
+                "text": "The food bank has launched a collection in schools before the winter holidays.",
+                "source_ids": [
+                  "S2"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 49,
+      "language": "en",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 347.3,
+      "tokens_out": 360,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 321,
+          "tokens_out": 360,
+          "seconds": 347.29
+        }
+      ],
+      "draft": {
+        "title": "Historic Stone Bridge Restoration Begins",
+        "lead": "The town's historic stone bridge will be closed to traffic for a year of restoration work. Engineers found serious cracks in two of the arches during an inspection.",
+        "sections": [
+          {
+            "heading": "Restoration Details",
+            "paragraphs": [
+              {
+                "text": "The restoration will respect the original materials and building techniques. The bridge is more than three hundred years old.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "Pedestrians and cyclists will be able to cross on a temporary footbridge.",
+                "source_ids": [
+                  "S1"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Traffic Issues",
+            "paragraphs": [
+              {
+                "text": "Traffic jams have grown in the town since the new shopping centre opened.",
+                "source_ids": [
+                  "S1"
+                ]
+              },
+              {
+                "text": "Delivery lorries often block narrow streets in the old quarter.",
+                "source_ids": [
+                  "S1"
+                ]
+              },
+              {
+                "text": "The council is studying a new route for heavy vehicles.",
+                "source_ids": [
+                  "S1"
+                ]
+              },
+              {
+                "text": "Traders ask for more short-term parking.",
+                "source_ids": [
+                  "S1"
+                ]
+              },
+              {
+                "text": "A traffic survey will be carried out this autumn.",
+                "source_ids": [
+                  "S1"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    },
+    {
+      "brief": 50,
+      "language": "en",
+      "valid": true,
+      "repaired": false,
+      "error": null,
+      "seconds": 493.6,
+      "tokens_out": 535,
+      "calls": [
+        {
+          "provider": "ollama",
+          "tokens_in": 326,
+          "tokens_out": 535,
+          "seconds": 493.61
+        }
+      ],
+      "draft": {
+        "title": "Community Garden on Rooftop Grows in Urban Spaces",
+        "lead": "A community garden has taken root on the roof of a city car park, offering residents a space to grow vegetables and herbs. The garden includes beehives and a rainwater collection system, and a gardening association will provide free workshops for beginners. The city aims to replicate this model on other public buildings.",
+        "sections": [
+          {
+            "heading": "Garden Details",
+            "paragraphs": [
+              {
+                "text": "Residents can rent small plots to grow vegetables and herbs. The garden also includes beehives and a rainwater collection system. A gardening association will offer free workshops for beginners.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "The city hopes to create similar gardens on other public buildings.",
+                "source_ids": [
+                  "S1"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Community Impact",
+            "paragraphs": [
+              {
+                "text": "The garden has been a hit with residents, offering a space to connect with nature and enjoy fresh produce. The association's workshops have attracted a diverse group of participants.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              },
+              {
+                "text": "The garden has also provided a sense of community, with residents sharing their plots with neighbors.",
+                "source_ids": [
+                  "S1",
+                  "S2"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "City's Response",
+            "paragraphs": [
+              {
+                "text": "The city council is looking for new land in parks and on school grounds to create similar gardens.",
+                "source_ids": [
+                  "S1"
+                ]
+              },
+              {
+                "text": "Some residents have shared their private gardens with neighbors.",
+                "source_ids": [
+                  "S1"
+                ]
+              }
+            ]
+          },
+          {
+            "heading": "Future Plans",
+            "paragraphs": [
+              {
+                "text": "A new allotment site will open next spring, offering residents more opportunities to grow their own food.",
+                "source_ids": [
+                  "S1"
+                ]
+              },
+              {
+                "text": "The city is also exploring the possibility of creating community gardens on rooftops of public buildings.",
+                "source_ids": [
+                  "S1"
+                ]
+              }
+            ]
+          }
+        ],
+        "sources_used": [
+          "S1",
+          "S2",
+          "S3"
+        ]
+      }
+    }
+  ]
+}

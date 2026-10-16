@@ -1,4 +1,5 @@
 date,heures,domaine,etape,tache,note
+2026-10-11,1,fonction,E0,B01,estimation de Joël (D3 de P1)
 2026-10-11,3,fonction,E0,B02,estimation grossière
 2026-10-11,1,fonction,E0,B03,estimation grossière
 2026-10-11,1,fonction,E0,B04,estimation grossière
@@ -46,3 +47,11 @@ date,heures,domaine,etape,tache,note
 2026-10-15,1,preuve,E0,S7.5,estimation grossière (Claude)
 2026-10-15,0.5,preuve,E0,S7.6,estimation grossière (Claude)
 2026-10-15,1,preuve,E0,S7.7,estimation grossière (Claude)
+2026-10-15,1,preuve,E0,S4.1,estimation grossière (Claude)
+2026-10-15,1.5,preuve,E0,S4.2,estimation grossière (Claude)
+2026-10-15,0.5,preuve,E0,S4.3,estimation grossière (Claude)
+2026-10-16,0.5,preuve,E0,S4.4,estimation grossière (Claude)
+2026-10-15,1,preuve,E0,S4.5,estimation grossière (Claude)
+2026-10-16,1,preuve,E0,S4.6,estimation grossière (Claude)
+2026-10-15,1,projet,E0,,coordination : copie de la VM, ADR-0025, décisions S5b, S7 et S4 ; estimation grossière (Claude)
+2026-10-16,1.5,fonction,E0,B11,estimation grossière (Claude)

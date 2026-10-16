@@ -6,6 +6,7 @@ import json
 import subprocess
 import sys
 from collections.abc import Mapping
+from email.message import Message
 from pathlib import Path
 from types import ModuleType
 
@@ -89,3 +90,17 @@ def test_package_without_licence_fails(tmp_path: Path) -> None:
 
 def test_current_python_environment_passes() -> None:
     assert check_licenses.check_python() == []
+
+
+@pytest.mark.parametrize(
+    ("field", "expected"),
+    [("BSD-3-Clause", "BSD-3-Clause"), ("MIT License", "MIT"), ("Dual License", None)],
+)
+def test_licence_field_may_hold_a_bare_spdx_identifier(
+    monkeypatch: pytest.MonkeyPatch, field: str, expected: str | None
+) -> None:
+    metadata = Message()
+    metadata["Name"] = "package"
+    metadata["License"] = field
+    monkeypatch.setattr(check_licenses.importlib.metadata, "metadata", lambda name: metadata)
+    assert check_licenses.python_licence("package") == expected

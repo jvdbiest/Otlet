@@ -13,12 +13,17 @@ from starlette.staticfiles import StaticFiles
 from starlette.types import Scope
 
 from otlet import __version__
-from otlet.entrypoints.api import auth, workspaces
+from otlet.collection.adapters.parsing import FeedparserReader, ReadabilityReader
+from otlet.collection.adapters.postgres import PostgresCollectionStore
+from otlet.collection.application.collection import Collection
+from otlet.entrypoints.api import auth, collection, workspaces
 from otlet.identity.adapters.argon2_hasher import Argon2Hasher
 from otlet.identity.adapters.postgres import PostgresIdentityStore
 from otlet.identity.application.authentication import Authentication
+from otlet.jobs.adapters import procrastinate_queue
 from otlet.platform import database
 from otlet.platform.config import Settings
+from otlet.platform.http import SafeClient
 from otlet.workspaces.adapters.postgres import PostgresWorkspaceStore
 from otlet.workspaces.application.workspaces import Workspaces
 
@@ -70,10 +75,17 @@ def create_app(settings: Settings) -> FastAPI:
         workspace_router, workspace_context = workspaces.build_router(
             Workspaces(PostgresWorkspaceStore(engine)), engine, current_session
         )
-        app.include_router(auth_router)
-        app.include_router(workspace_router)
+        enqueue = procrastinate_queue.enqueuer(settings.require_database_url())
+        store = PostgresCollectionStore(engine, enqueue)
+        collection_router = collection.build_router(
+            Collection(store, SafeClient(), FeedparserReader(), ReadabilityReader()),
+            workspace_context,
+        )
+        routers = [auth_router, workspace_router, collection_router]
+        for router in routers:
+            app.include_router(router)
         # Read by the isolation tests, which check every route of these routers.
-        app.state.api_routers = [auth_router, workspace_router]
+        app.state.api_routers = routers
         app.state.current_session = current_session
         app.state.workspace_context = workspace_context
 

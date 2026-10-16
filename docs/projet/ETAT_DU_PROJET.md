@@ -20,9 +20,9 @@ Mis à jour le 2026-10-16. Une page : ce qu'il faut savoir pour reprendre le tra
 
 ## Prochaine action
 
-1. Joël fusionne `docs/validation-plan-E1`, puis `feat/F01-modele-donnees`, empilée dessus.
-2. Joël répond à l'ADR-0028 (comptes à identités multiples, contexte de l'utilisateur, connexion par `find_identity`), proposé avec F01.
-3. Suite d'I0 : F02 (identité minimale), F03, F04, X01.
+1. Joël fusionne `feat/F02-identite` (F01 est sur `main`).
+2. Joël répond aux ADR-0028 (comptes, contexte de l'utilisateur) et ADR-0029 (sessions, CSRF, limitation des tentatives).
+3. Suite d'I0 : F03 (isolation de l'API), F04 (tâches), X01 (coquille de l'interface, qui branchera la connexion de F02).
 4. Joël note son temps une fois par semaine dans `docs/projet/journal-temps.csv` (domaine `projet`).
 5. Plus tard, avec l'accord de Joël pour chacun : mesurer les fournisseurs réels de S4 (50 briefs chacun, plafonds de dépense posés).
 

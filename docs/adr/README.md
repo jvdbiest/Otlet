@@ -36,3 +36,4 @@ La numérotation continue celle de l'architecture.
 | [0026](0026-idempotence-des-connecteurs-cms.md) | Idempotence des connecteurs CMS par marqueur natif, « WordPress d'abord » confirmé | Accepté (S7) |
 | [0027](0027-passerelle-ia.md) | Passerelle IA : adaptateurs maison, budget à réservation, fournisseurs bloqués par défaut | Accepté (S4) |
 | [0028](0028-comptes-identites-et-contexte-utilisateur.md) | Comptes à identités multiples et contexte de sécurité de l'utilisateur | Proposé (F01) |
+| [0029](0029-sessions-et-protections-de-connexion.md) | Sessions serveur, CSRF et limitation des tentatives de connexion | Proposé (F02) |

@@ -19,12 +19,14 @@ def test_upgrade_then_downgrade(database: TestDatabase, tmp_path: Path) -> None:
     migrations.downgrade(settings, "base")
 
     migrations.upgrade(settings)
-    assert db.schema_revision(engine) == "0002"
+    assert db.schema_revision(engine) == "0003"
 
     migrations.downgrade(settings, "base")
     with engine.connect() as connection:
         assert sa.inspect(connection).get_table_names() == ["alembic_version"]
-        functions = sa.text("SELECT count(*) FROM pg_proc WHERE proname = 'find_identity'")
+        functions = sa.text(
+            "SELECT count(*) FROM pg_proc WHERE proname IN ('find_identity', 'find_session')"
+        )
         assert connection.execute(functions).scalar() == 0
 
 

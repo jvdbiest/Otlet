@@ -53,6 +53,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     verify.add_argument("name")
 
+    admin = commands.add_parser("admin", help="administration de l'instance")
+    admin_actions = admin.add_subparsers(dest="action", required=True)
+    create_admin = admin_actions.add_parser(
+        "create",
+        help="créer un compte administrateur ; le mot de passe est lu sur l'entrée standard",
+    )
+    create_admin.add_argument("--login", required=True, help="adresse e-mail de connexion")
+    create_admin.add_argument("--name", required=True, help="nom affiché")
+
     health = commands.add_parser("healthcheck", help="contrôle de santé d'un rôle (conteneurs)")
     health.add_argument("role", choices=("api", *LOOP_ROLES))
     health.add_argument("--port", type=int, default=port)
@@ -103,6 +112,41 @@ def main(argv: Sequence[str] | None = None) -> int:
             migrations.history(settings)
     elif args.command == "secrets":
         return secrets_command(args.action, args.name, settings)
+    elif args.command == "admin":
+        return create_admin_command(args.login, args.name, settings)
+    return 0
+
+
+def create_admin_command(login: str, name: str, settings: Settings) -> int:
+    """Creates the first account (ROADMAP §5.2: one administrator account in É1)."""
+    import getpass
+
+    import sqlalchemy as sa
+
+    from otlet.identity.adapters.argon2_hasher import Argon2Hasher
+    from otlet.identity.adapters.postgres import PostgresIdentityStore
+    from otlet.identity.application.authentication import Authentication
+    from otlet.identity.domain.model import IdentityError
+    from otlet.platform import database
+
+    if sys.stdin.isatty():
+        password = getpass.getpass("Mot de passe : ")
+        if getpass.getpass("Confirmation : ") != password:
+            print("otlet admin create: passwords differ", file=sys.stderr)
+            return 2
+    else:
+        password = sys.stdin.readline().rstrip("\r\n")
+    engine = database.create_engine(settings.require_database_url())
+    authentication = Authentication(PostgresIdentityStore(engine), Argon2Hasher())
+    try:
+        user_id = authentication.create_user(name, login, password, is_instance_admin=True)
+    except IdentityError as error:
+        print(f"otlet admin create: {error}", file=sys.stderr)
+        return 2
+    except sa.exc.IntegrityError:
+        print("otlet admin create: this login is already taken", file=sys.stderr)
+        return 2
+    print(user_id)
     return 0
 
 

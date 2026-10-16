@@ -7,6 +7,7 @@ license = "AGPL-3.0-or-later"
 authors = [{ name = "Joël" }]
 dependencies = [
     "alembic>=1.20.0",
+    "argon2-cffi>=25.1.0",
     "cryptography>=50.0.2",
     "fastapi>=0.143.0",
     "psycopg[binary]>=3.3.6",

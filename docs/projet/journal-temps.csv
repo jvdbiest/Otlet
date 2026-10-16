@@ -57,3 +57,5 @@ date,heures,domaine,etape,tache,note
 2026-10-16,1.5,fonction,E0,B11,estimation grossière (Claude)
 2026-10-16,1,projet,E1,,validation du plan d'É1 avec Joël (questions du §7, VM vierge) ; estimation grossière (Claude)
 2026-10-16,3,fonction,E1,F01,estimation grossière (Claude)
+2026-10-16,1,fonction,E1,F01,corrections de CI (rôle applicatif absent, scénario de mise à jour) ; estimation grossière (Claude)
+2026-10-16,3.5,fonction,E1,F02,estimation grossière (Claude)

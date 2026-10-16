@@ -9,7 +9,7 @@ missing setting is NULL, and NULL lets no row through.
 """
 
 from otlet.platform.database import USER_SETTING, WORKSPACE_SETTING
-from otlet.platform.roles import OWNER
+from otlet.platform.roles import APP, OWNER
 
 CURRENT_WORKSPACE = f"NULLIF(current_setting('{WORKSPACE_SETTING}', true), '')::uuid"
 CURRENT_USER_ID = f"NULLIF(current_setting('{USER_SETTING}', true), '')::uuid"
@@ -28,6 +28,19 @@ def enable(table: str, using: str, check: str | None = None) -> list[str]:
         f"ALTER TABLE {table} FORCE ROW LEVEL SECURITY",
         f"CREATE POLICY {POLICY} ON {table} USING ({using}) WITH CHECK ({check or using})",
     ]
+
+
+def grant_to_app(function: str) -> str:
+    """Lets the application role call `function` (a signature such as `f(text)`), when the role
+    exists; provisioning grants it otherwise (otlet.platform.roles)."""
+    return f"""
+        DO $$ BEGIN
+            IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = '{APP}') THEN
+                REVOKE ALL ON FUNCTION {function} FROM PUBLIC;
+                GRANT EXECUTE ON FUNCTION {function} TO {APP};
+            END IF;
+        END $$
+        """  # noqa: S608 (constant names only)
 
 
 def workspace_scoped(table: str, column: str = "workspace_id") -> list[str]:

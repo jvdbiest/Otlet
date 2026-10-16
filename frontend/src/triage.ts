@@ -14,6 +14,8 @@ export interface FeedFilter {
   view: FeedView;
   sourceId: string | null;
   unread: boolean;
+  topicIds: string[];
+  allTopics: boolean;
 }
 
 export const feedQuery = (workspaceId: string, filter: FeedFilter, before: string | null) =>
@@ -26,6 +28,8 @@ export const feedQuery = (workspaceId: string, filter: FeedFilter, before: strin
           query: {
             view: filter.view,
             unread: filter.unread,
+            topic_id: filter.topicIds,
+            all_topics: filter.allTopics,
             limit: FEED_PAGE_SIZE,
             ...(filter.sourceId ? { source_id: filter.sourceId } : {}),
             ...(before ? { before } : {}),

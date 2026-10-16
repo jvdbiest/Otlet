@@ -17,6 +17,7 @@ import { searchQuery, useRefreshWatch } from "../../watch.ts";
 import { formatDate, textLabel, textTone } from "./labels.ts";
 import { StartPanel } from "./StartPanel.tsx";
 import { styles } from "./styles.ts";
+import { TopicMenu } from "./TopicMenu.tsx";
 import { TriageActions } from "./TriageActions.tsx";
 
 const VIEWS: readonly FeedView[] = ["to_sort", "kept", "pinned", "dismissed", "all"];
@@ -30,7 +31,13 @@ export function ItemsPage() {
 
 function Items({ workspaceId }: { workspaceId: string }) {
   const { t } = useTranslation();
-  const [filter, setFilter] = useState<FeedFilter>({ view: "to_sort", sourceId: null, unread: false });
+  const [filter, setFilter] = useState<FeedFilter>({
+    view: "to_sort",
+    sourceId: null,
+    unread: false,
+    topicIds: [],
+    allTopics: false,
+  });
   // Older pages, each starting after the last item of the previous one.
   const [pages, setPages] = useState<(string | null)[]>([null]);
   const sources = useQuery(sourcesQuery(workspaceId));
@@ -57,8 +64,21 @@ function Items({ workspaceId }: { workspaceId: string }) {
           setQuery("");
         }}
       />
+      <TopicMenu
+        workspaceId={workspaceId}
+        topicIds={filter.topicIds}
+        allTopics={filter.allTopics}
+        onChange={(topicIds, allTopics) => {
+          update({ topicIds, allTopics });
+        }}
+      />
       {query !== "" ? (
-        <SearchResults workspaceId={workspaceId} query={query} />
+        <SearchResults
+          workspaceId={workspaceId}
+          query={query}
+          topicIds={filter.topicIds}
+          allTopics={filter.allTopics}
+        />
       ) : (
         <>
           <div className={styles.views} role="radiogroup" aria-label={t("triage.views.label")}>
@@ -211,8 +231,6 @@ function ItemCard({
   );
 }
 
-
-
 function SearchBox({
   draft,
   onDraft,
@@ -253,9 +271,19 @@ function SearchBox({
 }
 
 /** Results of a full-text search, best match first (F-VEI-09, ADR-0021). */
-function SearchResults({ workspaceId, query }: { workspaceId: string; query: string }) {
+function SearchResults({
+  workspaceId,
+  query,
+  topicIds,
+  allTopics,
+}: {
+  workspaceId: string;
+  query: string;
+  topicIds: string[];
+  allTopics: boolean;
+}) {
   const { t } = useTranslation();
-  const found = useQuery(searchQuery(workspaceId, query));
+  const found = useQuery(searchQuery(workspaceId, query, topicIds, allTopics));
   if (found.isError) {
     return <p role="alert">{t("watch.loadFailed")}</p>;
   }

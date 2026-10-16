@@ -79,12 +79,15 @@ export const itemWatchQuery = (workspaceId: string, itemId: string) =>
     },
   });
 
-export const searchQuery = (workspaceId: string, q: string) =>
+export const searchQuery = (workspaceId: string, q: string, topicIds: string[] = [], allTopics = false) =>
   queryOptions({
-    queryKey: ["workspaces", workspaceId, "search", q],
+    queryKey: ["workspaces", workspaceId, "search", q, topicIds, allTopics],
     queryFn: async (): Promise<FoundItemView[]> => {
       const { data, error, response } = await api.GET("/api/workspaces/{workspace_id}/search", {
-        params: { path: { workspace_id: workspaceId }, query: { q, limit: 50 } },
+        params: {
+          path: { workspace_id: workspaceId },
+          query: { q, limit: 50, topic_id: topicIds, all_topics: allTopics },
+        },
       });
       if (data === undefined) {
         throw apiError(response, error);

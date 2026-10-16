@@ -21,9 +21,9 @@ Mis à jour le 2026-10-16. Une page : ce qu'il faut savoir pour reprendre le tra
 ## Prochaine action
 
 1. **I0 close** le 2026-10-16 (X01 fusionnée). I1 Lire en cours.
-2. U01, U02, U02b et le correctif des rôles de la base sont sur `main` (2026-10-16). Joël fusionne `feat/U02c-filtre-sources` (filtre des sources demandé par Joël). Puis `feat/X02-tri` (empilée sur U02c) : flux de tri (retenir, écarter, épingler, lu et non lu, par utilisateur) et parcours d'accueil. X02 sera « fait » après une semaine d'usage par Joël (critère du backlog).
+2. U01, U02, U02b, U02c (filtre des sources), X02 (flux de tri et parcours d'accueil) et le rapport de P01 sont sur `main` (2026-10-16). X02 sera « fait » après une semaine d'usage par Joël (critère du backlog). Joël fusionne `fix/recherche-tri` (boutons de tri sur les résultats de recherche), puis `feat/filtre-sujets` (empilée : filtre par sujets à choix multiple, « au moins un » ou « tous à la fois », combinable avec la recherche texte ; demandé par Joël).
 3. Joël répond à l'ADR-0032 (règles du score).
-4. Ensuite P01 (remesure de la recherche plein texte sur corpus réel), qui clôt I1 avec la semaine d'usage de X02.
+4. P01 (remesure de la recherche plein texte sur corpus réel) : mesure en cours sur la VM du NAS ; elle clôt I1 avec la semaine d'usage de X02.
 5. Joël note son temps une fois par semaine dans `docs/projet/journal-temps.csv` (domaine `projet`).
 6. Plus tard, avec l'accord de Joël pour chacun : mesurer les fournisseurs réels de S4 (50 briefs chacun, plafonds de dépense posés).
 

@@ -134,7 +134,8 @@ export interface paths {
         /**
          * Get Feed
          * @description The feed of the user: pinned items first, then the most recent; `before` (the id of
-         *     the last item of the previous page) pages back.
+         *     the last item of the previous page) pages back. `topic_id`, repeated, keeps the items of
+         *     at least one of these topics, or of all of them with `all_topics`.
          */
         get: operations["get_feed_api_workspaces__workspace_id__feed_get"];
         put?: never;
@@ -304,7 +305,8 @@ export interface paths {
         };
         /**
          * Search
-         * @description Full-text search of the items, best match first (ADR-0021: bounded ranking).
+         * @description Full-text search of the items, best match first (ADR-0021: bounded ranking), within
+         *     the chosen topics if any (as in the feed).
          */
         get: operations["search_api_workspaces__workspace_id__search_get"];
         put?: never;
@@ -1073,6 +1075,8 @@ export interface operations {
                 unread?: boolean;
                 before?: string | null;
                 limit?: number;
+                topic_id?: string[];
+                all_topics?: boolean;
             };
             header?: never;
             path: {
@@ -1406,6 +1410,8 @@ export interface operations {
             query: {
                 q: string;
                 limit?: number;
+                topic_id?: string[];
+                all_topics?: boolean;
             };
             header?: never;
             path: {

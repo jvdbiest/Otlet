@@ -165,3 +165,24 @@ def test_search_results_carry_the_triage_of_the_user(setup: Setup) -> None:
     found = {f.item.title: f.triage for f in watch.search(context, "article")}
     assert found["Article 0"].decision is Decision.KEPT and found["Article 0"].pinned
     assert found["Article 1"].decision is None
+
+
+def test_topics_filter_the_feed_and_the_search(setup: Setup) -> None:
+    from otlet.watch.adapters.postgres import PostgresWatchStore
+    from otlet.watch.application.watch import Watch
+    from otlet.watch.domain.triage import TopicFilter
+
+    feed, context = setup.feed, setup.context
+    watch = Watch(PostgresWatchStore(setup.engine, lambda connection, name, **kwargs: 0))
+    first = watch.create_topic(context, name="A", keywords=["0", "1"])
+    second = watch.create_topic(context, name="B", keywords=["1", "2"])
+    for topic in (first, second):
+        watch.rescore_topic(context.workspace_id, topic.id, NOW)
+    only_a = TopicFilter((first.id,))
+    either = TopicFilter((first.id, second.id))
+    both = TopicFilter((first.id, second.id), all_topics=True)
+    assert titles(feed, context, topics=only_a) == ["Article 0", "Article 1"]
+    assert titles(feed, context, topics=either) == ["Article 0", "Article 1", "Article 2"]
+    assert titles(feed, context, topics=both) == ["Article 1"]
+    searched = [f.item.title for f in watch.search(context, "article", topics=both)]
+    assert searched == ["Article 1"]

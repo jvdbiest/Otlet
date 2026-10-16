@@ -14,7 +14,7 @@ from otlet.entrypoints.api.auth import same_origin
 from otlet.entrypoints.api.collection import ItemView
 from otlet.entrypoints.api.workspaces import PREFIX
 from otlet.watch.application.triage import Change, Feed
-from otlet.watch.domain.triage import Decision, Triage, View
+from otlet.watch.domain.triage import Decision, TopicFilter, Triage, View
 from otlet.workspaces.domain.model import WorkspaceContext
 
 
@@ -63,11 +63,20 @@ def build_router(feed: Feed, workspace_context: Callable[..., WorkspaceContext])
         unread: bool = False,
         before: UUID | None = None,
         limit: Annotated[int, Query(ge=1, le=200)] = 50,
+        topic_id: Annotated[list[UUID], Query(max_length=100)] = [],  # noqa: B006 (FastAPI copies it)
+        all_topics: bool = False,
     ) -> list[FeedItemView]:
         """The feed of the user: pinned items first, then the most recent; `before` (the id of
-        the last item of the previous page) pages back."""
+        the last item of the previous page) pages back. `topic_id`, repeated, keeps the items of
+        at least one of these topics, or of all of them with `all_topics`."""
         items = feed.feed(
-            context, view=view, source_id=source_id, unread_only=unread, before=before, limit=limit
+            context,
+            view=view,
+            source_id=source_id,
+            unread_only=unread,
+            before=before,
+            limit=limit,
+            topics=TopicFilter(tuple(topic_id), all_topics),
         )
         return [
             FeedItemView(item=ItemView.of(f.item, with_text=False), triage=TriageView.of(f.triage))

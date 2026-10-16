@@ -127,6 +127,22 @@
         "title": "DuplicateView",
         "type": "object"
       },
+      "FeedItemView": {
+        "properties": {
+          "item": {
+            "$ref": "#/components/schemas/ItemView"
+          },
+          "triage": {
+            "$ref": "#/components/schemas/TriageView"
+          }
+        },
+        "required": [
+          "item",
+          "triage"
+        ],
+        "title": "FeedItemView",
+        "type": "object"
+      },
       "FoundItemView": {
         "properties": {
           "item": {
@@ -512,6 +528,29 @@
         "title": "Password",
         "type": "object"
       },
+      "ProgressView": {
+        "properties": {
+          "decisions": {
+            "title": "Decisions",
+            "type": "integer"
+          },
+          "sources": {
+            "title": "Sources",
+            "type": "integer"
+          },
+          "topics": {
+            "title": "Topics",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "sources",
+          "topics",
+          "decisions"
+        ],
+        "title": "ProgressView",
+        "type": "object"
+      },
       "RefreshView": {
         "properties": {
           "sources": {
@@ -549,13 +588,17 @@
           "score": {
             "title": "Score",
             "type": "integer"
+          },
+          "triage": {
+            "$ref": "#/components/schemas/TriageView"
           }
         },
         "required": [
           "item",
           "score",
           "freshness",
-          "contributions"
+          "contributions",
+          "triage"
         ],
         "title": "ScoredItemView",
         "type": "object"
@@ -898,6 +941,92 @@
         "title": "TopicView",
         "type": "object"
       },
+      "TriageChange": {
+        "description": "A field left out keeps its value; `decision: null` clears the decision.",
+        "properties": {
+          "decision": {
+            "anyOf": [
+              {
+                "enum": [
+                  "kept",
+                  "dismissed"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision"
+          },
+          "pinned": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pinned"
+          },
+          "read": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Read"
+          }
+        },
+        "title": "TriageChange",
+        "type": "object"
+      },
+      "TriageView": {
+        "properties": {
+          "decision": {
+            "anyOf": [
+              {
+                "enum": [
+                  "kept",
+                  "dismissed"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision"
+          },
+          "pinned": {
+            "title": "Pinned",
+            "type": "boolean"
+          },
+          "read_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Read At"
+          }
+        },
+        "required": [
+          "decision",
+          "pinned",
+          "read_at"
+        ],
+        "title": "TriageView",
+        "type": "object"
+      },
       "UserView": {
         "properties": {
           "display_name": {
@@ -960,6 +1089,18 @@
         ],
         "title": "ValidationError",
         "type": "object"
+      },
+      "View": {
+        "description": "The parts of the feed a user looks at.",
+        "enum": [
+          "to_sort",
+          "kept",
+          "dismissed",
+          "pinned",
+          "all"
+        ],
+        "title": "View",
+        "type": "string"
       },
       "WorkspaceView": {
         "properties": {
@@ -1219,6 +1360,116 @@
         "summary": "Get Workspace"
       }
     },
+    "/api/workspaces/{workspace_id}/feed": {
+      "get": {
+        "description": "The feed of the user: pinned items first, then the most recent; `before` (the id of\nthe last item of the previous page) pages back.",
+        "operationId": "get_feed_api_workspaces__workspace_id__feed_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "view",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/View",
+              "default": "to_sort"
+            }
+          },
+          {
+            "in": "query",
+            "name": "source_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "unread",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Unread",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "before",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Before"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/FeedItemView"
+                  },
+                  "title": "Response Get Feed Api Workspaces  Workspace Id  Feed Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Feed"
+      }
+    },
     "/api/workspaces/{workspace_id}/items": {
       "get": {
         "description": "The latest items, newest first, without their full text; `before` (the id of the\nlast item of the previous page) pages back.",
@@ -1460,6 +1711,114 @@
         "summary": "Get Item"
       }
     },
+    "/api/workspaces/{workspace_id}/items/{item_id}/triage": {
+      "get": {
+        "operationId": "get_triage_api_workspaces__workspace_id__items__item_id__triage_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Item Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TriageView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Triage"
+      },
+      "patch": {
+        "operationId": "change_triage_api_workspaces__workspace_id__items__item_id__triage_patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Item Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TriageChange"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TriageView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Change Triage"
+      }
+    },
     "/api/workspaces/{workspace_id}/items/{item_id}/watch": {
       "get": {
         "description": "The topics of an item, with their explained scores, and the same story elsewhere.",
@@ -1509,6 +1868,47 @@
           }
         },
         "summary": "Item Watch"
+      }
+    },
+    "/api/workspaces/{workspace_id}/progress": {
+      "get": {
+        "description": "How far the user went in the first steps: sources, topics, first decisions.",
+        "operationId": "progress_api_workspaces__workspace_id__progress_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgressView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Progress"
       }
     },
     "/api/workspaces/{workspace_id}/refresh": {

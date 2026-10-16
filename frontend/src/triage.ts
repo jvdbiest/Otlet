@@ -1,0 +1,92 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// The watch feed of the user and its triage (X02): keep, dismiss, pin, read.
+import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api, apiError, type components } from "./api/client.ts";
+
+export type FeedItemView = components["schemas"]["FeedItemView"];
+export type TriageView = components["schemas"]["TriageView"];
+export type ProgressView = components["schemas"]["ProgressView"];
+export type FeedView = "to_sort" | "kept" | "pinned" | "dismissed" | "all";
+
+export const FEED_PAGE_SIZE = 50;
+
+export interface FeedFilter {
+  view: FeedView;
+  sourceId: string | null;
+  unread: boolean;
+}
+
+export const feedQuery = (workspaceId: string, filter: FeedFilter, before: string | null) =>
+  queryOptions({
+    queryKey: ["workspaces", workspaceId, "feed", filter, before],
+    queryFn: async (): Promise<FeedItemView[]> => {
+      const { data, error, response } = await api.GET("/api/workspaces/{workspace_id}/feed", {
+        params: {
+          path: { workspace_id: workspaceId },
+          query: {
+            view: filter.view,
+            unread: filter.unread,
+            limit: FEED_PAGE_SIZE,
+            ...(filter.sourceId ? { source_id: filter.sourceId } : {}),
+            ...(before ? { before } : {}),
+          },
+        },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    refetchInterval: 60_000,
+  });
+
+export const progressQuery = (workspaceId: string) =>
+  queryOptions({
+    queryKey: ["workspaces", workspaceId, "progress"],
+    queryFn: async (): Promise<ProgressView> => {
+      const { data, error, response } = await api.GET("/api/workspaces/{workspace_id}/progress", {
+        params: { path: { workspace_id: workspaceId } },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+  });
+
+export const itemTriageQuery = (workspaceId: string, itemId: string) =>
+  queryOptions({
+    queryKey: ["workspaces", workspaceId, "item", itemId, "triage"],
+    queryFn: async (): Promise<TriageView> => {
+      const { data, error, response } = await api.GET("/api/workspaces/{workspace_id}/items/{item_id}/triage", {
+        params: { path: { workspace_id: workspaceId, item_id: itemId } },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+  });
+
+export interface TriageChange {
+  decision?: "kept" | "dismissed" | null;
+  pinned?: boolean;
+  read?: boolean;
+}
+
+export function useChangeTriage(workspaceId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ itemId, change }: { itemId: string; change: TriageChange }) => {
+      const { data, error, response } = await api.PATCH("/api/workspaces/{workspace_id}/items/{item_id}/triage", {
+        params: { path: { workspace_id: workspaceId, item_id: itemId } },
+        body: change,
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
+  });
+}

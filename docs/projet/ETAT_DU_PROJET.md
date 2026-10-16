@@ -14,13 +14,13 @@ Mis à jour le 2026-10-16. Une page : ce qu'il faut savoir pour reprendre le tra
 | S2 File de tâches | Conclue : succès (Procrastinate). ADR-0022 |
 | S3 Format et éditeur | Conclue : succès (Tiptap). ADR-0023 |
 | S5 Similarité | Conclue : échec, de peu ; complément S5b conclu en échec sur la mémoire seule. Modèle retenu (ADR-0024) : potion-multilingual-128M par `model2vec` en int8, 870 Mio, qualité inchangée. Pile complète estimée à 2,4 Go en charge, sous 3,4 Go (déduction) |
-| S4 Passerelle IA | Conclue : partiel. Ollama (qwen2.5 1,5B) « testé » à 96 % ; budget jamais dépassé ; replis 100 % ; fournisseurs payants et à compte externe bloqués sans accord de Joël. ADR-0027 **proposé** |
+| S4 Passerelle IA | Conclue : partiel. Ollama (qwen2.5 1,5B) « testé » à 96 % ; budget jamais dépassé ; replis 100 % ; fournisseurs payants et à compte externe bloqués sans accord de Joël. ADR-0027 accepté |
 | S7 Connecteurs CMS | Conclue : partiel. 0 doublon et 100 % de rapprochement sur WordPress 7.1, 6.9 et Ghost ; Wordfence par défaut bloque les mots de passe d'application ; mutualisé non démontré. ADR-0026 accepté |
 | B11 Clôture (rapport P1) | À faire, en dernier |
 
 ## Prochaine action
 
-1. Joël fusionne la branche `spike/S4-banc` (banc et conclusion de S4) et répond sur ADR-0027.
+1. Joël fusionne la branche `spike/S4-banc` (banc et conclusion de S4).
 2. B11, clôture d'É0 : vélocité, projection, ré-estimation d'É1, revue des risques, rapport P1.
 3. Plus tard, avec l'accord de Joël pour chacun : mesurer les fournisseurs réels de S4 (50 briefs chacun, plafonds de dépense posés).
 

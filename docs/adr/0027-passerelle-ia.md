@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Statut | Proposé |
+| Statut | Accepté (2026-10-16) |
 | Date | 2026-10-16 |
 | Décideur | Joël |
 | Documents touchés | `TECH_CHOICES.md` §11 (TC-08, TC-09) ; `ARCHITECTURE.md` §10 (passerelle IA) |
@@ -18,7 +18,7 @@ S4 a mesuré une passerelle minimale (`docs/spikes/S4.md` §4). Elle repose sur 
 
 Les fournisseurs payants et ceux qui exigent un compte externe n'ont pas été mesurés, par décision de Joël (pas de dépense pour l'instant).
 
-## Décision proposée
+## Décision
 
 1. **TC-08 confirmé.** Les adaptateurs sont écrits sur les SDK officiels (`openai` avec URL de base, `anthropic`), derrière le contrat interne `generate`. Aucun autre module n'importe un SDK de fournisseur. LiteLLM n'est pas embarqué.
 2. **Tableau des modèles** en fichier de données versionné, avec un statut par modèle :

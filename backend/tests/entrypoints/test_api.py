@@ -62,3 +62,12 @@ def test_health_reports_an_unreachable_database(tmp_path: Path) -> None:
     response = TestClient(create_app(settings)).get("/health")
     assert response.status_code == 503
     assert response.json()["database"] == "unavailable"
+
+
+def test_unknown_api_paths_are_not_the_interface(tmp_path: Path) -> None:
+    ui = tmp_path / "ui"
+    ui.mkdir()
+    (ui / "index.html").write_text("<!doctype html>", encoding="utf-8")
+    client = TestClient(create_app(Settings(ui_dir=ui, run_dir=tmp_path)))
+    assert client.get("/api/does-not-exist").status_code == 404
+    assert client.get("/library/42").status_code == 200

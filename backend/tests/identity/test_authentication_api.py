@@ -217,3 +217,8 @@ def test_admin_create_refuses_a_weak_password(
     monkeypatch.setattr("sys.stdin", io.StringIO("court\n"))
     assert cli.main(["admin", "create", "--login", LOGIN, "--name", "Joël"]) == 2
     assert count(migrated, "users") == 0
+
+
+def test_the_administrator_gets_a_workspace(admin: str, migrated: TestDatabase) -> None:
+    assert count(migrated, "workspaces") == 1
+    assert count(migrated, "workspace_members") == 1

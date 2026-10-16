@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Statut | Proposé |
+| Statut | Accepté (2026-10-16) |
 | Date | 2026-10-16 |
 | Décideur | Joël |
 | Documents touchés | `ARCHITECTURE.md` §8.1, §19.2 et §19.3 ; ADR-0021 (politique de RLS) ; `TECH_CHOICES.md` §5.3 |
@@ -24,6 +24,10 @@ Il manque donc trois choses : une barrière pour les tables de comptes, qui n'on
    - `workspaces` et `workspace_members` : l'espace courant, plus les espaces dont l'utilisateur courant est membre, pour qu'il puisse passer de l'un à l'autre. L'écriture reste limitée à l'espace courant.
 4. **Connexion par une seule fonction**, `find_identity(kind, issuer, subject)`. Elle appartient au propriétaire du schéma (`SECURITY DEFINER`) et seul le rôle applicatif peut l'appeler. Elle renvoie l'identité trouvée et l'état du compte, rien d'autre. C'est le seul chemin pour lire une identité sans contexte. Les politiques des tables de comptes l'autorisent par `current_user = 'otlet_owner'`, un rôle que le rôle applicatif ne peut pas prendre.
 5. **Identifiants UUIDv7** générés par PostgreSQL 18 (`uuidv7()`), conformément à `ARCHITECTURE.md` §8.5.
+
+## Validation de Joël (2026-10-16)
+
+« Oui pour ADR-0028. »
 
 ## Conséquences
 

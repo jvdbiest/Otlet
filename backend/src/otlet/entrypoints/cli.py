@@ -19,6 +19,7 @@ from otlet.platform.config import Settings
 LOOP_ROLES = ("worker", "scheduler")
 # Loop roles beat every 5 s; three missed beats mean the role is stuck.
 HEARTBEAT_MAX_AGE_SECONDS = 15.0
+DEFAULT_WORKSPACE_NAME = "Mon espace"
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -128,6 +129,8 @@ def create_admin_command(login: str, name: str, settings: Settings) -> int:
     from otlet.identity.application.authentication import Authentication
     from otlet.identity.domain.model import IdentityError
     from otlet.platform import database
+    from otlet.workspaces.adapters.postgres import PostgresWorkspaceStore
+    from otlet.workspaces.application.workspaces import Workspaces
 
     if sys.stdin.isatty():
         password = getpass.getpass("Mot de passe : ")
@@ -140,6 +143,8 @@ def create_admin_command(login: str, name: str, settings: Settings) -> int:
     authentication = Authentication(PostgresIdentityStore(engine), Argon2Hasher())
     try:
         user_id = authentication.create_user(name, login, password, is_instance_admin=True)
+        # É1 has one user and one workspace: the administrator gets theirs at once.
+        Workspaces(PostgresWorkspaceStore(engine)).create(user_id, DEFAULT_WORKSPACE_NAME)
     except IdentityError as error:
         print(f"otlet admin create: {error}", file=sys.stderr)
         return 2

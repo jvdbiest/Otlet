@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Statut | Proposé |
+| Statut | Accepté (2026-10-16) |
 | Date | 2026-10-16 |
 | Décideur | Joël |
 | Documents touchés | `ARCHITECTURE.md` §19.2 ; `TECH_CHOICES.md` TC-14 ; ADR-0028 |
@@ -22,6 +22,10 @@
 6. **Réponses indistinguables** : un identifiant inconnu, un mauvais mot de passe et un compte désactivé reçoivent la même réponse. Pour un identifiant inconnu, une empreinte leurre est vérifiée, afin que le temps de réponse soit le même.
 7. **Ré-authentification** : les actions sensibles exigent un mot de passe saisi depuis moins de 10 minutes. La connexion compte comme saisie. Première action concernée : le changement de mot de passe, qui ferme aussi les autres sessions du compte.
 8. **Compte administrateur** : il est créé par `otlet admin create`, le mot de passe étant lu sur l'entrée standard. Il n'y a pas de création de compte par le Web en É1.
+
+## Validation de Joël (2026-10-16)
+
+« Oui pour ADR-0029. »
 
 ## Conséquences
 

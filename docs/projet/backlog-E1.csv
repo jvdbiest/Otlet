@@ -1,6 +1,6 @@
 id,increment,nature,tache,estimation_h,fini_quand,statut
 F01,I0,F,"Modèle de données : espaces, comptes à identités multiples, colonne d'espace, RLS forcée, migrations Alembic",25,"Migrations appliquées en CI ; toutes les tables métier ont la RLS forcée ; un compte peut porter plusieurs identités",fait
-F02,I0,F,"Identité minimale : compte administrateur, Argon2id, sessions serveur, CSRF, limitation de débit, ré-authentification",25,"Connexion et déconnexion par l'interface ; tests CSRF, de limitation de débit et de ré-authentification verts",a_faire
+F02,I0,F,"Identité minimale : compte administrateur, Argon2id, sessions serveur, CSRF, limitation de débit, ré-authentification",25,"Connexion et déconnexion par l'interface ; tests CSRF, de limitation de débit et de ré-authentification verts",fait
 F03,I0,F,"Isolation : « sans contexte = zéro ligne » étendu à l'API, base des tests d'isolation",15,"Tests d'isolation de l'API verts en CI",a_faire
 F04,I0,F,"Tâches et planificateur Procrastinate (ADR-0022), relance des tâches bloquées, enfilage transactionnel",25,"Une tâche planifiée tourne dans le worker ; test d'arrêt brutal et de relance vert",a_faire
 X01,I0,X,"Coquille de l'interface : connexion, navigation, mise en page, clés de traduction FR, états vides",25,"Joël se connecte à son instance et navigue dans une application vide",a_faire

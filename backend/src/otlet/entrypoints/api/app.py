@@ -12,6 +12,10 @@ from starlette.staticfiles import StaticFiles
 from starlette.types import Scope
 
 from otlet import __version__
+from otlet.entrypoints.api import auth
+from otlet.identity.adapters.argon2_hasher import Argon2Hasher
+from otlet.identity.adapters.postgres import PostgresIdentityStore
+from otlet.identity.application.authentication import Authentication
 from otlet.platform import database
 from otlet.platform.config import Settings
 
@@ -53,6 +57,11 @@ def create_app(settings: Settings) -> FastAPI:
                 body["status"] = "unavailable"
                 body["database"] = "unavailable"
         return JSONResponse(body, status_code=200 if body["status"] == "ok" else 503)
+
+    if engine is not None:
+        authentication = Authentication(PostgresIdentityStore(engine), Argon2Hasher())
+        auth_router, _ = auth.build_router(authentication)
+        app.include_router(auth_router)
 
     if settings.ui_dir is not None and settings.ui_dir.is_dir():
         app.mount("/", SinglePageApp(directory=settings.ui_dir, html=True), name="ui")

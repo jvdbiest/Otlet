@@ -101,7 +101,8 @@ def test_freshness_points() -> None:
         ([], "no_keywords"),
         ([" ", ""], "no_keywords"),
         (["***"], "invalid_terms"),
-        (["x" * 101], "invalid_terms"),
+        (["x" * 101], "term_too_long"),
+        ([f"terme {n}" for n in range(51)], "too_many_terms"),
     ],
 )
 def test_keywords_are_checked(keywords: list[str], code: str) -> None:

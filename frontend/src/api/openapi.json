@@ -771,7 +771,7 @@
             "items": {
               "type": "string"
             },
-            "maxItems": 50,
+            "maxItems": 1000,
             "title": "Exclusions",
             "type": "array"
           },
@@ -779,7 +779,7 @@
             "items": {
               "type": "string"
             },
-            "maxItems": 50,
+            "maxItems": 1000,
             "title": "Keywords",
             "type": "array"
           },

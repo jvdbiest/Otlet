@@ -48,6 +48,8 @@ const ERRORS = [
   "name_taken",
   "unknown_source",
   "invalid_query",
+  "too_many_terms",
+  "term_too_long",
 ] as const;
 
 export const INTERVALS = ["15", "30", "60", "180", "360", "720", "1440", "10080"] as const;
@@ -100,6 +102,10 @@ export function errorText(t: TFunction, error: Error): string {
     if (among(REASONS, error.detail)) {
       return t(`reasons.${error.detail}`);
     }
+  }
+  // A 422 the interface cannot name: a value of the form, not a passing failure.
+  if (error instanceof ApiError && error.status === 422) {
+    return t("errors.invalid_input");
   }
   return t("errors.generic");
 }

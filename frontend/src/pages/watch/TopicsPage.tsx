@@ -136,6 +136,22 @@ function TopicCard({ workspaceId, topic, onEdit }: { workspaceId: string; topic:
   );
 }
 
+// Keywords and exclusions per topic (otlet.watch.domain.model.TERMS_MAX).
+const TERMS_MAX = 50;
+
+/** How many terms are written, against the limit: the limit is visible before it is reached. */
+function TermCount({ count }: { count: number }) {
+  const { t } = useTranslation();
+  const over = count > TERMS_MAX;
+  return (
+    <span aria-live="polite" className={over ? styles.error : styles.help}>
+      {over
+        ? t("topics.overLimit", { count, max: TERMS_MAX, excess: count - TERMS_MAX })
+        : t("topics.counter", { count, max: TERMS_MAX })}
+    </span>
+  );
+}
+
 function lines(value: string): string[] {
   return value
     .split(/\n|,/)
@@ -161,6 +177,9 @@ function TopicForm({
   const [exclusions, setExclusions] = useState(topic?.exclusions.join("\n") ?? "");
   const [languages, setLanguages] = useState<string[]>(topic?.languages ?? []);
   const [sourceIds, setSourceIds] = useState<string[]>(topic?.source_ids ?? []);
+  const keywordCount = lines(keywords).length;
+  const exclusionCount = lines(exclusions).length;
+  const overLimit = keywordCount > TERMS_MAX || exclusionCount > TERMS_MAX;
 
   return (
     <section className={styles.panel} aria-labelledby="topic-form">
@@ -199,6 +218,7 @@ function TopicForm({
           <Text slot="description" className={styles.help}>
             {t("topics.keywordsHelp")}
           </Text>
+          <TermCount count={keywordCount} />
         </TextField>
         <TextField className={styles.field} value={exclusions} onChange={setExclusions}>
           <Label>{t("topics.exclusions")}</Label>
@@ -206,6 +226,7 @@ function TopicForm({
           <Text slot="description" className={styles.help}>
             {t("topics.exclusionsHelp")}
           </Text>
+          <TermCount count={exclusionCount} />
         </TextField>
         <Choices
           legend={t("topics.languages")}
@@ -227,7 +248,7 @@ function TopicForm({
           </p>
         )}
         <div className={styles.row}>
-          <Button type="submit" className={styles.primary} isDisabled={save.isPending}>
+          <Button type="submit" className={styles.primary} isDisabled={save.isPending || overLimit}>
             {t("topics.save")}
           </Button>
           <Button className={styles.button} onPress={onDone}>

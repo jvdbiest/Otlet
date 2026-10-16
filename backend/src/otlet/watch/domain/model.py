@@ -220,10 +220,10 @@ def check_terms(terms: list[str], *, required: bool) -> tuple[str, ...]:
     cleaned = list(unique.values())
     if required and not cleaned:
         raise WatchError("no_keywords", "a topic needs at least one keyword")
-    if len(cleaned) > TERMS_MAX or any(len(t) > TERM_MAX_LENGTH for t in cleaned):
-        raise WatchError(
-            "invalid_terms", f"at most {TERMS_MAX} terms of {TERM_MAX_LENGTH} characters"
-        )
+    if len(cleaned) > TERMS_MAX:
+        raise WatchError("too_many_terms", f"at most {TERMS_MAX} keywords or exclusions")
+    if any(len(t) > TERM_MAX_LENGTH for t in cleaned):
+        raise WatchError("term_too_long", f"a term has at most {TERM_MAX_LENGTH} characters")
     if any(Term.parse(t) is None for t in cleaned):
         raise WatchError("invalid_terms", "a term needs at least one letter or digit")
     return tuple(cleaned)

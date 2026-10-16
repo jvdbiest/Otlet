@@ -56,6 +56,9 @@ known-first-party = ["otlet", "integration_support", "conftest"]
 
 [tool.ruff.lint.per-file-ignores]
 "**/tests/**" = ["S101"]
+# The stores build SQL from constants of the module (columns, the workspace predicate of
+# otlet.platform.rls.here); values always travel as bound parameters.
+"**/adapters/postgres.py" = ["S608"]
 
 [tool.mypy]
 strict = true

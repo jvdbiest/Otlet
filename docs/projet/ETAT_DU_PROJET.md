@@ -4,7 +4,7 @@ Mis à jour le 2026-10-16. Une page : ce qu'il faut savoir pour reprendre le tra
 
 ## Où on en est
 
-Étape **É0** (preuves de concept et socle) **close le 2026-10-16** ; décision P1 dans `docs/projet/P1.md`. Étape suivante : **É1**, tranche verticale personnelle (`ROADMAP.md` §5.2), dont le plan reste à écrire.
+Étape **É0** (preuves de concept et socle) **close le 2026-10-16** ; décision P1 dans `docs/projet/P1.md`. Étape en cours : **É1**, tranche verticale personnelle (`ROADMAP.md` §5.2). Plan **validé par Joël le 2026-10-16** : `docs/projet/plan-E1.md` (décisions au §7), backlog `docs/projet/backlog-E1.csv`. Cinq incréments, I0 Socle, I1 Lire, I2 Rédiger (avec la sauvegarde), I3 Contrôler et copier, I4 Fiabiliser.
 
 | Bloc | État |
 |---|---|
@@ -20,9 +20,11 @@ Mis à jour le 2026-10-16. Une page : ce qu'il faut savoir pour reprendre le tra
 
 ## Prochaine action
 
-1. Joël fusionne `docs/B11-cloture`.
-2. Joël valide le plan d'É1 (`docs/projet/plan-E1.md`, backlog `docs/projet/backlog-E1.csv`) et répond aux quatre questions de son §7. Aucun code de produit avant.
-3. Plus tard, avec l'accord de Joël pour chacun : mesurer les fournisseurs réels de S4 (50 briefs chacun, plafonds de dépense posés).
+1. Joël fusionne `docs/validation-plan-E1` (ses réponses au §7 du plan).
+2. Démarrer I0 par F01 (modèle de données), une branche par tâche.
+3. Joël crée la VM vierge pour P04 (Ubuntu 26.04 Desktop, 2 vCPU, 4 Go, 40 Go, `openssh-server`) et en donne l'adresse ; prendre un instantané juste après l'installation. La mesure chronométrée attend I4.
+4. Joël note son temps une fois par semaine dans `docs/projet/journal-temps.csv` (domaine `projet`).
+5. Plus tard, avec l'accord de Joël pour chacun : mesurer les fournisseurs réels de S4 (50 briefs chacun, plafonds de dépense posés).
 
 ## Règles de travail
 

@@ -46,3 +46,13 @@ def test_healthcheck_of_loop_role(tmp_path: Path) -> None:
 def test_healthcheck_of_api_without_server(tmp_path: Path) -> None:
     # Port 9 (discard) is never served in a test environment.
     assert cli.healthcheck("api", Settings(ui_dir=None, run_dir=tmp_path), port=9) == 1
+
+
+def test_provisioning_needs_its_settings(monkeypatch: pytest.MonkeyPatch) -> None:
+    for name in ("OTLET_ADMIN_DATABASE_URL", "OTLET_MIGRATOR_PASSWORD", "OTLET_APP_PASSWORD"):
+        monkeypatch.delenv(name, raising=False)
+    assert cli.main(["db", "provision"]) == 2
+    monkeypatch.setenv("OTLET_ADMIN_DATABASE_URL", "postgresql://postgres@localhost/x")
+    monkeypatch.setenv("OTLET_MIGRATOR_PASSWORD", "x" * 24)
+    monkeypatch.setenv("OTLET_APP_PASSWORD", "too short")
+    assert cli.main(["db", "provision"]) == 2

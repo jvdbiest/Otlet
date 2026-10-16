@@ -51,3 +51,52 @@ def test_provisioning_is_idempotent(database: TestDatabase) -> None:
     assert ADMIN_URL is not None
     roles.provision(ADMIN_URL, MIGRATOR_PASSWORD, APP_PASSWORD)
     roles.provision(ADMIN_URL, MIGRATOR_PASSWORD, APP_PASSWORD)
+
+
+def test_provisioning_takes_over_what_a_superuser_created(database: TestDatabase) -> None:
+    """An installation that ran as the superuser before M-12 reached the stack: its objects
+    move to the owner, and the application role can still use them."""
+    from conftest import APP_PASSWORD, MIGRATOR_PASSWORD
+    from integration_support import ADMIN_URL
+
+    assert ADMIN_URL is not None
+    admin = db.create_engine(database.admin_url)
+    with admin.begin() as connection:
+        connection.execute(
+            sa.text(
+                "CREATE TYPE legacy_state AS ENUM ('a', 'b');"
+                " CREATE TABLE legacy_jobs (id bigserial PRIMARY KEY, state legacy_state);"
+                " CREATE SEQUENCE legacy_counter;"
+                " CREATE FUNCTION legacy_next() RETURNS bigint LANGUAGE sql"
+                "  AS 'SELECT nextval(''legacy_counter'')'"
+            )
+        )
+    try:
+        roles.provision(ADMIN_URL, MIGRATOR_PASSWORD, APP_PASSWORD)
+        with admin.connect() as connection:
+            owners = (
+                connection.execute(
+                    sa.text(
+                        "SELECT pg_get_userbyid(relowner) FROM pg_class"
+                        " WHERE relname IN ('legacy_jobs', 'legacy_jobs_id_seq', 'legacy_counter')"
+                        " UNION ALL SELECT pg_get_userbyid(typowner) FROM pg_type"
+                        " WHERE typname = 'legacy_state'"
+                        " UNION ALL SELECT pg_get_userbyid(proowner) FROM pg_proc"
+                        " WHERE proname = 'legacy_next'"
+                    )
+                )
+                .scalars()
+                .all()
+            )
+        assert set(owners) == {roles.OWNER} and len(owners) == 5
+        with db.create_engine(database.app_url).begin() as connection:
+            connection.execute(sa.text("INSERT INTO legacy_jobs (state) VALUES ('a')"))
+            assert connection.execute(sa.text("SELECT legacy_next()")).scalar() == 1
+    finally:
+        with admin.begin() as connection:
+            connection.execute(
+                sa.text(
+                    "DROP FUNCTION legacy_next(); DROP SEQUENCE legacy_counter;"
+                    " DROP TABLE legacy_jobs; DROP TYPE legacy_state"
+                )
+            )

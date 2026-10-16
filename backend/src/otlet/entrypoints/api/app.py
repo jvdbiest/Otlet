@@ -2,6 +2,7 @@
 """ASGI application: health endpoint and the built interface served as static files (TC-03)."""
 
 import logging
+from pathlib import PurePath
 
 import sqlalchemy as sa
 from fastapi import FastAPI
@@ -32,8 +33,10 @@ class SinglePageApp(StaticFiles):
         try:
             return await super().get_response(path, scope)
         except HTTPException as error:
-            is_api = path == "api" or path.startswith("api/")  # an unknown API path stays 404
-            if error.status_code != 404 or "." in path.rsplit("/", 1)[-1] or is_api:
+            # Starlette gives the path with the separator of the OS (a backslash on Windows).
+            parts = PurePath(path).parts
+            is_api = parts[:1] == ("api",)  # an unknown API path stays 404
+            if error.status_code != 404 or (parts and "." in parts[-1]) or is_api:
                 raise
             return await super().get_response("index.html", scope)
 

@@ -23,6 +23,10 @@ export OTLET_BACKUP_DIR="../$spike/data/backups"
 export OTLET_KEYS_DIR="../$keys"
 POSTGRES_PASSWORD=$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n')
 export POSTGRES_PASSWORD
+# Roles of M-12 (deploy/configure.sh generates the same in .env).
+OTLET_MIGRATOR_PASSWORD=$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n')
+OTLET_APP_PASSWORD=$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n')
+export OTLET_MIGRATOR_PASSWORD OTLET_APP_PASSWORD
 compose() { docker compose -f deploy/compose.yaml "$@"; }
 
 started=$(date -u +%Y-%m-%dT%H:%M:%SZ)

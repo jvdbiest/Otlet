@@ -152,7 +152,15 @@ def upgrade() -> None:
         $$
         """,
         "REVOKE ALL ON FUNCTION find_identity(text, text, text) FROM PUBLIC",
-        f"GRANT EXECUTE ON FUNCTION find_identity(text, text, text) TO {APP}",
+        # The application role exists once the database is provisioned (M-12); provisioning
+        # grants it later otherwise (otlet.platform.roles).
+        f"""
+        DO $$ BEGIN
+            IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = '{APP}') THEN
+                GRANT EXECUTE ON FUNCTION find_identity(text, text, text) TO {APP};
+            END IF;
+        END $$
+        """,  # noqa: S608 (constant role name)
     ]
     for statement in statements:
         op.execute(statement)

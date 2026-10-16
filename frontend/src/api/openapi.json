@@ -1366,7 +1366,7 @@
     },
     "/api/workspaces/{workspace_id}/feed": {
       "get": {
-        "description": "The feed of the user: pinned items first, then the most recent; `before` (the id of\nthe last item of the previous page) pages back.",
+        "description": "The feed of the user: pinned items first, then the most recent; `before` (the id of\nthe last item of the previous page) pages back. `topic_id`, repeated, keeps the items of\nat least one of these topics, or of all of them with `all_topics`.",
         "operationId": "get_feed_api_workspaces__workspace_id__feed_get",
         "parameters": [
           {
@@ -1442,6 +1442,31 @@
               "minimum": 1,
               "title": "Limit",
               "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "topic_id",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "maxItems": 100,
+              "title": "Topic Id",
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "all_topics",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "All Topics",
+              "type": "boolean"
             }
           }
         ],
@@ -1958,7 +1983,7 @@
     },
     "/api/workspaces/{workspace_id}/search": {
       "get": {
-        "description": "Full-text search of the items, best match first (ADR-0021: bounded ranking).",
+        "description": "Full-text search of the items, best match first (ADR-0021: bounded ranking), within\nthe chosen topics if any (as in the feed).",
         "operationId": "search_api_workspaces__workspace_id__search_get",
         "parameters": [
           {
@@ -1992,6 +2017,31 @@
               "minimum": 1,
               "title": "Limit",
               "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "topic_id",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "maxItems": 100,
+              "title": "Topic Id",
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "all_topics",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "All Topics",
+              "type": "boolean"
             }
           }
         ],

@@ -10,7 +10,14 @@ from typing import Protocol
 from uuid import UUID
 
 from otlet.collection.domain.model import Item
-from otlet.watch.domain.triage import Decision, Progress, Triage, View
+from otlet.watch.domain.triage import (
+    NO_TOPIC_FILTER,
+    Decision,
+    Progress,
+    TopicFilter,
+    Triage,
+    View,
+)
 from otlet.workspaces.domain.model import WorkspaceContext
 
 FEED_MAX = 200
@@ -43,6 +50,7 @@ class TriageStore(Protocol):
         unread_only: bool,
         before: UUID | None,
         limit: int,
+        topics: TopicFilter = NO_TOPIC_FILTER,
     ) -> list[FeedItem]: ...
 
     def triage(self, workspace_id: UUID, user_id: UUID, item_id: UUID) -> Triage | None:
@@ -70,6 +78,7 @@ class Feed:
         unread_only: bool = False,
         before: UUID | None = None,
         limit: int = 50,
+        topics: TopicFilter = NO_TOPIC_FILTER,
     ) -> list[FeedItem]:
         return self._store.feed(
             context.workspace_id,
@@ -79,6 +88,7 @@ class Feed:
             unread_only=unread_only,
             before=before,
             limit=min(max(limit, 1), FEED_MAX),
+            topics=topics,
         )
 
     def triage(self, context: WorkspaceContext, item_id: UUID) -> Triage | None:

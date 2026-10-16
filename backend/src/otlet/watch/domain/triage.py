@@ -4,6 +4,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
+from uuid import UUID
 
 
 class Decision(StrEnum):
@@ -39,3 +40,14 @@ class Progress:
     sources: int
     topics: int
     decisions: int
+
+
+@dataclass(frozen=True, slots=True)
+class TopicFilter:
+    """Items of the chosen topics: of at least one, or of every one when `all_topics`."""
+
+    topic_ids: tuple[UUID, ...] = ()
+    all_topics: bool = False
+
+
+NO_TOPIC_FILTER = TopicFilter()

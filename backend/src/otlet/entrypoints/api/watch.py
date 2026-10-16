@@ -17,6 +17,7 @@ from otlet.entrypoints.api.workspaces import PREFIX
 from otlet.watch.application.watch import Watch
 from otlet.watch.domain import model
 from otlet.watch.domain.model import Contribution, Topic, WatchError
+from otlet.watch.domain.triage import TopicFilter
 from otlet.workspaces.domain.model import WorkspaceContext
 
 
@@ -221,10 +222,13 @@ def build_router(watch: Watch, workspace_context: Callable[..., WorkspaceContext
         context: Context,
         q: Annotated[str, Query(min_length=1, max_length=200)],
         limit: Annotated[int, Query(ge=1, le=100)] = 50,
+        topic_id: Annotated[list[UUID], Query(max_length=100)] = [],  # noqa: B006 (FastAPI copies it)
+        all_topics: bool = False,
     ) -> list[FoundItemView]:
-        """Full-text search of the items, best match first (ADR-0021: bounded ranking)."""
+        """Full-text search of the items, best match first (ADR-0021: bounded ranking), within
+        the chosen topics if any (as in the feed)."""
         try:
-            found = watch.search(context, q, limit)
+            found = watch.search(context, q, limit, TopicFilter(tuple(topic_id), all_topics))
         except WatchError as error:
             raise _refused(error) from error
         return [

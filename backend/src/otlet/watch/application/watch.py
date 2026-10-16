@@ -16,7 +16,7 @@ from otlet.collection.application.collection import ITEM_READY as ITEM_READY
 from otlet.collection.domain.model import Item
 from otlet.watch.domain import model
 from otlet.watch.domain.model import Candidate, Match, Rules, Topic, WatchError
-from otlet.watch.domain.triage import Triage
+from otlet.watch.domain.triage import NO_TOPIC_FILTER, TopicFilter, Triage
 from otlet.workspaces.domain.model import WorkspaceContext
 
 # Jobs of the module (otlet.watch.adapters.jobs); the collection enqueues ITEM_READY.
@@ -131,7 +131,12 @@ class WatchStore(Protocol):
     def refresh(self, workspace_id: UUID) -> tuple[int, int]: ...
 
     def search(
-        self, workspace_id: UUID, query: str, limit: int, user_id: UUID | None = None
+        self,
+        workspace_id: UUID,
+        query: str,
+        limit: int,
+        user_id: UUID | None = None,
+        topics: TopicFilter = NO_TOPIC_FILTER,
     ) -> list[FoundItem]: ...
 
     def enqueue_unwatched(self, limit: int, older_than: timedelta) -> int:
@@ -245,12 +250,20 @@ class Watch:
         returns how many sources and topics."""
         return self._store.refresh(context.workspace_id)
 
-    def search(self, context: WorkspaceContext, query: str, limit: int = 50) -> list[FoundItem]:
+    def search(
+        self,
+        context: WorkspaceContext,
+        query: str,
+        limit: int = 50,
+        topics: TopicFilter = NO_TOPIC_FILTER,
+    ) -> list[FoundItem]:
         """Full-text search with a bounded ranking (ADR-0021)."""
         cleaned = " ".join(query.split())
         if not 1 <= len(cleaned) <= SEARCH_MAX_LENGTH:
             raise WatchError("invalid_query", f"a search has 1 to {SEARCH_MAX_LENGTH} characters")
-        return self._store.search(context.workspace_id, cleaned, min(limit, 100), context.user_id)
+        return self._store.search(
+            context.workspace_id, cleaned, min(limit, 100), context.user_id, topics
+        )
 
     # Background runs ------------------------------------------------------------------------
 

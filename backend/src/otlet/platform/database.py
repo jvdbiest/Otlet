@@ -11,8 +11,10 @@ import sqlalchemy as sa
 # Fail fast in health checks instead of hanging on an unreachable server.
 CONNECT_TIMEOUT_SECONDS = 3
 
-# Read by the row-level security policies: workspace_id = current_setting(…)::uuid.
+# Read by the row-level security policies (otlet.platform.rls): the current workspace for the
+# business tables, the current user for the instance-level account tables.
 WORKSPACE_SETTING = "app.workspace_id"
+USER_SETTING = "app.user_id"
 
 
 def create_engine(url: str, **options: object) -> sa.Engine:
@@ -33,17 +35,35 @@ def schema_revision(engine: sa.Engine) -> str | None:
 
 
 @contextmanager
-def workspace_transaction(engine: sa.Engine, workspace_id: UUID) -> Iterator[sa.Connection]:
-    """A transaction in which row-level security lets through the rows of one workspace only.
+def scoped_transaction(
+    engine: sa.Engine, *, workspace_id: UUID | None = None, user_id: UUID | None = None
+) -> Iterator[sa.Connection]:
+    """A transaction in which row-level security lets through the rows of the given workspace
+    and user only.
 
-    The setting is local to the transaction (`set_config(…, true)`, the bindable form of
-    `SET LOCAL`): it disappears at commit or rollback, so a pooled connection never carries a
-    workspace into the next request or task. Outside such a transaction, the setting is empty
-    and the policies let no row through.
+    The settings are local to the transaction (`set_config(…, true)`, the bindable form of
+    `SET LOCAL`): they disappear at commit or rollback, so a pooled connection never carries a
+    context into the next request or task. A context left out is empty, and the policies that
+    read it let no row through. Both are set in a single round trip.
     """
     with engine.begin() as connection:
         connection.execute(
-            sa.text("SELECT set_config(:name, :value, true)"),
-            {"name": WORKSPACE_SETTING, "value": str(workspace_id)},
+            sa.text(
+                "SELECT set_config(:workspace_name, :workspace, true),"
+                " set_config(:user_name, :user, true)"
+            ),
+            {
+                "workspace_name": WORKSPACE_SETTING,
+                "workspace": "" if workspace_id is None else str(workspace_id),
+                "user_name": USER_SETTING,
+                "user": "" if user_id is None else str(user_id),
+            },
         )
+        yield connection
+
+
+@contextmanager
+def workspace_transaction(engine: sa.Engine, workspace_id: UUID) -> Iterator[sa.Connection]:
+    """A transaction limited to the rows of one workspace (see scoped_transaction)."""
+    with scoped_transaction(engine, workspace_id=workspace_id) as connection:
         yield connection

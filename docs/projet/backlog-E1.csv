@@ -1,5 +1,5 @@
 id,increment,nature,tache,estimation_h,fini_quand,statut
-F01,I0,F,"Modèle de données : espaces, comptes à identités multiples, colonne d'espace, RLS forcée, migrations Alembic",25,"Migrations appliquées en CI ; toutes les tables métier ont la RLS forcée ; un compte peut porter plusieurs identités",a_faire
+F01,I0,F,"Modèle de données : espaces, comptes à identités multiples, colonne d'espace, RLS forcée, migrations Alembic",25,"Migrations appliquées en CI ; toutes les tables métier ont la RLS forcée ; un compte peut porter plusieurs identités",fait
 F02,I0,F,"Identité minimale : compte administrateur, Argon2id, sessions serveur, CSRF, limitation de débit, ré-authentification",25,"Connexion et déconnexion par l'interface ; tests CSRF, de limitation de débit et de ré-authentification verts",a_faire
 F03,I0,F,"Isolation : « sans contexte = zéro ligne » étendu à l'API, base des tests d'isolation",15,"Tests d'isolation de l'API verts en CI",a_faire
 F04,I0,F,"Tâches et planificateur Procrastinate (ADR-0022), relance des tâches bloquées, enfilage transactionnel",25,"Une tâche planifiée tourne dans le worker ; test d'arrêt brutal et de relance vert",a_faire
@@ -12,6 +12,7 @@ F05,I2,F,"Passerelle IA de production : adaptateur compatible OpenAI, tableau de
 U03,I2,U,"Brief : éléments triés, « angle et apport propre » (M-19), choix du fournisseur et du modèle par l'utilisateur",20,"Joël construit un brief et choisit son modèle",a_faire
 U04,I2,U,"Rédaction : document structuré, origine par bloc, versions, modèles de prompt, schéma énumératif des sources (ADR-0027)",42,"Un brouillon sourcé est produit, versionné, avec l'origine de chaque bloc",a_faire
 X03,I2,X,"Éditeur Tiptap : nœuds du projet, test de concordance en CI, nettoyeur de collage Word et Google Docs (ADR-0023)",45,"Joël retouche un brouillon ; concordance verte en CI ; collage Word conserve listes et citations",a_faire
+F08,I2,F,"Sauvegarde automatique, restauration testée en CI",25,"Restauration verte en CI",a_faire
 U05,I3,U,"Garde-fous : similarité potion int8 inter-langues bloquante, volet lexical par plus longue séquence commune, citations mot pour mot, mots interdits (ADR-0024)",50,"Un brouillon trop proche d'une source est bloqué, avec les passages surlignés",a_faire
 P02,I3,P,"Remesure des seuils de similarité sur corpus réel et calibration du volet lexical, rapport commité avant mesure (ADR-0024)",6,"Rapport conclu ; seuils confirmés ou révisés par ADR",a_faire
 U06,I3,U,"Traçabilité : archives de sources, instantanés au rendu figé, bloc Sources, mention IA, rendu Python faisant foi",68,"Chaque article copié a son instantané et ses archives consultables",a_faire
@@ -19,7 +20,6 @@ U07,I3,U,"« Préparer et copier » vers son site, export",20,"Joël publie un a
 X04,I3,X,"Bibliothèque d'articles : états, versions, instantanés, sources",20,"Joël retrouve un article publié et ses sources",a_faire
 F06,I4,F,"PDP point unique, niveaux d'automatisation 0 à 2, tests de propriétés",25,"Tests de propriétés verts pour les niveaux 0 à 2 ; aucune publication automatique sans activation explicite",a_faire
 F07,I4,F,"Journal d'audit chaîné",20,"Chaîne vérifiable ; une altération est détectée par le test",a_faire
-F08,I4,F,"Sauvegarde automatique, restauration testée en CI",25,"Restauration verte en CI",a_faire
 X05,I4,X,"Réglages essentiels : fournisseurs et modèles de l'utilisateur, budgets, sources, compte",20,"Joël règle son instance sans toucher aux fichiers",a_faire
 P03,I4,P,"Mémoire de la pile complète avec potion sur la référence basse (S5b, ADR-0025)",3,"Mesure rapportée ; décision si au-delà de 3,4 Go",a_faire
 P04,I4,P,"Installation chronométrée sur machine vierge (critère 6 d'É0, décision D2)",3,"Durée mesurée et rapportée",a_faire

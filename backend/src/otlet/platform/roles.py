@@ -89,3 +89,22 @@ def provision(admin_url: str, migrator_password: str, app_password: str) -> None
                     sql.Identifier(table), app
                 )
             )
+        # Functions too: a SECURITY DEFINER function must run as the owner, and the application
+        # role may call it (the sign-in lookup of ADR-0028).
+        cursor.execute(
+            "SELECT p.oid::regprocedure::text FROM pg_proc AS p"
+            " JOIN pg_namespace AS n ON n.oid = p.pronamespace"
+            " WHERE n.nspname = 'public' AND p.prosecdef"
+            " AND NOT EXISTS (SELECT 1 FROM pg_depend AS d"
+            " WHERE d.objid = p.oid AND d.deptype = 'e')"
+        )
+        for (function,) in cursor.fetchall():
+            cursor.execute(
+                sql.SQL("ALTER FUNCTION {} OWNER TO {}").format(sql.SQL(function), owner)
+            )
+            cursor.execute(
+                sql.SQL("REVOKE ALL ON FUNCTION {} FROM PUBLIC").format(sql.SQL(function))
+            )
+            cursor.execute(
+                sql.SQL("GRANT EXECUTE ON FUNCTION {} TO {}").format(sql.SQL(function), app)
+            )

@@ -6,7 +6,7 @@
 #
 # Usage, from anywhere: sh spikes/s6-delivery/upgrade-rollback.sh
 # Uses its own Compose project (otlet-s6) and destroys it at the end; ports 80 and 443 must
-# be free. Writes spikes/s6-delivery/results/upgrade-rollback-<UTC time>.json.
+# be free (or set OTLET_HTTP_PORT and OTLET_HTTPS_PORT). Writes spikes/s6-delivery/results/upgrade-rollback-<UTC time>.json.
 set -eu
 
 cd "$(dirname "$0")/../.."
@@ -36,7 +36,7 @@ record() { # name, verdict, seconds
     if [ "$2" = true ]; then echo "ok: $1 (${3}s)"; else echo "FAIL: $1 (${3}s)"; failed=1; fi
 }
 revision() {
-    curl -fsSk https://localhost/health | sed -n 's/.*"schema_revision":"\([^"]*\)".*/\1/p'
+    curl -fsSk "https://localhost:${OTLET_HTTPS_PORT:-443}/health" | sed -n 's/.*"schema_revision":"\([^"]*\)".*/\1/p'
 }
 psql_value() {
     compose exec -T db psql -U otlet -d otlet -tA -c "$1"
@@ -63,9 +63,20 @@ mkdir -p "$spike/data/keys"
 openssl genpkey -algorithm X25519 -out "$spike/data/keys/secrets-private.pem"
 openssl pkey -in "$spike/data/keys/secrets-private.pem" -pubout     -out "$spike/data/keys/secrets-public.pem"
 
-echo "Building version N and N+1"
+# Version N is the current code, at the head of backend/migrations; N+1 adds one migration on
+# top of it (next/settings_note.py.in).
+versions=backend/migrations/versions
+schema_n=$(sed -n 's/^revision = "\(.*\)"$/\1/p' "$versions"/*.py | while read -r rev; do
+    grep -q "^down_revision = \"$rev\"" "$versions"/*.py || echo "$rev"
+done)
+echo "Building version N (schema $schema_n) and N+1"
 docker build -q -f deploy/Containerfile -t otlet-s6:n . >/dev/null
-docker build -q --build-arg BASE=otlet-s6:n -f "$spike/next/Containerfile" -t otlet-s6:n1 "$spike/next" >/dev/null
+next_context=$(mktemp -d)
+cp "$spike/next/Containerfile" "$next_context/"
+sed "s/@HEAD@/$schema_n/" "$spike/next/settings_note.py.in" > "$next_context/settings_note.py"
+docker build -q --build-arg BASE=otlet-s6:n -f "$next_context/Containerfile" -t otlet-s6:n1 \
+    "$next_context" >/dev/null
+rm -rf "$next_context"
 cleanup
 
 # 1. Install version N and insert control data.
@@ -74,7 +85,7 @@ up n
 psql_value "INSERT INTO instance_settings (key, value) VALUES
             ('site.title', '\"Otlet\"'), ('site.language', '\"fr\"'), ('demo.count', '42')" >/dev/null
 reference=$(fingerprint)
-[ "$(revision)" = 0001 ] && ok=true || ok=false
+[ "$(revision)" = "$schema_n" ] && ok=true || ok=false
 record install-n "$ok" $(($(now) - t))
 
 # 2. Upgrade to N+1 (mise-a-jour.md §2): new version, then start; backup and migration run
@@ -82,16 +93,16 @@ record install-n "$ok" $(($(now) - t))
 t=$(now)
 up n1
 pre_upgrade_dump=$(ls -1t "$spike"/data/backups/otlet-*.dump | head -n 1)
-[ "$(revision)" = 0002 ] && [ "$(fingerprint)" = "$reference" ] && [ "$(has_note_column)" = 1 ] \
+[ "$(revision)" = s6_next ] && [ "$(fingerprint)" = "$reference" ] && [ "$(has_note_column)" = 1 ] \
     && ok=true || ok=false
 record upgrade-n-to-n1 "$ok" $(($(now) - t))
 
 # 3. Rollback (mise-a-jour.md §3): downgrade the schema with N+1, then start N.
 t=$(now)
 OTLET_VERSION=n1 compose stop api worker caddy >/dev/null 2>&1
-OTLET_VERSION=n1 compose run --rm migrate migrate downgrade 0001 >/dev/null 2>&1
+OTLET_VERSION=n1 compose run --rm migrate migrate downgrade "$schema_n" >/dev/null 2>&1
 up n
-[ "$(revision)" = 0001 ] && [ "$(fingerprint)" = "$reference" ] && [ "$(has_note_column)" = 0 ] \
+[ "$(revision)" = "$schema_n" ] && [ "$(fingerprint)" = "$reference" ] && [ "$(has_note_column)" = 0 ] \
     && ok=true || ok=false
 record rollback-n1-to-n "$ok" $(($(now) - t))
 
@@ -104,7 +115,7 @@ compose run --rm --no-deps backup \
      && pg_restore --no-owner --exit-on-error -d otlet /backups/$(basename "$pre_upgrade_dump")" \
     >/dev/null 2>&1
 up n
-[ "$(revision)" = 0001 ] && [ "$(fingerprint)" = "$reference" ] && [ "$(has_note_column)" = 0 ] \
+[ "$(revision)" = "$schema_n" ] && [ "$(fingerprint)" = "$reference" ] && [ "$(has_note_column)" = 0 ] \
     && ok=true || ok=false
 record restore-backup-to-n "$ok" $(($(now) - t))
 

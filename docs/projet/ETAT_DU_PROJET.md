@@ -4,7 +4,7 @@ Mis à jour le 2026-10-16. Une page : ce qu'il faut savoir pour reprendre le tra
 
 ## Où on en est
 
-Étape **É0** (preuves de concept et socle) **close le 2026-10-16** ; décision P1 dans `docs/projet/P1.md`. Étape suivante : **É1**, tranche verticale personnelle (`ROADMAP.md` §5.2), dont le plan reste à écrire.
+Étape **É0** (preuves de concept et socle) **close le 2026-10-16** ; décision P1 dans `docs/projet/P1.md`. Étape en cours : **É1**, tranche verticale personnelle (`ROADMAP.md` §5.2). Plan **validé par Joël le 2026-10-16** : `docs/projet/plan-E1.md` (décisions au §7), backlog `docs/projet/backlog-E1.csv`. Cinq incréments, I0 Socle, I1 Lire, I2 Rédiger (avec la sauvegarde), I3 Contrôler et copier, I4 Fiabiliser.
 
 | Bloc | État |
 |---|---|
@@ -20,9 +20,11 @@ Mis à jour le 2026-10-16. Une page : ce qu'il faut savoir pour reprendre le tra
 
 ## Prochaine action
 
-1. Joël fusionne `docs/B11-cloture`.
-2. Joël valide le plan d'É1 (`docs/projet/plan-E1.md`, backlog `docs/projet/backlog-E1.csv`) et répond aux quatre questions de son §7. Aucun code de produit avant.
-3. Plus tard, avec l'accord de Joël pour chacun : mesurer les fournisseurs réels de S4 (50 briefs chacun, plafonds de dépense posés).
+1. Joël fusionne `docs/validation-plan-E1`, puis `feat/F01-modele-donnees`, empilée dessus.
+2. Joël répond à l'ADR-0028 (comptes à identités multiples, contexte de l'utilisateur, connexion par `find_identity`), proposé avec F01.
+3. Suite d'I0 : F02 (identité minimale), F03, F04, X01.
+4. Joël note son temps une fois par semaine dans `docs/projet/journal-temps.csv` (domaine `projet`).
+5. Plus tard, avec l'accord de Joël pour chacun : mesurer les fournisseurs réels de S4 (50 briefs chacun, plafonds de dépense posés).
 
 ## Règles de travail
 
@@ -43,7 +45,9 @@ Mis à jour le 2026-10-16. Une page : ce qu'il faut savoir pour reprendre le tra
 | Poste de Joël | Windows 11, PowerShell 5.1 (encodage cp1252, CRLF). Docker Desktop installé : prévenir avant de le démarrer, et ne pas toucher aux conteneurs `wyoming-*`. Pas de Node : `npm` tourne dans `node:24-slim` |
 | VM de mesure | NAS de Joël, `192.168.129.249`, Ubuntu 24.04, 2 vCPU, 3,8 Go. SSH : `ssh -i ~/.ssh/otlet_nas otlet@192.168.129.249`, `sudo` sans mot de passe. Instantané restaurable par Joël |
 | VM de travail | Copie de la VM du NAS sous VMware sur le PC de Joël (i7-14700K) : `192.168.129.252`, même compte et même clé SSH. Arrêtée quand le PC est éteint |
+| VM vierge (P04) | Sur le PC de Joël : `192.168.129.253`, Ubuntu 26.04.1 Desktop, 2 vCPU, 4 Go (3,3 Go visibles), 40 Go ; même compte et même clé SSH. **Instantané vierge** pris par Joël le 2026-10-16 : ne rien y installer avant la mesure d'I4, qui repart de cet instantané |
 | Sur la VM | Pile Otlet dans `/opt/otlet` (PostgreSQL de la pile réglé pour S1). CMS de test dans le projet Compose `otlet-cms` : WordPress 7.1 (port 8081), WordPress 6.9 (8082), Ghost 6.69 (2368) ; identifiants dans `~/otlet-cms.env` |
+| Essais du code | Sur la VM de travail, dans des conteneurs jetables (`otlet-dev-pg`, PostgreSQL 18 et pgvector comme la CI), avec une copie du dossier `backend` dans `~/otlet-dev` |
 | Mesures longues | Toujours détachées sur la VM (`nohup`), jamais liées à une session SSH depuis le poste |
 
 ## Points ouverts à garder en tête

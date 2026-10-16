@@ -19,11 +19,13 @@ def test_upgrade_then_downgrade(database: TestDatabase, tmp_path: Path) -> None:
     migrations.downgrade(settings, "base")
 
     migrations.upgrade(settings)
-    assert db.schema_revision(engine) == "0001"
+    assert db.schema_revision(engine) == "0002"
 
     migrations.downgrade(settings, "base")
     with engine.connect() as connection:
-        assert not sa.inspect(connection).has_table("instance_settings")
+        assert sa.inspect(connection).get_table_names() == ["alembic_version"]
+        functions = sa.text("SELECT count(*) FROM pg_proc WHERE proname = 'find_identity'")
+        assert connection.execute(functions).scalar() == 0
 
 
 def test_migrations_create_objects_owned_by_the_owner_role(migrated: TestDatabase) -> None:

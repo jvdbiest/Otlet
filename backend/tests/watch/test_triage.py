@@ -153,3 +153,15 @@ def test_a_dismissed_item_leaves_its_topics(migrated: TestDatabase, setup: Setup
         ("Article 1", Decision.KEPT),
         ("Article 2", None),
     ]
+
+
+def test_search_results_carry_the_triage_of_the_user(setup: Setup) -> None:
+    from otlet.watch.adapters.postgres import PostgresWatchStore
+    from otlet.watch.application.watch import Watch
+
+    feed, context, ids = setup.feed, setup.context, setup.ids
+    watch = Watch(PostgresWatchStore(setup.engine, lambda connection, name, **kwargs: 0))
+    feed.change(context, ids[0], Change(decision=Decision.KEPT, pinned=True))
+    found = {f.item.title: f.triage for f in watch.search(context, "article")}
+    assert found["Article 0"].decision is Decision.KEPT and found["Article 0"].pinned
+    assert found["Article 1"].decision is None

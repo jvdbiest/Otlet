@@ -268,7 +268,7 @@ function SearchResults({ workspaceId, query }: { workspaceId: string; query: str
       {found.data.length > 0 && (
         <ul className={styles.list}>
           {found.data.map((result) => (
-            <ItemCard key={result.item.id} workspaceId={workspaceId} item={result.item} />
+            <ItemCard key={result.item.id} workspaceId={workspaceId} item={result.item} triage={result.triage} />
           ))}
         </ul>
       )}

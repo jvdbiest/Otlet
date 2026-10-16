@@ -4,7 +4,7 @@ Mis à jour le 2026-10-16. Une page : ce qu'il faut savoir pour reprendre le tra
 
 ## Où on en est
 
-Étape **É0** (preuves de concept et socle), plan : `docs/projet/plan-E0.md`, suivi : `docs/projet/backlog-E0.csv`.
+Étape **É0** (preuves de concept et socle) **close le 2026-10-16** ; décision P1 dans `docs/projet/P1.md`. Étape suivante : **É1**, tranche verticale personnelle (`ROADMAP.md` §5.2), dont le plan reste à écrire.
 
 | Bloc | État |
 |---|---|
@@ -16,12 +16,12 @@ Mis à jour le 2026-10-16. Une page : ce qu'il faut savoir pour reprendre le tra
 | S5 Similarité | Conclue : échec, de peu ; complément S5b conclu en échec sur la mémoire seule. Modèle retenu (ADR-0024) : potion-multilingual-128M par `model2vec` en int8, 870 Mio, qualité inchangée. Pile complète estimée à 2,4 Go en charge, sous 3,4 Go (déduction) |
 | S4 Passerelle IA | Conclue : partiel. Ollama (qwen2.5 1,5B) « testé » à 96 % ; budget jamais dépassé ; replis 100 % ; fournisseurs payants et à compte externe bloqués sans accord de Joël. ADR-0027 accepté |
 | S7 Connecteurs CMS | Conclue : partiel. 0 doublon et 100 % de rapprochement sur WordPress 7.1, 6.9 et Ghost ; Wordfence par défaut bloque les mots de passe d'application ; mutualisé non démontré. ADR-0026 accepté |
-| B11 Clôture (rapport P1) | Fait : `docs/projet/P1.md` soumis à Joël ; décisions D1 à D5 en attente |
+| B11 Clôture (rapport P1) | Faite. **É0 close le 2026-10-16** (décision P1 de Joël, `docs/projet/P1.md`) : É1 démarre recalibré |
 
 ## Prochaine action
 
-1. Joël fusionne `docs/B11-cloture` (qui contient aussi la conclusion de S4), et prend les décisions D1 à D5 de `docs/projet/P1.md`.
-2. Selon D1 : démarrer É1 (tranche verticale personnelle).
+1. Joël fusionne `docs/B11-cloture`.
+2. Rédiger le plan d'É1 (`ROADMAP.md` §5.2) : backlog chiffré, ordre, critères de sortie, à faire valider par Joël avant tout code de produit. Planification sur une vélocité prudente de 2,4 (D1) ; temps de Joël journalisé à part (domaine `projet`).
 3. Plus tard, avec l'accord de Joël pour chacun : mesurer les fournisseurs réels de S4 (50 briefs chacun, plafonds de dépense posés).
 
 ## Règles de travail
@@ -48,6 +48,7 @@ Mis à jour le 2026-10-16. Une page : ce qu'il faut savoir pour reprendre le tra
 
 ## Points ouverts à garder en tête
 
+- S6 : installation chronométrée sur un VPS vierge, reportée à É1 (D2 de P1), sans location pour l'instant.
 - Remesurer la recherche plein texte (S1, L2) sur un corpus réaliste avant toute conclusion définitive (ADR-0021).
 - Écrire un nettoyeur de collage Word et Google Docs pour Tiptap (ADR-0023).
 - ASVS V12.3 : chiffrer ou non les liaisons internes de la pile Compose (`docs/security/asvs-l2.md`).

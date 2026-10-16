@@ -15,6 +15,7 @@ from otlet.watch.domain.triage import (
     Decision,
     Progress,
     TopicFilter,
+    TopicTag,
     Triage,
     View,
 )
@@ -43,6 +44,21 @@ TOPICS = (
 
 def topic_parameters(topics: TopicFilter) -> dict[str, object]:
     return {"topics": list(topics.topic_ids), "all_topics": topics.all_topics}
+
+
+# The topics of each item, best score first (the first is its main topic).
+TOPIC_TAGS = (
+    "(SELECT coalesce(json_agg(json_build_object('id', t.id, 'name', t.name, 'score', m.score)"
+    "  ORDER BY m.score DESC, t.name), '[]') FROM topic_matches AS m"
+    " JOIN topics AS t ON t.id = m.topic_id AND t.workspace_id = m.workspace_id"
+    " WHERE m.item_id = i.id AND m.workspace_id = i.workspace_id) AS topic_tags"
+)
+
+
+def topic_tags_of(row: sa.Row[Any]) -> tuple[TopicTag, ...]:
+    return tuple(
+        TopicTag(id=UUID(tag["id"]), name=tag["name"], score=tag["score"]) for tag in row.topic_tags
+    )
 
 
 # Pinned items first, then the most recent; the cursor follows the same order.
@@ -76,7 +92,7 @@ class PostgresTriageStore:
         with workspace_transaction(self._engine, workspace_id) as connection:
             rows = connection.execute(
                 sa.text(
-                    f"SELECT {ITEM_COLUMNS}, {TRIAGE_COLUMNS}"
+                    f"SELECT {ITEM_COLUMNS}, {TRIAGE_COLUMNS}, {TOPIC_TAGS}"
                     f" FROM {ITEMS_FROM}{TRIAGE_JOIN}"
                     f" WHERE {here('i')} AND {VIEWS[view]}"
                     # Without a source filter, a story shows once: its copies are counted.
@@ -99,7 +115,7 @@ class PostgresTriageStore:
                     **topic_parameters(topics),
                 },
             ).all()
-        return [FeedItem(item_from_row(row), triage_of(row)) for row in rows]
+        return [FeedItem(item_from_row(row), triage_of(row), topic_tags_of(row)) for row in rows]
 
     def triage(self, workspace_id: UUID, user_id: UUID, item_id: UUID) -> Triage | None:
         with workspace_transaction(self._engine, workspace_id) as connection:

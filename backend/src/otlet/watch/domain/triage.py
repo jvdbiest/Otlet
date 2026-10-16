@@ -51,3 +51,12 @@ class TopicFilter:
 
 
 NO_TOPIC_FILTER = TopicFilter()
+
+
+@dataclass(frozen=True, slots=True)
+class TopicTag:
+    """A topic an item matches. Tags come best score first: the first is the main topic."""
+
+    id: UUID
+    name: str
+    score: int

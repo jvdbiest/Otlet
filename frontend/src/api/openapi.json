@@ -132,13 +132,21 @@
           "item": {
             "$ref": "#/components/schemas/ItemView"
           },
+          "topics": {
+            "items": {
+              "$ref": "#/components/schemas/TopicTagView"
+            },
+            "title": "Topics",
+            "type": "array"
+          },
           "triage": {
             "$ref": "#/components/schemas/TriageView"
           }
         },
         "required": [
           "item",
-          "triage"
+          "triage",
+          "topics"
         ],
         "title": "FeedItemView",
         "type": "object"
@@ -152,6 +160,13 @@
             "title": "Rank",
             "type": "number"
           },
+          "topics": {
+            "items": {
+              "$ref": "#/components/schemas/TopicTagView"
+            },
+            "title": "Topics",
+            "type": "array"
+          },
           "triage": {
             "$ref": "#/components/schemas/TriageView"
           }
@@ -159,7 +174,8 @@
         "required": [
           "item",
           "rank",
-          "triage"
+          "triage",
+          "topics"
         ],
         "title": "FoundItemView",
         "type": "object"
@@ -859,6 +875,30 @@
           "keywords"
         ],
         "title": "TopicBody",
+        "type": "object"
+      },
+      "TopicTagView": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "score": {
+            "title": "Score",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "score"
+        ],
+        "title": "TopicTagView",
         "type": "object"
       },
       "TopicView": {

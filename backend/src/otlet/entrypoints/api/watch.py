@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 
 from otlet.entrypoints.api.auth import same_origin
 from otlet.entrypoints.api.collection import ItemView
-from otlet.entrypoints.api.triage import TriageView
+from otlet.entrypoints.api.triage import TopicTagView, TriageView
 from otlet.entrypoints.api.workspaces import PREFIX
 from otlet.watch.application.watch import Watch
 from otlet.watch.domain import model
@@ -114,6 +114,7 @@ class FoundItemView(BaseModel):
     item: ItemView
     rank: float
     triage: TriageView
+    topics: list[TopicTagView]  # best score first: the first is the main topic
 
 
 def _refused(error: WatchError) -> HTTPException:
@@ -236,6 +237,7 @@ def build_router(watch: Watch, workspace_context: Callable[..., WorkspaceContext
                 item=ItemView.of(f.item, with_text=False),
                 rank=f.rank,
                 triage=TriageView.of(f.triage),
+                topics=[TopicTagView.of(tag) for tag in f.topics],
             )
             for f in found
         ]

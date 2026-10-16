@@ -14,7 +14,7 @@ from otlet.entrypoints.api.auth import same_origin
 from otlet.entrypoints.api.collection import ItemView
 from otlet.entrypoints.api.workspaces import PREFIX
 from otlet.watch.application.triage import Change, Feed
-from otlet.watch.domain.triage import Decision, TopicFilter, Triage, View
+from otlet.watch.domain.triage import Decision, TopicFilter, TopicTag, Triage, View
 from otlet.workspaces.domain.model import WorkspaceContext
 
 
@@ -32,9 +32,20 @@ class TriageView(BaseModel):
         )
 
 
+class TopicTagView(BaseModel):
+    id: UUID
+    name: str
+    score: int
+
+    @classmethod
+    def of(cls, tag: TopicTag) -> "TopicTagView":
+        return cls(id=tag.id, name=tag.name, score=tag.score)
+
+
 class FeedItemView(BaseModel):
     item: ItemView
     triage: TriageView
+    topics: list[TopicTagView]  # best score first: the first is the main topic
 
 
 class TriageChange(BaseModel):
@@ -79,7 +90,11 @@ def build_router(feed: Feed, workspace_context: Callable[..., WorkspaceContext])
             topics=TopicFilter(tuple(topic_id), all_topics),
         )
         return [
-            FeedItemView(item=ItemView.of(f.item, with_text=False), triage=TriageView.of(f.triage))
+            FeedItemView(
+                item=ItemView.of(f.item, with_text=False),
+                triage=TriageView.of(f.triage),
+                topics=[TopicTagView.of(tag) for tag in f.topics],
+            )
             for f in items
         ]
 

@@ -540,6 +540,8 @@ export interface components {
         /** FeedItemView */
         FeedItemView: {
             item: components["schemas"]["ItemView"];
+            /** Topics */
+            topics: components["schemas"]["TopicTagView"][];
             triage: components["schemas"]["TriageView"];
         };
         /** FoundItemView */
@@ -547,6 +549,8 @@ export interface components {
             item: components["schemas"]["ItemView"];
             /** Rank */
             rank: number;
+            /** Topics */
+            topics: components["schemas"]["TopicTagView"][];
             triage: components["schemas"]["TriageView"];
         };
         /** HTTPValidationError */
@@ -754,6 +758,18 @@ export interface components {
             name: string;
             /** Source Ids */
             source_ids?: string[];
+        };
+        /** TopicTagView */
+        TopicTagView: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Score */
+            score: number;
         };
         /** TopicView */
         TopicView: {

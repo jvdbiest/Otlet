@@ -409,3 +409,38 @@
   cursor: pointer;
   padding: 0;
 }
+
+.topicLine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  align-items: center;
+  margin: 0 0 var(--space-1);
+}
+
+.topicBadge {
+  display: inline-block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.topicOther {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid currentcolor;
+}
+
+.topicMore {
+  font: inherit;
+  font-size: 0.8125rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0 var(--space-2);
+}

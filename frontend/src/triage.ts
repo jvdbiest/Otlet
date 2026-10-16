@@ -5,6 +5,7 @@ import { api, apiError, type components } from "./api/client.ts";
 
 export type FeedItemView = components["schemas"]["FeedItemView"];
 export type TriageView = components["schemas"]["TriageView"];
+export type TopicTagView = components["schemas"]["TopicTagView"];
 export type ProgressView = components["schemas"]["ProgressView"];
 export type FeedView = "to_sort" | "kept" | "pinned" | "dismissed" | "all";
 

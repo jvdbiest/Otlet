@@ -15,6 +15,7 @@ from otlet.watch.domain.triage import (
     Decision,
     Progress,
     TopicFilter,
+    TopicTag,
     Triage,
     View,
 )
@@ -27,6 +28,7 @@ FEED_MAX = 200
 class FeedItem:
     item: Item
     triage: Triage
+    topics: tuple[TopicTag, ...] = ()  # best score first
 
 
 @dataclass(frozen=True, slots=True)

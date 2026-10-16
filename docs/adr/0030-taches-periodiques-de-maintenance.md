@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Statut | Proposé |
+| Statut | Accepté (2026-10-16) |
 | Date | 2026-10-16 |
 | Décideur | Joël |
 | Documents touchés | `ARCHITECTURE.md` §12.5 ; `TECH_CHOICES.md` §9.4 ; ADR-0022 |
@@ -18,6 +18,10 @@ F04 a besoin de tâches périodiques plus simples, sans fuseau ni règle de ratt
 
 1. **Les tâches périodiques de maintenance** (relance des tâches bloquées, purges) sont déclarées avec une expression cron UTC dans le registre des tâches (`otlet.jobs.application.registry`). Ce sont les workers qui les lancent, à la manière de Procrastinate.
 2. **Le rôle `scheduler` reste réservé aux échéances du domaine**, avec verrou de leader et règles de rattrapage, comme prévu au §12.5. D'ici là, il continue à seulement démarrer et battre. Il recevra son premier travail avec la première échéance du domaine : la collecte planifiée des sources (U01) ou, au plus tard, les publications planifiées.
+
+## Validation de Joël (2026-10-16)
+
+« Je valide les tâches périodiques de maintenance exécutées par les workers, et je conserve le rôle de planificateur pour les opérations métier importantes (collectes, publications planifiées, rattrapage après incident). »
 
 ## Conséquences
 

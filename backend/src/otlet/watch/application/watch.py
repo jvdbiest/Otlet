@@ -109,8 +109,17 @@ class WatchStore(Protocol):
     ) -> list[tuple[UUID, Candidate]]: ...
 
     def save_topic_matches(
-        self, workspace_id: UUID, topic_id: UUID, matches: dict[UUID, Match]
-    ) -> None: ...
+        self,
+        workspace_id: UUID,
+        topic_id: UUID,
+        matches: dict[UUID, Match],
+        answered: datetime | None,
+    ) -> None:
+        """Replaces the matches of the topic; they answer the request made at `answered`."""
+        ...
+
+    def request_rescore(self, workspace_id: UUID, topic_id: UUID) -> bool: ...
+    def refresh(self, workspace_id: UUID) -> tuple[int, int]: ...
 
     def search(self, workspace_id: UUID, query: str, limit: int) -> list[FoundItem]: ...
 
@@ -216,6 +225,15 @@ class Watch:
     def duplicates(self, context: WorkspaceContext, item_id: UUID) -> list[Duplicate]:
         return self._store.duplicates(context.workspace_id, item_id)
 
+    def rescore(self, context: WorkspaceContext, topic_id: UUID) -> bool:
+        """Matches the topic again, on request (the button « Recalculer »)."""
+        return self._store.request_rescore(context.workspace_id, topic_id)
+
+    def refresh(self, context: WorkspaceContext) -> tuple[int, int]:
+        """Collects every active source now and matches every topic again (« Actualiser »):
+        returns how many sources and topics."""
+        return self._store.refresh(context.workspace_id)
+
     def search(self, context: WorkspaceContext, query: str, limit: int = 50) -> list[FoundItem]:
         """Full-text search with a bounded ranking (ADR-0021)."""
         cleaned = " ".join(query.split())
@@ -256,4 +274,4 @@ class Watch:
             found = rules.match(candidate)
             if found is not None:
                 matches[item_id] = found
-        self._store.save_topic_matches(workspace_id, topic_id, matches)
+        self._store.save_topic_matches(workspace_id, topic_id, matches, topic.rescore_requested_at)

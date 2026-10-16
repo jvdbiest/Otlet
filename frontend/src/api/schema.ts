@@ -216,6 +216,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Refresh
+         * @description Collects every active source now and matches every topic again.
+         */
+        post: operations["refresh_api_workspaces__workspace_id__refresh_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/search": {
         parameters: {
             query?: never;
@@ -364,6 +384,26 @@ export interface paths {
         get: operations["topic_items_api_workspaces__workspace_id__topics__topic_id__items_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/topics/{topic_id}/rescore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rescore Topic
+         * @description Matches the topic again with the recent items, in the background.
+         */
+        post: operations["rescore_topic_api_workspaces__workspace_id__topics__topic_id__rescore_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -548,6 +588,13 @@ export interface components {
             /** Password */
             password: string;
         };
+        /** RefreshView */
+        RefreshView: {
+            /** Sources */
+            sources: number;
+            /** Topics */
+            topics: number;
+        };
         /** ScoredItemView */
         ScoredItemView: {
             /** Contributions */
@@ -652,6 +699,10 @@ export interface components {
             languages: string[];
             /** Name */
             name: string;
+            /** Rescored At */
+            rescored_at: string | null;
+            /** Rescoring */
+            rescoring: boolean;
             /** Source Ids */
             source_ids: string[];
         };
@@ -1068,6 +1119,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ItemWatchView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    refresh_api_workspaces__workspace_id__refresh_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefreshView"];
                 };
             };
             /** @description Validation Error */
@@ -1529,6 +1611,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ScoredItemView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rescore_topic_api_workspaces__workspace_id__topics__topic_id__rescore_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                topic_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */

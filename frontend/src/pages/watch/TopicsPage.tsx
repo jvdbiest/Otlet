@@ -8,6 +8,7 @@ import { sourcesQuery } from "../../collection.ts";
 import { useWorkspaceId } from "../../session.ts";
 import { topicsQuery, useDeleteTopic, useSaveTopic, type TopicView } from "../../watch.ts";
 import { errorText, languageName, TOPIC_LANGUAGES } from "./labels.ts";
+import { RescoreStatus } from "./RescoreStatus.tsx";
 import { emptyStyles, styles } from "./styles.ts";
 
 /** The topics of the watch: their keywords, and how many items they gather (U02, F-VEI-01). */
@@ -88,6 +89,7 @@ function TopicCard({ workspaceId, topic, onEdit }: { workspaceId: string; topic:
         <p className={styles.meta}>{t("topics.exclusionsLabel", { terms: topic.exclusions.join(", ") })}</p>
       )}
       <p className={styles.meta}>{t("topics.count", { count: topic.item_count })}</p>
+      <RescoreStatus workspaceId={workspaceId} topic={topic} />
       <div className={styles.row}>
         <Button className={styles.button} onPress={onEdit}>
           {t("topics.modify")}

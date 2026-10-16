@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Form, Input, Label, TextField } from "react-aria-components";
 import { itemsQuery, PAGE_SIZE, sourcesQuery, type ItemView } from "../../collection.ts";
 import { useWorkspaceId } from "../../session.ts";
-import { searchQuery } from "../../watch.ts";
+import { searchQuery, useRefreshWatch } from "../../watch.ts";
 import { formatDate, textLabel, textTone } from "./labels.ts";
 import { emptyStyles, styles } from "./styles.ts";
 
@@ -27,6 +27,7 @@ function Items({ workspaceId }: { workspaceId: string }) {
 
   return (
     <>
+      <RefreshButton workspaceId={workspaceId} />
       <SearchBox
         draft={draft}
         onDraft={setDraft}
@@ -222,5 +223,61 @@ function SearchResults({ workspaceId, query }: { workspaceId: string; query: str
         </ul>
       )}
     </>
+  );
+}
+
+// After « Actualiser », the lists are refreshed this often, for this long.
+const REFRESH_POLL_MS = 5_000;
+const REFRESH_POLL_DURATION_MS = 90_000;
+
+/** Collects every source now and matches the topics again (U02b). */
+function RefreshButton({ workspaceId }: { workspaceId: string }) {
+  const { t } = useTranslation();
+  const refresh = useRefreshWatch(workspaceId);
+  const queryClient = useQueryClient();
+  const [until, setUntil] = useState(0);
+  useEffect(() => {
+    if (until === 0) {
+      return;
+    }
+    const timer = window.setInterval(() => {
+      if (Date.now() > until) {
+        window.clearInterval(timer);
+        setUntil(0);
+        return;
+      }
+      void queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId] });
+    }, REFRESH_POLL_MS);
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [until, queryClient, workspaceId]);
+
+  return (
+    <div className={styles.row}>
+      <Button
+        className={styles.button}
+        isDisabled={refresh.isPending}
+        onPress={() => {
+          refresh.mutate(undefined, {
+            onSuccess: () => {
+              setUntil(Date.now() + REFRESH_POLL_DURATION_MS);
+            },
+          });
+        }}
+      >
+        {refresh.isPending ? t("watch.refreshing") : t("watch.refresh")}
+      </Button>
+      {refresh.data !== undefined && (
+        <span role="status" className={styles.meta}>
+          {t("watch.refreshed", { sources: refresh.data.sources, topics: refresh.data.topics })}
+        </span>
+      )}
+      {refresh.error !== null && (
+        <span role="alert" className={styles.error}>
+          {t("errors.generic")}
+        </span>
+      )}
+    </div>
   );
 }

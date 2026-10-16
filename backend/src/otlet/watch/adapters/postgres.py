@@ -9,6 +9,7 @@ from uuid import UUID
 import sqlalchemy as sa
 
 from otlet.collection.adapters.postgres import ITEM_COLUMNS, ITEMS_FROM, SORT_DATE, item_from_row
+from otlet.collection.application.collection import COLLECT_SOURCE
 from otlet.collection.domain.model import SEARCH_CONFIGS, SIMPLE_SEARCH
 from otlet.jobs.application.registry import Enqueue
 from otlet.platform.database import scoped_transaction, workspace_transaction
@@ -26,7 +27,7 @@ from otlet.watch.domain.model import Candidate, Contribution, Match, Topic, Watc
 
 TOPIC_COLUMNS = (
     "t.id, t.workspace_id, t.name, t.description, t.keywords, t.exclusions, t.languages,"
-    " t.source_ids, t.created_at,"
+    " t.source_ids, t.created_at, t.rescore_requested_at, t.rescored_at,"
     " (SELECT count(*) FROM topic_matches AS m JOIN source_items AS i ON i.id = m.item_id"
     "  WHERE m.topic_id = t.id AND i.duplicate_of IS NULL) AS item_count"
 )
@@ -55,6 +56,8 @@ def _topic(row: sa.Row[Any]) -> Topic:
         languages=tuple(row.languages),
         source_ids=tuple(row.source_ids),
         created_at=row.created_at,
+        rescore_requested_at=row.rescore_requested_at,
+        rescored_at=row.rescored_at,
         item_count=row.item_count,
     )
 
@@ -159,7 +162,8 @@ class PostgresWatchStore:
                             "UPDATE topics SET name = :name, description = :description,"
                             " keywords = :keywords, exclusions = :exclusions,"
                             " languages = :languages, source_ids = CAST(:sources AS uuid[]),"
-                            " updated_at = now() WHERE id = :id RETURNING id"
+                            " updated_at = now(), rescore_requested_at = now()"
+                            " WHERE id = :id RETURNING id"
                         ),
                         {"id": topic_id, **self._values(fields)},
                     ).scalar_one_or_none()
@@ -319,9 +323,20 @@ class PostgresWatchStore:
         return [(row.id, _candidate(row)) for row in rows]
 
     def save_topic_matches(
-        self, workspace_id: UUID, topic_id: UUID, matches: dict[UUID, Match]
+        self,
+        workspace_id: UUID,
+        topic_id: UUID,
+        matches: dict[UUID, Match],
+        answered: datetime | None,
     ) -> None:
         with workspace_transaction(self._engine, workspace_id) as connection:
+            connection.execute(
+                sa.text(
+                    "UPDATE topics SET rescored_at = greatest(rescored_at, CAST(:answered AS"
+                    " timestamptz)) WHERE id = :topic"
+                ),
+                {"topic": topic_id, "answered": answered},
+            )
             connection.execute(
                 sa.text("DELETE FROM topic_matches WHERE topic_id = :topic"), {"topic": topic_id}
             )
@@ -330,6 +345,43 @@ class PostgresWatchStore:
                 workspace_id,
                 [(topic_id, item_id, match) for item_id, match in matches.items()],
             )
+
+    def request_rescore(self, workspace_id: UUID, topic_id: UUID) -> bool:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            return self._request(connection, workspace_id, "WHERE id = :topic", topic_id) > 0
+
+    def refresh(self, workspace_id: UUID) -> tuple[int, int]:
+        """Collects every active source now and matches every topic again."""
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            sources = connection.execute(sa.text("SELECT id FROM sources WHERE active")).scalars()
+            count = 0
+            for source_id in sources:
+                count += 1
+                self._enqueue(
+                    connection,
+                    COLLECT_SOURCE,
+                    workspace_id=str(workspace_id),
+                    source_id=str(source_id),
+                )
+            topics = self._request(connection, workspace_id, "", None)
+        return count, topics
+
+    def _request(
+        self, connection: sa.Connection, workspace_id: UUID, where: str, topic_id: UUID | None
+    ) -> int:
+        ids = (
+            connection.execute(
+                sa.text(f"UPDATE topics SET rescore_requested_at = now() {where} RETURNING id"),  # noqa: S608
+                {"topic": topic_id},
+            )
+            .scalars()
+            .all()
+        )
+        for found in ids:
+            self._enqueue(
+                connection, RESCORE_TOPIC, workspace_id=str(workspace_id), topic_id=str(found)
+            )
+        return len(ids)
 
     @staticmethod
     def _insert(

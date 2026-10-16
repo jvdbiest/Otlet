@@ -21,7 +21,7 @@ Mis à jour le 2026-10-16. Une page : ce qu'il faut savoir pour reprendre le tra
 ## Prochaine action
 
 1. **I0 close** le 2026-10-16 (X01 fusionnée). I1 Lire en cours.
-2. U01 faite (fusionnée le 2026-10-16). Joël fusionne `feat/U02-veille` (sujets, score expliqué, doublons, recherche) et répond à l'ADR-0032.
+2. U01 et U02 faites (fusionnées le 2026-10-16). Joël fusionne `feat/U02b-recalcul` (recalcul visible, boutons « Recalculer » et « Actualiser », demandés par Joël) et répond à l'ADR-0032.
 3. **Correctif de sécurité à faire juste après U02** : la pile Compose se connecte à PostgreSQL en superutilisateur, qui ignore la RLS. Créer les trois rôles de M-12 à l'installation et à la mise à jour, et tester « sans contexte, zéro ligne » sur la pile.
 4. Ensuite X02 (flux de tri et accueil) et P01 (remesure de la recherche).
 5. Joël note son temps une fois par semaine dans `docs/projet/journal-temps.csv` (domaine `projet`).

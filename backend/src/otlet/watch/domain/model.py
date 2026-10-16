@@ -51,6 +51,15 @@ class Topic:
     source_ids: tuple[UUID, ...]
     created_at: datetime
     item_count: int = 0
+    # The last request to match the topic again, and the request its matches answer.
+    rescore_requested_at: datetime | None = None
+    rescored_at: datetime | None = None
+
+    @property
+    def rescoring(self) -> bool:
+        if self.rescore_requested_at is None:
+            return False
+        return self.rescored_at is None or self.rescored_at < self.rescore_requested_at
 
 
 @dataclass(frozen=True, slots=True)

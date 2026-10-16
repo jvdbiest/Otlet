@@ -2,6 +2,7 @@
 """The import contracts of ADR-0017 hold, and each one rejects a real violation."""
 
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -55,6 +56,7 @@ VIOLATIONS = {
     "secrets-worker-only": {
         "entrypoints/api/leak.py": "from otlet.platform.secrets import opening\n"
     },
+    "procrastinate-jobs-only": {"demo/adapters/queue.py": "import procrastinate\n"},
 }
 
 
@@ -78,6 +80,7 @@ def test_each_contract_rejects_a_violation(contract: str, tmp_path: Path) -> Non
     result = run_lint_imports(src)
 
     assert result.returncode != 0
-    broken = [line for line in result.stdout.splitlines() if line.endswith("BROKEN")]
+    # "… BROKEN", or "… BROKEN (1 ignored import)" for a contract with ignore_imports.
+    broken = [line for line in result.stdout.splitlines() if re.search(r" BROKEN( \(.*\))?$", line)]
     assert len(broken) == 1, result.stdout
     assert broken[0].startswith(CONTRACT_NAMES[contract]), result.stdout

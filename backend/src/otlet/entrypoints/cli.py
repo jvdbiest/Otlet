@@ -95,7 +95,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     elif args.command == "worker":
         from otlet.entrypoints.worker import main as worker
 
-        worker.run(settings, process.stop_on_signals())
+        worker.run(settings)
     elif args.command == "scheduler":
         from otlet.entrypoints.scheduler import main as scheduler
 

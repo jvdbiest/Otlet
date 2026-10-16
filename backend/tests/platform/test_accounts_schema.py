@@ -19,6 +19,8 @@ INSTANCE_TABLES = {
     "alembic_version": "schema state, read by the migration role",
     "instance_settings": "instance settings, no workspace (ARCHITECTURE §20.3)",
 }
+# The job queue: arguments are identifiers, never business data (ADR-0022, migration 0004).
+QUEUE_TABLE_PREFIX = "procrastinate_"
 ACCOUNT_TABLES = ("workspaces", "users", "user_identities", "workspace_members")
 
 
@@ -94,7 +96,9 @@ def test_every_table_has_forced_row_level_security(migrated: TestDatabase) -> No
             )
         ).all()
     unprotected = {
-        name for name, enabled, forced in rows if not (enabled and forced)
+        name
+        for name, enabled, forced in rows
+        if not (enabled and forced) and not name.startswith(QUEUE_TABLE_PREFIX)
     } - INSTANCE_TABLES.keys()
     assert unprotected == set()
     assert set(ACCOUNT_TABLES) <= {name for name, _, _ in rows}

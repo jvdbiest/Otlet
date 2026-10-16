@@ -10,6 +10,7 @@ dependencies = [
     "argon2-cffi>=25.1.0",
     "cryptography>=50.0.2",
     "fastapi>=0.143.0",
+    "procrastinate~=3.10.0",
     "psycopg[binary]>=3.3.6",
     "sqlalchemy>=2.1.4",
     "uvicorn>=0.54.0",
@@ -100,3 +101,11 @@ name = "SDK des fournisseurs IA interdits tant que la passerelle n'existe pas (M
 type = "forbidden"
 source_modules = ["otlet"]
 forbidden_modules = ["openai", "anthropic"]
+
+[[tool.importlinter.contracts]]
+id = "procrastinate-jobs-only"
+name = "Seul le module jobs importe Procrastinate (ADR-0022)"
+type = "forbidden"
+source_modules = ["otlet"]
+forbidden_modules = ["procrastinate"]
+ignore_imports = ["otlet.jobs.** -> procrastinate"]

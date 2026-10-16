@@ -453,7 +453,9 @@ class PostgresWatchStore:
 
     # Search ---------------------------------------------------------------------------------
 
-    def search(self, workspace_id: UUID, query: str, limit: int) -> list[FoundItem]:
+    def search(
+        self, workspace_id: UUID, query: str, limit: int, user_id: UUID | None = None
+    ) -> list[FoundItem]:
         """Bounded ranking (ADR-0021): the GIN index and the date keep the 1,000 most recent
         items that match the query, in any language configuration; only those are ranked."""
         matches = " OR ".join(
@@ -466,11 +468,11 @@ class PostgresWatchStore:
                     f" SELECT i.id FROM source_items AS i WHERE ({matches}) AND {here('i')}"
                     "  AND i.duplicate_of IS NULL"
                     f" ORDER BY {SORT_DATE} DESC LIMIT {SEARCH_WINDOW})"
-                    f" SELECT {ITEM_COLUMNS},"
+                    f" SELECT {ITEM_COLUMNS}, {TRIAGE_COLUMNS},"
                     " ts_rank(i.search, websearch_to_tsquery(i.search_config, :q)) AS rank"
-                    f" FROM found JOIN {ITEMS_FROM} ON i.id = found.id"
+                    f" FROM found JOIN {ITEMS_FROM} ON i.id = found.id{TRIAGE_JOIN}"
                     f" ORDER BY rank DESC, {SORT_DATE} DESC, i.id DESC LIMIT :limit"
                 ),
-                {"q": query, "limit": limit},
+                {"q": query, "limit": limit, "user": user_id},
             ).all()
-        return [FoundItem(item_from_row(row), float(row.rank)) for row in rows]
+        return [FoundItem(item_from_row(row), float(row.rank), triage_of(row)) for row in rows]

@@ -112,6 +112,7 @@ class RefreshView(BaseModel):
 class FoundItemView(BaseModel):
     item: ItemView
     rank: float
+    triage: TriageView
 
 
 def _refused(error: WatchError) -> HTTPException:
@@ -227,7 +228,12 @@ def build_router(watch: Watch, workspace_context: Callable[..., WorkspaceContext
         except WatchError as error:
             raise _refused(error) from error
         return [
-            FoundItemView(item=ItemView.of(f.item, with_text=False), rank=f.rank) for f in found
+            FoundItemView(
+                item=ItemView.of(f.item, with_text=False),
+                rank=f.rank,
+                triage=TriageView.of(f.triage),
+            )
+            for f in found
         ]
 
     return router

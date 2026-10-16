@@ -62,6 +62,7 @@ class Duplicate:
 class FoundItem:
     item: Item
     rank: float
+    triage: Triage = Triage()  # of the user who searched
 
 
 @dataclass(frozen=True, slots=True)
@@ -129,7 +130,9 @@ class WatchStore(Protocol):
     def request_rescore(self, workspace_id: UUID, topic_id: UUID) -> bool: ...
     def refresh(self, workspace_id: UUID) -> tuple[int, int]: ...
 
-    def search(self, workspace_id: UUID, query: str, limit: int) -> list[FoundItem]: ...
+    def search(
+        self, workspace_id: UUID, query: str, limit: int, user_id: UUID | None = None
+    ) -> list[FoundItem]: ...
 
     def enqueue_unwatched(self, limit: int, older_than: timedelta) -> int:
         """Enqueues ITEM_READY for the items of every workspace the watch has not handled."""
@@ -247,7 +250,7 @@ class Watch:
         cleaned = " ".join(query.split())
         if not 1 <= len(cleaned) <= SEARCH_MAX_LENGTH:
             raise WatchError("invalid_query", f"a search has 1 to {SEARCH_MAX_LENGTH} characters")
-        return self._store.search(context.workspace_id, cleaned, min(limit, 100))
+        return self._store.search(context.workspace_id, cleaned, min(limit, 100), context.user_id)
 
     # Background runs ------------------------------------------------------------------------
 

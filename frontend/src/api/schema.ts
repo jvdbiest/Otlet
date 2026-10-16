@@ -545,6 +545,7 @@ export interface components {
             item: components["schemas"]["ItemView"];
             /** Rank */
             rank: number;
+            triage: components["schemas"]["TriageView"];
         };
         /** HTTPValidationError */
         HTTPValidationError: {

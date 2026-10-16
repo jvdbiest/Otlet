@@ -151,11 +151,15 @@
           "rank": {
             "title": "Rank",
             "type": "number"
+          },
+          "triage": {
+            "$ref": "#/components/schemas/TriageView"
           }
         },
         "required": [
           "item",
-          "rank"
+          "rank",
+          "triage"
         ],
         "title": "FoundItemView",
         "type": "object"

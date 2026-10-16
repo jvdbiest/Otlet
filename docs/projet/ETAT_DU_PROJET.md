@@ -28,7 +28,7 @@ Mis à jour le 2026-10-16. Une page : ce qu'il faut savoir pour reprendre le tra
 ## Règles de travail
 
 - **Protocole des preuves (ADR-0018)** : rapport avec ses seuils fusionné sur `main` **avant** toute mesure ; seuils jamais modifiés après ; durée maximale tenue ; conclusion obligatoire.
-- **Isolation (F03, ADR-0028)** : toute nouvelle table métier appelle `rls.workspace_scoped` dans sa migration ; toute route d'un espace vit sous `/api/workspaces/{workspace_id}` et prend `WorkspaceConnection`. Les tests d'isolation parcourent toutes les routes et échouent sinon.
+- **Isolation (F03, ADR-0028)** : toute nouvelle table métier appelle `rls.workspace_scoped` dans sa migration ; toute route d'un espace vit sous `/api/workspaces/{workspace_id}` et lit la base par `WorkspaceConnection`. Les tests d'isolation parcourent toutes les routes et échouent si une route oublie la session ou l'appartenance à l'espace.
 - **Git** : une branche par tâche, commits signés DCO (`git commit -s`), messages en français, code en anglais. Jamais de poussée sur `main`, qui est protégée (12 vérifications de CI obligatoires).
 - **Demandes de fusion** : Claude pousse et donne un lien de comparaison prérempli. Joël crée la demande et fusionne lui-même : le navigateur de l'app n'est pas connecté à GitHub, et les fusions par Claude sont bloquées.
 - **Qualité d'abord (ADR-0025)** : la qualité du produit prime sur le profil solo à 4 Go, qui reste une cible. La mémoire de la pile complète, mesurée, fait foi ; les budgets par composant sont indicatifs.

@@ -29,6 +29,7 @@ class TopicView(BaseModel):
     exclusions: list[str]
     languages: list[str]
     source_ids: list[str]
+    whole_sources: bool
     created_at: datetime
     item_count: int
     rescoring: bool
@@ -44,6 +45,7 @@ class TopicView(BaseModel):
             exclusions=list(topic.exclusions),
             languages=list(topic.languages),
             source_ids=[str(source) for source in topic.source_ids],
+            whole_sources=topic.whole_sources,
             created_at=topic.created_at,
             item_count=topic.item_count,
             rescoring=topic.rescoring,
@@ -56,10 +58,12 @@ class TopicBody(BaseModel):
     description: str = Field(default="", max_length=model.DESCRIPTION_MAX_LENGTH)
     # The limits of the domain (model.TERMS_MAX) answer with their own codes; these only bound
     # the size of a request.
-    keywords: list[str] = Field(max_length=1000)
+    keywords: list[str] = Field(default_factory=list, max_length=1000)
     exclusions: list[str] = Field(default_factory=list, max_length=1000)
     languages: list[str] = Field(default_factory=list, max_length=len(model.LANGUAGES))
     source_ids: list[UUID] = Field(default_factory=list, max_length=500)
+    # Every item of these sources belongs to the topic; keywords become optional.
+    whole_sources: bool = False
 
 
 class ContributionView(BaseModel):

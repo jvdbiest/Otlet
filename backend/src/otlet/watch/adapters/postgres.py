@@ -38,7 +38,7 @@ from otlet.watch.domain.triage import NO_TOPIC_FILTER, TopicFilter
 
 TOPIC_COLUMNS = (
     "t.id, t.workspace_id, t.name, t.description, t.keywords, t.exclusions, t.languages,"
-    " t.source_ids, t.created_at, t.rescore_requested_at, t.rescored_at,"
+    " t.source_ids, t.whole_sources, t.created_at, t.rescore_requested_at, t.rescored_at,"
     " (SELECT count(*) FROM topic_matches AS m JOIN source_items AS i ON i.id = m.item_id"
     f"  WHERE m.topic_id = t.id AND i.duplicate_of IS NULL AND {here('m')}) AS item_count"
 )
@@ -66,6 +66,7 @@ def _topic(row: sa.Row[Any]) -> Topic:
         exclusions=tuple(row.exclusions),
         languages=tuple(row.languages),
         source_ids=tuple(row.source_ids),
+        whole_sources=row.whole_sources,
         created_at=row.created_at,
         rescore_requested_at=row.rescore_requested_at,
         rescored_at=row.rescored_at,
@@ -132,6 +133,7 @@ class PostgresWatchStore:
             "exclusions": list(fields.exclusions),
             "languages": list(fields.languages),
             "sources": list(fields.source_ids),
+            "whole_sources": fields.whole_sources,
         }
 
     def _check_sources(self, connection: sa.Connection, fields: TopicFields) -> None:
@@ -150,8 +152,9 @@ class PostgresWatchStore:
             topic_id = connection.execute(
                 sa.text(
                     "INSERT INTO topics (workspace_id, name, description, keywords, exclusions,"
-                    " languages, source_ids) VALUES (:workspace, :name, :description, :keywords,"
-                    " :exclusions, :languages, CAST(:sources AS uuid[]))"
+                    " languages, source_ids, whole_sources)"
+                    " VALUES (:workspace, :name, :description, :keywords, :exclusions,"
+                    " :languages, CAST(:sources AS uuid[]), :whole_sources)"
                     " ON CONFLICT (workspace_id, name) DO NOTHING RETURNING id"
                 ),
                 {"workspace": workspace_id, **self._values(fields)},
@@ -176,6 +179,7 @@ class PostgresWatchStore:
                             "UPDATE topics SET name = :name, description = :description,"
                             " keywords = :keywords, exclusions = :exclusions,"
                             " languages = :languages, source_ids = CAST(:sources AS uuid[]),"
+                            " whole_sources = :whole_sources,"
                             " updated_at = now(), rescore_requested_at = now()"
                             f" WHERE id = :id AND {here()} RETURNING id"
                         ),

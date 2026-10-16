@@ -134,9 +134,11 @@ export function explain(
   freshness = 0,
 ): string {
   const parts = contributions.map((c) =>
-    c.where === "title"
-      ? t("topics.inTitle", { term: c.term, points: c.points })
-      : t("topics.inText", { term: c.term, count: c.count, points: c.points }),
+    c.where === "source"
+      ? t("topics.fromSource", { points: c.points })
+      : c.where === "title"
+        ? t("topics.inTitle", { term: c.term, points: c.points })
+        : t("topics.inText", { term: c.term, count: c.count, points: c.points }),
   );
   if (freshness > 0) {
     parts.push(t("topics.fresh", { points: freshness }));

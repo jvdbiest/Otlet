@@ -63,6 +63,10 @@ def build_parser() -> argparse.ArgumentParser:
     create_admin.add_argument("--login", required=True, help="adresse e-mail de connexion")
     create_admin.add_argument("--name", required=True, help="nom affiché")
 
+    commands.add_parser(
+        "openapi", help="afficher la spécification OpenAPI de l'API (client de l'interface)"
+    )
+
     health = commands.add_parser("healthcheck", help="contrôle de santé d'un rôle (conteneurs)")
     health.add_argument("role", choices=("api", *LOOP_ROLES))
     health.add_argument("--port", type=int, default=port)
@@ -115,7 +119,24 @@ def main(argv: Sequence[str] | None = None) -> int:
         return secrets_command(args.action, args.name, settings)
     elif args.command == "admin":
         return create_admin_command(args.login, args.name, settings)
+    elif args.command == "openapi":
+        print(openapi_document())
     return 0
+
+
+def openapi_document() -> str:
+    """The OpenAPI specification, from which the interface's API types are generated
+    (tools/generate-api-types.sh). No database is contacted: the URL only enables the routes."""
+    import json
+
+    from otlet.entrypoints.api.app import create_app
+
+    settings = Settings(
+        ui_dir=None,
+        run_dir=Settings.from_env().run_dir,
+        database_url="postgresql+psycopg://openapi@localhost/openapi",
+    )
+    return json.dumps(create_app(settings).openapi(), indent=2, ensure_ascii=False, sort_keys=True)
 
 
 def create_admin_command(login: str, name: str, settings: Settings) -> int:

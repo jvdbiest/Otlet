@@ -301,3 +301,30 @@ def test_a_match_cannot_point_to_another_workspace(migrated: TestDatabase, world
                 ),
                 {"ws": world.context.workspace_id, "topic": theirs.id, "item": item.id},
             )
+
+
+def test_a_topic_may_take_every_item_of_its_sources(world: World) -> None:
+    motos, news = world.source("motos"), world.source("news")
+    world.publish(motos, "1", "HARD ENDURO : victoire en Turquie")
+    world.publish(motos, "2", "Essai moto du mois")
+    world.publish(news, "3", "Essai moto chez un concessionnaire")
+    world.run_jobs()
+    with pytest.raises(WatchError) as caught:
+        world.watch.create_topic(world.context, name="Moto", keywords=[], source_ids=[])
+    assert caught.value.code == "no_keywords"
+    topic = world.watch.create_topic(
+        world.context, name="Moto", keywords=["moto*"], source_ids=[motos], whole_sources=True
+    )
+    assert topic.whole_sources
+    world.run_jobs()
+    # Every item of the source, the keywords ranking them; the other source is left out.
+    assert titles(world, topic.id) == ["Essai moto du mois", "HARD ENDURO : victoire en Turquie"]
+    # A new item of the source joins it too.
+    world.publish(motos, "4", "MOTOCROSS des Nations")
+    world.run_jobs()
+    assert "MOTOCROSS des Nations" in titles(world, topic.id)
+    # Without keywords, the sources alone define the topic.
+    alone = world.watch.update_topic(
+        world.context, topic.id, name="Moto", keywords=[], source_ids=[motos], whole_sources=True
+    )
+    assert alone is not None and alone.keywords == ()

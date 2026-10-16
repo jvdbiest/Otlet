@@ -74,6 +74,7 @@ class TopicFields:
     exclusions: tuple[str, ...]
     languages: tuple[str, ...]
     source_ids: tuple[UUID, ...]
+    whole_sources: bool = False
 
 
 class WatchStore(Protocol):
@@ -167,14 +168,19 @@ class Watch:
         exclusions: list[str],
         languages: list[str],
         source_ids: list[UUID],
+        whole_sources: bool,
     ) -> TopicFields:
+        sources = tuple(dict.fromkeys(source_ids))
+        whole = model.check_whole_sources(whole_sources, sources)
         return TopicFields(
             name=model.check_name(name),
             description=model.check_description(description),
-            keywords=model.check_terms(keywords, required=True),
+            # The sources alone may define the topic: keywords then only add points.
+            keywords=model.check_terms(keywords, required=not whole),
             exclusions=model.check_terms(exclusions, required=False),
             languages=model.check_languages(languages),
-            source_ids=tuple(dict.fromkeys(source_ids)),
+            source_ids=sources,
+            whole_sources=whole,
         )
 
     def list_topics(self, context: WorkspaceContext) -> list[Topic]:
@@ -193,6 +199,7 @@ class Watch:
         exclusions: list[str] | None = None,
         languages: list[str] | None = None,
         source_ids: list[UUID] | None = None,
+        whole_sources: bool = False,
     ) -> Topic:
         fields = self._fields(
             name=name,
@@ -201,6 +208,7 @@ class Watch:
             exclusions=exclusions or [],
             languages=languages or [],
             source_ids=source_ids or [],
+            whole_sources=whole_sources,
         )
         return self._store.create_topic(context.workspace_id, fields)
 
@@ -215,6 +223,7 @@ class Watch:
         exclusions: list[str] | None = None,
         languages: list[str] | None = None,
         source_ids: list[UUID] | None = None,
+        whole_sources: bool = False,
     ) -> Topic | None:
         fields = self._fields(
             name=name,
@@ -223,6 +232,7 @@ class Watch:
             exclusions=exclusions or [],
             languages=languages or [],
             source_ids=source_ids or [],
+            whole_sources=whole_sources,
         )
         return self._store.update_topic(context.workspace_id, topic_id, fields)
 

@@ -868,11 +868,15 @@
             "maxItems": 500,
             "title": "Source Ids",
             "type": "array"
+          },
+          "whole_sources": {
+            "default": false,
+            "title": "Whole Sources",
+            "type": "boolean"
           }
         },
         "required": [
-          "name",
-          "keywords"
+          "name"
         ],
         "title": "TopicBody",
         "type": "object"
@@ -967,6 +971,10 @@
             },
             "title": "Source Ids",
             "type": "array"
+          },
+          "whole_sources": {
+            "title": "Whole Sources",
+            "type": "boolean"
           }
         },
         "required": [
@@ -977,6 +985,7 @@
           "exclusions",
           "languages",
           "source_ids",
+          "whole_sources",
           "created_at",
           "item_count",
           "rescoring",

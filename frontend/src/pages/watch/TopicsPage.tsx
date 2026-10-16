@@ -84,7 +84,12 @@ function TopicCard({ workspaceId, topic, onEdit }: { workspaceId: string; topic:
         </Link>
       </h2>
       {topic.description !== "" && <p className={styles.meta}>{topic.description}</p>}
-      <p className={styles.meta}>{t("topics.keywordsLabel", { terms: topic.keywords.join(", ") })}</p>
+      {topic.whole_sources && (
+        <p className={styles.meta}>{t("topics.wholeSourcesLabel", { count: topic.source_ids.length })}</p>
+      )}
+      {topic.keywords.length > 0 && (
+        <p className={styles.meta}>{t("topics.keywordsLabel", { terms: topic.keywords.join(", ") })}</p>
+      )}
       {topic.exclusions.length > 0 && (
         <p className={styles.meta}>{t("topics.exclusionsLabel", { terms: topic.exclusions.join(", ") })}</p>
       )}
@@ -177,6 +182,9 @@ function TopicForm({
   const [exclusions, setExclusions] = useState(topic?.exclusions.join("\n") ?? "");
   const [languages, setLanguages] = useState<string[]>(topic?.languages ?? []);
   const [sourceIds, setSourceIds] = useState<string[]>(topic?.source_ids ?? []);
+  const [wholeSources, setWholeSources] = useState(topic?.whole_sources ?? false);
+  // Without a source checked, the option means nothing: it stays ticked but is not sent.
+  const whole = wholeSources && sourceIds.length > 0;
   const keywordCount = lines(keywords).length;
   const exclusionCount = lines(exclusions).length;
   const overLimit = keywordCount > TERMS_MAX || exclusionCount > TERMS_MAX;
@@ -198,6 +206,7 @@ function TopicForm({
                 exclusions: lines(exclusions),
                 languages,
                 source_ids: sourceIds,
+                whole_sources: whole,
               },
             },
             { onSuccess: onDone },
@@ -212,8 +221,8 @@ function TopicForm({
           <Label>{t("topics.description")}</Label>
           <Input />
         </TextField>
-        <TextField className={styles.field} value={keywords} onChange={setKeywords} isRequired>
-          <Label>{t("topics.keywords")}</Label>
+        <TextField className={styles.field} value={keywords} onChange={setKeywords} isRequired={!whole}>
+          <Label>{whole ? t("topics.keywordsOptional") : t("topics.keywords")}</Label>
           <TextArea rows={4} />
           <Text slot="description" className={styles.help}>
             {t("topics.keywordsHelp")}
@@ -242,6 +251,25 @@ function TopicForm({
             onChange={setSourceIds}
             filterLabel={t("topics.filterSources")}
           />
+        )}
+        {sources.data !== undefined && sources.data.length > 0 && (
+          <div className={styles.field}>
+            <label className={styles.check}>
+              <input
+                type="checkbox"
+                checked={wholeSources}
+                disabled={sourceIds.length === 0}
+                aria-describedby="whole-sources-help"
+                onChange={(event) => {
+                  setWholeSources(event.target.checked);
+                }}
+              />{" "}
+              {t("topics.wholeSources")}
+            </label>
+            <span id="whole-sources-help" className={styles.help}>
+              {sourceIds.length === 0 ? t("topics.wholeSourcesNeedsSource") : t("topics.wholeSourcesHelp")}
+            </span>
+          </div>
         )}
         {save.error !== null && (
           <p role="alert" className={styles.error}>

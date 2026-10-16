@@ -24,6 +24,7 @@ LANGUAGES = ("fr", "en", "de", "nl", "es", "it", "pt")
 TITLE_POINTS = 3  # a term in the title
 TEXT_POINTS = 1  # each occurrence in the summary or the text…
 TEXT_OCCURRENCES_MAX = 3  # …counted up to this number
+SOURCE_POINTS = 1  # an item of a source whose every item belongs to the topic
 # Freshness, added when the topic's items are listed: it changes with time, the rest does not.
 FRESH_POINTS = ((timedelta(hours=24), 2), (timedelta(hours=72), 1))
 
@@ -51,6 +52,8 @@ class Topic:
     source_ids: tuple[UUID, ...]
     created_at: datetime
     item_count: int = 0
+    # Every item of the targeted sources belongs to the topic; keywords then only add points.
+    whole_sources: bool = False
     # The last request to match the topic again, and the request its matches answer.
     rescore_requested_at: datetime | None = None
     rescored_at: datetime | None = None
@@ -67,7 +70,7 @@ class Contribution:
     """One line of an explanation: `term` found `count` times in `where`, worth `points`."""
 
     term: str
-    where: str  # "title" or "text"
+    where: str  # "title", "text", or "source" (the item comes from a targeted source)
     count: int
     points: int
 
@@ -156,6 +159,7 @@ class Rules:
     exclusions: tuple[Term, ...]
     languages: tuple[str, ...] = ()
     source_ids: frozenset[UUID] = field(default_factory=frozenset)
+    whole_sources: bool = False
 
     @classmethod
     def of(cls, topic: Topic) -> "Rules":
@@ -164,6 +168,7 @@ class Rules:
             exclusions=_unique(topic.exclusions),
             languages=topic.languages,
             source_ids=frozenset(topic.source_ids),
+            whole_sources=topic.whole_sources and bool(topic.source_ids),
         )
 
     def match(self, candidate: Candidate) -> Match | None:
@@ -178,6 +183,8 @@ class Rules:
         if any(term.count_in(title) or term.count_in(text) for term in self.exclusions):
             return None
         contributions = []
+        if self.whole_sources:
+            contributions.append(Contribution("", "source", 1, SOURCE_POINTS))
         for term in self.keywords:
             if term.count_in(title):
                 contributions.append(Contribution(term.label, "title", 1, TITLE_POINTS))
@@ -227,6 +234,12 @@ def check_terms(terms: list[str], *, required: bool) -> tuple[str, ...]:
     if any(Term.parse(t) is None for t in cleaned):
         raise WatchError("invalid_terms", "a term needs at least one letter or digit")
     return tuple(cleaned)
+
+
+def check_whole_sources(whole_sources: bool, source_ids: tuple[UUID, ...]) -> bool:
+    if whole_sources and not source_ids:
+        raise WatchError("no_sources", "every item of the sources needs at least one source")
+    return whole_sources
 
 
 def check_languages(languages: list[str]) -> tuple[str, ...]:

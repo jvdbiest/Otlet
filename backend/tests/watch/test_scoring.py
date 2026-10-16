@@ -17,6 +17,7 @@ def topic(
     exclusions: list[str] | None = None,
     languages: list[str] | None = None,
     source_ids: list[uuid.UUID] | None = None,
+    whole_sources: bool = False,
 ) -> Rules:
     return Rules.of(
         Topic(
@@ -29,6 +30,7 @@ def topic(
             languages=tuple(languages or ()),
             source_ids=tuple(source_ids or ()),
             created_at=datetime.now(UTC),
+            whole_sources=whole_sources,
         )
     )
 
@@ -122,3 +124,28 @@ def test_terms_are_cleaned_and_deduplicated() -> None:
     assert model.check_languages(["FR", "en", "fr"]) == ("fr", "en")
     with pytest.raises(WatchError):
         model.check_languages(["klingon"])
+
+
+def test_every_item_of_the_sources_may_belong_to_the_topic() -> None:
+    whole = topic([], source_ids=[SOURCE], whole_sources=True)
+    match = whole.match(item("MOTOCROSS des Nations"))
+    assert match is not None
+    assert match.contributions == (Contribution("", "source", 1, model.SOURCE_POINTS),)
+    # Keywords add their points; exclusions and languages still apply.
+    rich = topic(
+        ["moto*"], exclusions=["F1"], languages=["fr"], source_ids=[SOURCE], whole_sources=True
+    )
+    scored = rich.match(item("Essai moto", "La moto du mois."))
+    assert scored is not None and scored.score == model.SOURCE_POINTS + 3 + 1
+    assert rich.match(item("F1 : Sergio Pérez")) is None
+    assert rich.match(item("Motocross", language="en")) is None
+    # Another source is not taken, and without the option the keywords are still required.
+    assert whole.match(Candidate("Moto", "", "fr", uuid.uuid4())) is None
+    assert topic(["moto"], source_ids=[SOURCE]).match(item("Motocross")) is None
+
+
+def test_every_item_of_the_sources_needs_a_source() -> None:
+    with pytest.raises(WatchError) as caught:
+        model.check_whole_sources(True, ())
+    assert caught.value.code == "no_sources"
+    assert model.check_whole_sources(True, (SOURCE,)) is True

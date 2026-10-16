@@ -751,13 +751,18 @@ export interface components {
             /** Exclusions */
             exclusions?: string[];
             /** Keywords */
-            keywords: string[];
+            keywords?: string[];
             /** Languages */
             languages?: string[];
             /** Name */
             name: string;
             /** Source Ids */
             source_ids?: string[];
+            /**
+             * Whole Sources
+             * @default false
+             */
+            whole_sources: boolean;
         };
         /** TopicTagView */
         TopicTagView: {
@@ -798,6 +803,8 @@ export interface components {
             rescoring: boolean;
             /** Source Ids */
             source_ids: string[];
+            /** Whole Sources */
+            whole_sources: boolean;
         };
         /**
          * TriageChange

@@ -15,10 +15,12 @@ from otlet.jobs.application.registry import Enqueue
 from otlet.platform.database import scoped_transaction, workspace_transaction
 from otlet.platform.rls import here
 from otlet.watch.adapters.triage_postgres import (
+    TOPIC_TAGS,
     TOPICS,
     TRIAGE_COLUMNS,
     TRIAGE_JOIN,
     topic_parameters,
+    topic_tags_of,
     triage_of,
 )
 from otlet.watch.application.watch import (
@@ -481,11 +483,14 @@ class PostgresWatchStore:
                     "  AND i.duplicate_of IS NULL"
                     f"{TOPICS}"
                     f" ORDER BY {SORT_DATE} DESC LIMIT {SEARCH_WINDOW})"
-                    f" SELECT {ITEM_COLUMNS}, {TRIAGE_COLUMNS},"
+                    f" SELECT {ITEM_COLUMNS}, {TRIAGE_COLUMNS}, {TOPIC_TAGS},"
                     " ts_rank(i.search, websearch_to_tsquery(i.search_config, :q)) AS rank"
                     f" FROM found JOIN {ITEMS_FROM} ON i.id = found.id{TRIAGE_JOIN}"
                     f" ORDER BY rank DESC, {SORT_DATE} DESC, i.id DESC LIMIT :limit"
                 ),
                 {"q": query, "limit": limit, "user": user_id, **topic_parameters(topics)},
             ).all()
-        return [FoundItem(item_from_row(row), float(row.rank), triage_of(row)) for row in rows]
+        return [
+            FoundItem(item_from_row(row), float(row.rank), triage_of(row), topic_tags_of(row))
+            for row in rows
+        ]

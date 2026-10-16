@@ -307,6 +307,8 @@
     "modeAny": "au moins un de ces sujets",
     "modeAll": "tous ces sujets à la fois",
     "clearTopics": "Tout retirer",
+    "topicScore": "{points, plural, one {# point} other {# points}} pour ce sujet",
+    "otherTopics": "{count, plural, one {Voir l'autre sujet : {names}} other {Voir les # autres sujets : {names}}}",
     "keep": "Retenir",
     "dismiss": "Écarter",
     "undo": "Remettre à trier",

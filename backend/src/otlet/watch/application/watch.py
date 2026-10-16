@@ -16,7 +16,7 @@ from otlet.collection.application.collection import ITEM_READY as ITEM_READY
 from otlet.collection.domain.model import Item
 from otlet.watch.domain import model
 from otlet.watch.domain.model import Candidate, Match, Rules, Topic, WatchError
-from otlet.watch.domain.triage import NO_TOPIC_FILTER, TopicFilter, Triage
+from otlet.watch.domain.triage import NO_TOPIC_FILTER, TopicFilter, TopicTag, Triage
 from otlet.workspaces.domain.model import WorkspaceContext
 
 # Jobs of the module (otlet.watch.adapters.jobs); the collection enqueues ITEM_READY.
@@ -63,6 +63,7 @@ class FoundItem:
     item: Item
     rank: float
     triage: Triage = Triage()  # of the user who searched
+    topics: tuple[TopicTag, ...] = ()  # best score first
 
 
 @dataclass(frozen=True, slots=True)

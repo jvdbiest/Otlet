@@ -186,3 +186,27 @@ def test_topics_filter_the_feed_and_the_search(setup: Setup) -> None:
     assert titles(feed, context, topics=both) == ["Article 1"]
     searched = [f.item.title for f in watch.search(context, "article", topics=both)]
     assert searched == ["Article 1"]
+
+
+def test_items_carry_their_topics_best_score_first(setup: Setup) -> None:
+    from otlet.watch.adapters.postgres import PostgresWatchStore
+    from otlet.watch.application.watch import Watch
+
+    feed, context = setup.feed, setup.context
+    watch = Watch(PostgresWatchStore(setup.engine, lambda connection, name, **kwargs: 0))
+    topics = [
+        watch.create_topic(context, name="B", keywords=["1", "2"]),
+        watch.create_topic(context, name="A", keywords=["0", "1"]),
+        # Two keywords found in "Article 1": its best score, so its main topic.
+        watch.create_topic(context, name="C", keywords=["1", "article"]),
+    ]
+    for topic in topics:
+        watch.rescore_topic(context.workspace_id, topic.id, NOW)
+    tags = {f.item.title: [t.name for t in f.topics] for f in feed.feed(context)}
+    # In "Article 1", A and B score the same: the name decides.
+    assert tags == {"Article 0": ["A", "C"], "Article 1": ["C", "A", "B"], "Article 2": ["B", "C"]}
+    second = next(f for f in feed.feed(context) if f.item.title == "Article 1")
+    assert second.topics[0].id == topics[2].id
+    assert second.topics[0].score > second.topics[1].score == second.topics[2].score
+    found = {f.item.title: [t.name for t in f.topics] for f in watch.search(context, "article")}
+    assert found == tags

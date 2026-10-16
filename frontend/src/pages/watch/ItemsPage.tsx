@@ -11,12 +11,14 @@ import {
   feedQuery,
   type FeedFilter,
   type FeedView,
+  type TopicTagView,
   type TriageView,
 } from "../../triage.ts";
 import { searchQuery, useRefreshWatch } from "../../watch.ts";
 import { formatDate, textLabel, textTone } from "./labels.ts";
 import { StartPanel } from "./StartPanel.tsx";
 import { styles } from "./styles.ts";
+import { TopicBadge } from "./TopicBadge.tsx";
 import { TopicMenu } from "./TopicMenu.tsx";
 import { TriageActions } from "./TriageActions.tsx";
 
@@ -175,7 +177,14 @@ function FeedPage({
     <>
       <ul className={styles.list}>
         {feed.data.map((entry) => (
-          <ItemCard key={entry.item.id} workspaceId={workspaceId} item={entry.item} triage={entry.triage} />
+          <ItemCard
+            key={entry.item.id}
+            workspaceId={workspaceId}
+            item={entry.item}
+            triage={entry.triage}
+            topics={entry.topics}
+            chosenTopics={filter.topicIds}
+          />
         ))}
       </ul>
       {isLast &&
@@ -202,16 +211,21 @@ function ItemCard({
   workspaceId,
   item,
   triage,
+  topics,
+  chosenTopics,
 }: {
   workspaceId: string;
   item: ItemView;
   triage?: TriageView;
+  topics: TopicTagView[];
+  chosenTopics: string[];
 }) {
   const { t } = useTranslation();
   const date = item.published_at ?? item.collected_at;
   const unread = triage?.read_at === null;
   return (
     <li className={styles.card}>
+      <TopicBadge topics={topics} chosen={chosenTopics} />
       <h2 className={unread ? styles.unread : undefined}>
         <Link to="/veille/elements/$itemId" params={{ itemId: item.id }}>
           {item.title}
@@ -296,7 +310,14 @@ function SearchResults({
       {found.data.length > 0 && (
         <ul className={styles.list}>
           {found.data.map((result) => (
-            <ItemCard key={result.item.id} workspaceId={workspaceId} item={result.item} triage={result.triage} />
+            <ItemCard
+              key={result.item.id}
+              workspaceId={workspaceId}
+              item={result.item}
+              triage={result.triage}
+              topics={result.topics}
+              chosenTopics={topicIds}
+            />
           ))}
         </ul>
       )}

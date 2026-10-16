@@ -21,9 +21,9 @@ Mis à jour le 2026-10-16. Une page : ce qu'il faut savoir pour reprendre le tra
 ## Prochaine action
 
 1. **I0 close** le 2026-10-16 (X01 fusionnée). I1 Lire en cours.
-2. U01, U02, U02b, U02c (filtre des sources), X02 (flux de tri et parcours d'accueil) et le rapport de P01 sont sur `main` (2026-10-16). X02 sera « fait » après une semaine d'usage par Joël (critère du backlog). Joël fusionne `fix/recherche-tri` (boutons de tri sur les résultats de recherche), puis `feat/filtre-sujets` (empilée : filtre par sujets à choix multiple, « au moins un » ou « tous à la fois », combinable avec la recherche texte ; demandé par Joël).
+2. U01, U02, U02b, U02c (filtre des sources), X02 (flux de tri et parcours d'accueil), le rapport de P01, les boutons de tri dans la recherche et le filtre par sujets à choix multiple sont sur `main` (2026-10-16). X02 sera « fait » après une semaine d'usage par Joël (critère du backlog). Joël fusionne `feat/sujet-carte` : le sujet principal en badge sur chaque carte du flux et de la recherche, « +N » pour les autres (demandé par Joël), et la langue devinée quand ni le flux ni la page ne la donnent (migration 0010 pour les éléments anciens).
 3. Joël répond à l'ADR-0032 (règles du score).
-4. P01 (remesure de la recherche plein texte sur corpus réel) : mesure en cours sur la VM du NAS ; elle clôt I1 avec la semaine d'usage de X02.
+4. P01 (remesure de la recherche plein texte sur corpus réel) : mesure en cours sur la VM du NAS ; la première passe donne un p95 d'environ 14 s par famille, pour un seuil de 300 ms. Elle clôt I1 avec la semaine d'usage de X02.
 5. Joël note son temps une fois par semaine dans `docs/projet/journal-temps.csv` (domaine `projet`).
 6. Plus tard, avec l'accord de Joël pour chacun : mesurer les fournisseurs réels de S4 (50 briefs chacun, plafonds de dépense posés).
 

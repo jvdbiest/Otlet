@@ -371,3 +371,27 @@ def test_items_of_one_run_are_paged_without_loss(world: World) -> None:
     # The three items share their collected_at: the cursor is (collected_at, id).
     assert len({item.collected_at for item in first + rest}) == 1
     assert sorted(item.title for item in first + rest) == ["Article a", "Article b", "Article c"]
+
+
+def test_the_language_is_guessed_when_nothing_declares_it(world: World) -> None:
+    from otlet.platform.database import workspace_transaction
+
+    open_site(world.web, "a")  # neither the feed nor the page declares a language
+    world.collection.add_source(world.context, FEED)
+    world.run_jobs()
+    world.collection.add_manual_text(
+        world.context,
+        title="Meeting notes",
+        text="What I wrote myself about the plan for the year, and the questions that are open"
+        " for the team. It was a long meeting with many people at the table.",
+        declared_origin="My notes",
+        usage_right="I am the author",
+    )
+    with workspace_transaction(world.engine, world.context.workspace_id) as connection:
+        rows = connection.execute(
+            sa.text("SELECT origin, language, search_config::text FROM source_items ORDER BY 1")
+        ).all()
+    assert [tuple(row) for row in rows] == [
+        ("feed", "fr", "french"),
+        ("manual_text", "en", "english"),
+    ]

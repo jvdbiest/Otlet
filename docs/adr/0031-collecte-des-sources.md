@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Statut | Proposé |
+| Statut | Accepté (2026-10-16) |
 | Date | 2026-10-16 |
 | Décideur | Joël |
 | Documents touchés | `ARCHITECTURE.md` §12.5, §13.1, §13.2 ; `TECH_CHOICES.md` §14 ; `RISKS.md` M-08 ; ADR-0030 |
@@ -23,12 +23,14 @@ U01 fait entrer dans Otlet les premiers contenus venus de l'extérieur. Trois qu
    Chaque élément porte aussi le statut de son texte et sa raison. Le journal de conformité d'une source enregistre chaque changement de décision, avec sa raison et la politique annoncée par le site.
 4. **Saisie manuelle encadrée** : une adresse donnée à la main est lue sous les mêmes règles qu'un flux. Un texte collé exige une origine et un droit d'usage déclarés, et reste marqué `manual`. La base refuse un texte collé sans ces deux champs.
 5. **La collecte planifiée revient au planificateur** (ADR-0030) : il prend le verrou consultatif PostgreSQL, puis toutes les 30 secondes il enfile la collecte des sources dues. Une collecte manquée pendant un arrêt est faite une fois, puis replanifiée un intervalle plus tard. Les workers font les collectes et les lectures de pages. Une source en échec est retentée de plus en plus tard (intervalle doublé à chaque échec, plafonné à une semaine), puis passe « dégradée » après 3 échecs et « morte » après 10. Elle n'est jamais abandonnée. Le service `scheduler` rejoint la pile Compose solo.
-6. **Extraction par `readability-lxml`** (Apache-2.0) au lieu de `trafilatura`, en attendant la décision de Joël sur la question 1 ci-dessous. `trafilatura` tire `dateparser`, qui dépend de `regex`, publié sous « Apache-2.0 AND CNRI-Python ». La licence CNRI de Python 1.6 est jugée incompatible avec la GPL par la FSF, et `tools/check_licenses.py` la refuse. `readability-lxml` était le repli prévu au §14 de TECH_CHOICES ; elle n'extrait ni l'auteur ni la date, qui viennent alors du flux.
+6. **Extraction par `readability-lxml`** (Apache-2.0) au lieu de `trafilatura`. `trafilatura` tire `dateparser`, qui dépend de `regex`, publié sous « Apache-2.0 AND CNRI-Python ». La licence CNRI de Python 1.6 est jugée incompatible avec la GPL par la FSF, et `tools/check_licenses.py` la refuse. `readability-lxml` était le repli prévu au §14 de TECH_CHOICES ; elle n'extrait ni l'auteur ni la date, qui viennent alors du flux.
 
-## Questions à Joël
+## Validation de Joël (2026-10-16)
 
-1. Accepter `regex` (licence CNRI-Python) par exception, pour passer à `trafilatura`, qui extrait mieux et donne aussi l'auteur, la date et la licence des pages ? Ou garder `readability-lxml` et revoir la question à X03 ou U06 ?
-2. Le statut `full_text` suit seulement ce que les sites expriment de façon lisible par machine. Des conditions d'utilisation qui interdisent la fouille sans l'exprimer ainsi (CJ-04) ne sont pas vues. Un avertissement à l'ajout d'une source, qui rappelle que l'utilisateur reste responsable du respect de ces conditions, suffit-il pour É1 ?
+Aux deux questions posées :
+
+1. Accepter `regex` (licence CNRI-Python) pour passer à `trafilatura`, ou garder `readability-lxml` ? Réponse : « Garder ». L'extraction reste à `readability-lxml` ; la question pourra être reprise à U06 si l'extraction se montre insuffisante.
+2. Un avertissement à l'ajout d'une source, qui rappelle que l'utilisateur reste responsable des conditions d'utilisation non lisibles par une machine (CJ-04), suffit-il pour É1 ? Réponse : « Oui ». Il est affiché dans l'écran des sources.
 
 ## Conséquences
 

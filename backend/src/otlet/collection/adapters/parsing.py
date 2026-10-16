@@ -25,7 +25,13 @@ import lxml.html
 import nh3
 from readability import Document
 
-from otlet.collection.domain.model import URL_MAX_LENGTH, FeedEntry, Page, ParsedFeed
+from otlet.collection.domain.model import (
+    URL_MAX_LENGTH,
+    FeedEntry,
+    Page,
+    ParsedFeed,
+    clean_language,
+)
 
 FEED_TYPES = frozenset(
     {
@@ -37,6 +43,7 @@ FEED_TYPES = frozenset(
     }
 )
 BLOCK_END = re.compile(r"</(p|div|li|h[1-6]|blockquote|pre|tr|section|article)\s*>|<br\s*/?>", re.I)
+HTML_LANG = re.compile(r"<html\b[^>]*\blang\s*=\s*[\"']?([A-Za-z0-9_-]+)", re.I)
 HIDDEN_STYLE = re.compile(r"display\s*:\s*none|visibility\s*:\s*hidden", re.I)
 SUMMARY_MAX_LENGTH = 5000
 TITLE_MAX_LENGTH = 500
@@ -76,7 +83,7 @@ def _date(entry: Any) -> datetime | None:
     return None
 
 
-def _entry(entry: Any) -> FeedEntry | None:
+def _entry(entry: Any, language: str | None = None) -> FeedEntry | None:
     url = _web_url(entry.get("link"))
     title = clean_text(entry.get("title", ""))[:TITLE_MAX_LENGTH]
     summary = clean_text(entry.get("summary", "")) or None
@@ -97,6 +104,7 @@ def _entry(entry: Any) -> FeedEntry | None:
         published_at=_date(entry),
         summary=None if summary is None else summary[:SUMMARY_MAX_LENGTH],
         content=content,
+        language=language,
     )
 
 
@@ -110,6 +118,7 @@ def _json_feed(body: bytes, url: str) -> ParsedFeed | None:
         "https://jsonfeed.org/version/"
     ):
         return None
+    language = clean_language(document.get("language"))
     entries = []
     for item in document.get("items", []):
         if not isinstance(item, dict):
@@ -125,13 +134,16 @@ def _json_feed(body: bytes, url: str) -> ParsedFeed | None:
                 "content": [{"value": str(content)}],
                 "author": _json_author(item),
                 "published_parsed": _iso(item.get("date_published") or item.get("date_modified")),
-            }
+            },
+            clean_language(item.get("language")) or language,
         )
         if entry is not None:
             entries.append(entry)
     title = clean_text(str(document.get("title", "")))[:TITLE_MAX_LENGTH] or None
     home = document.get("home_page_url")
-    return ParsedFeed(title=title, site_url=_web_url(home), entries=tuple(entries))
+    return ParsedFeed(
+        title=title, site_url=_web_url(home), entries=tuple(entries), language=language
+    )
 
 
 def _json_author(item: dict[str, Any]) -> str:
@@ -172,10 +184,13 @@ class FeedparserReader:
         parsed = feedparser.parse(body, response_headers={"content-location": url})
         if not parsed.get("version") and not parsed.get("entries"):
             return None
-        entries = tuple(e for e in map(_entry, parsed.entries) if e is not None)
         feed = parsed.get("feed", {})
+        language = clean_language(feed.get("language"))
+        entries = tuple(e for e in (_entry(x, language) for x in parsed.entries) if e is not None)
         title = clean_text(feed.get("title", ""))[:TITLE_MAX_LENGTH] or None
-        return ParsedFeed(title=title, site_url=_web_url(feed.get("link")), entries=entries)
+        return ParsedFeed(
+            title=title, site_url=_web_url(feed.get("link")), entries=entries, language=language
+        )
 
     def discover(self, page: str, url: str) -> list[str]:
         finder = _FeedLinks()
@@ -216,4 +231,6 @@ class ReadabilityReader:
         except (lxml.etree.ParserError, ValueError, TypeError):
             return None
         text = clean_text(content)
-        return Page(title=title, text=text) if text else None
+        found = HTML_LANG.search(page)
+        language = clean_language(found.group(1)) if found else None
+        return Page(title=title, text=text, language=language) if text else None

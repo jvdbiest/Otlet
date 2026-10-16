@@ -39,3 +39,4 @@ La numérotation continue celle de l'architecture.
 | [0029](0029-sessions-et-protections-de-connexion.md) | Sessions serveur, CSRF et limitation des tentatives de connexion | Accepté (F02) |
 | [0030](0030-taches-periodiques-de-maintenance.md) | Les tâches périodiques de maintenance sont lancées par les workers | Accepté (F04) |
 | [0031](0031-collecte-des-sources.md) | Collecte des sources : client protégé, règles des sites et statut juridique | Accepté (U01) |
+| [0032](0032-sujets-score-doublons-recherche.md) | Sujets, score lexical expliqué, doublons et recherche | Proposé (U02) |

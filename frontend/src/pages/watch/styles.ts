@@ -9,6 +9,7 @@ export const styles = css as Record<
   | "blocked"
   | "button"
   | "card"
+  | "choices"
   | "danger"
   | "error"
   | "field"
@@ -25,11 +26,13 @@ export const styles = css as Record<
   | "panel"
   | "primary"
   | "row"
+  | "search"
   | "success"
   | "tab"
   | "tabs"
   | "text"
-  | "warning",
+  | "warning"
+  | "why",
   string
 >;
 export const emptyStyles = emptyCss as Record<"empty" | "headline" | "next" | "page", string>;

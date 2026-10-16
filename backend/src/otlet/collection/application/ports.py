@@ -149,8 +149,11 @@ class CollectionStore(Protocol):
         reason: str,
         text: str | None,
         title: str | None,
+        language: str | None,
         at: datetime,
-    ) -> None: ...
+    ) -> None:
+        """Writes the text of a read page and announces the item as ready (ITEM_READY)."""
+        ...
 
     def add_manual_url(self, workspace_id: UUID, url: str, at: datetime) -> Item:
         """Creates a pending item and enqueues the reading of its page."""

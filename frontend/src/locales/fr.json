@@ -58,10 +58,19 @@
     "tabs": {
       "label": "Sections de la veille",
       "items": "Éléments",
+      "topics": "Sujets",
       "sources": "Sources",
       "manual": "Ajouter à la main"
     },
     "filter": "Source",
+    "search": {
+      "label": "Rechercher dans la veille",
+      "submit": "Rechercher",
+      "clear": "Effacer la recherche",
+      "results": "{count, plural, =0 {Aucun résultat pour « {q} ».} one {# résultat pour « {q} »} other {# résultats pour « {q} »}}",
+      "invalid": "Saisissez entre 1 et 200 caractères."
+    },
+    "duplicates": "{count, plural, one {aussi dans # autre source} other {aussi dans # autres sources}}",
     "allSources": "Toutes les sources",
     "manualOrigin": "Saisie manuelle",
     "more": "Voir les éléments plus anciens",
@@ -81,6 +90,10 @@
     "declaredOrigin": "Origine déclarée",
     "usageRight": "Droit d'usage déclaré",
     "manualNotice": "Texte saisi à la main : Otlet ne peut pas vérifier ses droits. Il reste marqué comme tel.",
+    "topics": "Sujets",
+    "noTopic": "Cet élément ne correspond à aucun de vos sujets.",
+    "sameStory": "La même histoire ailleurs",
+    "points": "{points, plural, one {# point} other {# points}}",
     "notFound": "Cet élément n'existe pas ou plus."
   },
   "sources": {
@@ -182,6 +195,13 @@
     "invalid_title": "Le titre doit compter entre 1 et 500 caractères.",
     "invalid_text": "Le texte est vide ou trop long.",
     "invalid_declaration": "Indiquez l'origine du texte et votre droit d'usage (3 caractères au moins chacun).",
+    "no_keywords": "Indiquez au moins un mot-clé.",
+    "invalid_terms": "Un mot-clé ou une exclusion compte entre 1 et 100 caractères, avec au moins une lettre ou un chiffre (50 au plus).",
+    "invalid_languages": "Choisissez des langues proposées.",
+    "invalid_description": "La description compte au plus 2 000 caractères.",
+    "name_taken": "Un sujet porte déjà ce nom.",
+    "unknown_source": "Une des sources choisies n'existe plus.",
+    "invalid_query": "Saisissez entre 1 et 200 caractères.",
     "generic": "L'opération a échoué. Réessayez dans un instant."
   },
   "manual": {
@@ -207,5 +227,48 @@
     },
     "added": "Élément ajouté.",
     "open": "Voir l'élément"
+  },
+  "topics": {
+    "title": "Sujets",
+    "intro": "Un sujet rassemble les éléments qui contiennent ses mots-clés. Chaque élément reçoit un score que vous pouvez lire : rien n'est caché.",
+    "new": "Nouveau sujet",
+    "edit": "Modifier « {name} »",
+    "name": "Nom",
+    "description": "Description (facultative)",
+    "keywords": "Mots-clés",
+    "keywordsHelp": "Un par ligne. Majuscules et accents sont ignorés, le pluriel aussi. Une expression de plusieurs mots est cherchée telle quelle ; terminez par * pour un début de mot (climat* trouve climatique).",
+    "exclusions": "Exclusions (facultatives)",
+    "exclusionsHelp": "Un par ligne. Un élément qui en contient une est écarté du sujet.",
+    "languages": "Langues (aucune cochée : toutes)",
+    "sources": "Sources (aucune cochée : toutes)",
+    "save": "Enregistrer",
+    "saved": "Sujet enregistré. Otlet range maintenant les éléments des 30 derniers jours.",
+    "cancel": "Annuler",
+    "empty": "Vous n'avez encore aucun sujet.",
+    "count": "{count, plural, =0 {Aucun élément} one {# élément} other {# éléments}}",
+    "open": "Voir les éléments",
+    "modify": "Modifier",
+    "delete": "Supprimer",
+    "confirmDelete": "Supprimer ce sujet ? Les éléments restent dans la veille.",
+    "confirm": "Oui, supprimer",
+    "back": "Revenir aux sujets",
+    "itemsEmpty": "Aucun élément pour ce sujet pour l'instant. Si vous venez de le créer ou de le modifier, la liste se remplit dans un instant.",
+    "more": "Voir la suite",
+    "score": "Score {score}",
+    "why": "Pourquoi : {reasons}",
+    "inTitle": "« {term} » dans le titre (+{points})",
+    "inText": "{count, plural, one {« {term} » dans le texte (+{points})} other {« {term} » ×# dans le texte (+{points})}}",
+    "fresh": "récent (+{points})",
+    "keywordsLabel": "Mots-clés : {terms}",
+    "exclusionsLabel": "Exclusions : {terms}",
+    "languageNames": {
+      "fr": "Français",
+      "en": "Anglais",
+      "de": "Allemand",
+      "nl": "Néerlandais",
+      "es": "Espagnol",
+      "it": "Italien",
+      "pt": "Portugais"
+    }
   }
 }

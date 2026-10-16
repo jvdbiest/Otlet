@@ -10,7 +10,7 @@ from uuid import UUID
 
 import sqlalchemy as sa
 
-from otlet.collection.application.collection import COLLECT_SOURCE, EXTRACT_ITEM
+from otlet.collection.application.collection import COLLECT_SOURCE, EXTRACT_ITEM, ITEM_READY
 from otlet.collection.application.ports import (
     CollectionState,
     NewItem,
@@ -44,7 +44,9 @@ ITEM_COLUMNS = (
     # Only a text Otlet may use is shown: a reserved item keeps its summary alone.
     " CASE WHEN i.text_status IN ('full_text', 'manual')"
     "   THEN coalesce(i.text, i.feed_content) END AS text, i.text_status, i.text_reason,"
-    " i.declared_origin, i.usage_right"
+    " i.declared_origin, i.usage_right,"
+    # Other items of the same story, found by the watch (U02).
+    " (SELECT count(*) FROM source_items AS d WHERE d.duplicate_of = i.id) AS duplicate_count"
 )
 ITEMS_FROM = "source_items AS i LEFT JOIN sources AS s ON s.id = i.source_id"
 # Items are listed by publication date, never later than their collection: a feed cannot push
@@ -74,7 +76,7 @@ def _source(row: sa.Row[Any]) -> Source:
     )
 
 
-def _item(row: sa.Row[Any]) -> Item:
+def item_from_row(row: sa.Row[Any]) -> Item:
     return Item(
         id=row.id,
         workspace_id=row.workspace_id,
@@ -92,6 +94,7 @@ def _item(row: sa.Row[Any]) -> Item:
         text_reason=row.text_reason,
         declared_origin=row.declared_origin,
         usage_right=row.usage_right,
+        duplicates=row.duplicate_count,
     )
 
 
@@ -278,13 +281,13 @@ class PostgresCollectionStore:
                 if item_id is None:
                     continue
                 new += 1
-                if item.text_status is TextStatus.PENDING:
-                    self._enqueue(
-                        connection,
-                        EXTRACT_ITEM,
-                        workspace_id=str(workspace_id),
-                        item_id=str(item_id),
-                    )
+                # A pending item is read first; the others are ready for the watch at once.
+                self._enqueue(
+                    connection,
+                    EXTRACT_ITEM if item.text_status is TextStatus.PENDING else ITEM_READY,
+                    workspace_id=str(workspace_id),
+                    item_id=str(item_id),
+                )
         return new
 
     @staticmethod
@@ -309,9 +312,10 @@ class PostgresCollectionStore:
             sa.text(
                 "INSERT INTO source_items (workspace_id, source_id, origin, guid, url,"
                 " normalized_url, title, author, published_at, summary, feed_content,"
-                " text_status, text_reason)"
+                " text_status, text_reason, language, search_config)"
                 " VALUES (:workspace, :source, 'feed', :guid, :url, :normalized, :title, :author,"
-                " :published, :summary, :content, :status, :reason)"
+                " :published, :summary, :content, :status, :reason, :language,"
+                " CAST(:config AS regconfig))"
                 " ON CONFLICT (source_id, guid) DO NOTHING RETURNING id"
             ),
             {
@@ -327,6 +331,8 @@ class PostgresCollectionStore:
                 "content": entry.content,
                 "status": item.text_status.value,
                 "reason": item.text_reason,
+                "language": entry.language,
+                "config": model.search_config(entry.language),
             },
         ).scalar_one_or_none()
         return result
@@ -370,7 +376,9 @@ class PostgresCollectionStore:
             rows = connection.execute(
                 sa.text(
                     f"SELECT {ITEM_COLUMNS} FROM {ITEMS_FROM}"  # noqa: S608
-                    " WHERE (CAST(:source AS uuid) IS NULL OR i.source_id = :source)"
+                    # Without a source filter, a story shows once: its copies are counted.
+                    " WHERE (CASE WHEN CAST(:source AS uuid) IS NULL THEN i.duplicate_of IS NULL"
+                    "        ELSE i.source_id = :source END)"
                     # Keyset paging on (date, id): items of one run may share their date.
                     f" AND (CAST(:before AS uuid) IS NULL OR ({SORT_DATE}, i.id) <"
                     f"   (SELECT {SORT_DATE}, i.id FROM source_items AS i WHERE i.id = :before))"
@@ -378,7 +386,7 @@ class PostgresCollectionStore:
                 ),
                 {"source": source_id, "before": before, "limit": limit},
             ).all()
-        return [_item(row) for row in rows]
+        return [item_from_row(row) for row in rows]
 
     def get_item(self, workspace_id: UUID, item_id: UUID) -> Item | None:
         with workspace_transaction(self._engine, workspace_id) as connection:
@@ -386,7 +394,7 @@ class PostgresCollectionStore:
                 sa.text(f"SELECT {ITEM_COLUMNS} FROM {ITEMS_FROM} WHERE i.id = :id"),  # noqa: S608
                 {"id": item_id},
             ).one_or_none()
-        return None if row is None else _item(row)
+        return None if row is None else item_from_row(row)
 
     def pending_item_url(self, workspace_id: UUID, item_id: UUID) -> str | None:
         with workspace_transaction(self._engine, workspace_id) as connection:
@@ -408,17 +416,20 @@ class PostgresCollectionStore:
         reason: str,
         text: str | None,
         title: str | None,
+        language: str | None,
         at: datetime,
     ) -> None:
         with workspace_transaction(self._engine, workspace_id) as connection:
-            connection.execute(
+            updated = connection.execute(
                 sa.text(
                     "UPDATE source_items SET text_status = :status, text_reason = :reason,"
                     " text = :text, extracted_at = :at,"
+                    # The language of the feed wins; the page tells it when the feed does not.
+                    " language = coalesce(language, CAST(:language AS text)),"
                     # A manual URL has no title until its page is read.
                     " title = CASE WHEN origin = 'manual_url' AND CAST(:title AS text) IS NOT NULL"
                     "         THEN :title ELSE title END"
-                    " WHERE id = :id AND text_status = 'pending'"
+                    " WHERE id = :id AND text_status = 'pending' RETURNING language"
                 ),
                 {
                     "id": item_id,
@@ -426,8 +437,21 @@ class PostgresCollectionStore:
                     "reason": reason,
                     "text": text,
                     "title": title,
+                    "language": language,
                     "at": at,
                 },
+            ).one_or_none()
+            if updated is None:
+                return
+            connection.execute(
+                sa.text(
+                    "UPDATE source_items SET search_config = CAST(:config AS regconfig)"
+                    " WHERE id = :id"
+                ),
+                {"id": item_id, "config": model.search_config(updated.language)},
+            )
+            self._enqueue(
+                connection, ITEM_READY, workspace_id=str(workspace_id), item_id=str(item_id)
             )
 
     def add_manual_url(self, workspace_id: UUID, url: str, at: datetime) -> Item:
@@ -482,6 +506,9 @@ class PostgresCollectionStore:
                     "right": usage_right,
                 },
             ).scalar_one()
+            self._enqueue(
+                connection, ITEM_READY, workspace_id=str(workspace_id), item_id=str(item_id)
+            )
             return self._get_item(connection, item_id)
 
     @staticmethod
@@ -490,7 +517,7 @@ class PostgresCollectionStore:
             sa.text(f"SELECT {ITEM_COLUMNS} FROM {ITEMS_FROM} WHERE i.id = :id"),  # noqa: S608
             {"id": item_id},
         ).one()
-        return _item(row)
+        return item_from_row(row)
 
     # Site rules -------------------------------------------------------------------------------
 

@@ -3,8 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Button, Form, Input, Label, TextField } from "react-aria-components";
 import { itemsQuery, PAGE_SIZE, sourcesQuery, type ItemView } from "../../collection.ts";
 import { useWorkspaceId } from "../../session.ts";
+import { searchQuery } from "../../watch.ts";
 import { formatDate, textLabel, textTone } from "./labels.ts";
 import { emptyStyles, styles } from "./styles.ts";
 
@@ -20,9 +22,27 @@ function Items({ workspaceId }: { workspaceId: string }) {
   // Older pages, each starting before the last item of the previous one.
   const [pages, setPages] = useState<(string | null)[]>([null]);
   const sources = useQuery(sourcesQuery(workspaceId));
+  const [draft, setDraft] = useState("");
+  const [query, setQuery] = useState("");
 
   return (
     <>
+      <SearchBox
+        draft={draft}
+        onDraft={setDraft}
+        active={query !== ""}
+        onSearch={() => {
+          setQuery(draft.trim());
+        }}
+        onClear={() => {
+          setDraft("");
+          setQuery("");
+        }}
+      />
+      {query !== "" ? (
+        <SearchResults workspaceId={workspaceId} query={query} />
+      ) : (
+        <>
       {sources.data !== undefined && sources.data.length > 0 && (
         <div className={`${styles.field} ${styles.filter}`}>
           <label htmlFor="source-filter">{t("watch.filter")}</label>
@@ -55,6 +75,8 @@ function Items({ workspaceId }: { workspaceId: string }) {
           }}
         />
       ))}
+        </>
+      )}
     </>
   );
 }
@@ -132,9 +154,73 @@ function ItemCard({ item }: { item: ItemView }) {
       <p className={styles.meta}>
         {item.source_name ?? t("watch.manualOrigin")} · {formatDate(date)}{" "}
         <span className={styles[textTone(item.text_status)]}>{textLabel(t, item.text_status)}</span>
+        {item.duplicates > 0 && <> · {t("watch.duplicates", { count: item.duplicates })}</>}
       </p>
       {item.summary !== null && <p className={styles.meta}>{item.summary.slice(0, 280)}</p>}
     </li>
   );
 }
 
+
+function SearchBox({
+  draft,
+  onDraft,
+  active,
+  onSearch,
+  onClear,
+}: {
+  draft: string;
+  onDraft: (value: string) => void;
+  active: boolean;
+  onSearch: () => void;
+  onClear: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <Form
+      role="search"
+      className={styles.search}
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSearch();
+      }}
+    >
+      <TextField className={styles.field} value={draft} onChange={onDraft} maxLength={200} type="search">
+        <Label>{t("watch.search.label")}</Label>
+        <Input />
+      </TextField>
+      <Button type="submit" className={styles.primary} isDisabled={draft.trim() === ""}>
+        {t("watch.search.submit")}
+      </Button>
+      {active && (
+        <Button className={styles.button} onPress={onClear}>
+          {t("watch.search.clear")}
+        </Button>
+      )}
+    </Form>
+  );
+}
+
+/** Results of a full-text search, best match first (F-VEI-09, ADR-0021). */
+function SearchResults({ workspaceId, query }: { workspaceId: string; query: string }) {
+  const { t } = useTranslation();
+  const found = useQuery(searchQuery(workspaceId, query));
+  if (found.isError) {
+    return <p role="alert">{t("watch.loadFailed")}</p>;
+  }
+  if (found.data === undefined) {
+    return <p>{t("app.loading")}</p>;
+  }
+  return (
+    <>
+      <p role="status">{t("watch.search.results", { count: found.data.length, q: query })}</p>
+      {found.data.length > 0 && (
+        <ul className={styles.list}>
+          {found.data.map((result) => (
+            <ItemCard key={result.item.id} item={result.item} />
+          ))}
+        </ul>
+      )}
+    </>
+  );
+}

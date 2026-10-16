@@ -126,6 +126,7 @@ class Item:
     text_reason: str | None
     declared_origin: str | None
     usage_right: str | None
+    duplicates: int = 0  # other items of the same story (U02)
 
 
 @dataclass(frozen=True, slots=True)
@@ -240,6 +241,7 @@ class FeedEntry:
     published_at: datetime | None
     summary: str | None
     content: str | None  # the full text the feed itself carries, when it does
+    language: str | None = None  # as the feed declares it (BCP 47, such as fr or en-GB)
 
 
 @dataclass(frozen=True, slots=True)
@@ -247,6 +249,7 @@ class ParsedFeed:
     title: str | None
     site_url: str | None
     entries: tuple[FeedEntry, ...]
+    language: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -255,3 +258,31 @@ class Page:
 
     title: str | None
     text: str
+    language: str | None = None
+
+
+# Text search configurations of PostgreSQL, by language (BCP 47 primary subtag). Other
+# languages are indexed without stemming ("simple").
+SEARCH_CONFIGS = {
+    "fr": "french",
+    "en": "english",
+    "de": "german",
+    "nl": "dutch",
+    "es": "spanish",
+    "it": "italian",
+    "pt": "portuguese",
+}
+SIMPLE_SEARCH = "simple"
+
+
+def search_config(language: str | None) -> str:
+    primary = (language or "").strip().lower().replace("_", "-").split("-")[0]
+    return SEARCH_CONFIGS.get(primary, SIMPLE_SEARCH)
+
+
+def clean_language(language: object) -> str | None:
+    """A language tag as declared by a feed or a page, kept when it looks like one."""
+    if not isinstance(language, str):
+        return None
+    tag = language.strip().replace("_", "-")[:35]
+    return tag if tag and all(part.isalnum() for part in tag.split("-")) else None

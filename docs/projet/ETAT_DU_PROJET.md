@@ -21,10 +21,11 @@ Mis à jour le 2026-10-16. Une page : ce qu'il faut savoir pour reprendre le tra
 ## Prochaine action
 
 1. **I0 close** le 2026-10-16 (X01 fusionnée). I1 Lire en cours.
-2. Joël fusionne `feat/U01-ecrans` (écrans de la veille, des sources et de la saisie manuelle) ; `feat/U01-collecte` est sur `main` et l'ADR-0031 est accepté. U01 est alors faite.
-3. Ensuite U02 : sujets, dédoublonnage, score lexical explicable, recherche.
-4. Joël note son temps une fois par semaine dans `docs/projet/journal-temps.csv` (domaine `projet`).
-5. Plus tard, avec l'accord de Joël pour chacun : mesurer les fournisseurs réels de S4 (50 briefs chacun, plafonds de dépense posés).
+2. U01 faite (fusionnée le 2026-10-16). Joël fusionne `feat/U02-veille` (sujets, score expliqué, doublons, recherche) et répond à l'ADR-0032.
+3. **Correctif de sécurité à faire juste après U02** : la pile Compose se connecte à PostgreSQL en superutilisateur, qui ignore la RLS. Créer les trois rôles de M-12 à l'installation et à la mise à jour, et tester « sans contexte, zéro ligne » sur la pile.
+4. Ensuite X02 (flux de tri et accueil) et P01 (remesure de la recherche).
+5. Joël note son temps une fois par semaine dans `docs/projet/journal-temps.csv` (domaine `projet`).
+6. Plus tard, avec l'accord de Joël pour chacun : mesurer les fournisseurs réels de S4 (50 briefs chacun, plafonds de dépense posés).
 
 ## Règles de travail
 

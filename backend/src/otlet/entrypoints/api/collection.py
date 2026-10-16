@@ -94,6 +94,7 @@ class ItemView(BaseModel):
     text_reason: str | None
     declared_origin: str | None
     usage_right: str | None
+    duplicates: int
 
     @classmethod
     def of(cls, item: Item, *, with_text: bool = True) -> "ItemView":
@@ -113,6 +114,7 @@ class ItemView(BaseModel):
             text_reason=item.text_reason,
             declared_origin=item.declared_origin,
             usage_right=item.usage_right,
+            duplicates=item.duplicates,
         )
 
 

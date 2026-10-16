@@ -287,5 +287,46 @@
       "it": "Italien",
       "pt": "Portugais"
     }
+  },
+  "triage": {
+    "views": {
+      "label": "Partie du flux",
+      "to_sort": "À trier",
+      "kept": "Retenus",
+      "pinned": "Épinglés",
+      "dismissed": "Écartés",
+      "all": "Tout"
+    },
+    "unreadOnly": "Non lus seulement",
+    "keep": "Retenir",
+    "dismiss": "Écarter",
+    "undo": "Remettre à trier",
+    "pin": "Épingler",
+    "unpin": "Désépingler",
+    "markUnread": "Marquer comme non lu",
+    "kept": "Retenu",
+    "dismissed": "Écarté",
+    "pinned": "Épinglé",
+    "unread": "Non lu",
+    "actions": "Trier « {title} »",
+    "failed": "Le tri n'a pas été enregistré. Réessayez.",
+    "empty": {
+      "to_sort": "Rien à trier pour l'instant : tout est trié.",
+      "kept": "Vous n'avez encore rien retenu.",
+      "pinned": "Aucun élément épinglé.",
+      "dismissed": "Aucun élément écarté.",
+      "all": "Aucun élément pour l'instant."
+    }
+  },
+  "start": {
+    "title": "Bien démarrer",
+    "intro": "Trois étapes pour faire d'Otlet votre lecteur de veille.",
+    "sources": "Ajoutez 3 à 5 sources que vous lisez déjà ({count, plural, =0 {aucune pour l'instant} one {# ajoutée} other {# ajoutées}}).",
+    "topic": "Créez un premier sujet : les éléments qui en parlent remontent avec leur score.",
+    "triage": "Triez quelques éléments : retenez ce qui compte, écartez le reste.",
+    "done": "Fait",
+    "todo": "À faire",
+    "go": "Y aller",
+    "hide": "Masquer"
   }
 }

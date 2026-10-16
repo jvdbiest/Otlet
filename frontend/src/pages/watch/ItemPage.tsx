@@ -1,13 +1,16 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { ApiError } from "../../api/client.ts";
 import { itemQuery } from "../../collection.ts";
+import { itemTriageQuery, useChangeTriage } from "../../triage.ts";
 import { itemWatchQuery } from "../../watch.ts";
 import { useWorkspaceId } from "../../session.ts";
 import { explain, formatDate, isWebUrl, reasonText, textLabel, textTone } from "./labels.ts";
 import { styles } from "./styles.ts";
+import { TriageActions } from "./TriageActions.tsx";
 
 /** One item, its text when Otlet may keep it, and where it comes from (U01, M-08). */
 export function ItemPage({ itemId }: { itemId: string }) {
@@ -76,6 +79,7 @@ function Item({ workspaceId, itemId }: { workspaceId: string; itemId: string }) 
           <p className={styles.text}>{data.summary}</p>
         </section>
       )}
+      <ItemTriage workspaceId={workspaceId} itemId={itemId} title={data.title} />
       <ItemWatch workspaceId={workspaceId} itemId={itemId} />
       <section>
         <h3>{t("item.text")}</h3>
@@ -131,5 +135,24 @@ function ItemWatch({ workspaceId, itemId }: { workspaceId: string; itemId: strin
         </section>
       )}
     </>
+  );
+}
+
+/** The triage of the item; opening it marks it read (X02). */
+function ItemTriage({ workspaceId, itemId, title }: { workspaceId: string; itemId: string; title: string }) {
+  const triage = useQuery(itemTriageQuery(workspaceId, itemId));
+  const change = useChangeTriage(workspaceId);
+  const unread = triage.data?.read_at === null;
+  const { mutate } = change;
+  useEffect(() => {
+    if (unread) {
+      mutate({ itemId, change: { read: true } });
+    }
+  }, [unread, mutate, itemId]);
+  if (triage.data === undefined) {
+    return null;
+  }
+  return (
+    <TriageActions workspaceId={workspaceId} itemId={itemId} title={title} triage={triage.data} showUnread />
   );
 }

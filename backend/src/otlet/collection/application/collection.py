@@ -207,7 +207,7 @@ class Collection:
         context: WorkspaceContext,
         *,
         source_id: UUID | None = None,
-        before: datetime | None = None,
+        before: UUID | None = None,
         limit: int = 50,
     ) -> list[Item]:
         return self._store.list_items(

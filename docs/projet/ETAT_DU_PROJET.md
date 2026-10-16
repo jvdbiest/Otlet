@@ -21,8 +21,8 @@ Mis à jour le 2026-10-16. Une page : ce qu'il faut savoir pour reprendre le tra
 ## Prochaine action
 
 1. **I0 close** le 2026-10-16 (X01 fusionnée). I1 Lire en cours.
-2. Joël fusionne `feat/U01-collecte` (première moitié d'U01 : collecte côté serveur) et répond aux deux questions de l'ADR-0031 (licence de `regex` pour `trafilatura`, avertissement sur les conditions d'utilisation).
-3. Seconde moitié d'U01 : les écrans des sources, de la veille et de la saisie manuelle.
+2. Joël fusionne `feat/U01-ecrans` (écrans de la veille, des sources et de la saisie manuelle) ; `feat/U01-collecte` est sur `main` et l'ADR-0031 est accepté. U01 est alors faite.
+3. Ensuite U02 : sujets, dédoublonnage, score lexical explicable, recherche.
 4. Joël note son temps une fois par semaine dans `docs/projet/journal-temps.csv` (domaine `projet`).
 5. Plus tard, avec l'accord de Joël pour chacun : mesurer les fournisseurs réels de S4 (50 briefs chacun, plafonds de dépense posés).
 

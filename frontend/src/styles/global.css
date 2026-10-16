@@ -20,6 +20,8 @@
   --accent: #2f5d8a;
   --accent-text: #ffffff;
   --danger: #a3261b;
+  --ok: #2e6b30;
+  --warning: #8a5a00;
   --focus: #2f5d8a;
 }
 
@@ -33,6 +35,8 @@
     --accent: #8db8e3;
     --accent-text: #10202f;
     --danger: #f08a80;
+    --ok: #8fd18f;
+    --warning: #f0c060;
     --focus: #8db8e3;
   }
 }

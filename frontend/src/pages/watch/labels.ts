@@ -1,0 +1,109 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Words for the codes the API returns: legal statuses, reasons, errors (U01, ADR-0031).
+import type { TFunction } from "i18next";
+import { ApiError } from "../../api/client.ts";
+
+const LEGAL = ["full_text", "summary_only", "refused", "unknown"] as const;
+const TEXT = ["pending", "full_text", "summary_only", "manual"] as const;
+const REASONS = [
+  "robots_allowed",
+  "robots_missing",
+  "robots_disallowed",
+  "robots_unreachable",
+  "tdm_reserved_file",
+  "tdm_reserved_header",
+  "tdm_reserved_meta",
+  "tdm_not_reserved",
+  "tdm_not_reserved_file",
+  "tdm_not_reserved_header",
+  "tdm_not_reserved_meta",
+  "feed_only",
+  "declared_by_user",
+  "no_text_found",
+  "not_html",
+  "not_a_feed",
+  "fetch_timeout",
+  "fetch_network_error",
+  "fetch_address_not_allowed",
+  "fetch_too_large",
+  "fetch_too_many_redirects",
+  "fetch_scheme_not_allowed",
+  "fetch_port_not_allowed",
+  "fetch_invalid_url",
+] as const;
+const ERRORS = [
+  "invalid_url",
+  "fetch_http_error",
+  "feed_not_found",
+  "already_followed",
+  "invalid_name",
+  "invalid_interval",
+  "invalid_title",
+  "invalid_text",
+  "invalid_declaration",
+] as const;
+
+export const INTERVALS = ["15", "30", "60", "180", "360", "720", "1440", "10080"] as const;
+
+function among<T extends string>(list: readonly T[], value: string): value is T {
+  return (list as readonly string[]).includes(value);
+}
+
+export type Tone = "good" | "limited" | "blocked" | "neutral";
+
+export function legalLabel(t: TFunction, status: string): string {
+  return among(LEGAL, status) ? t(`legal.${status}`) : status;
+}
+
+export function legalTone(status: string): Tone {
+  return status === "full_text"
+    ? "good"
+    : status === "summary_only"
+      ? "limited"
+      : status === "refused"
+        ? "blocked"
+        : "neutral";
+}
+
+export function textLabel(t: TFunction, status: string): string {
+  return among(TEXT, status) ? t(`text.${status}`) : status;
+}
+
+export function textTone(status: string): Tone {
+  return status === "full_text" ? "good" : status === "summary_only" ? "limited" : "neutral";
+}
+
+export function reasonText(t: TFunction, code: string | null): string {
+  if (code === null || code === "") {
+    return "";
+  }
+  const http = /^(?:fetch_)?http_(\d+)$/.exec(code);
+  if (http?.[1] !== undefined) {
+    return t("reasons.http", { status: http[1] });
+  }
+  return among(REASONS, code) ? t(`reasons.${code}`) : t("reasons.unknown", { code });
+}
+
+/** The message for a failed request: the code of the API when the interface knows it. */
+export function errorText(t: TFunction, error: Error): string {
+  if (error instanceof ApiError && error.detail !== null) {
+    if (among(ERRORS, error.detail)) {
+      return t(`errors.${error.detail}`);
+    }
+    if (among(REASONS, error.detail)) {
+      return t(`reasons.${error.detail}`);
+    }
+  }
+  return t("errors.generic");
+}
+
+const DATE = new Intl.DateTimeFormat("fr-BE", { dateStyle: "medium", timeStyle: "short" });
+
+export function formatDate(value: string): string {
+  return DATE.format(new Date(value));
+}
+
+/** Links come from feeds and pages: only web addresses become links. */
+export function isWebUrl(value: string): boolean {
+  return /^https?:\/\//i.test(value);
+}

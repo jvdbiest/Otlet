@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# S7, configuration W3: WordPress current, protected by Wordfence (docs/spikes/S7.md §3.1).
+# Joins the network and the MariaDB of the S3 CMS project (otlet-cms).
+name: otlet-s7
+
+services:
+  wordpress-secured:
+    image: wordpress:7.1.3-php8.4-apache
+    environment:
+      WORDPRESS_DB_HOST: mariadb
+      WORDPRESS_DB_USER: root
+      WORDPRESS_DB_PASSWORD: ${CMS_DB_PASSWORD:?}
+      WORDPRESS_DB_NAME: wp_secured
+    ports: ["8083:80"]
+    volumes: [wp_secured:/var/www/html]
+    networks: [cms]
+
+networks:
+  cms:
+    name: otlet-cms_default
+    external: true
+
+volumes:
+  wp_secured:

@@ -1,0 +1,508 @@
+{
+  "started": "2026-10-15T10:52:40+00:00",
+  "steps": [
+    {
+      "check": "V1",
+      "target": "W1",
+      "step": "create draft with meta, slug and HTML comment marker",
+      "status": 201,
+      "evidence": {
+        "id": 105,
+        "meta": {
+          "footnotes": ""
+        }
+      },
+      "holds": null
+    },
+    {
+      "check": "V1",
+      "target": "W1",
+      "step": "unregistered meta is stored",
+      "status": 201,
+      "evidence": {
+        "footnotes": ""
+      },
+      "holds": true
+    },
+    {
+      "check": "V1",
+      "target": "W1",
+      "step": "filter by meta_key/meta_value",
+      "status": 200,
+      "evidence": {
+        "returned": 94,
+        "only_target": false
+      },
+      "holds": true
+    },
+    {
+      "check": "V1",
+      "target": "W1",
+      "step": "native lookup by slug (draft)",
+      "status": 200,
+      "evidence": {
+        "ids": [
+          105
+        ],
+        "slug_kept": true
+      },
+      "holds": null
+    },
+    {
+      "check": "V1",
+      "target": "W1",
+      "step": "native lookup by search on the HTML comment marker",
+      "status": 200,
+      "evidence": {
+        "ids": [
+          105
+        ],
+        "marker_in_raw_content": true
+      },
+      "holds": null
+    },
+    {
+      "check": "V1",
+      "target": "W2",
+      "step": "create draft with meta, slug and HTML comment marker",
+      "status": 201,
+      "evidence": {
+        "id": 67,
+        "meta": {
+          "footnotes": ""
+        }
+      },
+      "holds": null
+    },
+    {
+      "check": "V1",
+      "target": "W2",
+      "step": "unregistered meta is stored",
+      "status": 201,
+      "evidence": {
+        "footnotes": ""
+      },
+      "holds": true
+    },
+    {
+      "check": "V1",
+      "target": "W2",
+      "step": "filter by meta_key/meta_value",
+      "status": 200,
+      "evidence": {
+        "returned": 64,
+        "only_target": false
+      },
+      "holds": true
+    },
+    {
+      "check": "V1",
+      "target": "W2",
+      "step": "native lookup by slug (draft)",
+      "status": 200,
+      "evidence": {
+        "ids": [
+          67
+        ],
+        "slug_kept": true
+      },
+      "holds": null
+    },
+    {
+      "check": "V1",
+      "target": "W2",
+      "step": "native lookup by search on the HTML comment marker",
+      "status": 200,
+      "evidence": {
+        "ids": [
+          67
+        ],
+        "marker_in_raw_content": true
+      },
+      "holds": null
+    },
+    {
+      "check": "V1",
+      "target": "W3",
+      "step": "create draft with meta, slug and HTML comment marker",
+      "status": 401,
+      "evidence": {
+        "id": null,
+        "meta": null
+      },
+      "holds": null
+    },
+    {
+      "check": "V1",
+      "target": "W1-author",
+      "step": "create draft with meta, slug and HTML comment marker",
+      "status": 201,
+      "evidence": {
+        "id": 106,
+        "meta": {
+          "footnotes": ""
+        }
+      },
+      "holds": null
+    },
+    {
+      "check": "V1",
+      "target": "W1-author",
+      "step": "unregistered meta is stored",
+      "status": 201,
+      "evidence": {
+        "footnotes": ""
+      },
+      "holds": true
+    },
+    {
+      "check": "V1",
+      "target": "W1-author",
+      "step": "filter by meta_key/meta_value",
+      "status": 200,
+      "evidence": {
+        "returned": 1,
+        "only_target": true
+      },
+      "holds": false
+    },
+    {
+      "check": "V1",
+      "target": "W1-author",
+      "step": "native lookup by slug (draft)",
+      "status": 200,
+      "evidence": {
+        "ids": [
+          106
+        ],
+        "slug_kept": true
+      },
+      "holds": null
+    },
+    {
+      "check": "V1",
+      "target": "W1-author",
+      "step": "native lookup by search on the HTML comment marker",
+      "status": 200,
+      "evidence": {
+        "ids": [
+          106
+        ],
+        "marker_in_raw_content": true
+      },
+      "holds": null
+    },
+    {
+      "check": "V2",
+      "target": "G1",
+      "step": "create post with an unknown field",
+      "status": 201,
+      "evidence": {
+        "field_kept": false
+      },
+      "holds": true
+    },
+    {
+      "check": "V2",
+      "target": "G1",
+      "step": "create draft with an internal tag and a slug",
+      "status": 201,
+      "evidence": {
+        "tags": [
+          [
+            "#otlet-b4e002358e70",
+            "hash-otlet-b4e002358e70",
+            "internal"
+          ]
+        ],
+        "slug": "otlet-b4e002358e70"
+      },
+      "holds": null
+    },
+    {
+      "check": "V2",
+      "target": "G1",
+      "step": "lookup by internal tag",
+      "status": 200,
+      "evidence": {
+        "ids": [
+          "6ad0b074b7535f00011be7ef"
+        ],
+        "only_target": true
+      },
+      "holds": null
+    },
+    {
+      "check": "V2",
+      "target": "G1",
+      "step": "lookup by slug",
+      "status": 200,
+      "evidence": {
+        "ids": [
+          "6ad0b074b7535f00011be7ef"
+        ]
+      },
+      "holds": null
+    },
+    {
+      "check": "V2",
+      "target": "G1",
+      "step": "internal tag hidden from the public site",
+      "status": 200,
+      "evidence": {
+        "visibility": [
+          "internal"
+        ]
+      },
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "W1-author",
+      "step": "create own draft",
+      "status": 201,
+      "evidence": null,
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "W1-author",
+      "step": "publish own post",
+      "status": 200,
+      "evidence": null,
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "W1-author",
+      "step": "edit another user's post",
+      "status": 403,
+      "evidence": "rest_cannot_edit",
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "W1-author",
+      "step": "list users with emails (context=edit)",
+      "status": 403,
+      "evidence": "rest_forbidden_context",
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "W1-author",
+      "step": "create a user",
+      "status": 403,
+      "evidence": "rest_cannot_create_user",
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "W1-author",
+      "step": "list plugins",
+      "status": 403,
+      "evidence": "rest_cannot_view_plugins",
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "W1-author",
+      "step": "read site settings",
+      "status": 403,
+      "evidence": "rest_forbidden",
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "W1-author",
+      "step": "delete another user's post",
+      "status": 403,
+      "evidence": "rest_cannot_delete",
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "W1-editor",
+      "step": "create own draft",
+      "status": 201,
+      "evidence": null,
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "W1-editor",
+      "step": "publish own post",
+      "status": 200,
+      "evidence": null,
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "W1-editor",
+      "step": "edit another user's post",
+      "status": 200,
+      "evidence": null,
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "W1-editor",
+      "step": "list users with emails (context=edit)",
+      "status": 403,
+      "evidence": "rest_forbidden_context",
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "W1-editor",
+      "step": "create a user",
+      "status": 403,
+      "evidence": "rest_cannot_create_user",
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "W1-editor",
+      "step": "list plugins",
+      "status": 403,
+      "evidence": "rest_cannot_view_plugins",
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "W1-editor",
+      "step": "read site settings",
+      "status": 403,
+      "evidence": "rest_forbidden",
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "W1-editor",
+      "step": "delete another user's post",
+      "status": 200,
+      "evidence": null,
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "W1-admin",
+      "step": "create own draft",
+      "status": 201,
+      "evidence": null,
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "W1-admin",
+      "step": "publish own post",
+      "status": 200,
+      "evidence": null,
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "W1-admin",
+      "step": "edit another user's post",
+      "status": 200,
+      "evidence": null,
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "W1-admin",
+      "step": "list users with emails (context=edit)",
+      "status": 200,
+      "evidence": null,
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "W1-admin",
+      "step": "create a user",
+      "status": 201,
+      "evidence": null,
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "W1-admin",
+      "step": "list plugins",
+      "status": 200,
+      "evidence": null,
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "W1-admin",
+      "step": "read site settings",
+      "status": 200,
+      "evidence": null,
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "W1-admin",
+      "step": "delete another user's post",
+      "status": 410,
+      "evidence": "rest_already_trashed",
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "G1",
+      "step": "create and publish a post",
+      "status": 201,
+      "evidence": null,
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "G1",
+      "step": "delete a post",
+      "status": 204,
+      "evidence": null,
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "G1",
+      "step": "list staff users",
+      "status": 200,
+      "evidence": null,
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "G1",
+      "step": "read settings",
+      "status": 200,
+      "evidence": null,
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "G1",
+      "step": "list members (subscribers)",
+      "status": 200,
+      "evidence": null,
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "G1",
+      "step": "list themes",
+      "status": 403,
+      "evidence": "NoPermissionError",
+      "holds": null
+    },
+    {
+      "check": "V3",
+      "target": "G1",
+      "step": "list integrations",
+      "status": 403,
+      "evidence": "NoPermissionError",
+      "holds": null
+    }
+  ]
+}

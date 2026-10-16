@@ -6,7 +6,7 @@
 #
 # Usage, from anywhere: sh spikes/s6-delivery/upgrade-rollback.sh
 # Uses its own Compose project (otlet-s6) and destroys it at the end; ports 80 and 443 must
-# be free. Writes spikes/s6-delivery/results/upgrade-rollback-<UTC time>.json.
+# be free (or set OTLET_HTTP_PORT and OTLET_HTTPS_PORT). Writes spikes/s6-delivery/results/upgrade-rollback-<UTC time>.json.
 set -eu
 
 cd "$(dirname "$0")/../.."
@@ -36,7 +36,7 @@ record() { # name, verdict, seconds
     if [ "$2" = true ]; then echo "ok: $1 (${3}s)"; else echo "FAIL: $1 (${3}s)"; failed=1; fi
 }
 revision() {
-    curl -fsSk https://localhost/health | sed -n 's/.*"schema_revision":"\([^"]*\)".*/\1/p'
+    curl -fsSk "https://localhost:${OTLET_HTTPS_PORT:-443}/health" | sed -n 's/.*"schema_revision":"\([^"]*\)".*/\1/p'
 }
 psql_value() {
     compose exec -T db psql -U otlet -d otlet -tA -c "$1"
@@ -74,7 +74,8 @@ docker build -q -f deploy/Containerfile -t otlet-s6:n . >/dev/null
 next_context=$(mktemp -d)
 cp "$spike/next/Containerfile" "$next_context/"
 sed "s/@HEAD@/$schema_n/" "$spike/next/settings_note.py.in" > "$next_context/settings_note.py"
-docker build -q --build-arg BASE=otlet-s6:n -t otlet-s6:n1 "$next_context" >/dev/null
+docker build -q --build-arg BASE=otlet-s6:n -f "$next_context/Containerfile" -t otlet-s6:n1 \
+    "$next_context" >/dev/null
 rm -rf "$next_context"
 cleanup
 

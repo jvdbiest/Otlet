@@ -1,0 +1,155 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+"""The watch feed and its triage on a real PostgreSQL (X02, F-VEI-04, F-VEI-05)."""
+
+import uuid
+from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
+
+import pytest
+import sqlalchemy as sa
+
+from integration_support import TestDatabase, requires_database
+from otlet.collection.adapters.postgres import PostgresCollectionStore
+from otlet.collection.application.ports import NewItem, Outcome
+from otlet.collection.domain.model import FeedEntry, TextStatus
+from otlet.identity.adapters.argon2_hasher import Argon2Hasher
+from otlet.identity.adapters.postgres import PostgresIdentityStore
+from otlet.identity.application.authentication import Authentication
+from otlet.platform import database as db
+from otlet.watch.adapters.triage_postgres import PostgresTriageStore
+from otlet.watch.application.triage import Change, Feed
+from otlet.watch.domain.triage import Decision, View
+from otlet.workspaces.adapters.postgres import PostgresWorkspaceStore
+from otlet.workspaces.application.workspaces import Workspaces
+from otlet.workspaces.domain.model import WorkspaceContext
+
+pytestmark = requires_database
+
+NOW = datetime.now(UTC)
+
+
+def context_for(engine: sa.Engine, login: str) -> WorkspaceContext:
+    user = Authentication(PostgresIdentityStore(engine), Argon2Hasher()).create_user(
+        login, login, "une phrase de passe assez longue"
+    )
+    workspaces = Workspaces(PostgresWorkspaceStore(engine))
+    context = workspaces.enter(user, workspaces.create(user, "Veille").id)
+    assert context is not None
+    return context
+
+
+@dataclass
+class Setup:
+    engine: sa.Engine
+    feed: Feed
+    context: WorkspaceContext
+    ids: list[uuid.UUID]
+
+
+@pytest.fixture
+def setup(migrated: TestDatabase) -> Setup:
+    engine = db.create_engine(migrated.app_url)
+    context = context_for(engine, "alice@example.org")
+    store = PostgresCollectionStore(engine, lambda connection, name, **kwargs: 0)
+    source = store.add_source(
+        context.workspace_id,
+        name="Journal",
+        url="https://j.example.org/feed",
+        feed_url="https://j.example.org/feed",
+        site_url=None,
+        interval_minutes=60,
+    ).id
+    entries = [
+        NewItem(
+            FeedEntry(
+                guid=str(n),
+                url=None,
+                title=f"Article {n}",
+                author=None,
+                published_at=NOW - timedelta(hours=n),
+                summary=None,
+                content=None,
+            ),
+            TextStatus.SUMMARY_ONLY,
+            "test",
+        )
+        for n in range(3)
+    ]
+    outcome = Outcome(fetched_at=NOW, next_fetch_at=NOW, success=True)
+    store.finish_collection(context.workspace_id, source, outcome, entries)
+    feed = Feed(PostgresTriageStore(engine))
+    ids = [f.item.id for f in feed.feed(context, view=View.ALL)]
+    return Setup(engine, feed, context, ids)
+
+
+def titles(feed: Feed, context: WorkspaceContext, **kwargs: object) -> list[str]:
+    return [f.item.title for f in feed.feed(context, **kwargs)]  # type: ignore[arg-type]
+
+
+def test_keeping_and_dismissing_sort_the_feed(setup: Setup) -> None:
+    feed, context, ids = setup.feed, setup.context, setup.ids
+    assert titles(feed, context) == ["Article 0", "Article 1", "Article 2"]
+    feed.change(context, ids[0], Change(decision=Decision.KEPT))
+    feed.change(context, ids[1], Change(decision=Decision.DISMISSED))
+    assert titles(feed, context) == ["Article 2"]
+    assert titles(feed, context, view=View.KEPT) == ["Article 0"]
+    assert titles(feed, context, view=View.DISMISSED) == ["Article 1"]
+    # Back to sort.
+    feed.change(context, ids[1], Change(clear_decision=True))
+    assert titles(feed, context) == ["Article 1", "Article 2"]
+
+
+def test_pinned_items_come_first_and_paging_follows(setup: Setup) -> None:
+    feed, context, ids = setup.feed, setup.context, setup.ids
+    feed.change(context, ids[2], Change(pinned=True))
+    assert titles(feed, context) == ["Article 2", "Article 0", "Article 1"]
+    assert titles(feed, context, view=View.PINNED) == ["Article 2"]
+    first = feed.feed(context, limit=2)
+    rest = feed.feed(context, limit=2, before=first[-1].item.id)
+    assert [f.item.title for f in first + rest] == ["Article 2", "Article 0", "Article 1"]
+
+
+def test_reading_marks_and_unread_filter(setup: Setup) -> None:
+    feed, context, ids = setup.feed, setup.context, setup.ids
+    triage = feed.change(context, ids[0], Change(read=True))
+    assert triage is not None and triage.read and triage.decision is None
+    assert titles(feed, context, unread_only=True) == ["Article 1", "Article 2"]
+    again = feed.change(context, ids[0], Change(decision=Decision.KEPT))
+    assert again is not None and again.read  # a decision keeps the reading
+    unread = feed.change(context, ids[0], Change(read=False))
+    assert unread is not None and not unread.read and unread.decision is Decision.KEPT
+
+
+def test_triage_belongs_to_each_user_and_workspace(setup: Setup) -> None:
+    engine, feed, context, ids = setup.engine, setup.feed, setup.context, setup.ids
+    feed.change(context, ids[0], Change(decision=Decision.DISMISSED))
+    stranger = context_for(engine, "bob@example.org")
+    assert feed.feed(stranger, view=View.ALL) == []
+    assert feed.change(stranger, ids[0], Change(decision=Decision.KEPT)) is None
+    assert feed.triage(stranger, ids[0]) is None
+
+
+def test_progress_counts_the_first_steps(setup: Setup) -> None:
+    feed, context, ids = setup.feed, setup.context, setup.ids
+    first = feed.progress(context)
+    assert (first.sources, first.topics, first.decisions) == (1, 0, 0)
+    feed.change(context, ids[0], Change(decision=Decision.KEPT))
+    assert feed.progress(context).decisions == 1
+
+
+def test_a_dismissed_item_leaves_its_topics(migrated: TestDatabase, setup: Setup) -> None:
+    from otlet.watch.adapters.postgres import PostgresWatchStore
+    from otlet.watch.application.watch import Watch
+
+    feed, context, ids = setup.feed, setup.context, setup.ids
+    watch = Watch(PostgresWatchStore(setup.engine, lambda connection, name, **kwargs: 0))
+    topic = watch.create_topic(context, name="Articles", keywords=["article"])
+    watch.rescore_topic(context.workspace_id, topic.id, NOW)
+    assert len(watch.topic_items(context, topic.id, NOW, limit=10, offset=0)) == 3
+    feed.change(context, ids[0], Change(decision=Decision.DISMISSED))
+    feed.change(context, ids[1], Change(decision=Decision.KEPT))
+    shown = watch.topic_items(context, topic.id, NOW, limit=10, offset=0)
+    assert [(s.item.title, s.triage.decision) for s in shown] == [
+        ("Article 1", Decision.KEPT),
+        ("Article 2", None),
+    ]

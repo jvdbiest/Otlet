@@ -13,7 +13,16 @@ import {
   type SourceView,
 } from "../../collection.ts";
 import { useWorkspaceId } from "../../session.ts";
-import { errorText, formatDate, INTERVALS, isWebUrl, legalLabel, legalTone, reasonText } from "./labels.ts";
+import {
+  errorText,
+  formatDate,
+  INTERVALS,
+  isWebUrl,
+  legalLabel,
+  legalTone,
+  matchesFilter,
+  reasonText,
+} from "./labels.ts";
 import { emptyStyles, styles } from "./styles.ts";
 
 /** The sources of the workspace: adding one, their legal status and health (U01, M-08). */
@@ -25,19 +34,41 @@ export function SourcesPage() {
 function Sources({ workspaceId }: { workspaceId: string }) {
   const { t } = useTranslation();
   const sources = useQuery(sourcesQuery(workspaceId));
+  const [query, setQuery] = useState("");
+  const shown = (sources.data ?? []).filter(
+    (source) => matchesFilter(source.name, query) || matchesFilter(source.feed_url, query),
+  );
   return (
     <>
       <AddSource workspaceId={workspaceId} />
       <h2>{t("sources.title")}</h2>
+      {sources.data !== undefined && sources.data.length > 0 && (
+        <div className={`${styles.field} ${styles.filter}`}>
+          <label htmlFor="sources-filter">{t("sources.filter")}</label>
+          <input
+            id="sources-filter"
+            type="search"
+            value={query}
+            onChange={(event) => {
+              setQuery(event.target.value);
+            }}
+          />
+        </div>
+      )}
+      {sources.data !== undefined && sources.data.length > 0 && shown.length === 0 && (
+        <p role="status" className={styles.meta}>
+          {t("sources.noMatch", { q: query.trim() })}
+        </p>
+      )}
       {sources.isError && <p role="alert">{t("watch.loadFailed")}</p>}
       {sources.data?.length === 0 && (
         <div className={emptyStyles.empty}>
           <p className={emptyStyles.headline}>{t("sources.empty")}</p>
         </div>
       )}
-      {sources.data !== undefined && sources.data.length > 0 && (
+      {shown.length > 0 && (
         <ul className={styles.list}>
-          {sources.data.map((source) => (
+          {shown.map((source) => (
             <SourceCard key={source.id} workspaceId={workspaceId} source={source} />
           ))}
         </ul>

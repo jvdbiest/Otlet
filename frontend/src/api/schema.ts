@@ -124,6 +124,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/feed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Feed
+         * @description The feed of the user: pinned items first, then the most recent; `before` (the id of
+         *     the last item of the previous page) pages back.
+         */
+        get: operations["get_feed_api_workspaces__workspace_id__feed_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/items": {
         parameters: {
             query?: never;
@@ -196,6 +217,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/items/{item_id}/triage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Triage */
+        get: operations["get_triage_api_workspaces__workspace_id__items__item_id__triage_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change Triage */
+        patch: operations["change_triage_api_workspaces__workspace_id__items__item_id__triage_patch"];
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/items/{item_id}/watch": {
         parameters: {
             query?: never;
@@ -208,6 +247,26 @@ export interface paths {
          * @description The topics of an item, with their explained scores, and the same story elsewhere.
          */
         get: operations["item_watch_api_workspaces__workspace_id__items__item_id__watch_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/progress": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Progress
+         * @description How far the user went in the first steps: sources, topics, first decisions.
+         */
+        get: operations["progress_api_workspaces__workspace_id__progress_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -476,6 +535,11 @@ export interface components {
             /** Url */
             url: string | null;
         };
+        /** FeedItemView */
+        FeedItemView: {
+            item: components["schemas"]["ItemView"];
+            triage: components["schemas"]["TriageView"];
+        };
         /** FoundItemView */
         FoundItemView: {
             item: components["schemas"]["ItemView"];
@@ -588,6 +652,15 @@ export interface components {
             /** Password */
             password: string;
         };
+        /** ProgressView */
+        ProgressView: {
+            /** Decisions */
+            decisions: number;
+            /** Sources */
+            sources: number;
+            /** Topics */
+            topics: number;
+        };
         /** RefreshView */
         RefreshView: {
             /** Sources */
@@ -604,6 +677,7 @@ export interface components {
             item: components["schemas"]["ItemView"];
             /** Score */
             score: number;
+            triage: components["schemas"]["TriageView"];
         };
         /** SessionView */
         SessionView: {
@@ -706,6 +780,27 @@ export interface components {
             /** Source Ids */
             source_ids: string[];
         };
+        /**
+         * TriageChange
+         * @description A field left out keeps its value; `decision: null` clears the decision.
+         */
+        TriageChange: {
+            /** Decision */
+            decision?: ("kept" | "dismissed") | null;
+            /** Pinned */
+            pinned?: boolean | null;
+            /** Read */
+            read?: boolean | null;
+        };
+        /** TriageView */
+        TriageView: {
+            /** Decision */
+            decision: ("kept" | "dismissed") | null;
+            /** Pinned */
+            pinned: boolean;
+            /** Read At */
+            read_at: string | null;
+        };
         /** UserView */
         UserView: {
             /** Display Name */
@@ -728,6 +823,12 @@ export interface components {
             /** Error Type */
             type: string;
         };
+        /**
+         * View
+         * @description The parts of the feed a user looks at.
+         * @enum {string}
+         */
+        View: "to_sort" | "kept" | "dismissed" | "pinned" | "all";
         /** WorkspaceView */
         WorkspaceView: {
             /** Id */
@@ -963,6 +1064,43 @@ export interface operations {
             };
         };
     };
+    get_feed_api_workspaces__workspace_id__feed_get: {
+        parameters: {
+            query?: {
+                view?: components["schemas"]["View"];
+                source_id?: string | null;
+                unread?: boolean;
+                before?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedItemView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_items_api_workspaces__workspace_id__items_get: {
         parameters: {
             query?: {
@@ -1100,6 +1238,74 @@ export interface operations {
             };
         };
     };
+    get_triage_api_workspaces__workspace_id__items__item_id__triage_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TriageView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_triage_api_workspaces__workspace_id__items__item_id__triage_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TriageChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TriageView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     item_watch_api_workspaces__workspace_id__items__item_id__watch_get: {
         parameters: {
             query?: never;
@@ -1119,6 +1325,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ItemWatchView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    progress_api_workspaces__workspace_id__progress_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgressView"];
                 };
             };
             /** @description Validation Error */

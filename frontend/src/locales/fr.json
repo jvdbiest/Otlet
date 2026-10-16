@@ -123,6 +123,8 @@
       "10080": "Une fois par semaine"
     },
     "empty": "Vous ne suivez encore aucune source.",
+    "filter": "Filtrer les sources",
+    "noMatch": "Aucune source ne contient « {q} ».",
     "items": "{count, plural, =0 {Aucun élément} one {# élément} other {# éléments}}",
     "lastFetched": "Dernière collecte : {date}",
     "neverFetched": "Première collecte en cours",
@@ -242,6 +244,10 @@
     "name": "Nom",
     "description": "Description (facultative)",
     "keywords": "Mots-clés",
+    "filterSources": "Filtrer les sources",
+    "checked": "{count, plural, one {# source cochée} other {# sources cochées}}",
+    "hiddenChecked": "{hidden, plural, one {dont # masquée par le filtre} other {dont # masquées par le filtre}}",
+    "noSourceMatch": "Aucune source ne contient « {q} ».",
     "counter": "{count} / {max}",
     "overLimit": "{count} sur {max} au plus : retirez-en {excess, plural, one {#} other {#}}.",
     "keywordsHelp": "Un par ligne. Majuscules et accents sont ignorés, le pluriel aussi. Une expression de plusieurs mots est cherchée telle quelle ; terminez par * pour un début de mot (climat* trouve climatique).",
@@ -281,5 +287,46 @@
       "it": "Italien",
       "pt": "Portugais"
     }
+  },
+  "triage": {
+    "views": {
+      "label": "Partie du flux",
+      "to_sort": "À trier",
+      "kept": "Retenus",
+      "pinned": "Épinglés",
+      "dismissed": "Écartés",
+      "all": "Tout"
+    },
+    "unreadOnly": "Non lus seulement",
+    "keep": "Retenir",
+    "dismiss": "Écarter",
+    "undo": "Remettre à trier",
+    "pin": "Épingler",
+    "unpin": "Désépingler",
+    "markUnread": "Marquer comme non lu",
+    "kept": "Retenu",
+    "dismissed": "Écarté",
+    "pinned": "Épinglé",
+    "unread": "Non lu",
+    "actions": "Trier « {title} »",
+    "failed": "Le tri n'a pas été enregistré. Réessayez.",
+    "empty": {
+      "to_sort": "Rien à trier pour l'instant : tout est trié.",
+      "kept": "Vous n'avez encore rien retenu.",
+      "pinned": "Aucun élément épinglé.",
+      "dismissed": "Aucun élément écarté.",
+      "all": "Aucun élément pour l'instant."
+    }
+  },
+  "start": {
+    "title": "Bien démarrer",
+    "intro": "Trois étapes pour faire d'Otlet votre lecteur de veille.",
+    "sources": "Ajoutez 3 à 5 sources que vous lisez déjà ({count, plural, =0 {aucune pour l'instant} one {# ajoutée} other {# ajoutées}}).",
+    "topic": "Créez un premier sujet : les éléments qui en parlent remontent avec leur score.",
+    "triage": "Triez quelques éléments : retenez ce qui compte, écartez le reste.",
+    "done": "Fait",
+    "todo": "À faire",
+    "go": "Y aller",
+    "hide": "Masquer"
   }
 }

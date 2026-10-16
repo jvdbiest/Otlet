@@ -4,13 +4,25 @@ import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Form, Input, Label, TextField } from "react-aria-components";
-import { itemsQuery, PAGE_SIZE, sourcesQuery, type ItemView } from "../../collection.ts";
+import { sourcesQuery, type ItemView } from "../../collection.ts";
 import { useWorkspaceId } from "../../session.ts";
+import {
+  FEED_PAGE_SIZE,
+  feedQuery,
+  type FeedFilter,
+  type FeedView,
+  type TriageView,
+} from "../../triage.ts";
 import { searchQuery, useRefreshWatch } from "../../watch.ts";
 import { formatDate, textLabel, textTone } from "./labels.ts";
-import { emptyStyles, styles } from "./styles.ts";
+import { StartPanel } from "./StartPanel.tsx";
+import { styles } from "./styles.ts";
+import { TriageActions } from "./TriageActions.tsx";
 
-/** The latest items of every source, newest first (U01). */
+const VIEWS: readonly FeedView[] = ["to_sort", "kept", "pinned", "dismissed", "all"];
+
+/** The feed of the user: what is left to sort first, then what was kept, pinned or dismissed
+ * (X02, F-VEI-04, F-VEI-05). */
 export function ItemsPage() {
   const workspaceId = useWorkspaceId();
   return workspaceId === undefined ? null : <Items workspaceId={workspaceId} />;
@@ -18,15 +30,20 @@ export function ItemsPage() {
 
 function Items({ workspaceId }: { workspaceId: string }) {
   const { t } = useTranslation();
-  const [sourceId, setSourceId] = useState<string | null>(null);
-  // Older pages, each starting before the last item of the previous one.
+  const [filter, setFilter] = useState<FeedFilter>({ view: "to_sort", sourceId: null, unread: false });
+  // Older pages, each starting after the last item of the previous one.
   const [pages, setPages] = useState<(string | null)[]>([null]);
   const sources = useQuery(sourcesQuery(workspaceId));
   const [draft, setDraft] = useState("");
   const [query, setQuery] = useState("");
+  const update = (next: Partial<FeedFilter>) => {
+    setFilter((current) => ({ ...current, ...next }));
+    setPages([null]);
+  };
 
   return (
     <>
+      <StartPanel workspaceId={workspaceId} />
       <RefreshButton workspaceId={workspaceId} />
       <SearchBox
         draft={draft}
@@ -44,92 +61,111 @@ function Items({ workspaceId }: { workspaceId: string }) {
         <SearchResults workspaceId={workspaceId} query={query} />
       ) : (
         <>
-      {sources.data !== undefined && sources.data.length > 0 && (
-        <div className={`${styles.field} ${styles.filter}`}>
-          <label htmlFor="source-filter">{t("watch.filter")}</label>
-          <select
-            id="source-filter"
-            value={sourceId ?? ""}
-            onChange={(event) => {
-              setSourceId(event.target.value === "" ? null : event.target.value);
-              setPages([null]);
-            }}
-          >
-            <option value="">{t("watch.allSources")}</option>
-            {sources.data.map((source) => (
-              <option key={source.id} value={source.id}>
-                {source.name}
-              </option>
+          <div className={styles.views} role="radiogroup" aria-label={t("triage.views.label")}>
+            {VIEWS.map((view) => (
+              <button
+                key={view}
+                type="button"
+                role="radio"
+                aria-checked={filter.view === view}
+                className={styles.viewButton}
+                onClick={() => {
+                  update({ view });
+                }}
+              >
+                {t(`triage.views.${view}`)}
+              </button>
             ))}
-          </select>
-        </div>
-      )}
-      {pages.map((before, index) => (
-        <ItemsPageOf
-          key={before ?? "first"}
-          workspaceId={workspaceId}
-          sourceId={sourceId}
-          before={before}
-          isLast={index === pages.length - 1}
-          onMore={(next) => {
-            setPages((current) => [...current, next]);
-          }}
-        />
-      ))}
+          </div>
+          <div className={styles.search}>
+            {sources.data !== undefined && sources.data.length > 0 && (
+              <div className={styles.field}>
+                <label htmlFor="source-filter">{t("watch.filter")}</label>
+                <select
+                  id="source-filter"
+                  value={filter.sourceId ?? ""}
+                  onChange={(event) => {
+                    update({ sourceId: event.target.value === "" ? null : event.target.value });
+                  }}
+                >
+                  <option value="">{t("watch.allSources")}</option>
+                  {sources.data.map((source) => (
+                    <option key={source.id} value={source.id}>
+                      {source.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <label className={styles.check}>
+              <input
+                type="checkbox"
+                checked={filter.unread}
+                onChange={(event) => {
+                  update({ unread: event.target.checked });
+                }}
+              />{" "}
+              {t("triage.unreadOnly")}
+            </label>
+          </div>
+          {pages.map((before, index) => (
+            <FeedPage
+              key={before ?? "first"}
+              workspaceId={workspaceId}
+              filter={filter}
+              before={before}
+              isLast={index === pages.length - 1}
+              onMore={(next) => {
+                setPages((current) => [...current, next]);
+              }}
+            />
+          ))}
         </>
       )}
     </>
   );
 }
 
-function ItemsPageOf({
+function FeedPage({
   workspaceId,
-  sourceId,
+  filter,
   before,
   isLast,
   onMore,
 }: {
   workspaceId: string;
-  sourceId: string | null;
+  filter: FeedFilter;
   before: string | null;
   isLast: boolean;
   onMore: (before: string) => void;
 }) {
   const { t } = useTranslation();
-  const items = useQuery(itemsQuery(workspaceId, sourceId, before));
-  if (items.isError) {
+  const feed = useQuery(feedQuery(workspaceId, filter, before));
+  if (feed.isError) {
     return <p role="alert">{t("watch.loadFailed")}</p>;
   }
-  if (items.data === undefined) {
+  if (feed.data === undefined) {
     return before === null ? <p>{t("app.loading")}</p> : null;
   }
-  if (items.data.length === 0 && before === null) {
-    return (
-      <div className={emptyStyles.empty}>
-        <p className={emptyStyles.headline}>{t("pages.watch.empty")}</p>
-        <p className={emptyStyles.next}>{t("pages.watch.next")}</p>
-        <p>
-          <Link to="/veille/sources">{t("watch.addSource")}</Link>
-        </p>
-      </div>
-    );
+  if (feed.data.length === 0 && before === null) {
+    return <p className={styles.meta}>{t(`triage.empty.${filter.view}`)}</p>;
   }
-  const last = items.data.at(-1);
+  const last = feed.data.at(-1);
   return (
     <>
       <ul className={styles.list}>
-        {items.data.map((item) => (
-          <ItemCard key={item.id} item={item} />
+        {feed.data.map((entry) => (
+          <ItemCard key={entry.item.id} workspaceId={workspaceId} item={entry.item} triage={entry.triage} />
         ))}
       </ul>
       {isLast &&
-        (items.data.length === PAGE_SIZE && last !== undefined ? (
+        (feed.data.length === FEED_PAGE_SIZE && last !== undefined ? (
           <p>
             <button
               type="button"
               className={styles.button}
               onClick={() => {
-                onMore(last.id);
+                onMore(last.item.id);
               }}
             >
               {t("watch.more")}
@@ -142,25 +178,39 @@ function ItemsPageOf({
   );
 }
 
-function ItemCard({ item }: { item: ItemView }) {
+function ItemCard({
+  workspaceId,
+  item,
+  triage,
+}: {
+  workspaceId: string;
+  item: ItemView;
+  triage?: TriageView;
+}) {
   const { t } = useTranslation();
   const date = item.published_at ?? item.collected_at;
+  const unread = triage?.read_at === null;
   return (
     <li className={styles.card}>
-      <h2>
+      <h2 className={unread ? styles.unread : undefined}>
         <Link to="/veille/elements/$itemId" params={{ itemId: item.id }}>
           {item.title}
         </Link>
       </h2>
       <p className={styles.meta}>
+        {unread && <span className={styles.neutral}>{t("triage.unread")}</span>}{" "}
         {item.source_name ?? t("watch.manualOrigin")} · {formatDate(date)}{" "}
         <span className={styles[textTone(item.text_status)]}>{textLabel(t, item.text_status)}</span>
         {item.duplicates > 0 && <> · {t("watch.duplicates", { count: item.duplicates })}</>}
       </p>
       {item.summary !== null && <p className={styles.meta}>{item.summary.slice(0, 280)}</p>}
+      {triage !== undefined && (
+        <TriageActions workspaceId={workspaceId} itemId={item.id} title={item.title} triage={triage} />
+      )}
     </li>
   );
 }
+
 
 
 function SearchBox({
@@ -218,7 +268,7 @@ function SearchResults({ workspaceId, query }: { workspaceId: string; query: str
       {found.data.length > 0 && (
         <ul className={styles.list}>
           {found.data.map((result) => (
-            <ItemCard key={result.item.id} item={result.item} />
+            <ItemCard key={result.item.id} workspaceId={workspaceId} item={result.item} />
           ))}
         </ul>
       )}

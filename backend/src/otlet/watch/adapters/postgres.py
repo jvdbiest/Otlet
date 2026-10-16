@@ -14,6 +14,7 @@ from otlet.collection.domain.model import SEARCH_CONFIGS, SIMPLE_SEARCH
 from otlet.jobs.application.registry import Enqueue
 from otlet.platform.database import scoped_transaction, workspace_transaction
 from otlet.platform.rls import here
+from otlet.watch.adapters.triage_postgres import TRIAGE_COLUMNS, TRIAGE_JOIN, triage_of
 from otlet.watch.application.watch import (
     ITEM_READY,
     RESCORE_TOPIC,
@@ -191,7 +192,13 @@ class PostgresWatchStore:
     # Reading -----------------------------------------------------------------------------------
 
     def topic_items(
-        self, workspace_id: UUID, topic_id: UUID, now: datetime, limit: int, offset: int
+        self,
+        workspace_id: UUID,
+        topic_id: UUID,
+        now: datetime,
+        limit: int,
+        offset: int,
+        user_id: UUID,
     ) -> list[ScoredItem]:
         fresh = " ".join(
             f"WHEN {SORT_DATE} > CAST(:now AS timestamptz) - interval '{int(age.total_seconds())}"
@@ -201,14 +208,16 @@ class PostgresWatchStore:
         with workspace_transaction(self._engine, workspace_id) as connection:
             rows = connection.execute(
                 sa.text(
-                    f"SELECT {ITEM_COLUMNS}, m.score, m.contributions,"  # noqa: S608
+                    f"SELECT {ITEM_COLUMNS}, m.score, m.contributions, {TRIAGE_COLUMNS},"
                     f" CASE {fresh} ELSE 0 END AS freshness"
-                    f" FROM topic_matches AS m JOIN {ITEMS_FROM} ON i.id = m.item_id"
+                    f" FROM topic_matches AS m JOIN {ITEMS_FROM} ON i.id = m.item_id{TRIAGE_JOIN}"
                     f" WHERE m.topic_id = :topic AND i.duplicate_of IS NULL AND {here('m')}"
+                    # What the user dismissed leaves the topic too.
+                    " AND tr.decision IS DISTINCT FROM 'dismissed'"
                     f" ORDER BY m.score + CASE {fresh} ELSE 0 END DESC, {SORT_DATE} DESC, i.id DESC"
                     " LIMIT :limit OFFSET :offset"
                 ),
-                {"topic": topic_id, "now": now, "limit": limit, "offset": offset},
+                {"topic": topic_id, "now": now, "limit": limit, "offset": offset, "user": user_id},
             ).all()
         return [
             ScoredItem(
@@ -216,6 +225,7 @@ class PostgresWatchStore:
                 score=row.score + row.freshness,
                 freshness=row.freshness,
                 contributions=_contributions(row.contributions),
+                triage=triage_of(row),
             )
             for row in rows
         ]

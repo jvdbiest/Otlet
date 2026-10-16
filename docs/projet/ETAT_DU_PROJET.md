@@ -22,7 +22,7 @@ Mis à jour le 2026-10-16. Une page : ce qu'il faut savoir pour reprendre le tra
 
 1. **I0 close** le 2026-10-16 (X01 fusionnée). I1 Lire en cours.
 2. U01 et U02 faites (fusionnées le 2026-10-16). Joël fusionne `feat/U02b-recalcul` (recalcul visible, boutons « Recalculer » et « Actualiser », demandés par Joël) et répond à l'ADR-0032.
-3. Joël fusionne `fix/roles-base-de-donnees` (empilée sur U02b) : la pile Compose ne se connecte plus en superutilisateur, qui ignorait la RLS. Sur une installation existante, lancer `./configure.sh --complete` avant la mise à jour.
+3. Joël fusionne `fix/roles-base-de-donnees` (empilée sur U02b) : la pile Compose ne se connecte plus en superutilisateur, qui ignorait la RLS. La branche répare aussi les correspondances écrites dans un autre espace avant le correctif (migration 0008, références liées à l'espace) et rend explicite la limite de 50 mots-clés. Sur une installation existante, lancer `./configure.sh --complete` avant la mise à jour.
 4. Ensuite X02 (flux de tri et accueil) et P01 (remesure de la recherche).
 5. Joël note son temps une fois par semaine dans `docs/projet/journal-temps.csv` (domaine `projet`).
 6. Plus tard, avec l'accord de Joël pour chacun : mesurer les fournisseurs réels de S4 (50 briefs chacun, plafonds de dépense posés).

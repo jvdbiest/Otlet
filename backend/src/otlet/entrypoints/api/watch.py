@@ -52,8 +52,10 @@ class TopicView(BaseModel):
 class TopicBody(BaseModel):
     name: str = Field(min_length=1, max_length=model.NAME_MAX_LENGTH)
     description: str = Field(default="", max_length=model.DESCRIPTION_MAX_LENGTH)
-    keywords: list[str] = Field(max_length=model.TERMS_MAX)
-    exclusions: list[str] = Field(default_factory=list, max_length=model.TERMS_MAX)
+    # The limits of the domain (model.TERMS_MAX) answer with their own codes; these only bound
+    # the size of a request.
+    keywords: list[str] = Field(max_length=1000)
+    exclusions: list[str] = Field(default_factory=list, max_length=1000)
     languages: list[str] = Field(default_factory=list, max_length=len(model.LANGUAGES))
     source_ids: list[UUID] = Field(default_factory=list, max_length=500)
 

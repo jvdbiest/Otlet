@@ -315,6 +315,12 @@ class PostgresCollectionStore:
             ).first()
         ):
             return None
+        # A page read later may still tell the language: only a text already final is guessed.
+        language = entry.language
+        if language is None and item.text_status is not TextStatus.PENDING:
+            language = model.guess_language(
+                " ".join(filter(None, (entry.title, entry.summary, entry.content)))
+            )
         result: UUID | None = connection.execute(
             sa.text(
                 "INSERT INTO source_items (workspace_id, source_id, origin, guid, url,"
@@ -338,8 +344,8 @@ class PostgresCollectionStore:
                 "content": entry.content,
                 "status": item.text_status.value,
                 "reason": item.text_reason,
-                "language": entry.language,
-                "config": model.search_config(entry.language),
+                "language": language,
+                "config": model.search_config(language),
             },
         ).scalar_one_or_none()
         return result
@@ -441,7 +447,8 @@ class PostgresCollectionStore:
                     # A manual URL has no title until its page is read.
                     " title = CASE WHEN origin = 'manual_url' AND CAST(:title AS text) IS NOT NULL"
                     "         THEN :title ELSE title END"
-                    f" WHERE id = :id AND text_status = 'pending' AND {here()} RETURNING language"
+                    f" WHERE id = :id AND text_status = 'pending' AND {here()}"
+                    " RETURNING language, title, summary, text"
                 ),
                 {
                     "id": item_id,
@@ -455,12 +462,16 @@ class PostgresCollectionStore:
             ).one_or_none()
             if updated is None:
                 return
+            # Neither the feed nor the page told the language: the text does, when it can.
+            language = updated.language or model.guess_language(
+                " ".join(filter(None, (updated.title, updated.summary, updated.text)))
+            )
             connection.execute(
                 sa.text(
-                    "UPDATE source_items SET search_config = CAST(:config AS regconfig)"
-                    f" WHERE id = :id AND {here()}"
+                    "UPDATE source_items SET language = CAST(:language AS text),"
+                    f" search_config = CAST(:config AS regconfig) WHERE id = :id AND {here()}"
                 ),
-                {"id": item_id, "config": model.search_config(updated.language)},
+                {"id": item_id, "language": language, "config": model.search_config(language)},
             )
             self._enqueue(
                 connection, ITEM_READY, workspace_id=str(workspace_id), item_id=str(item_id)
@@ -498,14 +509,16 @@ class PostgresCollectionStore:
         usage_right: str,
         at: datetime,
     ) -> Item:
+        language = model.guess_language(f"{title} {text}")
         with workspace_transaction(self._engine, workspace_id) as connection:
             item_id = connection.execute(
                 sa.text(
                     "INSERT INTO source_items (workspace_id, origin, url, normalized_url, title,"
                     " collected_at, text, text_status, text_reason, declared_origin,"
-                    " usage_right)"
+                    " usage_right, language, search_config)"
                     " VALUES (:workspace, 'manual_text', :url, :normalized, :title, :at, :text,"
-                    " 'manual', 'declared_by_user', :origin, :right) RETURNING id"
+                    " 'manual', 'declared_by_user', :origin, :right, :language,"
+                    " CAST(:config AS regconfig)) RETURNING id"
                 ),
                 {
                     "workspace": workspace_id,
@@ -516,6 +529,8 @@ class PostgresCollectionStore:
                     "text": text,
                     "origin": declared_origin,
                     "right": usage_right,
+                    "language": language,
+                    "config": model.search_config(language),
                 },
             ).scalar_one()
             self._enqueue(

@@ -1,7 +1,9 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Sources, items and their legal status, free of any framework (U01, RISKS M-08)."""
 
+import re
 import unicodedata
+from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import StrEnum
@@ -278,6 +280,56 @@ SIMPLE_SEARCH = "simple"
 def search_config(language: str | None) -> str:
     primary = (language or "").strip().lower().replace("_", "-").split("-")[0]
     return SEARCH_CONFIGS.get(primary, SIMPLE_SEARCH)
+
+
+# Frequent short words of each language that has its own search configuration: enough to
+# tell the language of a text that declares none. A topic limited to some languages would
+# otherwise miss the item, and its search would not be stemmed.
+STOP_WORDS = {
+    "fr": frozenset(
+        "le la les des un une est et du qui dans pour pas sur au aux avec ce cette il elle sont"
+        " ont mais plus nous vous leur".split()
+    ),
+    "en": frozenset(
+        "the and of to is that for it with as was on are by this be at from have has were"
+        " which their will".split()
+    ),
+    "de": frozenset(
+        "der die das und ist nicht ein eine zu den von mit sich des auf für im dem auch es"
+        " wird sind".split()
+    ),
+    "nl": frozenset(
+        "het een en van is dat op te voor niet met zijn er aan ook als bij werd door naar".split()
+    ),
+    "es": frozenset(
+        "el los las del y que una por con para no se al lo como más pero sus fue está".split()
+    ),
+    "it": frozenset(
+        "il di che è della delle degli gli per non con sono da anche nel alla questo".split()
+    ),
+    "pt": frozenset(
+        "o os do da dos das em um uma para com não é na no por mais que foi são".split()
+    ),
+}
+GUESS_MIN_HITS = 5  # frequent words found, below which the text is too short to tell
+GUESS_MARGIN = 1.5  # the first language must lead the second by this factor
+_WORD = re.compile(r"\w+")
+
+
+def guess_language(text: str) -> str | None:
+    """The language of a text that declares none, from its frequent words, or None when the
+    text is too short or too mixed to tell."""
+    hits = Counter(
+        language
+        for word in _WORD.findall(text.lower())
+        for language, words in STOP_WORDS.items()
+        if word in words
+    ).most_common(2)
+    if not hits or hits[0][1] < GUESS_MIN_HITS:
+        return None
+    if len(hits) == 2 and hits[0][1] < GUESS_MARGIN * hits[1][1]:
+        return None
+    return hits[0][0]
 
 
 def clean_language(language: object) -> str | None:

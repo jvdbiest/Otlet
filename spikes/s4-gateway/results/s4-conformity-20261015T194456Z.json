@@ -1,0 +1,37 @@
+{
+  "summary": {
+    "fake-a": true,
+    "fake-anthropic": true,
+    "anthropic (blocked)": "refused: anthropic is blocked until Joël agrees (docs/spikes/S4.md §2)"
+  },
+  "rows": {
+    "fake-a": {
+      "valid": true,
+      "error": null,
+      "calls": [
+        {
+          "provider": "fake-a",
+          "tokens_in": 574,
+          "tokens_out": 1055,
+          "seconds": 0.6
+        }
+      ]
+    },
+    "fake-anthropic": {
+      "valid": true,
+      "error": null,
+      "calls": [
+        {
+          "provider": "fake-anthropic",
+          "tokens_in": 473,
+          "tokens_out": 567,
+          "seconds": 0.14
+        }
+      ]
+    },
+    "anthropic (blocked)": {
+      "valid": false,
+      "error": "refused: anthropic is blocked until Joël agrees (docs/spikes/S4.md §2)"
+    }
+  }
+}

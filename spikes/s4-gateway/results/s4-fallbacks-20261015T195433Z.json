@@ -1,0 +1,1896 @@
+{
+  "summary": {
+    "scenarios": 100,
+    "correct": 100,
+    "by_scenario": {
+      "429_short": "25/25",
+      "429_repeated": "15/15",
+      "5xx_once": "25/25",
+      "5xx_repeated": "15/15",
+      "400": "10/10",
+      "timeout": "10/10"
+    }
+  },
+  "rows": [
+    {
+      "scenario": "429_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_short",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_short",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_once",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "timeout",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_short",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_short",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_once",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "timeout",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "400",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "refused"
+        ]
+      ],
+      "provider": null,
+      "error": "refused: HTTP 400",
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_short",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_short",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "timeout",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_short",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_once",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "timeout",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "timeout",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_once",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_short",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_once",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "timeout",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_short",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_short",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_once",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "timeout",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_once",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_once",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_once",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "400",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "refused"
+        ]
+      ],
+      "provider": null,
+      "error": "refused: HTTP 400",
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_short",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "timeout",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "400",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "refused"
+        ]
+      ],
+      "provider": null,
+      "error": "refused: HTTP 400",
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "400",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "refused"
+        ]
+      ],
+      "provider": null,
+      "error": "refused: HTTP 400",
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_once",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_short",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_short",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_once",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_short",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "400",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "refused"
+        ]
+      ],
+      "provider": null,
+      "error": "refused: HTTP 400",
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "400",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "refused"
+        ]
+      ],
+      "provider": null,
+      "error": "refused: HTTP 400",
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_short",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "400",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "refused"
+        ]
+      ],
+      "provider": null,
+      "error": "refused: HTTP 400",
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_once",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_once",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "400",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "refused"
+        ]
+      ],
+      "provider": null,
+      "error": "refused: HTTP 400",
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_once",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_short",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_short",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_once",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_short",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "timeout",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_once",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_once",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_once",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_once",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "timeout",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "400",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "refused"
+        ]
+      ],
+      "provider": null,
+      "error": "refused: HTTP 400",
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_short",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_once",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_short",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_short",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_short",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_short",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_once",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_once",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_once",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_short",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "400",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "refused"
+        ]
+      ],
+      "provider": null,
+      "error": "refused: HTTP 400",
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_repeated",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-b",
+          null
+        ]
+      ],
+      "provider": "fake-b",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_once",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "5xx_once",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "unavailable"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    },
+    {
+      "scenario": "429_short",
+      "correct": true,
+      "calls": [
+        [
+          "fake-a",
+          "quota"
+        ],
+        [
+          "fake-a",
+          null
+        ]
+      ],
+      "provider": "fake-a",
+      "error": null,
+      "reserved_left": 1.38777878078145e-17
+    }
+  ]
+}

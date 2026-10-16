@@ -35,3 +35,4 @@ La numérotation continue celle de l'architecture.
 | [0025](0025-qualite-avant-profil-materiel.md) | La qualité du produit prime sur le profil matériel | Accepté |
 | [0026](0026-idempotence-des-connecteurs-cms.md) | Idempotence des connecteurs CMS par marqueur natif, « WordPress d'abord » confirmé | Accepté (S7) |
 | [0027](0027-passerelle-ia.md) | Passerelle IA : adaptateurs maison, budget à réservation, fournisseurs bloqués par défaut | Accepté (S4) |
+| [0028](0028-comptes-identites-et-contexte-utilisateur.md) | Comptes à identités multiples et contexte de sécurité de l'utilisateur | Proposé (F01) |

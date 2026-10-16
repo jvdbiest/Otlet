@@ -37,6 +37,12 @@ Les fournisseurs payants et ceux qui exigent un compte externe n'ont pas été m
 6. **Profil local** : `qwen2.5:1.5b-instruct` est le premier profil « testé ». Il est lent sur la plateforme minimale (7 min par article). Une machine plus puissante est recommandée pour le travail courant.
 7. **Avant toute mise en service d'un fournisseur réel**, on mesure ses 50 briefs. Ces mesures se font quand Joël donne son accord pour chaque fournisseur, avec des plafonds de dépense posés chez le fournisseur.
 
+## Validation de Joël (2026-10-16)
+
+ADR accepté : adaptateurs maison, budget à réservation, règles de repli et statuts « testé », « non testé » et « bloqué » validés.
+
+**Orientation d'architecture** : à terme, le choix du fournisseur et du modèle appartient à **l'utilisateur final**. La décision y est compatible : le profil passé à `generate` est la liste ordonnée des fournisseurs choisis par l'utilisateur, et l'administrateur de l'instance ne fait qu'autoriser ou bloquer ceux qui sont proposés. Cette orientation sera formalisée en É1 si nécessaire.
+
 ## Conséquences
 
 - La passerelle est utilisable sans aucun fournisseur payant, avec Ollama.

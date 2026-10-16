@@ -16,7 +16,7 @@ from otlet import __version__
 from otlet.collection.adapters.parsing import FeedparserReader, ReadabilityReader
 from otlet.collection.adapters.postgres import PostgresCollectionStore
 from otlet.collection.application.collection import Collection
-from otlet.entrypoints.api import auth, collection, workspaces
+from otlet.entrypoints.api import auth, collection, watch, workspaces
 from otlet.identity.adapters.argon2_hasher import Argon2Hasher
 from otlet.identity.adapters.postgres import PostgresIdentityStore
 from otlet.identity.application.authentication import Authentication
@@ -24,6 +24,8 @@ from otlet.jobs.adapters import procrastinate_queue
 from otlet.platform import database
 from otlet.platform.config import Settings
 from otlet.platform.http import SafeClient
+from otlet.watch.adapters.postgres import PostgresWatchStore
+from otlet.watch.application.watch import Watch
 from otlet.workspaces.adapters.postgres import PostgresWorkspaceStore
 from otlet.workspaces.application.workspaces import Workspaces
 
@@ -81,7 +83,10 @@ def create_app(settings: Settings) -> FastAPI:
             Collection(store, SafeClient(), FeedparserReader(), ReadabilityReader()),
             workspace_context,
         )
-        routers = [auth_router, workspace_router, collection_router]
+        watch_router = watch.build_router(
+            Watch(PostgresWatchStore(engine, enqueue)), workspace_context
+        )
+        routers = [auth_router, workspace_router, collection_router, watch_router]
         for router in routers:
             app.include_router(router)
         # Read by the isolation tests, which check every route of these routers.

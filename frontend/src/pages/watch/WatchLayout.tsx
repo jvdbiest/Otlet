@@ -5,6 +5,7 @@ import { styles } from "./styles.ts";
 
 const TABS = [
   { to: "/veille", label: "watch.tabs.items" },
+  { to: "/veille/sujets", label: "watch.tabs.topics" },
   { to: "/veille/sources", label: "watch.tabs.sources" },
   { to: "/veille/saisie", label: "watch.tabs.manual" },
 ] as const;
@@ -22,7 +23,7 @@ export function WatchLayout() {
               <Link
                 to={tab.to}
                 className={styles.tab}
-                activeOptions={{ exact: true }}
+                activeOptions={{ exact: tab.to === "/veille" }}
                 activeProps={{ "aria-current": "page" }}
               >
                 {t(tab.label)}

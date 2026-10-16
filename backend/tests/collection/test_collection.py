@@ -14,7 +14,12 @@ import sqlalchemy as sa
 from integration_support import TestDatabase, requires_database
 from otlet.collection.adapters.parsing import FeedparserReader, ReadabilityReader
 from otlet.collection.adapters.postgres import PostgresCollectionStore
-from otlet.collection.application.collection import COLLECT_SOURCE, EXTRACT_ITEM, Collection
+from otlet.collection.application.collection import (
+    COLLECT_SOURCE,
+    EXTRACT_ITEM,
+    ITEM_READY,
+    Collection,
+)
 from otlet.collection.domain.model import CollectionError, LegalStatus, TextStatus
 from otlet.identity.adapters.argon2_hasher import Argon2Hasher
 from otlet.identity.adapters.postgres import PostgresIdentityStore
@@ -333,7 +338,7 @@ def test_a_pasted_text_keeps_its_declaration(world: World) -> None:
         "Mes notes personnelles",
         "Je suis l'auteur",
     )
-    assert world.queue.jobs == []
+    assert world.queue.names() == [ITEM_READY]
 
 
 def test_a_pointed_page_is_read_under_the_same_rules(world: World) -> None:

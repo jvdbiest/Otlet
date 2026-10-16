@@ -41,6 +41,13 @@ const ERRORS = [
   "invalid_title",
   "invalid_text",
   "invalid_declaration",
+  "no_keywords",
+  "invalid_terms",
+  "invalid_languages",
+  "invalid_description",
+  "name_taken",
+  "unknown_source",
+  "invalid_query",
 ] as const;
 
 export const INTERVALS = ["15", "30", "60", "180", "360", "720", "1440", "10080"] as const;
@@ -106,4 +113,27 @@ export function formatDate(value: string): string {
 /** Links come from feeds and pages: only web addresses become links. */
 export function isWebUrl(value: string): boolean {
   return /^https?:\/\//i.test(value);
+}
+
+export const TOPIC_LANGUAGES = ["fr", "en", "de", "nl", "es", "it", "pt"] as const;
+
+export function languageName(t: TFunction, code: string): string {
+  return among(TOPIC_LANGUAGES, code) ? t(`topics.languageNames.${code}`) : code;
+}
+
+/** "« IA » dans le titre (+3) · récent (+2)": the score, read aloud (F-VEI-02). */
+export function explain(
+  t: TFunction,
+  contributions: readonly { term: string; where: string; count: number; points: number }[],
+  freshness = 0,
+): string {
+  const parts = contributions.map((c) =>
+    c.where === "title"
+      ? t("topics.inTitle", { term: c.term, points: c.points })
+      : t("topics.inText", { term: c.term, count: c.count, points: c.points }),
+  );
+  if (freshness > 0) {
+    parts.push(t("topics.fresh", { points: freshness }));
+  }
+  return parts.join(" · ");
 }

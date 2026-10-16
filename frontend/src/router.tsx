@@ -17,6 +17,8 @@ import { ItemPage } from "./pages/watch/ItemPage.tsx";
 import { ItemsPage } from "./pages/watch/ItemsPage.tsx";
 import { ManualPage } from "./pages/watch/ManualPage.tsx";
 import { SourcesPage } from "./pages/watch/SourcesPage.tsx";
+import { TopicItemsPage } from "./pages/watch/TopicItemsPage.tsx";
+import { TopicsPage } from "./pages/watch/TopicsPage.tsx";
 import { WatchLayout } from "./pages/watch/WatchLayout.tsx";
 import { sessionQuery } from "./session.ts";
 
@@ -87,6 +89,14 @@ const watchRoute = createRoute({
 
 const itemsRoute = createRoute({ getParentRoute: () => watchRoute, path: "/", component: ItemsPage });
 const sourcesRoute = createRoute({ getParentRoute: () => watchRoute, path: "sources", component: SourcesPage });
+const topicsRoute = createRoute({ getParentRoute: () => watchRoute, path: "sujets", component: TopicsPage });
+const topicRoute = createRoute({
+  getParentRoute: () => watchRoute,
+  path: "sujets/$topicId",
+  component: function Topic() {
+    return <TopicItemsPage topicId={topicRoute.useParams().topicId} />;
+  },
+});
 const manualRoute = createRoute({ getParentRoute: () => watchRoute, path: "saisie", component: ManualPage });
 const itemRoute = createRoute({
   getParentRoute: () => watchRoute,
@@ -100,7 +110,7 @@ const routeTree = rootRoute.addChildren([
   loginRoute,
   appRoute.addChildren([
     indexRoute,
-    watchRoute.addChildren([itemsRoute, sourcesRoute, manualRoute, itemRoute]),
+    watchRoute.addChildren([itemsRoute, topicsRoute, topicRoute, sourcesRoute, manualRoute, itemRoute]),
     sectionRoute("/redaction", "writing"),
     sectionRoute("/bibliotheque", "library"),
     sectionRoute("/reglages", "settings"),

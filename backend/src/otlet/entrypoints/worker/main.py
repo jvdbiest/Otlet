@@ -20,7 +20,11 @@ logger = logging.getLogger(__name__)
 ROLE = "worker"
 INTERVAL_SECONDS = 5.0
 # Modules whose jobs this worker runs; importing one registers its jobs.
-JOB_MODULES = ("otlet.identity.adapters.jobs", "otlet.collection.adapters.jobs")
+JOB_MODULES = (
+    "otlet.identity.adapters.jobs",
+    "otlet.collection.adapters.jobs",
+    "otlet.watch.adapters.jobs",
+)
 
 
 def load_jobs() -> None:

@@ -7,6 +7,7 @@ fetches, then writes the outcome in one transaction.
 
 import logging
 from collections.abc import Callable
+from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from urllib.parse import urlsplit
 from uuid import UUID
@@ -49,6 +50,8 @@ HTML_TYPES = ("text/html", "application/xhtml+xml")
 # enqueues the collections that are due (otlet.entrypoints.scheduler).
 COLLECT_SOURCE = "collection.collect_source"
 EXTRACT_ITEM = "collection.extract_item"
+# Event for the watch module: an item has its final text (otlet.watch.adapters.jobs).
+ITEM_READY = "watch.item_ready"
 
 
 def utc_now() -> datetime:
@@ -58,6 +61,15 @@ def utc_now() -> datetime:
 def origin_of(url: str) -> str:
     parts = urlsplit(url)
     return f"{parts.scheme.lower()}://{(parts.netloc or '').lower()}"
+
+
+@dataclass(frozen=True, slots=True)
+class PageReading:
+    status: TextStatus
+    reason: str
+    text: str | None = None
+    title: str | None = None
+    language: str | None = None
 
 
 class SitePolicies:
@@ -392,41 +404,41 @@ class Collection:
         url = self._store.pending_item_url(workspace_id, item_id)
         if url is None:
             return
-        status, reason, text, title = self._read_page(workspace_id, url)
+        reading = self._read_page(workspace_id, url)
         self._store.set_item_text(
             workspace_id,
             item_id,
-            status=status,
-            reason=reason,
-            text=text,
-            title=title,
+            status=reading.status,
+            reason=reading.reason,
+            text=reading.text,
+            title=reading.title,
+            language=reading.language,
             at=self._clock(),
         )
 
-    def _read_page(
-        self, workspace_id: UUID, url: str
-    ) -> tuple[TextStatus, str, str | None, str | None]:
+    def _read_page(self, workspace_id: UUID, url: str) -> PageReading:
         policy = self._policies.for_url(workspace_id, url)
         robots = policy.robots.decide(url)
         if not robots.allowed:
-            return TextStatus.SUMMARY_ONLY, robots.reason, None, None
+            return PageReading(TextStatus.SUMMARY_ONLY, robots.reason)
         reserved = compliance.file_reservation(url, policy.tdm_rules)
         if reserved is not None and not reserved.allowed:
-            return TextStatus.SUMMARY_ONLY, reserved.reason, None, None
+            return PageReading(TextStatus.SUMMARY_ONLY, reserved.reason)
         try:
             result = self._fetcher.get(url, max_bytes=PAGE_MAX_BYTES)
         except FetchError as error:
-            return TextStatus.SUMMARY_ONLY, f"fetch_{error.reason}", None, None
+            return PageReading(TextStatus.SUMMARY_ONLY, f"fetch_{error.reason}")
         if result.status >= 400:
-            return TextStatus.SUMMARY_ONLY, f"http_{result.status}", None, None
+            return PageReading(TextStatus.SUMMARY_ONLY, f"http_{result.status}")
         if result.content_type not in HTML_TYPES:
-            return TextStatus.SUMMARY_ONLY, "not_html", None, None
+            return PageReading(TextStatus.SUMMARY_ONLY, "not_html")
         html = result.text()
         mining = compliance.mining(url, policy.tdm_rules, dict(result.headers), html)
         page = self._pages.extract(html, result.url)
         title = page.title if page else None
+        language = page.language if page else None
         if not mining.allowed:
-            return TextStatus.SUMMARY_ONLY, mining.reason, None, title
+            return PageReading(TextStatus.SUMMARY_ONLY, mining.reason, None, title, language)
         if page is None or not page.text.strip():
-            return TextStatus.SUMMARY_ONLY, "no_text_found", None, title
-        return TextStatus.FULL_TEXT, mining.reason, page.text, title
+            return PageReading(TextStatus.SUMMARY_ONLY, "no_text_found", None, title, language)
+        return PageReading(TextStatus.FULL_TEXT, mining.reason, page.text, title, language)

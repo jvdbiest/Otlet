@@ -196,6 +196,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/items/{item_id}/watch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Item Watch
+         * @description The topics of an item, with their explained scores, and the same story elsewhere.
+         */
+        get: operations["item_watch_api_workspaces__workspace_id__items__item_id__watch_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search
+         * @description Full-text search of the items, best match first (ADR-0021: bounded ranking).
+         */
+        get: operations["search_api_workspaces__workspace_id__search_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/sources": {
         parameters: {
             query?: never;
@@ -273,6 +313,63 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/topics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Topics */
+        get: operations["list_topics_api_workspaces__workspace_id__topics_get"];
+        put?: never;
+        /** Create Topic */
+        post: operations["create_topic_api_workspaces__workspace_id__topics_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/topics/{topic_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Topic */
+        get: operations["get_topic_api_workspaces__workspace_id__topics__topic_id__get"];
+        /** Update Topic */
+        put: operations["update_topic_api_workspaces__workspace_id__topics__topic_id__put"];
+        post?: never;
+        /** Delete Topic */
+        delete: operations["delete_topic_api_workspaces__workspace_id__topics__topic_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/topics/{topic_id}/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Topic Items
+         * @description The items of a topic, best score first; the score is explained (F-VEI-02).
+         */
+        get: operations["topic_items_api_workspaces__workspace_id__topics__topic_id__items_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -310,6 +407,17 @@ export interface components {
             /** Url */
             url: string;
         };
+        /** ContributionView */
+        ContributionView: {
+            /** Count */
+            count: number;
+            /** Points */
+            points: number;
+            /** Term */
+            term: string;
+            /** Where */
+            where: string;
+        };
         /** Credentials */
         Credentials: {
             /** Login */
@@ -317,10 +425,38 @@ export interface components {
             /** Password */
             password: string;
         };
+        /** DuplicateView */
+        DuplicateView: {
+            /** Item Id */
+            item_id: string;
+            /** Source Name */
+            source_name: string | null;
+            /** Title */
+            title: string;
+            /** Url */
+            url: string | null;
+        };
+        /** FoundItemView */
+        FoundItemView: {
+            item: components["schemas"]["ItemView"];
+            /** Rank */
+            rank: number;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** ItemTopicView */
+        ItemTopicView: {
+            /** Contributions */
+            contributions: components["schemas"]["ContributionView"][];
+            /** Name */
+            name: string;
+            /** Score */
+            score: number;
+            /** Topic Id */
+            topic_id: string;
         };
         /** ItemView */
         ItemView: {
@@ -333,6 +469,8 @@ export interface components {
             collected_at: string;
             /** Declared Origin */
             declared_origin: string | null;
+            /** Duplicates */
+            duplicates: number;
             /** Id */
             id: string;
             /** Origin */
@@ -357,6 +495,13 @@ export interface components {
             url: string | null;
             /** Usage Right */
             usage_right: string | null;
+        };
+        /** ItemWatchView */
+        ItemWatchView: {
+            /** Duplicates */
+            duplicates: components["schemas"]["DuplicateView"][];
+            /** Topics */
+            topics: components["schemas"]["ItemTopicView"][];
         };
         /** ManualText */
         ManualText: {
@@ -402,6 +547,16 @@ export interface components {
         Password: {
             /** Password */
             password: string;
+        };
+        /** ScoredItemView */
+        ScoredItemView: {
+            /** Contributions */
+            contributions: components["schemas"]["ContributionView"][];
+            /** Freshness */
+            freshness: number;
+            item: components["schemas"]["ItemView"];
+            /** Score */
+            score: number;
         };
         /** SessionView */
         SessionView: {
@@ -457,6 +612,48 @@ export interface components {
             site_url: string | null;
             /** Url */
             url: string;
+        };
+        /** TopicBody */
+        TopicBody: {
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /** Exclusions */
+            exclusions?: string[];
+            /** Keywords */
+            keywords: string[];
+            /** Languages */
+            languages?: string[];
+            /** Name */
+            name: string;
+            /** Source Ids */
+            source_ids?: string[];
+        };
+        /** TopicView */
+        TopicView: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Description */
+            description: string;
+            /** Exclusions */
+            exclusions: string[];
+            /** Id */
+            id: string;
+            /** Item Count */
+            item_count: number;
+            /** Keywords */
+            keywords: string[];
+            /** Languages */
+            languages: string[];
+            /** Name */
+            name: string;
+            /** Source Ids */
+            source_ids: string[];
         };
         /** UserView */
         UserView: {
@@ -852,6 +1049,72 @@ export interface operations {
             };
         };
     };
+    item_watch_api_workspaces__workspace_id__items__item_id__watch_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemWatchView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    search_api_workspaces__workspace_id__search_get: {
+        parameters: {
+            query: {
+                q: string;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FoundItemView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_sources_api_workspaces__workspace_id__sources_get: {
         parameters: {
             query?: never;
@@ -1067,6 +1330,205 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_topics_api_workspaces__workspace_id__topics_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TopicView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_topic_api_workspaces__workspace_id__topics_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TopicBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TopicView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_topic_api_workspaces__workspace_id__topics__topic_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                topic_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TopicView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_topic_api_workspaces__workspace_id__topics__topic_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                topic_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TopicBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TopicView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_topic_api_workspaces__workspace_id__topics__topic_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                topic_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    topic_items_api_workspaces__workspace_id__topics__topic_id__items_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                topic_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScoredItemView"][];
                 };
             };
             /** @description Validation Error */

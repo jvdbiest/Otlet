@@ -4,8 +4,9 @@ import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { ApiError } from "../../api/client.ts";
 import { itemQuery } from "../../collection.ts";
+import { itemWatchQuery } from "../../watch.ts";
 import { useWorkspaceId } from "../../session.ts";
-import { formatDate, isWebUrl, reasonText, textLabel, textTone } from "./labels.ts";
+import { explain, formatDate, isWebUrl, reasonText, textLabel, textTone } from "./labels.ts";
 import { styles } from "./styles.ts";
 
 /** One item, its text when Otlet may keep it, and where it comes from (U01, M-08). */
@@ -75,6 +76,7 @@ function Item({ workspaceId, itemId }: { workspaceId: string; itemId: string }) 
           <p className={styles.text}>{data.summary}</p>
         </section>
       )}
+      <ItemWatch workspaceId={workspaceId} itemId={itemId} />
       <section>
         <h3>{t("item.text")}</h3>
         {data.text === null ? (
@@ -84,5 +86,50 @@ function Item({ workspaceId, itemId }: { workspaceId: string; itemId: string }) 
         )}
       </section>
     </article>
+  );
+}
+
+/** The topics of the item with the reasons of each score, and the same story elsewhere (U02). */
+function ItemWatch({ workspaceId, itemId }: { workspaceId: string; itemId: string }) {
+  const { t } = useTranslation();
+  const watch = useQuery(itemWatchQuery(workspaceId, itemId));
+  if (watch.data === undefined) {
+    return null;
+  }
+  return (
+    <>
+      <section>
+        <h3>{t("item.topics")}</h3>
+        {watch.data.topics.length === 0 ? (
+          <p className={styles.meta}>{t("item.noTopic")}</p>
+        ) : (
+          <ul className={styles.journal}>
+            {watch.data.topics.map((topic) => (
+              <li key={topic.topic_id}>
+                <Link to="/veille/sujets/$topicId" params={{ topicId: topic.topic_id }}>
+                  {topic.name}
+                </Link>{" "}
+                ({t("item.points", { points: topic.score })}) : {explain(t, topic.contributions)}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+      {watch.data.duplicates.length > 0 && (
+        <section>
+          <h3>{t("item.sameStory")}</h3>
+          <ul className={styles.journal}>
+            {watch.data.duplicates.map((duplicate) => (
+              <li key={duplicate.item_id}>
+                <Link to="/veille/elements/$itemId" params={{ itemId: duplicate.item_id }}>
+                  {duplicate.title}
+                </Link>
+                {duplicate.source_name !== null && <> · {duplicate.source_name}</>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </>
   );
 }

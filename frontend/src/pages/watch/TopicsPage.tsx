@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { sourcesQuery } from "../../collection.ts";
 import { useWorkspaceId } from "../../session.ts";
 import { topicsQuery, useDeleteTopic, useSaveTopic, type TopicView } from "../../watch.ts";
-import { errorText, languageName, TOPIC_LANGUAGES } from "./labels.ts";
+import { errorText, languageName, matchesFilter, TOPIC_LANGUAGES } from "./labels.ts";
 import { RescoreStatus } from "./RescoreStatus.tsx";
 import { emptyStyles, styles } from "./styles.ts";
 
@@ -240,6 +240,7 @@ function TopicForm({
             options={sources.data.map((source) => ({ value: source.id, label: source.name }))}
             value={sourceIds}
             onChange={setSourceIds}
+            filterLabel={t("topics.filterSources")}
           />
         )}
         {save.error !== null && (
@@ -266,16 +267,45 @@ function Choices({
   options,
   value,
   onChange,
+  filterLabel,
 }: {
   legend: string;
   options: { value: string; label: string }[];
   value: string[];
   onChange: (value: string[]) => void;
+  filterLabel?: string;
 }) {
+  const { t } = useTranslation();
+  const [query, setQuery] = useState("");
+  // The filter only hides boxes: what is checked stays checked, and is counted.
+  const shown = query.trim() === "" ? options : options.filter((o) => matchesFilter(o.label, query));
+  const hiddenChecked = value.filter((v) => !shown.some((o) => o.value === v)).length;
   return (
     <fieldset className={styles.choices}>
       <legend>{legend}</legend>
-      {options.map((option) => (
+      {filterLabel !== undefined && (
+        <div className={styles.choicesTools}>
+          <input
+            type="search"
+            aria-label={filterLabel}
+            placeholder={filterLabel}
+            value={query}
+            onChange={(event) => {
+              setQuery(event.target.value);
+            }}
+          />
+          {value.length > 0 && (
+            <span aria-live="polite" className={styles.help}>
+              {t("topics.checked", { count: value.length })}
+              {hiddenChecked > 0 && <> {t("topics.hiddenChecked", { hidden: hiddenChecked })}</>}
+            </span>
+          )}
+          {shown.length === 0 && (
+            <span className={styles.help}>{t("topics.noSourceMatch", { q: query.trim() })}</span>
+          )}
+        </div>
+      )}
+      {shown.map((option) => (
         <label key={option.value}>
           <input
             type="checkbox"

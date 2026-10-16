@@ -143,3 +143,12 @@ export function explain(
   }
   return parts.join(" · ");
 }
+
+function fold(text: string): string {
+  return text.normalize("NFKD").replace(/\p{M}/gu, "").toLowerCase();
+}
+
+/** Whether `text` contains `query`, ignoring case and accents (« mo » finds « Moto »). */
+export function matchesFilter(text: string, query: string): boolean {
+  return fold(text).includes(fold(query.trim()));
+}

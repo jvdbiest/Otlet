@@ -10,6 +10,7 @@ export const styles = css as Record<
   | "button"
   | "card"
   | "choices"
+  | "choicesTools"
   | "danger"
   | "error"
   | "field"

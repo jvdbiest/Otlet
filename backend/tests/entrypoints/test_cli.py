@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from otlet.entrypoints import cli
-from otlet.entrypoints.worker import main as worker
+from otlet.entrypoints.scheduler import main as scheduler
 from otlet.platform import process
 from otlet.platform.config import Settings
 
@@ -20,10 +20,10 @@ def test_unknown_role_is_rejected() -> None:
 def test_loop_role_writes_heartbeats_and_stops(tmp_path: Path) -> None:
     settings = Settings(ui_dir=None, run_dir=tmp_path)
     stop = threading.Event()
-    thread = threading.Thread(target=worker.run, args=(settings, stop))
+    thread = threading.Thread(target=scheduler.run, args=(settings, stop))
     thread.start()
     deadline = time.monotonic() + 5
-    while not process.heartbeat_path(tmp_path, "worker").exists():
+    while not process.heartbeat_path(tmp_path, "scheduler").exists():
         assert time.monotonic() < deadline, "no heartbeat"
         time.sleep(0.01)
     stop.set()

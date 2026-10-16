@@ -9,6 +9,7 @@ import { TOPIC_PAGE_SIZE, topicItemsQuery, topicQuery, type ScoredItemView } fro
 import { explain, formatDate, textLabel, textTone } from "./labels.ts";
 import { RescoreStatus } from "./RescoreStatus.tsx";
 import { emptyStyles, styles } from "./styles.ts";
+import { TriageActions } from "./TriageActions.tsx";
 
 /** The items of one topic, best score first, each with the reasons of its score (F-VEI-02). */
 export function TopicItemsPage({ topicId }: { topicId: string }) {
@@ -99,7 +100,7 @@ function ScoredPage({
     <>
       <ul className={styles.list}>
         {items.data.map((entry) => (
-          <ScoredCard key={entry.item.id} entry={entry} />
+          <ScoredCard key={entry.item.id} workspaceId={workspaceId} entry={entry} />
         ))}
       </ul>
       {isLast && items.data.length === TOPIC_PAGE_SIZE && (
@@ -113,7 +114,7 @@ function ScoredPage({
   );
 }
 
-function ScoredCard({ entry }: { entry: ScoredItemView }) {
+function ScoredCard({ workspaceId, entry }: { workspaceId: string; entry: ScoredItemView }) {
   const { t } = useTranslation();
   const item = entry.item;
   return (
@@ -132,6 +133,7 @@ function ScoredCard({ entry }: { entry: ScoredItemView }) {
         <strong>{t("topics.score", { score: entry.score })}</strong>{" "}
         {t("topics.why", { reasons: explain(t, entry.contributions, entry.freshness) })}
       </p>
+      <TriageActions workspaceId={workspaceId} itemId={item.id} title={item.title} triage={entry.triage} />
     </li>
   );
 }

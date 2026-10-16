@@ -16,6 +16,7 @@ from otlet.collection.application.collection import ITEM_READY as ITEM_READY
 from otlet.collection.domain.model import Item
 from otlet.watch.domain import model
 from otlet.watch.domain.model import Candidate, Match, Rules, Topic, WatchError
+from otlet.watch.domain.triage import Triage
 from otlet.workspaces.domain.model import WorkspaceContext
 
 # Jobs of the module (otlet.watch.adapters.jobs); the collection enqueues ITEM_READY.
@@ -38,6 +39,7 @@ class ScoredItem:
     score: int  # lexical score plus freshness
     freshness: int
     contributions: tuple[model.Contribution, ...]
+    triage: Triage = Triage()
 
 
 @dataclass(frozen=True, slots=True)
@@ -87,7 +89,13 @@ class WatchStore(Protocol):
     def delete_topic(self, workspace_id: UUID, topic_id: UUID) -> bool: ...
 
     def topic_items(
-        self, workspace_id: UUID, topic_id: UUID, now: datetime, limit: int, offset: int
+        self,
+        workspace_id: UUID,
+        topic_id: UUID,
+        now: datetime,
+        limit: int,
+        offset: int,
+        user_id: UUID,
     ) -> list[ScoredItem]: ...
 
     def item_topics(self, workspace_id: UUID, item_id: UUID) -> list[ItemTopic]: ...
@@ -216,7 +224,7 @@ class Watch:
         self, context: WorkspaceContext, topic_id: UUID, now: datetime, *, limit: int, offset: int
     ) -> list[ScoredItem]:
         return self._store.topic_items(
-            context.workspace_id, topic_id, now, min(limit, 200), max(offset, 0)
+            context.workspace_id, topic_id, now, min(limit, 200), max(offset, 0), context.user_id
         )
 
     def item_topics(self, context: WorkspaceContext, item_id: UUID) -> list[ItemTopic]:

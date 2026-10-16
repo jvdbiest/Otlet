@@ -11,6 +11,7 @@ export const styles = css as Record<
   | "card"
   | "choices"
   | "choicesTools"
+  | "check"
   | "danger"
   | "error"
   | "field"
@@ -27,11 +28,15 @@ export const styles = css as Record<
   | "panel"
   | "primary"
   | "row"
+  | "steps"
   | "search"
   | "success"
   | "tab"
   | "tabs"
   | "text"
+  | "unread"
+  | "viewButton"
+  | "views"
   | "warning"
   | "why",
   string

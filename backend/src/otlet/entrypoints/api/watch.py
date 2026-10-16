@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field
 
 from otlet.entrypoints.api.auth import same_origin
 from otlet.entrypoints.api.collection import ItemView
+from otlet.entrypoints.api.triage import TriageView
 from otlet.entrypoints.api.workspaces import PREFIX
 from otlet.watch.application.watch import Watch
 from otlet.watch.domain import model
@@ -81,6 +82,7 @@ class ScoredItemView(BaseModel):
     score: int
     freshness: int
     contributions: list[ContributionView]
+    triage: TriageView
 
 
 class ItemTopicView(BaseModel):
@@ -187,6 +189,7 @@ def build_router(watch: Watch, workspace_context: Callable[..., WorkspaceContext
                 score=entry.score,
                 freshness=entry.freshness,
                 contributions=[ContributionView.of(c) for c in entry.contributions],
+                triage=TriageView.of(entry.triage),
             )
             for entry in scored
         ]

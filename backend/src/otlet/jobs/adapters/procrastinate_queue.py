@@ -19,6 +19,7 @@ from sqlalchemy.engine import make_url
 from otlet.jobs.application.registry import (
     MAINTENANCE_QUEUE,
     QUEUES,
+    Enqueue,
     JobDefinition,
     JobEnvironment,
 )
@@ -111,3 +112,8 @@ def enqueue(app: procrastinate.App, connection: sa.Connection, name: str, **kwar
     driver_connection = connection.connection.driver_connection
     deferrer = app.configure_task(name, allow_unknown=True, connection=driver_connection)
     return int(deferrer.defer(**kwargs))
+
+
+def enqueuer(database_url: str) -> Enqueue:
+    """The `enqueue` of a JobEnvironment or of the API, on an application that only enqueues."""
+    return functools.partial(enqueue, build_app(database_url))

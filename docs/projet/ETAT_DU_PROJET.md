@@ -20,15 +20,17 @@ Mis à jour le 2026-10-16. Une page : ce qu'il faut savoir pour reprendre le tra
 
 ## Prochaine action
 
-1. Joël fusionne `feat/X01-coquille`, dernière tâche d'I0 (F01 à F04 sont sur `main`). I0 est alors close.
-2. Ensuite I1 Lire, en commençant par U01 (sources RSS).
-3. Joël note son temps une fois par semaine dans `docs/projet/journal-temps.csv` (domaine `projet`).
-4. Plus tard, avec l'accord de Joël pour chacun : mesurer les fournisseurs réels de S4 (50 briefs chacun, plafonds de dépense posés).
+1. **I0 close** le 2026-10-16 (X01 fusionnée). I1 Lire en cours.
+2. Joël fusionne `feat/U01-collecte` (première moitié d'U01 : collecte côté serveur) et répond aux deux questions de l'ADR-0031 (licence de `regex` pour `trafilatura`, avertissement sur les conditions d'utilisation).
+3. Seconde moitié d'U01 : les écrans des sources, de la veille et de la saisie manuelle.
+4. Joël note son temps une fois par semaine dans `docs/projet/journal-temps.csv` (domaine `projet`).
+5. Plus tard, avec l'accord de Joël pour chacun : mesurer les fournisseurs réels de S4 (50 briefs chacun, plafonds de dépense posés).
 
 ## Règles de travail
 
 - **Protocole des preuves (ADR-0018)** : rapport avec ses seuils fusionné sur `main` **avant** toute mesure ; seuils jamais modifiés après ; durée maximale tenue ; conclusion obligatoire.
 - **Isolation (F03, ADR-0028)** : toute nouvelle table métier appelle `rls.workspace_scoped` dans sa migration ; toute route d'un espace vit sous `/api/workspaces/{workspace_id}` et lit la base par `WorkspaceConnection`. Les tests d'isolation parcourent toutes les routes et échouent si une route oublie la session ou l'appartenance à l'espace.
+- **Sorties réseau (U01, ADR-0031)** : toute requête sortante passe par `otlet.platform.http.SafeClient` (protection SSRF). Les échéances du domaine passent par le rôle `scheduler` (verrou consultatif), les tâches de maintenance par la cron des workers (ADR-0030).
 - **Tâches de fond (F04, ADR-0022)** : un module déclare ses tâches avec `otlet.jobs.application.registry.job` et les enfile avec `procrastinate_queue.enqueue` sur la connexion de sa transaction. Une tâche reçoit des identifiants, jamais des objets, et pose elle-même son contexte d'espace. Le module doit figurer dans `JOB_MODULES` du worker.
 - **Git** : une branche par tâche, commits signés DCO (`git commit -s`), messages en français, code en anglais. Jamais de poussée sur `main`, qui est protégée (12 vérifications de CI obligatoires).
 - **Demandes de fusion** : Claude pousse et donne un lien de comparaison prérempli. Joël crée la demande et fusionne lui-même : le navigateur de l'app n'est pas connecté à GitHub, et les fusions par Claude sont bloquées.

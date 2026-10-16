@@ -27,7 +27,7 @@ ALLOWED = {
     "0BSD", "AFL-2.1", "Apache-2.0", "BlueOak-1.0.0", "BSD-2-Clause", "BSD-3-Clause",
     "CC0-1.0", "CC-BY-4.0", "HPND", "ISC", "MIT", "MIT-0", "MPL-2.0", "PostgreSQL",
     "PSF-2.0", "Python-2.0", "Unlicense", "Zlib",
-    "LGPL-2.1-only", "LGPL-2.1-or-later", "LGPL-3.0-only", "LGPL-3.0-or-later",
+    "LGPL-2.0-or-later", "LGPL-2.1-only", "LGPL-2.1-or-later", "LGPL-3.0-only", "LGPL-3.0-or-later",
     "GPL-2.0-or-later", "GPL-3.0-only", "GPL-3.0-or-later",
     "AGPL-3.0-only", "AGPL-3.0-or-later",
 }  # fmt: skip
@@ -49,6 +49,7 @@ ALIASES = {
     "psf-2.0": "PSF-2.0",
     "isc license (iscl)": "ISC",
     "the unlicense (unlicense)": "Unlicense",
+    "gnu lesser general public license v2 or later (lgplv2+)": "LGPL-2.0-or-later",
     "gnu lesser general public license v3 (lgplv3)": "LGPL-3.0-only",
     "gnu lesser general public license v3 or later (lgplv3+)": "LGPL-3.0-or-later",
 }
@@ -118,8 +119,11 @@ def python_licence(name: str) -> str | None:
     known = [ALIASES[c] for c in classifiers if c in ALIASES]
     if known:
         return " OR ".join(known)
-    text = (metadata.get("License") or "").strip().lower()
-    return ALIASES.get(text)
+    text = (metadata.get("License") or "").strip()
+    # Some packages write a bare SPDX identifier in the free-text field (lxml: BSD-3-Clause).
+    if text in ALLOWED:
+        return text
+    return ALIASES.get(text.lower())
 
 
 def check_python() -> list[str]:

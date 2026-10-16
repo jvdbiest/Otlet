@@ -99,7 +99,7 @@ record upgrade-n-to-n1 "$ok" $(($(now) - t))
 
 # 3. Rollback (mise-a-jour.md §3): downgrade the schema with N+1, then start N.
 t=$(now)
-OTLET_VERSION=n1 compose stop api worker caddy >/dev/null 2>&1
+OTLET_VERSION=n1 compose stop api worker scheduler caddy >/dev/null 2>&1
 OTLET_VERSION=n1 compose run --rm migrate migrate downgrade "$schema_n" >/dev/null 2>&1
 up n
 [ "$(revision)" = "$schema_n" ] && [ "$(fingerprint)" = "$reference" ] && [ "$(has_note_column)" = 0 ] \
@@ -109,7 +109,7 @@ record rollback-n1-to-n "$ok" $(($(now) - t))
 # 4. Second resort (mise-a-jour.md §4): upgrade again, then restore the pre-upgrade dump.
 up n1
 t=$(now)
-compose stop api worker caddy >/dev/null 2>&1
+compose stop api worker scheduler caddy >/dev/null 2>&1
 compose run --rm --no-deps backup \
     "psql -v ON_ERROR_STOP=1 -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;' \
      && pg_restore --no-owner --exit-on-error -d otlet /backups/$(basename "$pre_upgrade_dump")" \

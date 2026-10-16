@@ -9,6 +9,7 @@ did not set itself (ADR-0028).
 
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
+from typing import Any, Protocol
 
 import sqlalchemy as sa
 
@@ -17,11 +18,24 @@ MAINTENANCE_QUEUE = "maintenance"
 QUEUES = (DEFAULT_QUEUE, MAINTENANCE_QUEUE)
 
 
+class Enqueue(Protocol):
+    """Enqueues the job `name` inside the transaction of `connection`, so that it exists if
+    and only if the transaction commits (otlet.jobs.adapters.procrastinate_queue.enqueue)."""
+
+    def __call__(self, connection: sa.Connection, name: str, **kwargs: Any) -> int: ...
+
+
+def no_queue(connection: sa.Connection, name: str, **kwargs: Any) -> int:
+    raise RuntimeError(f"no queue to enqueue {name!r}")
+
+
 @dataclass(frozen=True, slots=True)
 class JobEnvironment:
     """What the worker hands to every job."""
 
     engine: sa.Engine
+    # Jobs that enqueue other jobs use this, on the connection of their own transaction.
+    enqueue: Enqueue = no_queue
 
 
 JobFunction = Callable[..., None]

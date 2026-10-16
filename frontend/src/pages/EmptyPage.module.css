@@ -1,0 +1,22 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+.empty {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-8) var(--space-6);
+  text-align: center;
+  background: var(--surface);
+}
+
+.headline {
+  font-weight: 600;
+  margin: 0 0 var(--space-2);
+}
+
+.next {
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.page {
+  padding: var(--space-8);
+}

@@ -20,8 +20,8 @@ Mis à jour le 2026-10-16. Une page : ce qu'il faut savoir pour reprendre le tra
 
 ## Prochaine action
 
-1. Joël fusionne `feat/F04-taches` (F01 à F03 sont sur `main`).
-2. Dernière tâche d'I0 : X01 (coquille de l'interface, qui branchera la connexion de F02).
+1. Joël fusionne `feat/X01-coquille`, dernière tâche d'I0 (F01 à F04 sont sur `main`). I0 est alors close.
+2. Ensuite I1 Lire, en commençant par U01 (sources RSS).
 3. Joël note son temps une fois par semaine dans `docs/projet/journal-temps.csv` (domaine `projet`).
 4. Plus tard, avec l'accord de Joël pour chacun : mesurer les fournisseurs réels de S4 (50 briefs chacun, plafonds de dépense posés).
 

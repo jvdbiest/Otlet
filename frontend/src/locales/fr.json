@@ -1,0 +1,57 @@
+{
+  "app": {
+    "name": "Otlet",
+    "skipToContent": "Aller au contenu",
+    "loading": "Chargement…",
+    "unavailable": "Le service ne répond pas. Réessayez dans un instant."
+  },
+  "login": {
+    "title": "Connexion",
+    "intro": "Connectez-vous à votre instance Otlet.",
+    "login": "Adresse e-mail",
+    "password": "Mot de passe",
+    "submit": "Se connecter",
+    "submitting": "Connexion…",
+    "invalidCredentials": "Adresse ou mot de passe incorrect.",
+    "tooManyAttempts": "Trop de tentatives. Réessayez dans {minutes, plural, one {# minute} other {# minutes}}.",
+    "failed": "La connexion a échoué. Réessayez."
+  },
+  "nav": {
+    "label": "Navigation principale",
+    "watch": "Veille",
+    "writing": "Rédaction",
+    "library": "Bibliothèque",
+    "settings": "Réglages"
+  },
+  "account": {
+    "menu": "Compte de {name}",
+    "workspace": "Espace : {name}",
+    "logout": "Se déconnecter"
+  },
+  "pages": {
+    "watch": {
+      "title": "Veille",
+      "empty": "Aucune source pour l'instant.",
+      "next": "Vous pourrez bientôt ajouter vos flux RSS et suivre vos sujets ici."
+    },
+    "writing": {
+      "title": "Rédaction",
+      "empty": "Aucun brouillon pour l'instant.",
+      "next": "Vous pourrez bientôt construire un brief et obtenir un brouillon sourcé ici."
+    },
+    "library": {
+      "title": "Bibliothèque",
+      "empty": "Aucun article pour l'instant.",
+      "next": "Vos articles, leurs versions et leurs sources apparaîtront ici."
+    },
+    "settings": {
+      "title": "Réglages",
+      "empty": "Aucun réglage pour l'instant.",
+      "next": "Vous pourrez bientôt choisir vos fournisseurs et modèles d'IA, vos budgets et vos sources ici."
+    },
+    "notFound": {
+      "title": "Page introuvable",
+      "back": "Revenir à la veille"
+    }
+  }
+}

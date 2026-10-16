@@ -21,7 +21,7 @@ Mis à jour le 2026-10-16. Une page : ce qu'il faut savoir pour reprendre le tra
 ## Prochaine action
 
 1. Joël fusionne `docs/B11-cloture`.
-2. Rédiger le plan d'É1 (`ROADMAP.md` §5.2) : backlog chiffré, ordre, critères de sortie, à faire valider par Joël avant tout code de produit. Planification sur une vélocité prudente de 2,4 (D1) ; temps de Joël journalisé à part (domaine `projet`).
+2. Joël valide le plan d'É1 (`docs/projet/plan-E1.md`, backlog `docs/projet/backlog-E1.csv`) et répond aux quatre questions de son §7. Aucun code de produit avant.
 3. Plus tard, avec l'accord de Joël pour chacun : mesurer les fournisseurs réels de S4 (50 briefs chacun, plafonds de dépense posés).
 
 ## Règles de travail

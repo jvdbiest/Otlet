@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ApiError } from "../../api/client.ts";
 import { useWorkspaceId } from "../../session.ts";
 import { TOPIC_PAGE_SIZE, topicItemsQuery, topicQuery, type ScoredItemView } from "../../watch.ts";
 import { explain, formatDate, textLabel, textTone } from "./labels.ts";
+import { RescoreStatus } from "./RescoreStatus.tsx";
 import { emptyStyles, styles } from "./styles.ts";
 
 /** The items of one topic, best score first, each with the reasons of its score (F-VEI-02). */
@@ -19,6 +20,14 @@ function TopicItems({ workspaceId, topicId }: { workspaceId: string; topicId: st
   const { t } = useTranslation();
   const topic = useQuery(topicQuery(workspaceId, topicId));
   const [pages, setPages] = useState(1);
+  const queryClient = useQueryClient();
+  const rescoring = topic.data?.rescoring;
+  // When the recalculation ends, the list shows its result at once.
+  useEffect(() => {
+    if (rescoring === false) {
+      void queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId, "topics", topicId, "items"] });
+    }
+  }, [rescoring, queryClient, workspaceId, topicId]);
   const back = (
     <p>
       <Link to="/veille/sujets">{t("topics.back")}</Link>
@@ -41,6 +50,7 @@ function TopicItems({ workspaceId, topicId }: { workspaceId: string; topicId: st
       {back}
       <h2>{topic.data.name}</h2>
       <p className={styles.meta}>{t("topics.keywordsLabel", { terms: topic.data.keywords.join(", ") })}</p>
+      <RescoreStatus workspaceId={workspaceId} topic={topic.data} />
       {Array.from({ length: pages }, (_, index) => (
         <ScoredPage
           key={index}

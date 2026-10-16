@@ -512,6 +512,24 @@
         "title": "Password",
         "type": "object"
       },
+      "RefreshView": {
+        "properties": {
+          "sources": {
+            "title": "Sources",
+            "type": "integer"
+          },
+          "topics": {
+            "title": "Topics",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "sources",
+          "topics"
+        ],
+        "title": "RefreshView",
+        "type": "object"
+      },
       "ScoredItemView": {
         "properties": {
           "contributions": {
@@ -753,7 +771,7 @@
             "items": {
               "type": "string"
             },
-            "maxItems": 50,
+            "maxItems": 1000,
             "title": "Exclusions",
             "type": "array"
           },
@@ -761,7 +779,7 @@
             "items": {
               "type": "string"
             },
-            "maxItems": 50,
+            "maxItems": 1000,
             "title": "Keywords",
             "type": "array"
           },
@@ -840,6 +858,22 @@
             "title": "Name",
             "type": "string"
           },
+          "rescored_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rescored At"
+          },
+          "rescoring": {
+            "title": "Rescoring",
+            "type": "boolean"
+          },
           "source_ids": {
             "items": {
               "type": "string"
@@ -857,7 +891,9 @@
           "languages",
           "source_ids",
           "created_at",
-          "item_count"
+          "item_count",
+          "rescoring",
+          "rescored_at"
         ],
         "title": "TopicView",
         "type": "object"
@@ -1473,6 +1509,47 @@
           }
         },
         "summary": "Item Watch"
+      }
+    },
+    "/api/workspaces/{workspace_id}/refresh": {
+      "post": {
+        "description": "Collects every active source now and matches every topic again.",
+        "operationId": "refresh_api_workspaces__workspace_id__refresh_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefreshView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Refresh"
       }
     },
     "/api/workspaces/{workspace_id}/search": {
@@ -2206,6 +2283,55 @@
           }
         },
         "summary": "Topic Items"
+      }
+    },
+    "/api/workspaces/{workspace_id}/topics/{topic_id}/rescore": {
+      "post": {
+        "description": "Matches the topic again with the recent items, in the background.",
+        "operationId": "rescore_topic_api_workspaces__workspace_id__topics__topic_id__rescore_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "topic_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Topic Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Rescore Topic"
       }
     },
     "/health": {

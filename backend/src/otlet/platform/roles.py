@@ -89,19 +89,54 @@ def provision(admin_url: str, migrator_password: str, app_password: str) -> None
                     sql.Identifier(table), app
                 )
             )
-        # Functions too: a SECURITY DEFINER function must run as the owner, and the application
-        # role may call it (the sign-in lookup of ADR-0028).
+        # Sequences of those tables follow them; free-standing ones move too. The application
+        # role uses all of them (the job queue numbers its jobs).
         cursor.execute(
-            "SELECT p.oid::regprocedure::text FROM pg_proc AS p"
+            "SELECT c.relname FROM pg_class AS c JOIN pg_namespace AS n ON n.oid = c.relnamespace"
+            " WHERE n.nspname = 'public' AND c.relkind = 'S' AND NOT EXISTS (SELECT 1"
+            " FROM pg_depend AS d WHERE d.objid = c.oid AND d.deptype IN ('a', 'i', 'e'))"
+            " AND pg_get_userbyid(c.relowner) <> %s",
+            (OWNER,),
+        )
+        for (sequence,) in cursor.fetchall():
+            cursor.execute(
+                sql.SQL("ALTER SEQUENCE public.{} OWNER TO {}").format(
+                    sql.Identifier(sequence), owner
+                )
+            )
+        cursor.execute(
+            sql.SQL("GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO {}").format(app)
+        )
+        # Types (the job queue's enums) and every function move to the owner, so that later
+        # migrations, run as the owner, can change them.
+        cursor.execute(
+            "SELECT t.oid::regtype::text FROM pg_type AS t"
+            " JOIN pg_namespace AS n ON n.oid = t.typnamespace"
+            " WHERE n.nspname = 'public' AND t.typtype IN ('e', 'd', 'c')"
+            " AND (t.typtype <> 'c'"
+            "  OR (SELECT relkind FROM pg_class WHERE oid = t.typrelid) = 'c')"
+            " AND NOT EXISTS (SELECT 1 FROM pg_depend AS d"
+            "  WHERE d.objid = t.oid AND d.deptype = 'e')"
+            " AND pg_get_userbyid(t.typowner) <> %s",
+            (OWNER,),
+        )
+        for (type_name,) in cursor.fetchall():
+            cursor.execute(sql.SQL("ALTER TYPE {} OWNER TO {}").format(sql.SQL(type_name), owner))
+        cursor.execute(
+            "SELECT p.oid::regprocedure::text, p.prosecdef FROM pg_proc AS p"
             " JOIN pg_namespace AS n ON n.oid = p.pronamespace"
-            " WHERE n.nspname = 'public' AND p.prosecdef"
+            " WHERE n.nspname = 'public'"
             " AND NOT EXISTS (SELECT 1 FROM pg_depend AS d"
             " WHERE d.objid = p.oid AND d.deptype = 'e')"
         )
-        for (function,) in cursor.fetchall():
+        for function, definer in cursor.fetchall():
             cursor.execute(
                 sql.SQL("ALTER FUNCTION {} OWNER TO {}").format(sql.SQL(function), owner)
             )
+            if not definer:
+                continue
+            # A SECURITY DEFINER function runs as the owner: only the application role may
+            # call it (the sign-in lookup of ADR-0028, the claims of the scheduler).
             cursor.execute(
                 sql.SQL("REVOKE ALL ON FUNCTION {} FROM PUBLIC").format(sql.SQL(function))
             )

@@ -237,3 +237,67 @@ def test_items_whose_event_was_lost_are_caught_up(world: World) -> None:
     assert titles(world, topic.id) == ["Prix de l'énergie"]
     assert store.enqueue_unwatched(100, timedelta(0)) == 0
     assert world.watch.list_topics(other) == []
+
+
+def test_a_changed_topic_shows_its_recalculation_until_it_is_done(world: World) -> None:
+    topic = world.watch.create_topic(world.context, name="IA", keywords=["IA"])
+    assert topic.rescoring
+    world.run_jobs()
+    done = world.watch.get_topic(world.context, topic.id)
+    assert done is not None and not done.rescoring and done.rescored_at is not None
+    world.watch.update_topic(world.context, topic.id, name="IA", keywords=["IA", "robot"])
+    assert world.watch.get_topic(world.context, topic.id).rescoring  # type: ignore[union-attr]
+    world.run_jobs()
+    assert not world.watch.get_topic(world.context, topic.id).rescoring  # type: ignore[union-attr]
+    assert world.watch.rescore(world.context, topic.id)
+    assert world.watch.get_topic(world.context, topic.id).rescoring  # type: ignore[union-attr]
+    assert not world.watch.rescore(world.context, uuid.uuid4())
+
+
+def test_refresh_collects_every_active_source_and_rescores_every_topic(world: World) -> None:
+    world.source("a")
+    world.source("b")
+    world.watch.create_topic(world.context, name="IA", keywords=["IA"])
+    world.queue.jobs.clear()
+    assert world.watch.refresh(world.context) == (2, 1)
+    assert sorted(name for name, _ in world.queue.jobs) == [
+        "collection.collect_source",
+        "collection.collect_source",
+        RESCORE_TOPIC,
+    ]
+
+
+def test_even_a_role_that_bypasses_isolation_stays_in_its_workspace(
+    migrated: TestDatabase, world: World
+) -> None:
+    """The bug of 2026-10-16: run as the superuser, a refresh rescored the topics of every
+    workspace. Each query names its workspace, so it no longer depends on row-level security."""
+    mine = world.watch.create_topic(world.context, name="Moi", keywords=["IA"])
+    other = make_context(world.engine, "bob@example.org")
+    theirs = world.watch.create_topic(other, name="Lui", keywords=["IA"])
+    world.run_jobs()
+    superuser = Watch(PostgresWatchStore(db.create_engine(migrated.admin_url), world.queue))
+    assert superuser.refresh(world.context) == (0, 1)
+    assert [job["topic_id"] for _, job in world.queue.jobs] == [str(mine.id)]
+    world.queue.jobs.clear()
+    assert [t.name for t in superuser.list_topics(world.context)] == ["Moi"]
+    assert not superuser.rescore(world.context, theirs.id)
+
+
+def test_a_match_cannot_point_to_another_workspace(migrated: TestDatabase, world: World) -> None:
+    other = make_context(world.engine, "bob@example.org")
+    theirs = world.watch.create_topic(other, name="Lui", keywords=["IA"])
+    source = world.source("journal")
+    world.publish(source, "1", "IA partout")
+    item = world.collection.list_items(
+        world.context.workspace_id, source_id=None, before=None, limit=1
+    )[0]
+    with db.create_engine(migrated.admin_url).begin() as connection:
+        with pytest.raises(sa.exc.IntegrityError):
+            connection.execute(
+                sa.text(
+                    "INSERT INTO topic_matches (workspace_id, topic_id, item_id, score,"
+                    " contributions) VALUES (:ws, :topic, :item, 1, '[]')"
+                ),
+                {"ws": world.context.workspace_id, "topic": theirs.id, "item": item.id},
+            )

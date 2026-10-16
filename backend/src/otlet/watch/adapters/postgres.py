@@ -9,9 +9,11 @@ from uuid import UUID
 import sqlalchemy as sa
 
 from otlet.collection.adapters.postgres import ITEM_COLUMNS, ITEMS_FROM, SORT_DATE, item_from_row
+from otlet.collection.application.collection import COLLECT_SOURCE
 from otlet.collection.domain.model import SEARCH_CONFIGS, SIMPLE_SEARCH
 from otlet.jobs.application.registry import Enqueue
 from otlet.platform.database import scoped_transaction, workspace_transaction
+from otlet.platform.rls import here
 from otlet.watch.application.watch import (
     ITEM_READY,
     RESCORE_TOPIC,
@@ -26,9 +28,9 @@ from otlet.watch.domain.model import Candidate, Contribution, Match, Topic, Watc
 
 TOPIC_COLUMNS = (
     "t.id, t.workspace_id, t.name, t.description, t.keywords, t.exclusions, t.languages,"
-    " t.source_ids, t.created_at,"
+    " t.source_ids, t.created_at, t.rescore_requested_at, t.rescored_at,"
     " (SELECT count(*) FROM topic_matches AS m JOIN source_items AS i ON i.id = m.item_id"
-    "  WHERE m.topic_id = t.id AND i.duplicate_of IS NULL) AS item_count"
+    f"  WHERE m.topic_id = t.id AND i.duplicate_of IS NULL AND {here('m')}) AS item_count"
 )
 # Summary, then the text when it may be used: what a topic is matched against.
 CANDIDATE_COLUMNS = (
@@ -55,6 +57,8 @@ def _topic(row: sa.Row[Any]) -> Topic:
         languages=tuple(row.languages),
         source_ids=tuple(row.source_ids),
         created_at=row.created_at,
+        rescore_requested_at=row.rescore_requested_at,
+        rescored_at=row.rescored_at,
         item_count=row.item_count,
     )
 
@@ -90,7 +94,10 @@ class PostgresWatchStore:
     def list_topics(self, workspace_id: UUID) -> list[Topic]:
         with workspace_transaction(self._engine, workspace_id) as connection:
             rows = connection.execute(
-                sa.text(f"SELECT {TOPIC_COLUMNS} FROM topics AS t ORDER BY lower(t.name), t.id")  # noqa: S608
+                sa.text(
+                    f"SELECT {TOPIC_COLUMNS} FROM topics AS t WHERE {here('t')}"
+                    " ORDER BY lower(t.name), t.id"
+                )
             ).all()
         return [_topic(row) for row in rows]
 
@@ -101,7 +108,7 @@ class PostgresWatchStore:
     @staticmethod
     def _get_topic(connection: sa.Connection, topic_id: UUID) -> Topic | None:
         row = connection.execute(
-            sa.text(f"SELECT {TOPIC_COLUMNS} FROM topics AS t WHERE t.id = :id"),  # noqa: S608
+            sa.text(f"SELECT {TOPIC_COLUMNS} FROM topics AS t WHERE t.id = :id AND {here('t')}"),  # noqa: S608
             {"id": topic_id},
         ).one_or_none()
         return None if row is None else _topic(row)
@@ -121,7 +128,7 @@ class PostgresWatchStore:
         if not fields.source_ids:
             return
         known = connection.execute(
-            sa.text("SELECT count(*) FROM sources WHERE id = ANY(:ids)"),
+            sa.text(f"SELECT count(*) FROM sources WHERE id = ANY(:ids) AND {here()}"),
             {"ids": list(fields.source_ids)},
         ).scalar_one()
         if known != len(fields.source_ids):
@@ -159,7 +166,8 @@ class PostgresWatchStore:
                             "UPDATE topics SET name = :name, description = :description,"
                             " keywords = :keywords, exclusions = :exclusions,"
                             " languages = :languages, source_ids = CAST(:sources AS uuid[]),"
-                            " updated_at = now() WHERE id = :id RETURNING id"
+                            " updated_at = now(), rescore_requested_at = now()"
+                            f" WHERE id = :id AND {here()} RETURNING id"
                         ),
                         {"id": topic_id, **self._values(fields)},
                     ).scalar_one_or_none()
@@ -175,7 +183,8 @@ class PostgresWatchStore:
     def delete_topic(self, workspace_id: UUID, topic_id: UUID) -> bool:
         with workspace_transaction(self._engine, workspace_id) as connection:
             deleted = connection.execute(
-                sa.text("DELETE FROM topics WHERE id = :id RETURNING id"), {"id": topic_id}
+                sa.text(f"DELETE FROM topics WHERE id = :id AND {here()} RETURNING id"),
+                {"id": topic_id},
             ).scalar_one_or_none()
         return deleted is not None
 
@@ -195,7 +204,7 @@ class PostgresWatchStore:
                     f"SELECT {ITEM_COLUMNS}, m.score, m.contributions,"  # noqa: S608
                     f" CASE {fresh} ELSE 0 END AS freshness"
                     f" FROM topic_matches AS m JOIN {ITEMS_FROM} ON i.id = m.item_id"
-                    " WHERE m.topic_id = :topic AND i.duplicate_of IS NULL"
+                    f" WHERE m.topic_id = :topic AND i.duplicate_of IS NULL AND {here('m')}"
                     f" ORDER BY m.score + CASE {fresh} ELSE 0 END DESC, {SORT_DATE} DESC, i.id DESC"
                     " LIMIT :limit OFFSET :offset"
                 ),
@@ -216,7 +225,8 @@ class PostgresWatchStore:
             rows = connection.execute(
                 sa.text(
                     "SELECT t.id, t.name, m.score, m.contributions FROM topic_matches AS m"
-                    " JOIN topics AS t ON t.id = m.topic_id WHERE m.item_id = :item"
+                    " JOIN topics AS t ON t.id = m.topic_id"
+                    f" WHERE m.item_id = :item AND {here('m')}"
                     " ORDER BY m.score DESC, lower(t.name)"
                 ),
                 {"item": item_id},
@@ -232,10 +242,11 @@ class PostgresWatchStore:
             rows = connection.execute(
                 sa.text(
                     "WITH root AS (SELECT coalesce(duplicate_of, id) AS id FROM source_items"
-                    " WHERE id = :item)"
+                    f" WHERE id = :item AND {here()})"
                     " SELECT i.id, i.title, s.name AS source_name, i.url"
                     " FROM source_items AS i LEFT JOIN sources AS s ON s.id = i.source_id, root"
                     " WHERE (i.id = root.id OR i.duplicate_of = root.id) AND i.id <> :item"
+                    f" AND {here('i')}"
                     " ORDER BY i.collected_at, i.id"
                 ),
                 {"item": item_id},
@@ -249,7 +260,7 @@ class PostgresWatchStore:
             row = connection.execute(
                 sa.text(
                     f"SELECT {CANDIDATE_COLUMNS} FROM source_items AS i"  # noqa: S608
-                    " WHERE i.id = :id AND i.text_status <> 'pending'"
+                    f" WHERE i.id = :id AND i.text_status <> 'pending' AND {here('i')}"
                 ),
                 {"id": item_id},
             ).one_or_none()
@@ -259,12 +270,14 @@ class PostgresWatchStore:
         with workspace_transaction(self._engine, workspace_id) as connection:
             connection.execute(
                 sa.text(
-                    "WITH me AS (SELECT i.id, i.source_id, i.normalized_url, i.title,"  # noqa: S608
+                    "WITH me AS (SELECT i.id, i.workspace_id, i.source_id, i.normalized_url,"
+                    " i.title,"
                     f" i.collected_at, {SORT_DATE} AS day"
-                    " FROM source_items AS i WHERE i.id = :id),"
+                    f" FROM source_items AS i WHERE i.id = :id AND {here('i')}),"
                     " original AS ("
                     "  SELECT coalesce(o.duplicate_of, o.id) AS id"
-                    "  FROM source_items AS o, me WHERE o.id <> me.id"
+                    "  FROM source_items AS o, me"
+                    "  WHERE o.id <> me.id AND o.workspace_id = me.workspace_id"
                     "  AND (o.collected_at, o.id) < (me.collected_at, me.id)"
                     "  AND o.source_id IS DISTINCT FROM me.source_id"
                     "  AND ((me.normalized_url IS NOT NULL"
@@ -276,7 +289,7 @@ class PostgresWatchStore:
                     "        < :seconds))"
                     "  ORDER BY o.collected_at, o.id LIMIT 1)"
                     " UPDATE source_items SET content_hash = :hash,"
-                    " duplicate_of = (SELECT id FROM original) WHERE id = :id"
+                    f" duplicate_of = (SELECT id FROM original) WHERE id = :id AND {here()}"
                 ),
                 {
                     "id": item_id,
@@ -292,10 +305,13 @@ class PostgresWatchStore:
     ) -> None:
         with workspace_transaction(self._engine, workspace_id) as connection:
             connection.execute(
-                sa.text("DELETE FROM topic_matches WHERE item_id = :item"), {"item": item_id}
+                sa.text(f"DELETE FROM topic_matches WHERE item_id = :item AND {here()}"),
+                {"item": item_id},
             )
             connection.execute(
-                sa.text("UPDATE source_items SET watched_at = now() WHERE id = :item"),
+                sa.text(
+                    f"UPDATE source_items SET watched_at = now() WHERE id = :item AND {here()}"
+                ),
                 {"item": item_id},
             )
             self._insert(
@@ -312,6 +328,7 @@ class PostgresWatchStore:
                 sa.text(
                     f"SELECT {CANDIDATE_COLUMNS} FROM source_items AS i"  # noqa: S608
                     " WHERE i.text_status <> 'pending' AND i.collected_at >= :since"
+                    f" AND {here('i')}"
                     " ORDER BY i.collected_at DESC, i.id DESC LIMIT :limit"
                 ),
                 {"since": since, "limit": limit},
@@ -319,17 +336,70 @@ class PostgresWatchStore:
         return [(row.id, _candidate(row)) for row in rows]
 
     def save_topic_matches(
-        self, workspace_id: UUID, topic_id: UUID, matches: dict[UUID, Match]
+        self,
+        workspace_id: UUID,
+        topic_id: UUID,
+        matches: dict[UUID, Match],
+        answered: datetime | None,
     ) -> None:
         with workspace_transaction(self._engine, workspace_id) as connection:
             connection.execute(
-                sa.text("DELETE FROM topic_matches WHERE topic_id = :topic"), {"topic": topic_id}
+                sa.text(
+                    "UPDATE topics SET rescored_at = greatest(rescored_at, CAST(:answered AS"
+                    f" timestamptz)) WHERE id = :topic AND {here()}"
+                ),
+                {"topic": topic_id, "answered": answered},
+            )
+            connection.execute(
+                sa.text(f"DELETE FROM topic_matches WHERE topic_id = :topic AND {here()}"),
+                {"topic": topic_id},
             )
             self._insert(
                 connection,
                 workspace_id,
                 [(topic_id, item_id, match) for item_id, match in matches.items()],
             )
+
+    def request_rescore(self, workspace_id: UUID, topic_id: UUID) -> bool:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            return self._request(connection, workspace_id, "AND id = :topic", topic_id) > 0
+
+    def refresh(self, workspace_id: UUID) -> tuple[int, int]:
+        """Collects every active source now and matches every topic again."""
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            query = sa.text(f"SELECT id FROM sources WHERE active AND {here()}")
+            sources = connection.execute(query).scalars()
+            count = 0
+            for source_id in sources:
+                count += 1
+                self._enqueue(
+                    connection,
+                    COLLECT_SOURCE,
+                    workspace_id=str(workspace_id),
+                    source_id=str(source_id),
+                )
+            topics = self._request(connection, workspace_id, "", None)
+        return count, topics
+
+    def _request(
+        self, connection: sa.Connection, workspace_id: UUID, where: str, topic_id: UUID | None
+    ) -> int:
+        ids = (
+            connection.execute(
+                sa.text(
+                    f"UPDATE topics SET rescore_requested_at = now() WHERE {here()} {where}"
+                    " RETURNING id"
+                ),
+                {"topic": topic_id},
+            )
+            .scalars()
+            .all()
+        )
+        for found in ids:
+            self._enqueue(
+                connection, RESCORE_TOPIC, workspace_id=str(workspace_id), topic_id=str(found)
+            )
+        return len(ids)
 
     @staticmethod
     def _insert(
@@ -383,7 +453,7 @@ class PostgresWatchStore:
             rows = connection.execute(
                 sa.text(
                     "WITH found AS ("  # noqa: S608
-                    f" SELECT i.id FROM source_items AS i WHERE ({matches})"
+                    f" SELECT i.id FROM source_items AS i WHERE ({matches}) AND {here('i')}"
                     "  AND i.duplicate_of IS NULL"
                     f" ORDER BY {SORT_DATE} DESC LIMIT {SEARCH_WINDOW})"
                     f" SELECT {ITEM_COLUMNS},"

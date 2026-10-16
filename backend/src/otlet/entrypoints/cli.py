@@ -36,6 +36,13 @@ def build_parser() -> argparse.ArgumentParser:
     commands.add_parser("worker", help="exécuteur des tâches de fond")
     commands.add_parser("scheduler", help="planificateur")
 
+    database = commands.add_parser("db", help="rôles de la base (M-12)")
+    database_steps = database.add_subparsers(dest="step", required=True)
+    database_steps.add_parser(
+        "provision",
+        help="créer ou mettre à jour les rôles de la base (superutilisateur requis)",
+    )
+
     migrate = commands.add_parser("migrate", help="migrations du schéma de la base")
     steps = migrate.add_subparsers(dest="step", required=True)
     upgrade = steps.add_parser("upgrade", help="monter le schéma (par défaut : dernière révision)")
@@ -115,12 +122,44 @@ def main(argv: Sequence[str] | None = None) -> int:
             migrations.current(settings)
         else:
             migrations.history(settings)
+    elif args.command == "db":
+        return provision_command()
     elif args.command == "secrets":
         return secrets_command(args.action, args.name, settings)
     elif args.command == "admin":
         return create_admin_command(args.login, args.name, settings)
     elif args.command == "openapi":
         print(openapi_document())
+    return 0
+
+
+PASSWORD_MIN_LENGTH = 24
+
+
+def provision_command() -> int:
+    """Creates or updates the roles of M-12 before every start of the stack (the `provision`
+    service): the API, the worker and the scheduler then connect as `otlet_app`, which cannot
+    bypass row-level security, and migrations run as `otlet_migrator`. Reads
+    OTLET_ADMIN_DATABASE_URL (superuser, libpq form), OTLET_MIGRATOR_PASSWORD and
+    OTLET_APP_PASSWORD. Idempotent."""
+    import os
+
+    from otlet.platform import roles
+
+    admin_url = os.environ.get("OTLET_ADMIN_DATABASE_URL", "")
+    passwords = [
+        os.environ.get(name, "") for name in ("OTLET_MIGRATOR_PASSWORD", "OTLET_APP_PASSWORD")
+    ]
+    if not admin_url or any(len(p) < PASSWORD_MIN_LENGTH for p in passwords):
+        print(
+            "otlet db provision: OTLET_ADMIN_DATABASE_URL, OTLET_MIGRATOR_PASSWORD and"
+            f" OTLET_APP_PASSWORD ({PASSWORD_MIN_LENGTH} characters at least) are required;"
+            " run deploy/configure.sh --complete",
+            file=sys.stderr,
+        )
+        return 2
+    roles.provision(admin_url, passwords[0], passwords[1])
+    print("otlet db provision: roles up to date")
     return 0
 
 

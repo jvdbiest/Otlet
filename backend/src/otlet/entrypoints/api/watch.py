@@ -29,6 +29,8 @@ class TopicView(BaseModel):
     source_ids: list[str]
     created_at: datetime
     item_count: int
+    rescoring: bool
+    rescored_at: datetime | None
 
     @classmethod
     def of(cls, topic: Topic) -> "TopicView":
@@ -42,14 +44,18 @@ class TopicView(BaseModel):
             source_ids=[str(source) for source in topic.source_ids],
             created_at=topic.created_at,
             item_count=topic.item_count,
+            rescoring=topic.rescoring,
+            rescored_at=topic.rescored_at,
         )
 
 
 class TopicBody(BaseModel):
     name: str = Field(min_length=1, max_length=model.NAME_MAX_LENGTH)
     description: str = Field(default="", max_length=model.DESCRIPTION_MAX_LENGTH)
-    keywords: list[str] = Field(max_length=model.TERMS_MAX)
-    exclusions: list[str] = Field(default_factory=list, max_length=model.TERMS_MAX)
+    # The limits of the domain (model.TERMS_MAX) answer with their own codes; these only bound
+    # the size of a request.
+    keywords: list[str] = Field(max_length=1000)
+    exclusions: list[str] = Field(default_factory=list, max_length=1000)
     languages: list[str] = Field(default_factory=list, max_length=len(model.LANGUAGES))
     source_ids: list[UUID] = Field(default_factory=list, max_length=500)
 
@@ -94,6 +100,11 @@ class DuplicateView(BaseModel):
 class ItemWatchView(BaseModel):
     topics: list[ItemTopicView]
     duplicates: list[DuplicateView]
+
+
+class RefreshView(BaseModel):
+    sources: int
+    topics: int
 
 
 class FoundItemView(BaseModel):
@@ -146,6 +157,18 @@ def build_router(watch: Watch, workspace_context: Callable[..., WorkspaceContext
     def delete_topic(topic_id: UUID, context: Context) -> None:
         if not watch.delete_topic(context, topic_id):
             raise HTTPException(status.HTTP_404_NOT_FOUND, "topic_not_found")
+
+    @router.post("/topics/{topic_id}/rescore", status_code=status.HTTP_202_ACCEPTED)
+    def rescore_topic(topic_id: UUID, context: Context) -> None:
+        """Matches the topic again with the recent items, in the background."""
+        if not watch.rescore(context, topic_id):
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "topic_not_found")
+
+    @router.post("/refresh", status_code=status.HTTP_202_ACCEPTED)
+    def refresh(context: Context) -> RefreshView:
+        """Collects every active source now and matches every topic again."""
+        sources, topics = watch.refresh(context)
+        return RefreshView(sources=sources, topics=topics)
 
     @router.get("/topics/{topic_id}/items")
     def topic_items(

@@ -46,3 +46,11 @@ def grant_to_app(function: str) -> str:
 def workspace_scoped(table: str, column: str = "workspace_id") -> list[str]:
     """The policy of a business table: the rows of the current workspace, nothing else."""
     return enable(table, f"{column} = {CURRENT_WORKSPACE}")
+
+
+def here(alias: str = "") -> str:
+    """`workspace_id` of the rows (of table `alias`) equal to the workspace of the transaction,
+    written out in a query. Row-level security is the second barrier, never the only one: a
+    role that bypasses it (a superuser) must still not reach another workspace (M-12)."""
+    prefix = f"{alias}." if alias else ""
+    return f"{prefix}workspace_id = {CURRENT_WORKSPACE}"

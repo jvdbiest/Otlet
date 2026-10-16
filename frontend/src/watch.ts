@@ -24,6 +24,8 @@ export const topicsQuery = (workspaceId: string) =>
       }
       return data;
     },
+    // While a topic is matched again, its state is followed closely.
+    refetchInterval: (query) => (query.state.data?.some((topic) => topic.rescoring) ? 2_000 : false),
   });
 
 export const topicQuery = (workspaceId: string, topicId: string) =>
@@ -38,6 +40,7 @@ export const topicQuery = (workspaceId: string, topicId: string) =>
       }
       return data;
     },
+    refetchInterval: (query) => (query.state.data?.rescoring ? 2_000 : false),
   });
 
 export const topicItemsQuery = (workspaceId: string, topicId: string, offset: number) =>
@@ -129,6 +132,37 @@ export function useDeleteTopic(workspaceId: string) {
       if (!response.ok) {
         throw apiError(response, error);
       }
+    },
+    onSuccess: refresh,
+  });
+}
+
+export function useRescoreTopic(workspaceId: string) {
+  const refresh = useRefresh(workspaceId);
+  return useMutation({
+    mutationFn: async (topicId: string) => {
+      const { error, response } = await api.POST("/api/workspaces/{workspace_id}/topics/{topic_id}/rescore", {
+        params: { path: { workspace_id: workspaceId, topic_id: topicId } },
+      });
+      if (!response.ok) {
+        throw apiError(response, error);
+      }
+    },
+    onSuccess: refresh,
+  });
+}
+
+export function useRefreshWatch(workspaceId: string) {
+  const refresh = useRefresh(workspaceId);
+  return useMutation({
+    mutationFn: async () => {
+      const { data, error, response } = await api.POST("/api/workspaces/{workspace_id}/refresh", {
+        params: { path: { workspace_id: workspaceId } },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
     },
     onSuccess: refresh,
   });

@@ -21,8 +21,8 @@ Mis à jour le 2026-10-16. Une page : ce qu'il faut savoir pour reprendre le tra
 ## Prochaine action
 
 1. **I0 close** le 2026-10-16 (X01 fusionnée). I1 Lire en cours.
-2. U01 faite (fusionnée le 2026-10-16). Joël fusionne `feat/U02-veille` (sujets, score expliqué, doublons, recherche) et répond à l'ADR-0032.
-3. **Correctif de sécurité à faire juste après U02** : la pile Compose se connecte à PostgreSQL en superutilisateur, qui ignore la RLS. Créer les trois rôles de M-12 à l'installation et à la mise à jour, et tester « sans contexte, zéro ligne » sur la pile.
+2. U01 et U02 faites (fusionnées le 2026-10-16). Joël fusionne `feat/U02b-recalcul` (recalcul visible, boutons « Recalculer » et « Actualiser », demandés par Joël) et répond à l'ADR-0032.
+3. Joël fusionne `fix/roles-base-de-donnees` (empilée sur U02b) : la pile Compose ne se connecte plus en superutilisateur, qui ignorait la RLS. La branche répare aussi les correspondances écrites dans un autre espace avant le correctif (migration 0008, références liées à l'espace) et rend explicite la limite de 50 mots-clés. Sur une installation existante, lancer `./configure.sh --complete` avant la mise à jour.
 4. Ensuite X02 (flux de tri et accueil) et P01 (remesure de la recherche).
 5. Joël note son temps une fois par semaine dans `docs/projet/journal-temps.csv` (domaine `projet`).
 6. Plus tard, avec l'accord de Joël pour chacun : mesurer les fournisseurs réels de S4 (50 briefs chacun, plafonds de dépense posés).
@@ -31,6 +31,7 @@ Mis à jour le 2026-10-16. Une page : ce qu'il faut savoir pour reprendre le tra
 
 - **Protocole des preuves (ADR-0018)** : rapport avec ses seuils fusionné sur `main` **avant** toute mesure ; seuils jamais modifiés après ; durée maximale tenue ; conclusion obligatoire.
 - **Isolation (F03, ADR-0028)** : toute nouvelle table métier appelle `rls.workspace_scoped` dans sa migration ; toute route d'un espace vit sous `/api/workspaces/{workspace_id}` et lit la base par `WorkspaceConnection`. Les tests d'isolation parcourent toutes les routes et échouent si une route oublie la session ou l'appartenance à l'espace.
+- **Rôles de la base (M-12)** : la pile Compose se connecte avec `otlet_app` (contraint par la RLS) et migre avec `otlet_migrator` ; le superutilisateur ne sert qu'au service `provision` et à la sauvegarde. `deploy/ci/check-compose.sh` vérifie « sans contexte, zéro ligne » sur la pile.
 - **Sorties réseau (U01, ADR-0031)** : toute requête sortante passe par `otlet.platform.http.SafeClient` (protection SSRF). Les échéances du domaine passent par le rôle `scheduler` (verrou consultatif), les tâches de maintenance par la cron des workers (ADR-0030).
 - **Tâches de fond (F04, ADR-0022)** : un module déclare ses tâches avec `otlet.jobs.application.registry.job` et les enfile avec `procrastinate_queue.enqueue` sur la connexion de sa transaction. Une tâche reçoit des identifiants, jamais des objets, et pose elle-même son contexte d'espace. Le module doit figurer dans `JOB_MODULES` du worker.
 - **Git** : une branche par tâche, commits signés DCO (`git commit -s`), messages en français, code en anglais. Jamais de poussée sur `main`, qui est protégée (12 vérifications de CI obligatoires).

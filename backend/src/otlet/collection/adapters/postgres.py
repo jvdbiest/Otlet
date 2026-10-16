@@ -31,12 +31,14 @@ from otlet.collection.domain.model import (
 )
 from otlet.jobs.application.registry import Enqueue
 from otlet.platform.database import scoped_transaction, workspace_transaction
+from otlet.platform.rls import here
 
 SOURCE_COLUMNS = (
     "s.id, s.workspace_id, s.name, s.url, s.feed_url, s.site_url, s.interval_minutes, s.active,"
     " s.legal_status, s.legal_reason, s.created_at, s.last_fetched_at, s.last_success_at,"
     " s.last_error, s.consecutive_failures, s.next_fetch_at,"
-    " (SELECT count(*) FROM source_items AS i WHERE i.source_id = s.id) AS item_count"
+    f" (SELECT count(*) FROM source_items AS i WHERE i.source_id = s.id AND {here('i')})"
+    " AS item_count"
 )
 ITEM_COLUMNS = (
     "i.id, i.workspace_id, i.source_id, s.name AS source_name, i.origin, i.url, i.title,"
@@ -46,7 +48,8 @@ ITEM_COLUMNS = (
     "   THEN coalesce(i.text, i.feed_content) END AS text, i.text_status, i.text_reason,"
     " i.declared_origin, i.usage_right,"
     # Other items of the same story, found by the watch (U02).
-    " (SELECT count(*) FROM source_items AS d WHERE d.duplicate_of = i.id) AS duplicate_count"
+    f" (SELECT count(*) FROM source_items AS d WHERE d.duplicate_of = i.id AND {here('d')})"
+    " AS duplicate_count"
 )
 ITEMS_FROM = "source_items AS i LEFT JOIN sources AS s ON s.id = i.source_id"
 # Items are listed by publication date, never later than their collection: a feed cannot push
@@ -142,7 +145,7 @@ class PostgresCollectionStore:
     @staticmethod
     def _get_source(connection: sa.Connection, source_id: UUID) -> Source:
         row = connection.execute(
-            sa.text(f"SELECT {SOURCE_COLUMNS} FROM sources AS s WHERE s.id = :id"),  # noqa: S608
+            sa.text(f"SELECT {SOURCE_COLUMNS} FROM sources AS s WHERE s.id = :id AND {here('s')}"),  # noqa: S608
             {"id": source_id},
         ).one()
         return _source(row)
@@ -152,7 +155,7 @@ class PostgresCollectionStore:
             rows = connection.execute(
                 sa.text(
                     f"SELECT {SOURCE_COLUMNS} FROM sources AS s"  # noqa: S608
-                    " ORDER BY lower(s.name), s.id"
+                    f" WHERE {here('s')} ORDER BY lower(s.name), s.id"
                 )
             ).all()
         return [_source(row) for row in rows]
@@ -160,7 +163,9 @@ class PostgresCollectionStore:
     def get_source(self, workspace_id: UUID, source_id: UUID) -> Source | None:
         with workspace_transaction(self._engine, workspace_id) as connection:
             row = connection.execute(
-                sa.text(f"SELECT {SOURCE_COLUMNS} FROM sources AS s WHERE s.id = :id"),  # noqa: S608
+                sa.text(
+                    f"SELECT {SOURCE_COLUMNS} FROM sources AS s WHERE s.id = :id AND {here('s')}"
+                ),  # noqa: S608
                 {"id": source_id},
             ).one_or_none()
         return None if row is None else _source(row)
@@ -184,7 +189,7 @@ class PostgresCollectionStore:
                     # A source switched back on is collected at once.
                     " next_fetch_at = CASE WHEN CAST(:active AS boolean) AND NOT active THEN now()"
                     "                 ELSE next_fetch_at END"
-                    " WHERE id = :id RETURNING id"
+                    f" WHERE id = :id AND {here()} RETURNING id"
                 ),
                 {"id": source_id, "name": name, "interval": interval_minutes, "active": active},
             ).scalar_one_or_none()
@@ -193,14 +198,16 @@ class PostgresCollectionStore:
     def delete_source(self, workspace_id: UUID, source_id: UUID) -> bool:
         with workspace_transaction(self._engine, workspace_id) as connection:
             deleted = connection.execute(
-                sa.text("DELETE FROM sources WHERE id = :id RETURNING id"), {"id": source_id}
+                sa.text(f"DELETE FROM sources WHERE id = :id AND {here()} RETURNING id"),
+                {"id": source_id},
             ).scalar_one_or_none()
         return deleted is not None
 
     def request_collection(self, workspace_id: UUID, source_id: UUID) -> bool:
         with workspace_transaction(self._engine, workspace_id) as connection:
             found = connection.execute(
-                sa.text("SELECT id FROM sources WHERE id = :id AND active"), {"id": source_id}
+                sa.text(f"SELECT id FROM sources WHERE id = :id AND active AND {here()}"),
+                {"id": source_id},
             ).scalar_one_or_none()
             if found is None:
                 return False
@@ -231,7 +238,7 @@ class PostgresCollectionStore:
             row = connection.execute(
                 sa.text(
                     f"SELECT {SOURCE_COLUMNS}, s.etag, s.last_modified"  # noqa: S608
-                    " FROM sources AS s WHERE s.id = :id"
+                    f" FROM sources AS s WHERE s.id = :id AND {here('s')}"
                 ),
                 {"id": source_id},
             ).one_or_none()
@@ -258,7 +265,7 @@ class PostgresCollectionStore:
                     " etag = CASE WHEN :success THEN :etag ELSE etag END,"
                     " last_modified = CASE WHEN :success THEN :modified ELSE last_modified END,"
                     " site_url = coalesce(:site_url, site_url)"
-                    " WHERE id = :id RETURNING id"
+                    f" WHERE id = :id AND {here()} RETURNING id"
                 ),
                 {
                     "id": source_id,
@@ -301,7 +308,7 @@ class PostgresCollectionStore:
             and connection.execute(
                 # The same article under another guid (feeds that renumber) is not new either.
                 sa.text(
-                    "SELECT 1 FROM source_items WHERE source_id = :source"
+                    f"SELECT 1 FROM source_items WHERE source_id = :source AND {here()}"
                     " AND normalized_url = :normalized"
                 ),
                 {"source": source_id, "normalized": normalized},
@@ -361,7 +368,8 @@ class PostgresCollectionStore:
             rows = connection.execute(
                 sa.text(
                     "SELECT checked_at, url, allowed, reason, detail FROM source_checks"
-                    " WHERE source_id = :source ORDER BY checked_at DESC, id DESC LIMIT :limit"
+                    f" WHERE source_id = :source AND {here()}"
+                    " ORDER BY checked_at DESC, id DESC LIMIT :limit"
                 ),
                 {"source": source_id, "limit": limit},
             ).all()
@@ -377,11 +385,13 @@ class PostgresCollectionStore:
                 sa.text(
                     f"SELECT {ITEM_COLUMNS} FROM {ITEMS_FROM}"  # noqa: S608
                     # Without a source filter, a story shows once: its copies are counted.
-                    " WHERE (CASE WHEN CAST(:source AS uuid) IS NULL THEN i.duplicate_of IS NULL"
+                    f" WHERE {here('i')} AND (CASE WHEN CAST(:source AS uuid) IS NULL"
+                    "   THEN i.duplicate_of IS NULL"
                     "        ELSE i.source_id = :source END)"
                     # Keyset paging on (date, id): items of one run may share their date.
                     f" AND (CAST(:before AS uuid) IS NULL OR ({SORT_DATE}, i.id) <"
-                    f"   (SELECT {SORT_DATE}, i.id FROM source_items AS i WHERE i.id = :before))"
+                    f"   (SELECT {SORT_DATE}, i.id FROM source_items AS i"
+                    f"    WHERE i.id = :before AND {here('i')}))"
                     f" ORDER BY {SORT_DATE} DESC, i.id DESC LIMIT :limit"
                 ),
                 {"source": source_id, "before": before, "limit": limit},
@@ -391,7 +401,9 @@ class PostgresCollectionStore:
     def get_item(self, workspace_id: UUID, item_id: UUID) -> Item | None:
         with workspace_transaction(self._engine, workspace_id) as connection:
             row = connection.execute(
-                sa.text(f"SELECT {ITEM_COLUMNS} FROM {ITEMS_FROM} WHERE i.id = :id"),  # noqa: S608
+                sa.text(
+                    f"SELECT {ITEM_COLUMNS} FROM {ITEMS_FROM} WHERE i.id = :id AND {here('i')}"
+                ),  # noqa: S608
                 {"id": item_id},
             ).one_or_none()
         return None if row is None else item_from_row(row)
@@ -401,7 +413,7 @@ class PostgresCollectionStore:
             url: str | None = connection.execute(
                 sa.text(
                     "SELECT url FROM source_items"
-                    " WHERE id = :id AND text_status = 'pending' AND url IS NOT NULL"
+                    f" WHERE id = :id AND text_status = 'pending' AND url IS NOT NULL AND {here()}"
                 ),
                 {"id": item_id},
             ).scalar_one_or_none()
@@ -429,7 +441,7 @@ class PostgresCollectionStore:
                     # A manual URL has no title until its page is read.
                     " title = CASE WHEN origin = 'manual_url' AND CAST(:title AS text) IS NOT NULL"
                     "         THEN :title ELSE title END"
-                    " WHERE id = :id AND text_status = 'pending' RETURNING language"
+                    f" WHERE id = :id AND text_status = 'pending' AND {here()} RETURNING language"
                 ),
                 {
                     "id": item_id,
@@ -446,7 +458,7 @@ class PostgresCollectionStore:
             connection.execute(
                 sa.text(
                     "UPDATE source_items SET search_config = CAST(:config AS regconfig)"
-                    " WHERE id = :id"
+                    f" WHERE id = :id AND {here()}"
                 ),
                 {"id": item_id, "config": model.search_config(updated.language)},
             )
@@ -514,7 +526,7 @@ class PostgresCollectionStore:
     @staticmethod
     def _get_item(connection: sa.Connection, item_id: UUID) -> Item:
         row = connection.execute(
-            sa.text(f"SELECT {ITEM_COLUMNS} FROM {ITEMS_FROM} WHERE i.id = :id"),  # noqa: S608
+            sa.text(f"SELECT {ITEM_COLUMNS} FROM {ITEMS_FROM} WHERE i.id = :id AND {here('i')}"),  # noqa: S608
             {"id": item_id},
         ).one()
         return item_from_row(row)
@@ -526,7 +538,7 @@ class PostgresCollectionStore:
             row = connection.execute(
                 sa.text(
                     "SELECT robots_kind, robots_body, tdm_rules, expires_at FROM site_policies"
-                    " WHERE origin = :origin"
+                    f" WHERE origin = :origin AND {here()}"
                 ),
                 {"origin": origin},
             ).one_or_none()

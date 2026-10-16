@@ -1,15 +1,38 @@
 #!/usr/bin/env sh
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Generates the deployment configuration next to compose.yaml:
-#   .env   domain and random database password;
+#   .env   domain and random database passwords (superuser, migrations, application);
 #   keys/  X25519 key pair of the secrets (DR6): the public key is given to the API and the
 #          worker, the private key to the worker only.
 # Usage: ./configure.sh <domain>
+#        ./configure.sh --complete   adds the settings a newer version needs to an existing .env
 # Never overwrites an existing .env or key: they protect the existing data. Run as root on a
 # server, so the private key can be handed to the container user (uid 10001) alone.
 set -eu
 
 cd "$(dirname "$0")"
+
+random_hex() {
+    head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n'
+}
+
+# Settings added after the first installation: generated if missing, never replaced.
+complete() {
+    for name in OTLET_MIGRATOR_PASSWORD OTLET_APP_PASSWORD; do
+        if ! grep -q "^$name=." .env; then
+            sed -i "/^$name=/d" .env
+            echo "$name=$(random_hex)" >> .env
+            echo "Added $name to .env"
+        fi
+    done
+}
+
+if [ "${1:-}" = "--complete" ]; then
+    [ -e .env ] || { echo "No .env here: run ./configure.sh <domain> first." >&2; exit 1; }
+    umask 077
+    complete
+    exit 0
+fi
 
 domain="${1:?usage: ./configure.sh <domain>}"
 container_uid=10001
@@ -19,15 +42,12 @@ if [ -e .env ] || [ -e keys/secrets-private.pem ]; then
     exit 1
 fi
 
-random_hex() {
-    head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n'
-}
-
 umask 077
 sed \
     -e "s|^OTLET_DOMAIN=.*|OTLET_DOMAIN=$domain|" \
     -e "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$(random_hex)|" \
     .env.example > .env
+complete >/dev/null
 
 mkdir -p keys
 openssl genpkey -algorithm X25519 -out keys/secrets-private.pem

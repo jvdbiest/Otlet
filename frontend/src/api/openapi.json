@@ -887,7 +887,7 @@
     },
     "/api/workspaces/{workspace_id}/items": {
       "get": {
-        "description": "The latest items, newest first, without their full text; `before` pages back.",
+        "description": "The latest items, newest first, without their full text; `before` (the id of the\nlast item of the previous page) pages back.",
         "operationId": "list_items_api_workspaces__workspace_id__items_get",
         "parameters": [
           {
@@ -924,7 +924,7 @@
             "schema": {
               "anyOf": [
                 {
-                  "format": "date-time",
+                  "format": "uuid",
                   "type": "string"
                 },
                 {

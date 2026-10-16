@@ -17,7 +17,7 @@ import unicodedata
 from datetime import UTC, datetime
 from html.parser import HTMLParser
 from typing import Any
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlsplit
 
 import feedparser
 import lxml.etree
@@ -25,7 +25,7 @@ import lxml.html
 import nh3
 from readability import Document
 
-from otlet.collection.domain.model import FeedEntry, Page, ParsedFeed
+from otlet.collection.domain.model import URL_MAX_LENGTH, FeedEntry, Page, ParsedFeed
 
 FEED_TYPES = frozenset(
     {
@@ -60,6 +60,14 @@ def clean_text(value: str) -> str:
     return "\n".join(paragraphs).strip()
 
 
+def _web_url(value: object) -> str | None:
+    """A link of the feed, kept only when it is a web address: a `javascript:` or `data:` link
+    must never reach the interface."""
+    if not isinstance(value, str) or len(value) > URL_MAX_LENGTH:
+        return None
+    return value if urlsplit(value).scheme.lower() in ("http", "https") else None
+
+
 def _date(entry: Any) -> datetime | None:
     for key in ("published_parsed", "updated_parsed"):
         value = entry.get(key)
@@ -69,7 +77,7 @@ def _date(entry: Any) -> datetime | None:
 
 
 def _entry(entry: Any) -> FeedEntry | None:
-    url = entry.get("link") or None
+    url = _web_url(entry.get("link"))
     title = clean_text(entry.get("title", ""))[:TITLE_MAX_LENGTH]
     summary = clean_text(entry.get("summary", "")) or None
     contents = [clean_text(c.get("value", "")) for c in entry.get("content", [])]
@@ -123,9 +131,7 @@ def _json_feed(body: bytes, url: str) -> ParsedFeed | None:
             entries.append(entry)
     title = clean_text(str(document.get("title", "")))[:TITLE_MAX_LENGTH] or None
     home = document.get("home_page_url")
-    return ParsedFeed(
-        title=title, site_url=home if isinstance(home, str) else None, entries=tuple(entries)
-    )
+    return ParsedFeed(title=title, site_url=_web_url(home), entries=tuple(entries))
 
 
 def _json_author(item: dict[str, Any]) -> str:
@@ -169,7 +175,7 @@ class FeedparserReader:
         entries = tuple(e for e in map(_entry, parsed.entries) if e is not None)
         feed = parsed.get("feed", {})
         title = clean_text(feed.get("title", ""))[:TITLE_MAX_LENGTH] or None
-        return ParsedFeed(title=title, site_url=feed.get("link") or None, entries=entries)
+        return ParsedFeed(title=title, site_url=_web_url(feed.get("link")), entries=entries)
 
     def discover(self, page: str, url: str) -> list[str]:
         finder = _FeedLinks()

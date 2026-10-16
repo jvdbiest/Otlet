@@ -13,6 +13,11 @@ import { AppLayout } from "./layout/AppLayout.tsx";
 import { EmptyPage, type Section } from "./pages/EmptyPage.tsx";
 import { LoginPage } from "./pages/LoginPage.tsx";
 import { NotFoundPage } from "./pages/NotFoundPage.tsx";
+import { ItemPage } from "./pages/watch/ItemPage.tsx";
+import { ItemsPage } from "./pages/watch/ItemsPage.tsx";
+import { ManualPage } from "./pages/watch/ManualPage.tsx";
+import { SourcesPage } from "./pages/watch/SourcesPage.tsx";
+import { WatchLayout } from "./pages/watch/WatchLayout.tsx";
 import { sessionQuery } from "./session.ts";
 
 interface RouterContext {
@@ -73,11 +78,29 @@ function sectionRoute<Path extends string>(path: Path, section: Section) {
   });
 }
 
+// The watch section (U01): items, sources, manual entry, and one item.
+const watchRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/veille",
+  component: WatchLayout,
+});
+
+const itemsRoute = createRoute({ getParentRoute: () => watchRoute, path: "/", component: ItemsPage });
+const sourcesRoute = createRoute({ getParentRoute: () => watchRoute, path: "sources", component: SourcesPage });
+const manualRoute = createRoute({ getParentRoute: () => watchRoute, path: "saisie", component: ManualPage });
+const itemRoute = createRoute({
+  getParentRoute: () => watchRoute,
+  path: "elements/$itemId",
+  component: function Item() {
+    return <ItemPage itemId={itemRoute.useParams().itemId} />;
+  },
+});
+
 const routeTree = rootRoute.addChildren([
   loginRoute,
   appRoute.addChildren([
     indexRoute,
-    sectionRoute("/veille", "watch"),
+    watchRoute.addChildren([itemsRoute, sourcesRoute, manualRoute, itemRoute]),
     sectionRoute("/redaction", "writing"),
     sectionRoute("/bibliotheque", "library"),
     sectionRoute("/reglages", "settings"),

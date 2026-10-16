@@ -7,6 +7,7 @@ import type { components, paths } from "./schema.ts";
 
 export type SessionView = components["schemas"]["SessionView"];
 export type WorkspaceView = components["schemas"]["WorkspaceView"];
+export type { components };
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 let csrfToken: string | null = null;

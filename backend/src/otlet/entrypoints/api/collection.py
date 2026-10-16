@@ -222,10 +222,11 @@ def build_router(
     def list_items(
         context: Context,
         source_id: UUID | None = None,
-        before: datetime | None = None,
+        before: UUID | None = None,
         limit: Annotated[int, Query(ge=1, le=200)] = 50,
     ) -> list[ItemView]:
-        """The latest items, newest first, without their full text; `before` pages back."""
+        """The latest items, newest first, without their full text; `before` (the id of the
+        last item of the previous page) pages back."""
         items = collection.list_items(context, source_id=source_id, before=before, limit=limit)
         return [ItemView.of(item, with_text=False) for item in items]
 

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // The signed-in user and their workspaces, cached by TanStack Query.
-import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, apiError, setCsrfToken, type SessionView, type WorkspaceView } from "./api/client.ts";
 
 /** The current session, or null when nobody is signed in. */
@@ -66,4 +66,9 @@ export function useLogout() {
       queryClient.setQueryData(sessionQuery.queryKey, null);
     },
   });
+}
+
+/** The workspace of the user (É1 has a single one per user, ROADMAP §5.2), once known. */
+export function useWorkspaceId(): string | undefined {
+  return useQuery(workspacesQuery).data?.[0]?.id;
 }

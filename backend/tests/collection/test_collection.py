@@ -355,3 +355,14 @@ def test_another_workspace_sees_nothing(world: World) -> None:
     assert world.collection.list_items(other) == []
     assert world.collection.get_source(other, source.id) is None
     assert not world.collection.delete_source(other, source.id)
+
+
+def test_items_of_one_run_are_paged_without_loss(world: World) -> None:
+    open_site(world.web, "a", "b", "c")
+    world.collection.add_source(world.context, FEED)
+    world.run_jobs()
+    first = world.collection.list_items(world.context, limit=2)
+    rest = world.collection.list_items(world.context, before=first[-1].id, limit=2)
+    # The three items share their collected_at: the cursor is (collected_at, id).
+    assert len({item.collected_at for item in first + rest}) == 1
+    assert sorted(item.title for item in first + rest) == ["Article a", "Article b", "Article c"]

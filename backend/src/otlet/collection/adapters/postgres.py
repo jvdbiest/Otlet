@@ -41,10 +41,15 @@ SOURCE_COLUMNS = (
 ITEM_COLUMNS = (
     "i.id, i.workspace_id, i.source_id, s.name AS source_name, i.origin, i.url, i.title,"
     " i.author, i.published_at, i.collected_at, i.summary,"
-    " coalesce(i.text, i.feed_content) AS text, i.text_status, i.text_reason,"
+    # Only a text Otlet may use is shown: a reserved item keeps its summary alone.
+    " CASE WHEN i.text_status IN ('full_text', 'manual')"
+    "   THEN coalesce(i.text, i.feed_content) END AS text, i.text_status, i.text_reason,"
     " i.declared_origin, i.usage_right"
 )
 ITEMS_FROM = "source_items AS i LEFT JOIN sources AS s ON s.id = i.source_id"
+# Items are listed by publication date, never later than their collection: a feed cannot push
+# its items to the top with a date in the future.
+SORT_DATE = "least(coalesce(i.published_at, i.collected_at), i.collected_at)"
 
 
 def _source(row: sa.Row[Any]) -> Source:
@@ -359,15 +364,17 @@ class PostgresCollectionStore:
     # Items ----------------------------------------------------------------------------------
 
     def list_items(
-        self, workspace_id: UUID, *, source_id: UUID | None, before: datetime | None, limit: int
+        self, workspace_id: UUID, *, source_id: UUID | None, before: UUID | None, limit: int
     ) -> list[Item]:
         with workspace_transaction(self._engine, workspace_id) as connection:
             rows = connection.execute(
                 sa.text(
                     f"SELECT {ITEM_COLUMNS} FROM {ITEMS_FROM}"  # noqa: S608
                     " WHERE (CAST(:source AS uuid) IS NULL OR i.source_id = :source)"
-                    " AND (CAST(:before AS timestamptz) IS NULL OR i.collected_at < :before)"
-                    " ORDER BY i.collected_at DESC, i.id DESC LIMIT :limit"
+                    # Keyset paging on (date, id): items of one run may share their date.
+                    f" AND (CAST(:before AS uuid) IS NULL OR ({SORT_DATE}, i.id) <"
+                    f"   (SELECT {SORT_DATE}, i.id FROM source_items AS i WHERE i.id = :before))"
+                    f" ORDER BY {SORT_DATE} DESC, i.id DESC LIMIT :limit"
                 ),
                 {"source": source_id, "before": before, "limit": limit},
             ).all()

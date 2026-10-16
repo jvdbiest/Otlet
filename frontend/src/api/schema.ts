@@ -133,7 +133,8 @@ export interface paths {
         };
         /**
          * List Items
-         * @description The latest items, newest first, without their full text; `before` pages back.
+         * @description The latest items, newest first, without their full text; `before` (the id of the
+         *     last item of the previous page) pages back.
          */
         get: operations["list_items_api_workspaces__workspace_id__items_get"];
         put?: never;

@@ -31,8 +31,8 @@
   "pages": {
     "watch": {
       "title": "Veille",
-      "empty": "Aucune source pour l'instant.",
-      "next": "Vous pourrez bientôt ajouter vos flux RSS et suivre vos sujets ici."
+      "empty": "Aucun élément pour l'instant.",
+      "next": "Ajoutez une source : ses éléments arriveront ici d'eux-mêmes."
     },
     "writing": {
       "title": "Rédaction",
@@ -47,11 +47,165 @@
     "settings": {
       "title": "Réglages",
       "empty": "Aucun réglage pour l'instant.",
-      "next": "Vous pourrez bientôt choisir vos fournisseurs et modèles d'IA, vos budgets et vos sources ici."
+      "next": "Vous pourrez bientôt choisir vos fournisseurs et modèles d'IA et vos budgets ici."
     },
     "notFound": {
       "title": "Page introuvable",
       "back": "Revenir à la veille"
     }
+  },
+  "watch": {
+    "tabs": {
+      "label": "Sections de la veille",
+      "items": "Éléments",
+      "sources": "Sources",
+      "manual": "Ajouter à la main"
+    },
+    "filter": "Source",
+    "allSources": "Toutes les sources",
+    "manualOrigin": "Saisie manuelle",
+    "more": "Voir les éléments plus anciens",
+    "addSource": "Ajouter une source",
+    "loadFailed": "Impossible de charger la veille. Réessayez dans un instant.",
+    "end": "Il n'y a pas d'élément plus ancien."
+  },
+  "item": {
+    "back": "Revenir à la veille",
+    "original": "Lire l'original",
+    "by": "par {author}",
+    "published": "Publié le {date}",
+    "collected": "Collecté le {date}",
+    "summary": "Résumé du flux",
+    "text": "Texte",
+    "noText": "Otlet ne garde pas le texte de cet élément.",
+    "declaredOrigin": "Origine déclarée",
+    "usageRight": "Droit d'usage déclaré",
+    "manualNotice": "Texte saisi à la main : Otlet ne peut pas vérifier ses droits. Il reste marqué comme tel.",
+    "notFound": "Cet élément n'existe pas ou plus."
+  },
+  "sources": {
+    "title": "Sources",
+    "add": {
+      "title": "Ajouter une source",
+      "url": "Adresse du flux ou du site",
+      "urlHelp": "Un flux RSS, Atom ou JSON, ou la page d'un site qui en annonce un.",
+      "name": "Nom (facultatif)",
+      "interval": "Fréquence de collecte",
+      "submit": "Ajouter",
+      "submitting": "Recherche du flux…",
+      "added": "Source ajoutée : {name}. Sa première collecte démarre.",
+      "notice": "Otlet respecte robots.txt et les réserves de fouille que le site exprime de façon lisible par une machine. Les conditions d'utilisation écrites du site ne sont pas lues : vous restez responsable de leur respect."
+    },
+    "intervals": {
+      "15": "Toutes les 15 minutes",
+      "30": "Toutes les 30 minutes",
+      "60": "Toutes les heures",
+      "180": "Toutes les 3 heures",
+      "360": "Toutes les 6 heures",
+      "720": "Toutes les 12 heures",
+      "1440": "Une fois par jour",
+      "10080": "Une fois par semaine"
+    },
+    "empty": "Vous ne suivez encore aucune source.",
+    "items": "{count, plural, =0 {Aucun élément} one {# élément} other {# éléments}}",
+    "lastFetched": "Dernière collecte : {date}",
+    "neverFetched": "Première collecte en cours",
+    "paused": "En pause",
+    "health": {
+      "ok": "Collecte normale",
+      "degraded": "Collecte en difficulté ({count} échecs de suite)",
+      "dead": "Collecte en échec ({count} échecs de suite) : Otlet réessaie de moins en moins souvent"
+    },
+    "lastError": "Dernière erreur : {reason}",
+    "collectNow": "Collecter maintenant",
+    "pause": "Mettre en pause",
+    "resume": "Reprendre",
+    "delete": "Supprimer",
+    "confirmDelete": "Supprimer cette source et ses éléments ?",
+    "confirm": "Oui, supprimer",
+    "cancel": "Annuler",
+    "journal": "Journal de conformité",
+    "journalEmpty": "Aucune décision enregistrée pour l'instant.",
+    "journalEntry": "{date} : {decision}",
+    "allowed": "autorisé",
+    "refusedDecision": "refusé",
+    "policy": "Politique annoncée par le site",
+    "actionFailed": "L'action a échoué. Réessayez dans un instant."
+  },
+  "legal": {
+    "full_text": "Texte intégral utilisable",
+    "summary_only": "Résumé du flux seulement",
+    "refused": "Refusée",
+    "unknown": "Pas encore vérifiée"
+  },
+  "text": {
+    "pending": "Lecture de la page en attente",
+    "full_text": "Texte intégral",
+    "summary_only": "Résumé seulement",
+    "manual": "Saisie manuelle"
+  },
+  "reasons": {
+    "robots_allowed": "robots.txt autorise la collecte.",
+    "robots_missing": "Le site n'a pas de robots.txt : la collecte est permise.",
+    "robots_disallowed": "Le robots.txt du site interdit cette adresse à Otlet.",
+    "robots_unreachable": "Le robots.txt du site ne répond pas : par prudence, Otlet ne collecte pas.",
+    "tdm_reserved_file": "Le site réserve la fouille de textes (fichier tdmrep.json).",
+    "tdm_reserved_header": "Le site réserve la fouille de textes (en-tête de sa réponse).",
+    "tdm_reserved_meta": "La page réserve la fouille de textes (balise de la page).",
+    "tdm_not_reserved": "Le site n'exprime aucune réserve de fouille.",
+    "tdm_not_reserved_file": "Le fichier tdmrep.json du site autorise la fouille.",
+    "tdm_not_reserved_header": "Le site autorise la fouille (en-tête de sa réponse).",
+    "tdm_not_reserved_meta": "La page autorise la fouille (balise de la page).",
+    "feed_only": "Le flux ne donne pas de lien vers une page : son contenu est tout ce qu'il y a.",
+    "declared_by_user": "Origine et droit d'usage déclarés par vous.",
+    "no_text_found": "Otlet n'a pas trouvé de texte principal dans la page.",
+    "not_html": "L'adresse ne mène pas à une page web.",
+    "not_a_feed": "L'adresse ne donne plus un flux lisible.",
+    "http": "Le site a répondu avec le code {status}.",
+    "fetch_timeout": "Le site a mis trop de temps à répondre.",
+    "fetch_network_error": "Le site est injoignable.",
+    "fetch_address_not_allowed": "Cette adresse mène au réseau interne : Otlet refuse de la lire.",
+    "fetch_too_large": "La réponse du site est trop volumineuse.",
+    "fetch_too_many_redirects": "Le site redirige trop de fois.",
+    "fetch_scheme_not_allowed": "Seules les adresses http et https sont acceptées.",
+    "fetch_port_not_allowed": "Seuls les ports web habituels (80 et 443) sont acceptés.",
+    "fetch_invalid_url": "Cette adresse n'est pas valide.",
+    "unknown": "Raison : {code}."
+  },
+  "errors": {
+    "invalid_url": "Saisissez une adresse web qui commence par http:// ou https://.",
+    "fetch_http_error": "Le site a refusé de répondre.",
+    "feed_not_found": "Aucun flux RSS, Atom ou JSON trouvé à cette adresse.",
+    "already_followed": "Vous suivez déjà ce flux.",
+    "invalid_name": "Le nom doit compter entre 1 et 200 caractères.",
+    "invalid_interval": "Choisissez une fréquence proposée.",
+    "invalid_title": "Le titre doit compter entre 1 et 500 caractères.",
+    "invalid_text": "Le texte est vide ou trop long.",
+    "invalid_declaration": "Indiquez l'origine du texte et votre droit d'usage (3 caractères au moins chacun).",
+    "generic": "L'opération a échoué. Réessayez dans un instant."
+  },
+  "manual": {
+    "title": "Ajouter à la main",
+    "intro": "Pour un article que vos sources ne couvrent pas.",
+    "url": {
+      "title": "Une page web",
+      "label": "Adresse de l'article",
+      "help": "Otlet la lit sous les mêmes règles qu'une source : robots.txt et réserves de fouille.",
+      "submit": "Ajouter la page"
+    },
+    "text": {
+      "title": "Un texte",
+      "warning": "Otlet ne peut pas vérifier les droits d'un texte collé. Ne collez que ce que vous avez le droit de réutiliser : vos propres notes, un texte sous licence libre, un communiqué public. L'origine et le droit d'usage que vous déclarez restent attachés au texte.",
+      "titleLabel": "Titre",
+      "body": "Texte",
+      "url": "Adresse d'origine (facultative)",
+      "origin": "Origine du texte",
+      "originHelp": "D'où vient ce texte : auteur, publication, date.",
+      "right": "Votre droit d'usage",
+      "rightHelp": "Par exemple : j'en suis l'auteur, licence CC BY 4.0, communiqué de presse public.",
+      "submit": "Ajouter le texte"
+    },
+    "added": "Élément ajouté.",
+    "open": "Voir l'élément"
   }
 }

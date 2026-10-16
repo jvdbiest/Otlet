@@ -134,7 +134,7 @@ class CollectionStore(Protocol):
 
     # Items
     def list_items(
-        self, workspace_id: UUID, *, source_id: UUID | None, before: datetime | None, limit: int
+        self, workspace_id: UUID, *, source_id: UUID | None, before: UUID | None, limit: int
     ) -> list[Item]: ...
 
     def get_item(self, workspace_id: UUID, item_id: UUID) -> Item | None: ...

@@ -103,3 +103,13 @@ def test_urls_are_recognised_without_their_tracking_parameters() -> None:
     assert model.normalize_url("HTTPS://Journal.Example.org:443/a?utm_source=rss&b=2&a=1#top") == (
         "https://journal.example.org/a?a=1&b=2"
     )
+
+
+def test_only_web_links_are_kept() -> None:
+    feed = b"""<?xml version="1.0"?><rss version="2.0"><channel><title>T</title>
+      <item><title>Trap</title><link>javascript:alert(1)</link><guid>g1</guid></item>
+      <item><title>Data</title><link>data:text/html,x</link><guid>g2</guid></item>
+    </channel></rss>"""
+    parsed = FeedparserReader().read(feed, "https://example.org/feed")
+    assert parsed is not None
+    assert [entry.url for entry in parsed.entries] == [None, None]

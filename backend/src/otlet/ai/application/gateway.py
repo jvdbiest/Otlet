@@ -38,7 +38,13 @@ from otlet.ai.domain.model import (
     estimate_cost,
     real_cost,
 )
-from otlet.ai.domain.settings import InstancePolicy, Profile, Provider, api_endpoint
+from otlet.ai.domain.settings import (
+    InstancePolicy,
+    Profile,
+    ProfileEntry,
+    Provider,
+    api_endpoint,
+)
 
 RETRY_AFTER_MAX = 2.0
 QUOTA_RETRIES = 2
@@ -125,12 +131,24 @@ class Gateway:
         self._journal = journal
         self._sleep = sleep
 
-    def generate(self, user_id: UUID, request: Request, validate: Validate) -> Outcome:
+    def profile(self, user_id: UUID) -> tuple[ProfileEntry, ...]:
+        return tuple(self._settings.profile(user_id).entries)
+
+    def generate(
+        self,
+        user_id: UUID,
+        request: Request,
+        validate: Validate,
+        entries: Sequence[ProfileEntry] | None = None,
+    ) -> Outcome:
+        """`entries` replaces the profile of the user for this request: one model chosen for
+        a brief, or each model of the profile in turn for « Tester »."""
         outcome = Outcome()
         policy = self._settings.policy()
         adapter_for = self._adapters(policy)
         providers = {p.id: p for p in self._settings.list_providers(user_id)}
-        entries = self._settings.profile(user_id).entries
+        if entries is None:
+            entries = self._settings.profile(user_id).entries
         if not entries:
             outcome.error = "no_profile"
             return outcome

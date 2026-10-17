@@ -239,6 +239,7 @@ function Profile({ catalogue }: { catalogue: CatalogueView }) {
     <section className={styles.panel} aria-labelledby="ai-profile">
       <h2 id="ai-profile">{t("ai.profile.title")}</h2>
       <p className={styles.help}>{t("ai.profile.help")}</p>
+      <p className={styles.help}>{t("ai.profile.statuses")}</p>
       {list.length === 0 ? (
         <p className={styles.meta}>{t("ai.profile.noProvider")}</p>
       ) : (
@@ -576,23 +577,57 @@ function Budget() {
   );
 }
 
+interface ModelResult {
+  ok: boolean;
+  error: string | null;
+  provider: string | null;
+  model: string | null;
+  answer: { title?: string; keywords?: string[] } | null;
+  repaired?: boolean;
+  attempts: { provider: string; model: string; result: string; seconds: number }[];
+}
+
+/** What one model of the profile answered to « Tester ». */
+function ModelOutcome({ model }: { model: ModelResult }) {
+  const { t } = useTranslation();
+  const seconds = model.attempts.reduce((total, a) => total + a.seconds, 0);
+  const error = among(FAILURES, model.error ?? "") ? (model.error as (typeof FAILURES)[number]) : "unavailable";
+  return (
+    <div className={model.ok ? styles.success : styles.warning}>
+      {model.ok ? (
+        <>
+          <p>{t("ai.check.ok", { provider: model.provider, model: model.model, seconds: seconds.toFixed(1) })}</p>
+          <p>
+            <strong>{model.answer?.title}</strong> — {(model.answer?.keywords ?? []).join(", ")}
+          </p>
+          {model.repaired === true && <p className={styles.meta}>{t("ai.check.repaired")}</p>}
+        </>
+      ) : (
+        <p>
+          {model.attempts[0] !== undefined && <strong>{model.attempts[0].model} : </strong>}
+          {t(`ai.check.failed.${error}`)}
+        </p>
+      )}
+      <ul className={styles.journal}>
+        {model.attempts.map((a, i) => (
+          <li key={i}>
+            {a.provider} · {a.model} · {resultText(t, a.result)} · {a.seconds} s
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function Check() {
   const { t } = useTranslation();
   const start = useStartCheck();
   const [checkId, setCheckId] = useState<string | null>(null);
   const check = useQuery({ ...checkQuery(checkId ?? ""), enabled: checkId !== null });
-  const result = check.data?.result as
-    | {
-        ok: boolean;
-        error: string | null;
-        provider: string | null;
-        model: string | null;
-        answer: { title?: string; keywords?: string[] } | null;
-        attempts: { provider: string; model: string; result: string; seconds: number }[];
-      }
-    | null
-    | undefined;
-  const seconds = result?.attempts.reduce((total, a) => total + a.seconds, 0) ?? 0;
+  const result = check.data?.result as (ModelResult & { models?: ModelResult[] }) | null | undefined;
+  // Each model of the profile was tried alone; an older check holds the first model only.
+  const models = result == null ? [] : (result.models ?? [result]);
+  const answered = models.filter((model) => model.ok).length;
   return (
     <section className={styles.panel} aria-labelledby="ai-check">
       <h2 id="ai-check">{t("ai.check.title")}</h2>
@@ -619,24 +654,11 @@ function Check() {
         </p>
       )}
       {result != null && (
-        <div role="status" className={result.ok ? styles.success : styles.warning}>
-          {result.ok ? (
-            <>
-              <p>{t("ai.check.ok", { provider: result.provider, model: result.model, seconds: seconds.toFixed(1) })}</p>
-              <p>
-                <strong>{result.answer?.title}</strong> — {(result.answer?.keywords ?? []).join(", ")}
-              </p>
-            </>
-          ) : (
-            <p>{t(`ai.check.failed.${among(FAILURES, result.error ?? "") ? (result.error as (typeof FAILURES)[number]) : "unavailable"}`)}</p>
-          )}
-          <ul className={styles.journal}>
-            {result.attempts.map((a, i) => (
-              <li key={i}>
-                {a.provider} · {a.model} · {resultText(t, a.result)} · {a.seconds} s
-              </li>
-            ))}
-          </ul>
+        <div role="status">
+          {models.length > 1 && <p>{t("ai.check.summary", { answered, count: models.length })}</p>}
+          {models.map((model, index) => (
+            <ModelOutcome key={index} model={model} />
+          ))}
         </div>
       )}
     </section>

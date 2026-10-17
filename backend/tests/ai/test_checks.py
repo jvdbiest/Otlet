@@ -74,7 +74,10 @@ def test_a_check_runs_through_the_profile_and_is_journaled(
             endpoint=f"http://127.0.0.1:{fake.port}/v1",
             api_key=None,
         )
-        settings.set_profile(alice, [ProfileEntry(local.id, "qwen2.5:1.5b-instruct")])
+        settings.set_profile(
+            alice,
+            [ProfileEntry(local.id, "qwen2.5:1.5b-instruct"), ProfileEntry(local.id, "llama3.1")],
+        )
         jobs: list[tuple[str, dict[str, str]]] = []
 
         def enqueue(connection: sa.Connection, name: str, **kwargs: str) -> int:
@@ -103,8 +106,14 @@ def test_a_check_runs_through_the_profile_and_is_journaled(
             "ollama",
             "qwen2.5:1.5b-instruct",
         )
+        # Each model of the profile is tried in turn, even when the first one answers.
+        assert [(m["model"], m["ok"]) for m in done.result["models"]] == [
+            ("qwen2.5:1.5b-instruct", True),
+            ("llama3.1", True),
+        ]
+        assert [r["body"]["model"] for r in fake.requests] == ["qwen2.5:1.5b-instruct", "llama3.1"]
         calls = journal.recent(alice)
-        assert [(c["result"], c["provider_kind"]) for c in calls] == [("ok", "ollama")]
+        assert [(c["result"], c["provider_kind"]) for c in calls] == [("ok", "ollama")] * 2
         sent = fake.requests[-1]["body"]
         assert sent["response_format"]["json_schema"]["name"] == "check"
     finally:

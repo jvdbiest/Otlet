@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Statut | Proposé |
+| Statut | Accepté (2026-10-17) |
 | Date | 2026-10-17 |
 | Décideur | Joël |
 | Documents touchés | ADR-0021 (L2 de S1), ADR-0033, ADR-0034 ; `ROADMAP.md` §5.1 (S1) ; `TECH_CHOICES.md` §8.4 ; backlog d'É1 (P01) |
@@ -28,9 +28,9 @@ Le temps qui reste est du calcul : lire les éléments d'un mot fréquent pour g
 1. **Clore L2 pour É1 (recommandé).** Considérer que la recherche répond au besoin d'É1 : moins de 130 ms au p95 pour un utilisateur, et 295 à 415 ms quand quatre recherches arrivent ensemble. Le critère à 4 clients reste celui du profil d'équipe ; il est remesuré avant d'ouvrir Otlet à plusieurs utilisateurs, et lors de la mesure de la pile complète d'I4 (VM vierge, P04). L'écart est consigné dans ADR-0021.
 2. **Poursuivre maintenant.** Une remesure P01e après un ou plusieurs leviers : partitionner les éléments par mois (`TECH_CHOICES.md` §8.4, levier 1), classer moins d'éléments (fenêtre plus petite, que Joël a écartée dans l'ADR-0034), ou un classement moins coûteux. Chacun demande du temps sur I1, avec un gain attendu de l'ordre de 100 ms sur Q1.
 
-## Décision proposée
+## Décision
 
-L'option 1 : la recherche est acceptée pour É1. Le seuil de 300 ms avec 4 clients n'est pas modifié. Il redevient un critère au moment où Otlet sert plusieurs utilisateurs, et il est remesuré à I4.
+Décision de Joël du 2026-10-17 : « Je considère P01 comme suffisamment conclue pour É1. » L'option 1 : la recherche est acceptée pour É1. Le seuil de 300 ms avec 4 clients n'est pas modifié. Il redevient un critère au moment où Otlet sert plusieurs utilisateurs, et il est remesuré à I4.
 
 ## Conséquences
 

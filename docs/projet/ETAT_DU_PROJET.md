@@ -10,7 +10,7 @@ Mis à jour le 2026-10-17. Une page : ce qu'il faut savoir pour reprendre le tra
 |---|---|
 | Socle B02 à B10 | Fait. B01 (création du dépôt) n'est pas coché au backlog, mais il est réalisé |
 | S6 Squelette de livraison | Conclue : partiel (mesurée sur VM, pas sur VPS). ADR-0019, ADR-0020 |
-| S1 PostgreSQL et RLS | Conclue : partiel. La recherche plein texte, remesurée par P01 sur corpus réel, échoue faute d'index utilisable sous RLS : correction proposée (ADR-0033), remesure P01b à suivre. ADR-0021 |
+| S1 PostgreSQL et RLS | Conclue : partiel. La recherche plein texte, remesurée par P01 à P01d sur corpus réel, est close pour É1 (ADR-0033 à ADR-0035). ADR-0021 |
 | S2 File de tâches | Conclue : succès (Procrastinate). ADR-0022 |
 | S3 Format et éditeur | Conclue : succès (Tiptap). ADR-0023 |
 | S5 Similarité | Conclue : échec, de peu ; complément S5b conclu en échec sur la mémoire seule. Modèle retenu (ADR-0024) : potion-multilingual-128M par `model2vec` en int8, 870 Mio, qualité inchangée. Pile complète estimée à 2,4 Go en charge, sous 3,4 Go (déduction) |
@@ -23,7 +23,7 @@ Mis à jour le 2026-10-17. Une page : ce qu'il faut savoir pour reprendre le tra
 1. **I0 close** le 2026-10-16 (X01 fusionnée). I1 Lire en cours.
 2. Sur `main` (2026-10-16 et 17) : U01, U02, U02b, U02c (filtre des sources), X02 (flux de tri et parcours d'accueil), les boutons de tri dans la recherche, le filtre par sujets à choix multiple, le sujet principal en badge sur les cartes, la langue devinée des éléments (migration 0010) et les sujets définis par leurs sources (migration 0011). X02 sera « fait » après une semaine d'usage par Joël (critère du backlog). Joël fusionne `feat/veille-masse-dates` : actions en masse (retenir, épingler, écarter, remettre à trier ; « Supprimer » retiré en attendant la réflexion de Joël sur supprimer, écarter et archiver), vue « Tout » par date seule, filtre par période sur le flux et la recherche. Puis `feat/archives` (après les trois branches en attente) : flux décidé par Joël le 2026-10-17, À trier → Retenu → (Rédaction, en I2) → Archivé ; état Archivé (vue, bouton, action en masse), suppression définitive seulement depuis la fiche, avec confirmation et trace pour la collecte (migration 0015).
 3. Joël répond à l'ADR-0032 (règles du score).
-4. **Recherche plein texte** : P01 à P01c (échecs), ADR-0033 et ADR-0034 acceptés ; **P01d conclue le 2026-10-17 : échec, de peu** (`docs/spikes/P01d.md`) : avec 4 clients, Q2 et Q3 sous le seuil, Q1 à 415 ms, Q4 à 324 ms ; un client : tout sous 130 ms. Joël décide de l'**ADR-0035 (proposé)** : clore L2 pour É1 (recommandé) ou poursuivre (P01e). I1 se clôt ensuite avec la semaine d'usage de X02.
+4. **Recherche plein texte** : P01 à P01c (échecs), ADR-0033 et ADR-0034 acceptés ; **P01d conclue le 2026-10-17 : échec, de peu** (`docs/spikes/P01d.md`) : avec 4 clients, Q2 et Q3 sous le seuil, Q1 à 415 ms, Q4 à 324 ms ; un client : tout sous 130 ms. **ADR-0035 accepté** le 2026-10-17 : L2 close pour É1 ; le seuil à 4 clients sera remesuré à I4 et avant une ouverture à plusieurs utilisateurs. I1 se clôt avec la semaine d'usage de X02.
 5. Joël note son temps une fois par semaine dans `docs/projet/journal-temps.csv` (domaine `projet`).
 6. Plus tard, avec l'accord de Joël pour chacun : mesurer les fournisseurs réels de S4 (50 briefs chacun, plafonds de dépense posés).
 

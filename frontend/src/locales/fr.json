@@ -315,6 +315,33 @@
     "modeAny": "au moins un de ces sujets",
     "modeAll": "tous ces sujets à la fois",
     "clearTopics": "Tout retirer",
+    "bulk": {
+      "label": "Actions sur plusieurs éléments",
+      "all": "Tout sélectionner",
+      "select": "Sélectionner « {title} »",
+      "selected": "{count, plural, one {# élément sélectionné} other {# éléments sélectionnés}}",
+      "keep": "Retenir",
+      "pin": "Épingler",
+      "dismiss": "Écarter",
+      "to_sort": "Remettre à trier",
+      "done": {
+        "keep": "{count, plural, one {# élément retenu.} other {# éléments retenus.}}",
+        "pin": "{count, plural, one {# élément épinglé.} other {# éléments épinglés.}}",
+        "dismiss": "{count, plural, one {# élément écarté.} other {# éléments écartés.}}",
+        "to_sort": "{count, plural, one {# élément remis à trier.} other {# éléments remis à trier.}}"
+      }
+    },
+    "period": {
+      "label": "Période",
+      "any": "Toutes les dates",
+      "today": "Aujourd'hui",
+      "week": "Cette semaine",
+      "month": "Ce mois-ci",
+      "custom": "Période choisie…",
+      "from": "Du",
+      "to": "Au (inclus)",
+      "inverted": "La fin de la période précède son début."
+    },
     "topicScore": "{points, plural, one {# point} other {# points}} pour ce sujet",
     "otherTopics": "{count, plural, one {Voir l'autre sujet : {names}} other {Voir les # autres sujets : {names}}}",
     "keep": "Retenir",

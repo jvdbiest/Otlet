@@ -133,9 +133,10 @@ export interface paths {
         };
         /**
          * Get Feed
-         * @description The feed of the user: pinned items first, then the most recent; `before` (the id of
-         *     the last item of the previous page) pages back. `topic_id`, repeated, keeps the items of
-         *     at least one of these topics, or of all of them with `all_topics`.
+         * @description The feed of the user: pinned items first, then the most recent (in date order only
+         *     for `all`); `before` (the id of the last item of the previous page) pages back.
+         *     `topic_id`, repeated, keeps the items of at least one of these topics, or of all of
+         *     them with `all_topics`; `since` and `until` keep the items dated in between.
          */
         get: operations["get_feed_api_workspaces__workspace_id__feed_get"];
         put?: never;
@@ -195,6 +196,23 @@ export interface paths {
         put?: never;
         /** Add Manual Url */
         post: operations["add_manual_url_api_workspaces__workspace_id__items_manual_url_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/items/triage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Change Many */
+        post: operations["change_many_api_workspaces__workspace_id__items_triage_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -306,7 +324,7 @@ export interface paths {
         /**
          * Search
          * @description Full-text search of the items, best match first (ADR-0021: bounded ranking), within
-         *     the chosen topics if any (as in the feed).
+         *     the chosen topics and period if any (as in the feed).
          */
         get: operations["search_api_workspaces__workspace_id__search_get"];
         put?: never;
@@ -492,6 +510,24 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** BulkResult */
+        BulkResult: {
+            /** Changed */
+            changed: number;
+        };
+        /**
+         * BulkTriage
+         * @description One action of the feed for several items: keep, dismiss, pin, or back to sort.
+         */
+        BulkTriage: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "keep" | "dismiss" | "pin" | "to_sort";
+            /** Item Ids */
+            item_ids: string[];
+        };
         /** CheckView */
         CheckView: {
             /** Allowed */
@@ -1100,6 +1136,8 @@ export interface operations {
                 limit?: number;
                 topic_id?: string[];
                 all_topics?: boolean;
+                since?: string | null;
+                until?: string | null;
             };
             header?: never;
             path: {
@@ -1221,6 +1259,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ItemView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_many_api_workspaces__workspace_id__items_triage_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkTriage"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkResult"];
                 };
             };
             /** @description Validation Error */
@@ -1435,6 +1508,8 @@ export interface operations {
                 limit?: number;
                 topic_id?: string[];
                 all_topics?: boolean;
+                since?: string | null;
+                until?: string | null;
             };
             header?: never;
             path: {

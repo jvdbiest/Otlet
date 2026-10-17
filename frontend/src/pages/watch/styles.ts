@@ -37,6 +37,7 @@ export const styles = css as Record<
   | "neutral"
   | "notice"
   | "panel"
+  | "pick"
   | "periodFilter"
   | "primary"
   | "row"

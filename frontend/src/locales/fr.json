@@ -585,6 +585,7 @@
       "unknown_provider": "Ce fournisseur n'est pas l'un des vôtres.",
       "unknown_model": "Ce fournisseur ne propose pas ce modèle.",
       "model_blocked": "Ce modèle est bloqué sur cette instance."
-    }
+    },
+    "angleExample": "Par exemple : je roule en moto électrique depuis deux ans. Je veux montrer ce que ces annonces changent vraiment au quotidien, et ce que les articles cités ne disent pas sur l'autonomie en hiver."
   }
 }

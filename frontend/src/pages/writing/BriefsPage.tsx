@@ -11,6 +11,7 @@ import { feedQuery, ANY_TIME } from "../../triage.ts";
 import { briefQuery, briefsQuery, useDeleteBrief, useSaveBrief, type BriefLength, type BriefView } from "../../writing.ts";
 import { errorText, formatDate } from "../watch/labels.ts";
 import { styles } from "../watch/styles.ts";
+import { DraftPanel } from "./DraftPanel.tsx";
 
 const LENGTHS: readonly BriefLength[] = ["short", "medium", "long"];
 const LANGUAGES = ["fr", "en", "de", "nl", "es", "it", "pt"] as const;
@@ -273,6 +274,7 @@ function BriefForm({
           {save.isSuccess && brief !== null && <span className={styles.meta}>{t("brief.saved")}</span>}
         </p>
       </form>
+      {brief !== null && <DraftPanel workspaceId={workspaceId} briefId={brief.id} />}
       {brief !== null && (
         <div className={styles.dangerZone}>
           {confirming ? (

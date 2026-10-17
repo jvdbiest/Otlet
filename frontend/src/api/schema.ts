@@ -389,6 +389,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/briefs/{brief_id}/draft": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Draft
+         * @description The article written from the brief, with its versions, and the latest generation.
+         */
+        get: operations["get_draft_api_workspaces__workspace_id__briefs__brief_id__draft_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/briefs/{brief_id}/generations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Generate
+         * @description Asks the worker for a draft of the brief, a new version of its article; while one
+         *     runs, the same is answered.
+         */
+        post: operations["generate_api_workspaces__workspace_id__briefs__brief_id__generations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/feed": {
         parameters: {
             query?: never;
@@ -427,6 +468,23 @@ export interface paths {
          *     `/feed`, and how many items each holds; the group without key comes last.
          */
         get: operations["feed_groups_api_workspaces__workspace_id__feed_groups_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/generations/{generation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Generation */
+        get: operations["get_generation_api_workspaces__workspace_id__generations__generation_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -803,6 +861,18 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ArticleView */
+        ArticleView: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /** Versions */
+            versions: components["schemas"]["VersionView"][];
+        };
         /** BriefBody */
         BriefBody: {
             /**
@@ -1013,6 +1083,14 @@ export interface components {
             /** Password */
             password: string;
         };
+        /**
+         * DraftView
+         * @description The article of a brief, if any, and its latest generation, if any.
+         */
+        DraftView: {
+            article: components["schemas"]["ArticleView"] | null;
+            generation: components["schemas"]["GenerationView"] | null;
+        };
         /** DuplicateView */
         DuplicateView: {
             /** Item Id */
@@ -1039,6 +1117,39 @@ export interface components {
             /** Topics */
             topics: components["schemas"]["TopicTagView"][];
             triage: components["schemas"]["TriageView"];
+        };
+        /** GenerationView */
+        GenerationView: {
+            /** Attempts */
+            attempts: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Brief Id
+             * Format: uuid
+             */
+            brief_id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Error */
+            error: string | null;
+            /** Finished At */
+            finished_at: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "running" | "done" | "failed";
+            /** Version */
+            version: number | null;
         };
         /**
          * GroupBy
@@ -1547,6 +1658,35 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
+        };
+        /** VersionView */
+        VersionView: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Cut Sources */
+            cut_sources: string[];
+            /** Document */
+            document: {
+                [key: string]: unknown;
+            };
+            /** Model */
+            model: string | null;
+            /** Number */
+            number: number;
+            /**
+             * Origin
+             * @enum {string}
+             */
+            origin: "ia" | "humain";
+            /** Prompt Version */
+            prompt_version: string | null;
+            /** Provider Kind */
+            provider_kind: string | null;
+            /** Title */
+            title: string;
         };
         /**
          * View
@@ -2417,6 +2557,70 @@ export interface operations {
             };
         };
     };
+    get_draft_api_workspaces__workspace_id__briefs__brief_id__draft_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                brief_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    generate_api_workspaces__workspace_id__briefs__brief_id__generations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                brief_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GenerationView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_feed_api_workspaces__workspace_id__feed_get: {
         parameters: {
             query?: {
@@ -2488,6 +2692,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GroupView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_generation_api_workspaces__workspace_id__generations__generation_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                generation_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GenerationView"];
                 };
             };
             /** @description Validation Error */

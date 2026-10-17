@@ -1,6 +1,33 @@
 {
   "components": {
     "schemas": {
+      "ArticleView": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/VersionView"
+            },
+            "title": "Versions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "versions"
+        ],
+        "title": "ArticleView",
+        "type": "object"
+      },
       "BriefBody": {
         "properties": {
           "angle": {
@@ -517,6 +544,37 @@
         "title": "Credentials",
         "type": "object"
       },
+      "DraftView": {
+        "description": "The article of a brief, if any, and its latest generation, if any.",
+        "properties": {
+          "article": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ArticleView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "generation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GenerationView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "article",
+          "generation"
+        ],
+        "title": "DraftView",
+        "type": "object"
+      },
       "DuplicateView": {
         "properties": {
           "item_id": {
@@ -610,6 +668,88 @@
           "topics"
         ],
         "title": "FoundItemView",
+        "type": "object"
+      },
+      "GenerationView": {
+        "properties": {
+          "attempts": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Attempts",
+            "type": "array"
+          },
+          "brief_id": {
+            "format": "uuid",
+            "title": "Brief Id",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "running",
+              "done",
+              "failed"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          }
+        },
+        "required": [
+          "id",
+          "brief_id",
+          "status",
+          "error",
+          "version",
+          "attempts",
+          "created_at",
+          "finished_at"
+        ],
+        "title": "GenerationView",
         "type": "object"
       },
       "GroupBy": {
@@ -2124,6 +2264,89 @@
         "title": "ValidationError",
         "type": "object"
       },
+      "VersionView": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "cut_sources": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Cut Sources",
+            "type": "array"
+          },
+          "document": {
+            "additionalProperties": true,
+            "title": "Document",
+            "type": "object"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "number": {
+            "title": "Number",
+            "type": "integer"
+          },
+          "origin": {
+            "enum": [
+              "ia",
+              "humain"
+            ],
+            "title": "Origin",
+            "type": "string"
+          },
+          "prompt_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Version"
+          },
+          "provider_kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider Kind"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "number",
+          "title",
+          "document",
+          "origin",
+          "provider_kind",
+          "model",
+          "prompt_version",
+          "cut_sources",
+          "created_at"
+        ],
+        "title": "VersionView",
+        "type": "object"
+      },
       "View": {
         "description": "The parts of the feed a user looks at.",
         "enum": [
@@ -3172,6 +3395,108 @@
         "summary": "Update Brief"
       }
     },
+    "/api/workspaces/{workspace_id}/briefs/{brief_id}/draft": {
+      "get": {
+        "description": "The article written from the brief, with its versions, and the latest generation.",
+        "operationId": "get_draft_api_workspaces__workspace_id__briefs__brief_id__draft_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "brief_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Brief Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Draft"
+      }
+    },
+    "/api/workspaces/{workspace_id}/briefs/{brief_id}/generations": {
+      "post": {
+        "description": "Asks the worker for a draft of the brief, a new version of its article; while one\nruns, the same is answered.",
+        "operationId": "generate_api_workspaces__workspace_id__briefs__brief_id__generations_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "brief_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Brief Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerationView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Generate"
+      }
+    },
     "/api/workspaces/{workspace_id}/feed": {
       "get": {
         "description": "The feed of the user: pinned items first (except for `all`), then in the order of\n`sort`; `before` (the id of the last item of the previous page) pages back.\n`topic_id`, repeated, keeps the items of at least one of these topics, or of all of\nthem with `all_topics`; `since` and `until` keep the items dated in between;\n`group_by` with `group` keeps one group of `/feed/groups` (no `group`: the items\nwithout topic, or the manual entries).",
@@ -3529,6 +3854,56 @@
           }
         },
         "summary": "Feed Groups"
+      }
+    },
+    "/api/workspaces/{workspace_id}/generations/{generation_id}": {
+      "get": {
+        "operationId": "get_generation_api_workspaces__workspace_id__generations__generation_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "generation_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Generation Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerationView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Generation"
       }
     },
     "/api/workspaces/{workspace_id}/items": {

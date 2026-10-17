@@ -21,6 +21,13 @@ LANGUAGES = ("fr", "en", "de", "nl", "es", "it", "pt")
 SOURCES_ADVISED = 2
 
 
+class Mode(StrEnum):
+    """How a draft uses several sources (Joël, 2026-10-17); with one source, no effect."""
+
+    SYNTHESIS = "synthesis"  # one line of reasoning across the sources: the default (FA, H5)
+    PANORAMA = "panorama"  # the sources one after the other, then what links them
+
+
 class Length(StrEnum):
     SHORT = "short"  # about 300 words
     MEDIUM = "medium"  # about 600 words
@@ -55,6 +62,7 @@ class BriefFields:
     audience: str = ""
     tone: str = ""
     length: Length = Length.MEDIUM
+    mode: Mode = Mode.SYNTHESIS
     language: str = "fr"
     channel: str = ""
     model: ModelChoice | None = None
@@ -98,6 +106,7 @@ class BriefFields:
             audience=self.audience.strip(),
             tone=self.tone.strip(),
             length=self.length,
+            mode=self.mode,
             language=self.language,
             channel=self.channel.strip(),
             model=model,

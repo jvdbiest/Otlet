@@ -590,7 +590,16 @@
     "angleExample": "Par exemple : je roule en moto électrique depuis deux ans. Je veux montrer ce que ces annonces changent vraiment au quotidien, et ce que les articles cités ne disent pas sur l'autonomie en hiver.",
     "instructions": "Consignes de rédaction",
     "instructionsHelp": "Comment écrire le brouillon : structure, éléments à relier, points sur lesquels insister ou à éviter. Le modèle les reçoit comme des instructions, sous les règles d'Otlet (sources citées, rien d'inventé).",
-    "instructionsExample": "Par exemple : relie les trois éléments dans un seul article ; commence par ce qui les rapproche ; pas de liste à puces, un ton direct."
+    "instructionsExample": "Par exemple : relie les trois éléments dans un seul article ; commence par ce qui les rapproche ; pas de liste à puces, un ton direct.",
+    "mode": "Mode",
+    "modes": {
+      "synthesis": "Synthèse",
+      "panorama": "Panorama"
+    },
+    "modeHelp": {
+      "synthesis": "Un seul raisonnement à travers les sources : les intertitres portent sur des idées communes, et la plupart des paragraphes croisent plusieurs sources.",
+      "panorama": "Les sources l'une après l'autre, une section chacune, avec une introduction et une conclusion qui les relient."
+    }
   },
   "draft": {
     "title": "Brouillon",

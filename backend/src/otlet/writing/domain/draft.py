@@ -20,9 +20,9 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
-from otlet.writing.domain.brief import BriefFields, Length
+from otlet.writing.domain.brief import BriefFields, Length, Mode
 
-PROMPT_VERSION = "redaction-3"
+PROMPT_VERSION = "redaction-4"
 SCHEMA_NAME = "article_draft"
 SECTIONS = (2, 6)
 SOURCE_MIN_CHARS = 600
@@ -112,10 +112,7 @@ def messages(fields: BriefFields, sources: list[PromptSource]) -> list[tuple[str
         brief.append(f"Where it will be published: {fields.channel}")
     if len(sources) > 1:
         keys = ", ".join(source.key for source in sources)
-        brief.append(
-            f"Use every source ({keys}): the article connects them; each one is cited by at"
-            " least one paragraph."
-        )
+        brief.append(MODES[fields.mode].format(keys=keys))
     data = []
     for source in sources:
         head = f"[{source.key}] {source.source.title}"
@@ -138,6 +135,23 @@ def messages(fields: BriefFields, sources: list[PromptSource]) -> list[tuple[str
             + fields.instructions
         )
     return [("system", system), ("user", user)]
+
+
+# How several sources are used (Joël, 2026-10-17). A section per source is the easiest way to
+# cite them all: the synthesis asks for sections about ideas, and paragraphs that cross sources.
+MODES = {
+    Mode.SYNTHESIS: (
+        "Mode: synthesis. Build one line of reasoning across the sources: each section is about "
+        "an idea, a question or a consequence that several sources share, never about a single "
+        "source. Most paragraphs draw on two sources or more and say how they agree, differ or "
+        "complete each other. Every source ({keys}) is cited at least once."
+    ),
+    Mode.PANORAMA: (
+        "Mode: overview. After a lead that says what links the sources, present them one after "
+        "the other, a section for each; end with a short section that draws them together. Every "
+        "source ({keys}) is cited at least once."
+    ),
+}
 
 
 def output_schema(keys: list[str]) -> dict[str, Any]:
@@ -192,9 +206,12 @@ def _text(value: Any, minimum: int) -> bool:
     return isinstance(value, str) and len(value.strip()) >= minimum
 
 
-def check_answer(raw: str, keys: list[str], every_source: bool = True) -> list[str]:
+def check_answer(
+    raw: str, keys: list[str], every_source: bool = True, crossing: bool = False
+) -> list[str]:
     """The errors of an answer, in words a model can act on; empty when it is usable. With
-    `every_source`, a source of the brief no paragraph cites is an error too."""
+    `every_source`, a source of the brief no paragraph cites is an error too; with `crossing`
+    (a synthesis of several sources), so is a draft whose paragraphs never cite two sources."""
     try:
         data = json.loads(raw)
     except json.JSONDecodeError as error:
@@ -212,6 +229,7 @@ def check_answer(raw: str, keys: list[str], every_source: bool = True) -> list[s
         sections = []
     unknown: set[str] = set()
     cited: set[str] = set()
+    crossed = False
     for n, section in enumerate(sections):
         if not isinstance(section, dict) or not _text(section.get("heading"), 3):
             errors.append(f"sections[{n}].heading: a heading is required")
@@ -231,6 +249,7 @@ def check_answer(raw: str, keys: list[str], every_source: bool = True) -> list[s
                 continue
             unknown |= {str(i) for i in ids if i not in keys}
             cited |= {str(i) for i in ids if i in keys}
+            crossed = crossed or len({i for i in ids if i in keys}) > 1
     if unknown:
         errors.append(
             f"unknown source ids: {', '.join(sorted(unknown))}; allowed: {', '.join(keys)}"
@@ -240,6 +259,11 @@ def check_answer(raw: str, keys: list[str], every_source: bool = True) -> list[s
         errors.append(
             f"sources not used: {', '.join(missing)}; every source of the brief must be cited"
             " by at least one paragraph: connect them in the article"
+        )
+    if crossing and len(keys) > 1 and sections and not unknown and not crossed:
+        errors.append(
+            "no paragraph draws on two sources: this is a synthesis, build sections around"
+            " ideas the sources share and cite two sources or more in most paragraphs"
         )
     return errors[:10]
 

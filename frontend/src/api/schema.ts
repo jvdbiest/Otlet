@@ -908,6 +908,12 @@ export interface components {
              * @enum {string}
              */
             length: "short" | "medium" | "long";
+            /**
+             * Mode
+             * @default synthesis
+             * @enum {string}
+             */
+            mode: "synthesis" | "panorama";
             /** Model */
             model?: string | null;
             /** Provider Id */
@@ -967,6 +973,11 @@ export interface components {
              * @enum {string}
              */
             length: "short" | "medium" | "long";
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "synthesis" | "panorama";
             /** Model */
             model: string | null;
             /** Provider Id */

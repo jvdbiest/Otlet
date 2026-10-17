@@ -228,6 +228,7 @@ def test_a_draft_becomes_a_version_of_the_article_of_the_brief(world: World) -> 
     assert (
         version.prompt_version == "redaction-4"
         and version.cut_sources == () == version.unused_sources
+        and not version.context_overflow
     )
     sources = version.document["attrs"]["sources"]
     assert [(s["id"], s["titre"], s["url"]) for s in sources] == [

@@ -107,6 +107,10 @@ class Provider:
     endpoint: str
     key_hint: str | None  # the last characters of the key, or None without a key
     created_at: datetime
+    # The context window its models run with, in tokens; None: automatic, the window of each
+    # model from the catalogue (a local engine: 4,096, Ollama's default). A local engine's
+    # window depends on its machine (OLLAMA_CONTEXT_LENGTH): the user says it here.
+    context_window: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -134,6 +138,29 @@ def api_endpoint(endpoint: str, local: bool) -> str:
     if local and parts.path in ("", "/"):
         return endpoint.rstrip("/") + "/v1"
     return endpoint
+
+
+CONTEXT_WINDOW_RANGE = (2_048, 2_000_000)
+LOCAL_DEFAULT_WINDOW = 4_096
+
+
+def check_context_window(window: int | None) -> int | None:
+    if window is not None and not CONTEXT_WINDOW_RANGE[0] <= window <= CONTEXT_WINDOW_RANGE[1]:
+        raise SettingsError(
+            "invalid_context_window",
+            f"a context window is between {CONTEXT_WINDOW_RANGE[0]} and {CONTEXT_WINDOW_RANGE[1]}",
+        )
+    return window
+
+
+def effective_window(provider: Provider, model_context: int, local: bool) -> int:
+    """The window a call to this provider's model runs with: the user's setting, else the
+    model's from the catalogue, else the default of a local engine."""
+    if provider.context_window is not None:
+        return provider.context_window
+    if local or model_context <= 0:
+        return LOCAL_DEFAULT_WINDOW
+    return model_context
 
 
 def check_endpoint(endpoint: str) -> str:

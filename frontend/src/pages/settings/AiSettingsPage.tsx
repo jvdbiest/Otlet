@@ -19,6 +19,7 @@ import {
   useSavePolicy,
   useSaveProfile,
   useStartCheck,
+  useSetContextWindow,
   useStartPull,
   type CatalogueView,
   type ProviderView,
@@ -59,6 +60,7 @@ const AI_ERRORS = [
   "install_not_allowed",
   "invalid_model_name",
   "not_a_local_engine",
+  "invalid_context_window",
   "invalid_endpoint",
   "invalid_key",
   "invalid_name",
@@ -72,7 +74,16 @@ const AI_ERRORS = [
   "unknown_model",
   "unknown_provider",
 ] as const;
-const FAILURES = ["no_profile", "budget", "refused", "invalid", "quota", "unavailable", "blocked"] as const;
+const FAILURES = [
+  "no_profile",
+  "budget",
+  "refused",
+  "invalid",
+  "out_of_room",
+  "quota",
+  "unavailable",
+  "blocked",
+] as const;
 const RESULTS = ["ok", "quota", "unavailable", "refused", "blocked", "budget", "invalid"] as const;
 
 function among<T extends string>(list: readonly T[], value: string): value is T {
@@ -123,6 +134,10 @@ function Providers({ catalogue }: { catalogue: CatalogueView }) {
             >
               {t("ai.providers.remove", { name: provider.name })}
             </button>
+            <ContextWindow
+              provider={provider}
+              local={catalogue.kinds.find((k) => k.name === provider.kind)?.custom_models === true}
+            />
           </li>
         ))}
         {providers.data?.length === 0 && <li className={styles.meta}>{t("ai.providers.empty")}</li>}
@@ -523,6 +538,75 @@ function LocalModel({
         </span>
       )}
     </span>
+  );
+}
+
+/** The context window of a provider (decision of Joël, 2026-10-17): automatic, or the number of
+ * tokens the user sets, which matters for a local engine whose window depends on its machine. */
+function ContextWindow({ provider, local }: { provider: ProviderView; local: boolean }) {
+  const { t } = useTranslation();
+  const save = useSetContextWindow();
+  const [custom, setCustom] = useState(provider.context_window !== null);
+  const [value, setValue] = useState(String(provider.context_window ?? 16384));
+  const name = `window-${provider.id}`;
+  return (
+    <fieldset className={styles.choices}>
+      <legend>{t("ai.window.title")}</legend>
+      <label>
+        <input
+          type="radio"
+          name={name}
+          checked={!custom}
+          onChange={() => {
+            setCustom(false);
+          }}
+        />{" "}
+        {t("ai.window.auto")}
+      </label>
+      <label>
+        <input
+          type="radio"
+          name={name}
+          checked={custom}
+          onChange={() => {
+            setCustom(true);
+          }}
+        />{" "}
+        {t("ai.window.custom")}
+      </label>
+      {custom && (
+        <input
+          type="number"
+          aria-label={t("ai.window.tokens", { name: provider.name })}
+          min={2048}
+          max={2000000}
+          step={1024}
+          value={value}
+          onChange={(event) => {
+            setValue(event.target.value);
+          }}
+        />
+      )}
+      <span className={styles.help}>{t(local ? "ai.window.helpLocal" : "ai.window.helpRemote")}</span>
+      <p className={styles.row}>
+        <button
+          type="button"
+          className={styles.button}
+          disabled={save.isPending}
+          onClick={() => {
+            save.mutate({ id: provider.id, window: custom ? Number(value) : null });
+          }}
+        >
+          {t("ai.window.save")}
+        </button>
+        {save.isSuccess && <span className={styles.meta}>{t("ai.saved")}</span>}
+        {save.error !== null && (
+          <span role="alert" className={styles.error}>
+            {errorOf(t, save.error)}
+          </span>
+        )}
+      </p>
+    </fieldset>
   );
 }
 

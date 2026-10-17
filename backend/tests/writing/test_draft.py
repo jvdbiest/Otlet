@@ -7,7 +7,6 @@ from datetime import UTC, datetime
 
 from otlet.writing.domain.brief import BriefFields, Length, Mode
 from otlet.writing.domain.draft import (
-    LOCAL_SOURCE_CHARS,
     SOURCE_MIN_CHARS,
     SourceText,
     check_answer,
@@ -55,11 +54,18 @@ def answer(**changes: object) -> str:
     return json.dumps(data)
 
 
-def test_the_room_for_sources_depends_on_the_model() -> None:
-    assert source_budget(32_768, local=True) == LOCAL_SOURCE_CHARS
-    assert source_budget(0, local=False) == LOCAL_SOURCE_CHARS
-    assert source_budget(8_000, local=False) == 12_000
-    assert source_budget(1_000_000, local=False) == 60_000
+def test_the_room_for_sources_comes_from_the_window() -> None:
+    # Ollama's default window, a short draft: about 1,400 tokens left for the sources.
+    assert source_budget(4_096, 1_900) == (4_096 - 1_900 - 800) * 3
+    # Joël's window of 16,384: his three full texts (about 12,000 characters) fit.
+    assert source_budget(16_384, 1_900) > 12_000
+    # A remote model gets its whole window: no fixed cap any more.
+    assert source_budget(200_000, 2_800) > 500_000
+    # A window too small for anything: no room, and each source still gets its minimum.
+    assert source_budget(2_048, 4_600) == 0
+    assert all(
+        len(s.text) == SOURCE_MIN_CHARS for s in prompt_sources([source("A", "x" * 5000)], 0)
+    )
 
 
 def test_sources_are_numbered_and_shared_evenly() -> None:

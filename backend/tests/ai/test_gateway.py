@@ -153,6 +153,18 @@ def test_an_invalid_output_gets_one_repair_on_the_same_model() -> None:
     assert gateway.generate(USER, REQUEST, valid).error == "invalid"
 
 
+def test_an_answer_cut_by_the_room_left_is_not_repaired() -> None:
+    class Cut(Scripted):
+        def complete(self, call: Completion) -> Answer:
+            self.calls.append(call)
+            return Answer('{"title": "cut in the mid', 3000, 1096, truncated=True)
+
+    local = Cut([])
+    gateway, journal, _, _ = world({"ollama": local, "groq": Scripted([])})
+    outcome = gateway.generate(USER, REQUEST, valid)
+    assert (outcome.error, outcome.text, len(local.calls)) == ("out_of_room", None, 1)
+
+
 def test_a_short_quota_wait_is_retried_then_the_next_model_takes_over() -> None:
     local = Scripted([AiError("quota", retry_after=1.0), '{"title": "T"}'])
     gateway, _, _, slept = world({"ollama": local, "groq": Scripted([])})

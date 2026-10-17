@@ -18,6 +18,7 @@ class Version:
     prompt_version: str | None
     cut_sources: tuple[str, ...]  # titles of the items whose text was cut to fit the model
     unused_sources: tuple[str, ...]  # titles of the items of the brief the draft does not cite
+    context_overflow: bool  # more tokens than the window: the start may have been dropped
     created_at: datetime
 
 

@@ -13,6 +13,7 @@ const FAILURES = [
   "budget",
   "refused",
   "invalid",
+  "out_of_room",
   "quota",
   "unavailable",
   "blocked",
@@ -107,6 +108,11 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
                 : t("draft.byPerson", { number: shown.number, date: formatDate(shown.created_at) })}
             </span>
           </div>
+          {shown.context_overflow && (
+            <p role="note" className={styles.warning}>
+              {t("draft.overflow")}
+            </p>
+          )}
           {shown.unused_sources.length > 0 && (
             <div role="note" className={styles.warning}>
               <p>{t("draft.unused", { count: shown.unused_sources.length })}</p>

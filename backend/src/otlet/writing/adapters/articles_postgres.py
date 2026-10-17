@@ -21,7 +21,7 @@ GENERATION_COLUMNS = (
 )
 VERSION_COLUMNS = (
     "number, title, document, origin, provider_kind, model, prompt_version, cut_sources,"
-    " unused_sources, created_at"
+    " unused_sources, context_overflow, created_at"
 )
 
 
@@ -50,6 +50,7 @@ def _version(row: sa.Row[Any]) -> Version:
         prompt_version=row.prompt_version,
         cut_sources=tuple(row.cut_sources),
         unused_sources=tuple(row.unused_sources),
+        context_overflow=row.context_overflow,
         created_at=row.created_at,
     )
 
@@ -135,6 +136,7 @@ class PostgresArticleStore:
         written: Written,
         cut_sources: Sequence[str],
         unused_sources: Sequence[str],
+        context_overflow: bool,
     ) -> tuple[UUID, int]:
         with workspace_transaction(self._engine, workspace_id) as connection:
             article_id = connection.execute(
@@ -156,10 +158,10 @@ class PostgresArticleStore:
                 sa.text(
                     "INSERT INTO article_versions (workspace_id, article_id, number, title,"
                     " document, origin, provider_kind, model, prompt_version, cut_sources,"
-                    " unused_sources, created_by)"
+                    " unused_sources, context_overflow, created_by)"
                     " SELECT :workspace, :article, coalesce(max(number), 0) + 1, :title,"
                     " CAST(:document AS jsonb), 'ia', :provider, :model, :prompt,"
-                    " CAST(:cut AS jsonb), CAST(:unused AS jsonb), :user"
+                    " CAST(:cut AS jsonb), CAST(:unused AS jsonb), :overflow, :user"
                     f" FROM article_versions WHERE article_id = :article AND {here()}"
                     " RETURNING number"
                 ),
@@ -173,6 +175,7 @@ class PostgresArticleStore:
                     "prompt": PROMPT_VERSION,
                     "cut": json.dumps(list(cut_sources)),
                     "unused": json.dumps(list(unused_sources)),
+                    "overflow": context_overflow,
                     "user": user_id,
                 },
             ).scalar_one()

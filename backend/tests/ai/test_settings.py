@@ -39,6 +39,35 @@ def test_a_paid_provider_becomes_untested_once_the_administrator_allows_it() -> 
     assert caught.value.code == "invalid_network"
 
 
+def test_the_context_window_is_set_or_automatic() -> None:
+    from datetime import UTC, datetime
+
+    from otlet.ai.domain.settings import Provider, check_context_window, effective_window
+
+    def provider(window: int | None) -> Provider:
+        return Provider(
+            uuid.uuid4(),
+            uuid.uuid4(),
+            "p",
+            "ollama",
+            "http://h/v1",
+            None,
+            datetime.now(UTC),
+            window,
+        )
+
+    assert effective_window(provider(16_384), 32_768, local=True) == 16_384  # the user's setting
+    assert effective_window(provider(None), 32_768, local=True) == 4_096  # a local engine: prudent
+    assert effective_window(provider(None), 200_000, local=False) == 200_000  # the catalogue's
+    assert effective_window(provider(None), 0, local=False) == 4_096  # unknown
+    assert effective_window(provider(8_192), 200_000, local=False) == 8_192  # a chosen limit
+    assert check_context_window(None) is None and check_context_window(16_384) == 16_384
+    for wrong in (1_000, 3_000_000):
+        with pytest.raises(SettingsError) as caught:
+            check_context_window(wrong)
+        assert caught.value.code == "invalid_context_window"
+
+
 def test_an_internal_address_needs_the_network_and_the_port_allowed() -> None:
     policy = InstancePolicy.checked([], ["192.168.129.249/32"], [11434], CATALOGUE)
     assert not policy.refuses("http://192.168.129.249:11434/v1")

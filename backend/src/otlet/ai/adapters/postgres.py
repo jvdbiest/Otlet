@@ -18,7 +18,7 @@ from otlet.ai.domain.settings import (
 from otlet.platform.database import scoped_transaction
 
 POLICY_KEY = "ai:policy"
-PROVIDER_COLUMNS = "id, user_id, name, kind, endpoint, key_hint, created_at"
+PROVIDER_COLUMNS = "id, user_id, name, kind, endpoint, key_hint, created_at, context_window"
 OWN = "user_id = :user"  # explicit, beside the policy (M-12)
 
 
@@ -31,6 +31,7 @@ def _provider(row: sa.Row[Any]) -> Provider:
         endpoint=row.endpoint,
         key_hint=row.key_hint,
         created_at=row.created_at,
+        context_window=row.context_window,
     )
 
 
@@ -112,6 +113,19 @@ class PostgresAiSettings:
                     ).one_or_none()
             except sa.exc.IntegrityError as error:
                 raise SettingsError("name_taken", "a provider already has this name") from error
+        return None if row is None else _provider(row)
+
+    def set_context_window(
+        self, user_id: UUID, provider_id: UUID, window: int | None
+    ) -> Provider | None:
+        with scoped_transaction(self._engine, user_id=user_id) as connection:
+            row = connection.execute(
+                sa.text(
+                    "UPDATE ai_providers SET context_window = :window"
+                    f" WHERE id = :id AND {OWN} RETURNING {PROVIDER_COLUMNS}"
+                ),
+                {"id": provider_id, "user": user_id, "window": window},
+            ).one_or_none()
         return None if row is None else _provider(row)
 
     def delete_provider(self, user_id: UUID, provider_id: UUID) -> bool:

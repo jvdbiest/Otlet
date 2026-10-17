@@ -155,6 +155,11 @@ class CollectionStore(Protocol):
         """Writes the text of a read page and announces the item as ready (ITEM_READY)."""
         ...
 
+    def remove_items(self, workspace_id: UUID, item_ids: list[UUID]) -> int:
+        """Deletes these items of the workspace with their text, matches and triage; an item of
+        a feed leaves a trace so that its next collection skips it. Returns how many."""
+        ...
+
     def add_manual_url(self, workspace_id: UUID, url: str, at: datetime) -> Item:
         """Creates a pending item and enqueues the reading of its page."""
         ...

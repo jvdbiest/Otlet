@@ -210,3 +210,39 @@ def test_items_carry_their_topics_best_score_first(setup: Setup) -> None:
     assert second.topics[0].score > second.topics[1].score == second.topics[2].score
     found = {f.item.title: [t.name for t in f.topics] for f in watch.search(context, "article")}
     assert found == tags
+
+
+def test_all_is_in_date_order_and_a_period_narrows_feed_and_search(setup: Setup) -> None:
+    from otlet.watch.adapters.postgres import PostgresWatchStore
+    from otlet.watch.application.watch import Watch
+    from otlet.watch.domain.triage import Period
+
+    feed, context, ids = setup.feed, setup.context, setup.ids
+    feed.change(context, ids[2], Change(pinned=True))
+    # « Tout »: the most recent first, pinned or not; the other views keep pinned items first.
+    assert titles(feed, context, view=View.ALL) == ["Article 0", "Article 1", "Article 2"]
+    assert titles(feed, context) == ["Article 2", "Article 0", "Article 1"]
+    first = feed.feed(context, view=View.ALL, limit=1)[0]
+    assert titles(feed, context, view=View.ALL, before=first.item.id) == ["Article 1", "Article 2"]
+    recent = Period(since=NOW - timedelta(minutes=90))
+    older = Period(until=NOW - timedelta(minutes=30))
+    assert titles(feed, context, view=View.ALL, period=recent) == ["Article 0", "Article 1"]
+    assert titles(feed, context, view=View.ALL, period=older) == ["Article 1", "Article 2"]
+    watch = Watch(PostgresWatchStore(setup.engine, lambda connection, name, **kwargs: 0))
+    found = {f.item.title for f in watch.search(context, "article", period=older)}
+    assert found == {"Article 1", "Article 2"}
+    assert not Period(since=NOW, until=NOW).valid
+
+
+def test_a_change_applies_to_several_items_at_once(setup: Setup) -> None:
+    feed, context, ids = setup.feed, setup.context, setup.ids
+    assert (
+        feed.change_many(context, [ids[0], ids[1], uuid.uuid4()], Change(decision=Decision.KEPT))
+        == 2
+    )
+    assert titles(feed, context, view=View.KEPT) == ["Article 0", "Article 1"]
+    assert titles(feed, context) == ["Article 2"]
+    assert feed.change_many(context, ids[:2], Change(clear_decision=True)) == 2
+    assert titles(feed, context) == ["Article 0", "Article 1", "Article 2"]
+    other = context_for(setup.engine, "bob@example.org")
+    assert feed.change_many(other, ids, Change(pinned=True)) == 0

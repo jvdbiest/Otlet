@@ -1,21 +1,25 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Form, Input, Label, TextField } from "react-aria-components";
 import { sourcesQuery, type ItemView } from "../../collection.ts";
 import { useWorkspaceId } from "../../session.ts";
 import {
+  ANY_TIME,
   FEED_PAGE_SIZE,
   feedQuery,
   type FeedFilter,
   type FeedView,
+  type Period,
   type TopicTagView,
   type TriageView,
 } from "../../triage.ts";
 import { searchQuery, useRefreshWatch } from "../../watch.ts";
 import { formatDate, textLabel, textTone } from "./labels.ts";
+import { BulkBar } from "./BulkBar.tsx";
+import { PeriodFilter } from "./PeriodFilter.tsx";
 import { StartPanel } from "./StartPanel.tsx";
 import { styles } from "./styles.ts";
 import { TopicBadge } from "./TopicBadge.tsx";
@@ -39,15 +43,31 @@ function Items({ workspaceId }: { workspaceId: string }) {
     unread: false,
     topicIds: [],
     allTopics: false,
+    period: ANY_TIME,
   });
   // Older pages, each starting after the last item of the previous one.
   const [pages, setPages] = useState<(string | null)[]>([null]);
   const sources = useQuery(sourcesQuery(workspaceId));
   const [draft, setDraft] = useState("");
   const [query, setQuery] = useState("");
+  // The selection of the bulk actions, and the items each page or the search shows.
+  const [selected, setSelected] = useState<string[]>([]);
+  const [loaded, setLoaded] = useState<Record<string, string[]>>({});
+  const visible = Object.values(loaded).flat();
+  const report = useCallback((key: string, ids: string[]) => {
+    setLoaded((current) => (current[key]?.join() === ids.join() ? current : { ...current, [key]: ids }));
+  }, []);
+  const toggle = (id: string, on: boolean) => {
+    setSelected((current) => (on ? [...current, id] : current.filter((other) => other !== id)));
+  };
+  const reset = () => {
+    setSelected([]);
+    setLoaded({});
+  };
   const update = (next: Partial<FeedFilter>) => {
     setFilter((current) => ({ ...current, ...next }));
     setPages([null]);
+    reset();
   };
 
   return (
@@ -60,10 +80,12 @@ function Items({ workspaceId }: { workspaceId: string }) {
         active={query !== ""}
         onSearch={() => {
           setQuery(draft.trim());
+          reset();
         }}
         onClear={() => {
           setDraft("");
           setQuery("");
+          reset();
         }}
       />
       <TopicMenu
@@ -74,12 +96,22 @@ function Items({ workspaceId }: { workspaceId: string }) {
           update({ topicIds, allTopics });
         }}
       />
+      <PeriodFilter
+        onChange={(period) => {
+          update({ period });
+        }}
+      />
+      <BulkBar workspaceId={workspaceId} visible={visible} selected={selected} onSelect={setSelected} />
       {query !== "" ? (
         <SearchResults
           workspaceId={workspaceId}
           query={query}
           topicIds={filter.topicIds}
           allTopics={filter.allTopics}
+          period={filter.period}
+          selected={selected}
+          onToggle={toggle}
+          onLoaded={report}
         />
       ) : (
         <>
@@ -140,6 +172,9 @@ function Items({ workspaceId }: { workspaceId: string }) {
               onMore={(next) => {
                 setPages((current) => [...current, next]);
               }}
+              selected={selected}
+              onToggle={toggle}
+              onLoaded={report}
             />
           ))}
         </>
@@ -154,15 +189,26 @@ function FeedPage({
   before,
   isLast,
   onMore,
+  selected,
+  onToggle,
+  onLoaded,
 }: {
   workspaceId: string;
   filter: FeedFilter;
   before: string | null;
   isLast: boolean;
   onMore: (before: string) => void;
+  selected: string[];
+  onToggle: (id: string, on: boolean) => void;
+  onLoaded: (key: string, ids: string[]) => void;
 }) {
   const { t } = useTranslation();
   const feed = useQuery(feedQuery(workspaceId, filter, before));
+  useEffect(() => {
+    if (feed.data !== undefined) {
+      onLoaded(before ?? "first", feed.data.map((entry) => entry.item.id));
+    }
+  }, [feed.data, before, onLoaded]);
   if (feed.isError) {
     return <p role="alert">{t("watch.loadFailed")}</p>;
   }
@@ -184,6 +230,10 @@ function FeedPage({
             triage={entry.triage}
             topics={entry.topics}
             chosenTopics={filter.topicIds}
+            selected={selected.includes(entry.item.id)}
+            onToggle={(on) => {
+              onToggle(entry.item.id, on);
+            }}
           />
         ))}
       </ul>
@@ -213,19 +263,34 @@ function ItemCard({
   triage,
   topics,
   chosenTopics,
+  selected,
+  onToggle,
 }: {
   workspaceId: string;
   item: ItemView;
   triage?: TriageView;
   topics: TopicTagView[];
   chosenTopics: string[];
+  selected: boolean;
+  onToggle: (on: boolean) => void;
 }) {
   const { t } = useTranslation();
   const date = item.published_at ?? item.collected_at;
   const unread = triage?.read_at === null;
   return (
-    <li className={styles.card}>
-      <TopicBadge topics={topics} chosen={chosenTopics} />
+    <li className={selected ? `${styles.card} ${styles.selected}` : styles.card}>
+      <div className={styles.cardHead}>
+        <input
+          type="checkbox"
+          className={styles.select}
+          checked={selected}
+          aria-label={t("triage.bulk.select", { title: item.title })}
+          onChange={(event) => {
+            onToggle(event.target.checked);
+          }}
+        />
+        <TopicBadge topics={topics} chosen={chosenTopics} />
+      </div>
       <h2 className={unread ? styles.unread : undefined}>
         <Link to="/veille/elements/$itemId" params={{ itemId: item.id }}>
           {item.title}
@@ -290,14 +355,27 @@ function SearchResults({
   query,
   topicIds,
   allTopics,
+  period,
+  selected,
+  onToggle,
+  onLoaded,
 }: {
   workspaceId: string;
   query: string;
   topicIds: string[];
   allTopics: boolean;
+  period: Period;
+  selected: string[];
+  onToggle: (id: string, on: boolean) => void;
+  onLoaded: (key: string, ids: string[]) => void;
 }) {
   const { t } = useTranslation();
-  const found = useQuery(searchQuery(workspaceId, query, topicIds, allTopics));
+  const found = useQuery(searchQuery(workspaceId, query, { topicIds, allTopics, period }));
+  useEffect(() => {
+    if (found.data !== undefined) {
+      onLoaded("search", found.data.map((result) => result.item.id));
+    }
+  }, [found.data, onLoaded]);
   if (found.isError) {
     return <p role="alert">{t("watch.loadFailed")}</p>;
   }
@@ -317,6 +395,10 @@ function SearchResults({
               triage={result.triage}
               topics={result.topics}
               chosenTopics={topicIds}
+              selected={selected.includes(result.item.id)}
+              onToggle={(on) => {
+                onToggle(result.item.id, on);
+              }}
             />
           ))}
         </ul>

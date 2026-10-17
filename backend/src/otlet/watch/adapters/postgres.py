@@ -18,6 +18,8 @@ from otlet.watch.adapters.triage_postgres import (
     TOPICS,
     TRIAGE_COLUMNS,
     TRIAGE_JOIN,
+    period_clause,
+    period_parameters,
     topic_parameters,
     topic_tags_of,
     triage_of,
@@ -33,7 +35,7 @@ from otlet.watch.application.watch import (
 )
 from otlet.watch.domain import model
 from otlet.watch.domain.model import Candidate, Contribution, Match, Topic, WatchError
-from otlet.watch.domain.triage import NO_TOPIC_FILTER, TopicFilter
+from otlet.watch.domain.triage import ANY_TIME, NO_TOPIC_FILTER, Period, TopicFilter
 
 TOPIC_COLUMNS = (
     "t.id, t.workspace_id, t.name, t.description, t.keywords, t.exclusions, t.languages,"
@@ -471,20 +473,21 @@ class PostgresWatchStore:
         limit: int,
         user_id: UUID | None = None,
         topics: TopicFilter = NO_TOPIC_FILTER,
+        period: Period = ANY_TIME,
     ) -> list[FoundItem]:
         """Bounded ranking (ADR-0021): the 1,000 most recent items that match the query, in any
         language configuration, are the only ones ranked. The matching items come from
         `search_candidates`, the one way to use the GIN index under row-level security
-        (ADR-0033), which also takes the window when no topic is chosen; the topics, the
-        ranking and the triage stay under the policies."""
-        # The topic filter reads the matches under the policies: the window comes after it.
-        window = None if topics.topic_ids else SEARCH_WINDOW
+        (ADR-0033), which also takes the window when no topic or period is chosen; the topics,
+        the period, the ranking and the triage stay under the policies."""
+        # These filters come before the window: the function cannot take it then.
+        window = None if topics.topic_ids or period != ANY_TIME else SEARCH_WINDOW
         with workspace_transaction(self._engine, workspace_id) as connection:
             rows = connection.execute(
                 sa.text(
                     "WITH found AS ("  # noqa: S608
                     " SELECT i.id FROM search_candidates(:q, :window) AS i WHERE true"
-                    f"{TOPICS}"
+                    f"{TOPICS}{period_clause('i.sort_date')}"
                     f" ORDER BY i.sort_date DESC LIMIT {SEARCH_WINDOW})"
                     f" SELECT {ITEM_COLUMNS}, {TRIAGE_COLUMNS}, {TOPIC_TAGS},"
                     " ts_rank(i.search, websearch_to_tsquery(i.search_config, :q)) AS rank"
@@ -497,6 +500,7 @@ class PostgresWatchStore:
                     "limit": limit,
                     "user": user_id,
                     **topic_parameters(topics),
+                    **period_parameters(period),
                 },
             ).all()
         return [

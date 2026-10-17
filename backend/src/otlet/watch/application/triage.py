@@ -11,8 +11,10 @@ from uuid import UUID
 
 from otlet.collection.domain.model import Item
 from otlet.watch.domain.triage import (
+    ANY_TIME,
     NO_TOPIC_FILTER,
     Decision,
+    Period,
     Progress,
     TopicFilter,
     TopicTag,
@@ -21,6 +23,7 @@ from otlet.watch.domain.triage import (
 )
 from otlet.workspaces.domain.model import WorkspaceContext
 
+BULK_MAX = 200  # items of one bulk action
 FEED_MAX = 200
 
 
@@ -53,6 +56,7 @@ class TriageStore(Protocol):
         before: UUID | None,
         limit: int,
         topics: TopicFilter = NO_TOPIC_FILTER,
+        period: Period = ANY_TIME,
     ) -> list[FeedItem]: ...
 
     def triage(self, workspace_id: UUID, user_id: UUID, item_id: UUID) -> Triage | None:
@@ -63,6 +67,12 @@ class TriageStore(Protocol):
     def change(
         self, workspace_id: UUID, user_id: UUID, item_id: UUID, change: Change
     ) -> Triage | None: ...
+
+    def change_many(
+        self, workspace_id: UUID, user_id: UUID, item_ids: list[UUID], change: Change
+    ) -> int:
+        """Applies a change to the items of the workspace among these; returns how many."""
+        ...
 
     def progress(self, workspace_id: UUID, user_id: UUID) -> Progress: ...
 
@@ -81,6 +91,7 @@ class Feed:
         before: UUID | None = None,
         limit: int = 50,
         topics: TopicFilter = NO_TOPIC_FILTER,
+        period: Period = ANY_TIME,
     ) -> list[FeedItem]:
         return self._store.feed(
             context.workspace_id,
@@ -91,6 +102,7 @@ class Feed:
             before=before,
             limit=min(max(limit, 1), FEED_MAX),
             topics=topics,
+            period=period,
         )
 
     def triage(self, context: WorkspaceContext, item_id: UUID) -> Triage | None:
@@ -98,6 +110,11 @@ class Feed:
 
     def change(self, context: WorkspaceContext, item_id: UUID, change: Change) -> Triage | None:
         return self._store.change(context.workspace_id, context.user_id, item_id, change)
+
+    def change_many(self, context: WorkspaceContext, item_ids: list[UUID], change: Change) -> int:
+        """The same change for several items at once (bulk actions of the feed)."""
+        unique = list(dict.fromkeys(item_ids))[:BULK_MAX]
+        return self._store.change_many(context.workspace_id, context.user_id, unique, change)
 
     def progress(self, context: WorkspaceContext) -> Progress:
         return self._store.progress(context.workspace_id, context.user_id)

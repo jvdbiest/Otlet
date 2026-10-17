@@ -140,6 +140,14 @@ class ManualUrl(BaseModel):
     url: str = Field(min_length=1, max_length=model.URL_MAX_LENGTH)
 
 
+class ItemSelection(BaseModel):
+    item_ids: list[UUID] = Field(min_length=1, max_length=200)
+
+
+class RemovedView(BaseModel):
+    removed: int
+
+
 class ManualText(BaseModel):
     title: str = Field(min_length=1, max_length=model.TITLE_MAX_LENGTH)
     text: str = Field(min_length=1, max_length=model.MANUAL_TEXT_MAX_LENGTH)
@@ -260,5 +268,11 @@ def build_router(
         except CollectionError as error:
             raise _refused(error) from error
         return ItemView.of(item)
+
+    @router.post("/items/remove")
+    def remove_items(body: ItemSelection, context: Context) -> RemovedView:
+        """Removes items from the watch of the whole workspace, with their text. An item of a
+        feed leaves its address behind, so that the collection does not bring it back."""
+        return RemovedView(removed=collection.remove_items(context, body.item_ids))
 
     return router

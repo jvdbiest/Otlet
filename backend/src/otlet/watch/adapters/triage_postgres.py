@@ -11,8 +11,10 @@ from otlet.platform.database import workspace_transaction
 from otlet.platform.rls import here
 from otlet.watch.application.triage import Change, FeedItem
 from otlet.watch.domain.triage import (
+    ANY_TIME,
     NO_TOPIC_FILTER,
     Decision,
+    Period,
     Progress,
     TopicFilter,
     TopicTag,
@@ -44,6 +46,18 @@ TOPICS = (
 
 def topic_parameters(topics: TopicFilter) -> dict[str, object]:
     return {"topics": list(topics.topic_ids), "all_topics": topics.all_topics}
+
+
+def period_clause(date: str) -> str:
+    """The period filter of the feed and of the search, on the date expression given."""
+    return (
+        f" AND (CAST(:since AS timestamptz) IS NULL OR {date} >= CAST(:since AS timestamptz))"
+        f" AND (CAST(:until AS timestamptz) IS NULL OR {date} < CAST(:until AS timestamptz))"
+    )
+
+
+def period_parameters(period: Period) -> dict[str, object]:
+    return {"since": period.since, "until": period.until}
 
 
 # The topics of each item, best score first (the first is its main topic).
@@ -88,7 +102,15 @@ class PostgresTriageStore:
         before: UUID | None,
         limit: int,
         topics: TopicFilter = NO_TOPIC_FILTER,
+        period: Period = ANY_TIME,
     ) -> list[FeedItem]:
+        # 'Tout' is in date order only; the other views put the pinned items first.
+        order_key = f"{SORT_DATE}, i.id" if view is View.ALL else ORDER_KEY
+        order_by = (
+            f"{SORT_DATE} DESC, i.id DESC"
+            if view is View.ALL
+            else f"coalesce(tr.pinned, false) DESC, {SORT_DATE} DESC, i.id DESC"
+        )
         with workspace_transaction(self._engine, workspace_id) as connection:
             rows = connection.execute(
                 sa.text(
@@ -99,12 +121,11 @@ class PostgresTriageStore:
                     " AND (CASE WHEN CAST(:source AS uuid) IS NULL THEN i.duplicate_of IS NULL"
                     "      ELSE i.source_id = :source END)"
                     " AND (NOT CAST(:unread AS boolean) OR tr.read_at IS NULL)"
-                    f"{TOPICS}"
-                    f" AND (CAST(:before AS uuid) IS NULL OR ({ORDER_KEY}) < ("
-                    f"   SELECT {ORDER_KEY} FROM source_items AS i{TRIAGE_JOIN}"
+                    f"{TOPICS}{period_clause(SORT_DATE)}"
+                    f" AND (CAST(:before AS uuid) IS NULL OR ({order_key}) < ("
+                    f"   SELECT {order_key} FROM source_items AS i{TRIAGE_JOIN}"
                     f"   WHERE i.id = :before AND {here('i')}))"
-                    " ORDER BY coalesce(tr.pinned, false) DESC,"
-                    f" {SORT_DATE} DESC, i.id DESC LIMIT :limit"
+                    f" ORDER BY {order_by} LIMIT :limit"
                 ),
                 {
                     "user": user_id,
@@ -113,6 +134,7 @@ class PostgresTriageStore:
                     "before": before,
                     "limit": limit,
                     **topic_parameters(topics),
+                    **period_parameters(period),
                 },
             ).all()
         return [FeedItem(item_from_row(row), triage_of(row), topic_tags_of(row)) for row in rows]
@@ -138,37 +160,59 @@ class PostgresTriageStore:
         with workspace_transaction(self._engine, workspace_id) as connection:
             if self._triage(connection, user_id, item_id) is None:
                 return None
-            decision = None if change.decision is None else change.decision.value
-            connection.execute(
-                sa.text(
-                    "INSERT INTO item_triage (workspace_id, item_id, user_id, decision, pinned,"
-                    " read_at, decided_at)"
-                    " VALUES (:workspace, :item, :user, CAST(:decision AS text),"
-                    " coalesce(CAST(:pinned AS boolean), false),"
-                    " CASE WHEN CAST(:read AS boolean) THEN now() END,"
-                    " CASE WHEN CAST(:decision AS text) IS NOT NULL THEN now() END)"
-                    " ON CONFLICT (item_id, user_id) DO UPDATE SET"
-                    " decision = CASE WHEN CAST(:clear AS boolean) THEN NULL"
-                    "   ELSE coalesce(CAST(:decision AS text), item_triage.decision) END,"
-                    " decided_at = CASE WHEN CAST(:clear AS boolean)"
-                    "   OR CAST(:decision AS text) IS NOT NULL THEN now()"
-                    "   ELSE item_triage.decided_at END,"
-                    " pinned = coalesce(CAST(:pinned AS boolean), item_triage.pinned),"
-                    " read_at = CASE WHEN CAST(:read AS boolean) IS NULL THEN item_triage.read_at"
-                    "   WHEN CAST(:read AS boolean) THEN coalesce(item_triage.read_at, now())"
-                    "   END"
-                ),
-                {
-                    "workspace": workspace_id,
-                    "item": item_id,
-                    "user": user_id,
-                    "decision": decision,
-                    "clear": change.clear_decision,
-                    "pinned": change.pinned,
-                    "read": change.read,
-                },
-            )
+            self._apply(connection, workspace_id, user_id, item_id, change)
             return self._triage(connection, user_id, item_id)
+
+    def change_many(
+        self, workspace_id: UUID, user_id: UUID, item_ids: list[UUID], change: Change
+    ) -> int:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            found = (
+                connection.execute(
+                    sa.text(f"SELECT id FROM source_items WHERE id = ANY(:ids) AND {here()}"),
+                    {"ids": item_ids},
+                )
+                .scalars()
+                .all()
+            )
+            for item_id in found:
+                self._apply(connection, workspace_id, user_id, item_id, change)
+        return len(found)
+
+    @staticmethod
+    def _apply(
+        connection: sa.Connection, workspace_id: UUID, user_id: UUID, item_id: UUID, change: Change
+    ) -> None:
+        decision = None if change.decision is None else change.decision.value
+        connection.execute(
+            sa.text(
+                "INSERT INTO item_triage (workspace_id, item_id, user_id, decision, pinned,"
+                " read_at, decided_at)"
+                " VALUES (:workspace, :item, :user, CAST(:decision AS text),"
+                " coalesce(CAST(:pinned AS boolean), false),"
+                " CASE WHEN CAST(:read AS boolean) THEN now() END,"
+                " CASE WHEN CAST(:decision AS text) IS NOT NULL THEN now() END)"
+                " ON CONFLICT (item_id, user_id) DO UPDATE SET"
+                " decision = CASE WHEN CAST(:clear AS boolean) THEN NULL"
+                "   ELSE coalesce(CAST(:decision AS text), item_triage.decision) END,"
+                " decided_at = CASE WHEN CAST(:clear AS boolean)"
+                "   OR CAST(:decision AS text) IS NOT NULL THEN now()"
+                "   ELSE item_triage.decided_at END,"
+                " pinned = coalesce(CAST(:pinned AS boolean), item_triage.pinned),"
+                " read_at = CASE WHEN CAST(:read AS boolean) IS NULL THEN item_triage.read_at"
+                "   WHEN CAST(:read AS boolean) THEN coalesce(item_triage.read_at, now())"
+                "   END"
+            ),
+            {
+                "workspace": workspace_id,
+                "item": item_id,
+                "user": user_id,
+                "decision": decision,
+                "clear": change.clear_decision,
+                "pinned": change.pinned,
+                "read": change.read,
+            },
+        )
 
     def progress(self, workspace_id: UUID, user_id: UUID) -> Progress:
         with workspace_transaction(self._engine, workspace_id) as connection:

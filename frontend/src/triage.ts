@@ -11,12 +11,21 @@ export type FeedView = "to_sort" | "kept" | "pinned" | "dismissed" | "all";
 
 export const FEED_PAGE_SIZE = 50;
 
+/** Items dated from `since` (included) to `until` (excluded), ISO instants; null leaves a side open. */
+export interface Period {
+  since: string | null;
+  until: string | null;
+}
+
+export const ANY_TIME: Period = { since: null, until: null };
+
 export interface FeedFilter {
   view: FeedView;
   sourceId: string | null;
   unread: boolean;
   topicIds: string[];
   allTopics: boolean;
+  period: Period;
 }
 
 export const feedQuery = (workspaceId: string, filter: FeedFilter, before: string | null) =>
@@ -34,6 +43,8 @@ export const feedQuery = (workspaceId: string, filter: FeedFilter, before: strin
             limit: FEED_PAGE_SIZE,
             ...(filter.sourceId ? { source_id: filter.sourceId } : {}),
             ...(before ? { before } : {}),
+            ...(filter.period.since ? { since: filter.period.since } : {}),
+            ...(filter.period.until ? { until: filter.period.until } : {}),
           },
         },
       });
@@ -91,6 +102,26 @@ export function useChangeTriage(workspaceId: string) {
         throw apiError(response, error);
       }
       return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
+  });
+}
+
+export type BulkAction = "keep" | "dismiss" | "pin" | "to_sort";
+
+/** One action for several items of the feed at once; answers how many changed. */
+export function useBulkTriage(workspaceId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ itemIds, action }: { itemIds: string[]; action: BulkAction }) => {
+      const { data, error, response } = await api.POST("/api/workspaces/{workspace_id}/items/triage", {
+        params: { path: { workspace_id: workspaceId } },
+        body: { item_ids: itemIds, action },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data.changed;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
   });

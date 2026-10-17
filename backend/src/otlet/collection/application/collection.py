@@ -44,6 +44,7 @@ TDMREP_MAX_BYTES = 256 * 1024
 FEED_MAX_BYTES = 10 * 1024 * 1024
 PAGE_MAX_BYTES = 5 * 1024 * 1024
 DISCOVERY_CANDIDATES = 3
+REMOVE_MAX = 200  # items removed by one request
 # Answers of a site that refuses automated readers, whoever they are.
 REFUSED_STATUSES = frozenset({401, 403})
 CLAIM_BATCH = 100
@@ -234,6 +235,11 @@ class Collection:
 
     def get_item(self, context: WorkspaceContext, item_id: UUID) -> Item | None:
         return self._store.get_item(context.workspace_id, item_id)
+
+    def remove_items(self, context: WorkspaceContext, item_ids: list[UUID]) -> int:
+        """Removes items from the watch for the whole workspace (bulk action « Supprimer »)."""
+        unique = list(dict.fromkeys(item_ids))[:REMOVE_MAX]
+        return self._store.remove_items(context.workspace_id, unique)
 
     def add_manual_url(self, context: WorkspaceContext, url: str) -> Item:
         """An article the user points to: its page is read under the same rules as a feed's."""

@@ -16,7 +16,14 @@ from otlet.collection.application.collection import ITEM_READY as ITEM_READY
 from otlet.collection.domain.model import Item
 from otlet.watch.domain import model
 from otlet.watch.domain.model import Candidate, Match, Rules, Topic, WatchError
-from otlet.watch.domain.triage import NO_TOPIC_FILTER, TopicFilter, TopicTag, Triage
+from otlet.watch.domain.triage import (
+    ANY_TIME,
+    NO_TOPIC_FILTER,
+    Period,
+    TopicFilter,
+    TopicTag,
+    Triage,
+)
 from otlet.workspaces.domain.model import WorkspaceContext
 
 # Jobs of the module (otlet.watch.adapters.jobs); the collection enqueues ITEM_READY.
@@ -139,6 +146,7 @@ class WatchStore(Protocol):
         limit: int,
         user_id: UUID | None = None,
         topics: TopicFilter = NO_TOPIC_FILTER,
+        period: Period = ANY_TIME,
     ) -> list[FoundItem]: ...
 
     def enqueue_unwatched(self, limit: int, older_than: timedelta) -> int:
@@ -267,13 +275,14 @@ class Watch:
         query: str,
         limit: int = 50,
         topics: TopicFilter = NO_TOPIC_FILTER,
+        period: Period = ANY_TIME,
     ) -> list[FoundItem]:
         """Full-text search with a bounded ranking (ADR-0021)."""
         cleaned = " ".join(query.split())
         if not 1 <= len(cleaned) <= SEARCH_MAX_LENGTH:
             raise WatchError("invalid_query", f"a search has 1 to {SEARCH_MAX_LENGTH} characters")
         return self._store.search(
-            context.workspace_id, cleaned, min(limit, 100), context.user_id, topics
+            context.workspace_id, cleaned, min(limit, 100), context.user_id, topics, period
         )
 
     # Background runs ------------------------------------------------------------------------

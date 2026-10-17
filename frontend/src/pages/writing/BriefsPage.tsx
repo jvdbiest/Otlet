@@ -18,6 +18,7 @@ const LANGUAGES = ["fr", "en", "de", "nl", "es", "it", "pt"] as const;
 const BRIEF_ERRORS = [
   "invalid_title",
   "invalid_angle",
+  "invalid_instructions",
   "invalid_audience",
   "invalid_tone",
   "invalid_channel",
@@ -121,6 +122,7 @@ function BriefForm({
   const remove = useDeleteBrief(workspaceId);
   const [title, setTitle] = useState(brief?.title ?? "");
   const [angle, setAngle] = useState(brief?.angle ?? "");
+  const [instructions, setInstructions] = useState(brief?.instructions ?? "");
   const [audience, setAudience] = useState(brief?.audience ?? "");
   const [tone, setTone] = useState(brief?.tone ?? "");
   const [length, setLength] = useState<BriefLength>(brief?.length ?? "medium");
@@ -146,6 +148,7 @@ function BriefForm({
               body: {
                 title,
                 angle,
+                instructions,
                 audience,
                 tone,
                 length,
@@ -180,6 +183,20 @@ function BriefForm({
           />
           <span className={styles.help}>{t("brief.angleHelp")}</span>
           {angle.trim() === "" && <span className={styles.warning}>{t("brief.noAngle")}</span>}
+        </div>
+        <div className={styles.field}>
+          <label htmlFor="brief-instructions">{t("brief.instructions")}</label>
+          <textarea
+            id="brief-instructions"
+            rows={3}
+            maxLength={2000}
+            placeholder={t("brief.instructionsExample")}
+            value={instructions}
+            onChange={(event) => {
+              setInstructions(event.target.value);
+            }}
+          />
+          <span className={styles.help}>{t("brief.instructionsHelp")}</span>
         </div>
         <div className={styles.field}>
           <label htmlFor="brief-title">{t("brief.title")}</label>

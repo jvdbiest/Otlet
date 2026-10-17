@@ -543,7 +543,7 @@
     "back": "Revenir aux briefs",
     "notFound": "Ce brief n'existe pas ou plus.",
     "angle": "Angle et apport propre",
-    "angleHelp": "Ce que vous voulez dire, votre expérience, votre analyse : c'est ce qui fait de l'article le vôtre, et pas une réécriture de plus des sources.",
+    "angleHelp": "Ce que vous voulez dire : votre expérience, votre avis, votre analyse. C'est ce qui fait de l'article le vôtre ; la façon d'écrire va dans les consignes ci-dessous.",
     "noAngle": "Pas encore d'angle ni d'apport propre : le brouillon risque de seulement résumer les sources.",
     "title": "Titre de travail",
     "items": "{count, plural, =0 {Éléments} one {Élément (#)} other {Éléments (#)}}",
@@ -584,9 +584,13 @@
       "unknown_item": "Un élément n'existe plus dans la veille.",
       "unknown_provider": "Ce fournisseur n'est pas l'un des vôtres.",
       "unknown_model": "Ce fournisseur ne propose pas ce modèle.",
-      "model_blocked": "Ce modèle est bloqué sur cette instance."
+      "model_blocked": "Ce modèle est bloqué sur cette instance.",
+      "invalid_instructions": "Les consignes comptent 2 000 caractères au plus."
     },
-    "angleExample": "Par exemple : je roule en moto électrique depuis deux ans. Je veux montrer ce que ces annonces changent vraiment au quotidien, et ce que les articles cités ne disent pas sur l'autonomie en hiver."
+    "angleExample": "Par exemple : je roule en moto électrique depuis deux ans. Je veux montrer ce que ces annonces changent vraiment au quotidien, et ce que les articles cités ne disent pas sur l'autonomie en hiver.",
+    "instructions": "Consignes de rédaction",
+    "instructionsHelp": "Comment écrire le brouillon : structure, éléments à relier, points sur lesquels insister ou à éviter. Le modèle les reçoit comme des instructions, sous les règles d'Otlet (sources citées, rien d'inventé).",
+    "instructionsExample": "Par exemple : relie les trois éléments dans un seul article ; commence par ce qui les rapproche ; pas de liste à puces, un ton direct."
   },
   "draft": {
     "title": "Brouillon",

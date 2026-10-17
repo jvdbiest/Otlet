@@ -890,6 +890,11 @@ export interface components {
              * @default
              */
             channel: string;
+            /**
+             * Instructions
+             * @default
+             */
+            instructions: string;
             /** Item Ids */
             item_ids: string[];
             /**
@@ -951,6 +956,8 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /** Instructions */
+            instructions: string;
             /** Items */
             items: components["schemas"]["BriefItemView"][];
             /** Language */

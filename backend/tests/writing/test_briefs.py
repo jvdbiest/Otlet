@@ -117,10 +117,12 @@ def test_a_brief_moves_its_items_to_drafting(setup: Setup) -> None:
             title="  La veille libre  ",
             item_ids=(ids["Article B"], ids["Article A"], ids["Article A"]),
             angle="Mon expérience de six mois",
+            instructions="  Relie-les.  ",
             length=Length.SHORT,
         ),
     )
     assert brief.fields.title == "La veille libre"
+    assert brief.fields.instructions == "Relie-les."
     assert [item.title for item in brief.items] == ["Article B", "Article A"]
     assert brief.items[0].source_name == "journal"
     assert brief.fields.model is None  # the profile of the author
@@ -154,6 +156,7 @@ def test_the_fields_of_a_brief_are_checked(setup: Setup) -> None:
         "invalid_items": BriefFields(title="T", item_ids=()),
         "invalid_language": BriefFields(title="T", item_ids=item, language="xx"),
         "invalid_angle": BriefFields(title="T", item_ids=item, angle="a" * 4001),
+        "invalid_instructions": BriefFields(title="T", item_ids=item, instructions="a" * 2001),
         "unknown_item": BriefFields(title="T", item_ids=(uuid.uuid4(),)),
         "model_blocked": BriefFields(
             title="T", item_ids=item, model=ModelChoice(uuid.uuid4(), "blocked")

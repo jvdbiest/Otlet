@@ -425,7 +425,7 @@
       "kind": "Type",
       "name": "Nom",
       "endpoint": "Adresse",
-      "localHelp": "Pour un modèle local (Ollama…), l'adresse doit être sur un réseau et un port autorisés par l'administrateur.",
+      "localHelp": "Pour un modèle local (Ollama…), écrivez l'adresse de la machine où il tourne, par exemple http://192.168.1.20:11434/v1. « localhost » désigne Otlet lui-même, pas votre machine. L'administrateur de l'instance doit avoir autorisé ce réseau et ce port.",
       "apiKey": "Clé d'API",
       "keyHelp": "La clé est scellée dès réception : l'interface ne pourra plus jamais l'afficher, seul le traitement en arrière-plan l'ouvre.",
       "save": "Ajouter"

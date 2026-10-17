@@ -2331,6 +2331,13 @@
           "title": {
             "title": "Title",
             "type": "string"
+          },
+          "unused_sources": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Unused Sources",
+            "type": "array"
           }
         },
         "required": [
@@ -2342,6 +2349,7 @@
           "model",
           "prompt_version",
           "cut_sources",
+          "unused_sources",
           "created_at"
         ],
         "title": "VersionView",

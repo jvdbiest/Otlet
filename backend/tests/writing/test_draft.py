@@ -154,3 +154,34 @@ def test_the_document_says_the_origin_and_the_sources_of_each_block() -> None:
         ("[2]", "S2"),
     ]
     assert blocks[1]["attrs"]["level"] == 2
+
+
+def test_every_source_of_the_brief_must_be_cited() -> None:
+    keys = ["S1", "S2", "S3"]
+    errors = check_answer(answer(), keys)
+    assert errors == [
+        "sources not used: S3; every source of the brief must be cited by at least one paragraph:"
+        " connect them in the article"
+    ]
+    # After a repair, the answer is kept even if it still leaves a source out.
+    assert check_answer(answer(), keys, every_source=False) == []
+    schema = output_schema(keys)
+    assert schema["properties"]["sources_used"]["minItems"] == 3
+    assert schema["properties"]["sources_used"]["uniqueItems"] is True
+    fields = BriefFields(title="T", item_ids=(), language="fr")
+    sources = prompt_sources([source(str(n), "texte") for n in range(3)], 9000)
+    user = messages(fields, sources)[1][1]
+    assert "Use every source (S1, S2, S3)" in user
+    alone = messages(fields, sources[:1])[1][1]
+    assert "Use every source" not in alone
+
+
+def test_ids_written_in_the_prose_are_taken_out() -> None:
+    raw = json.loads(answer())
+    raw["sections"][0]["paragraphs"][0]["text"] = (
+        "Le constructeur (S1) annonce une autonomie revue [S1, S2]."
+    )
+    sources = prompt_sources([source("A", "a"), source("B", "b")], 9000)
+    _, document = to_document(json.dumps(raw), sources, "fr")
+    text = document["content"][2]["content"][0]["text"]
+    assert text == "Le constructeur annonce une autonomie revue."

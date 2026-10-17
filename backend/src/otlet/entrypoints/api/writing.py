@@ -146,6 +146,7 @@ class VersionView(BaseModel):
     model: str | None
     prompt_version: str | None
     cut_sources: list[str]
+    unused_sources: list[str]  # items of the brief the draft does not cite
     created_at: datetime
 
     @classmethod
@@ -159,6 +160,7 @@ class VersionView(BaseModel):
             model=version.model,
             prompt_version=version.prompt_version,
             cut_sources=list(version.cut_sources),
+            unused_sources=list(version.unused_sources),
             created_at=version.created_at,
         )
 

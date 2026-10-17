@@ -19,6 +19,7 @@ from otlet.writing.domain.draft import (
     WORDS,
     SourceText,
     check_answer,
+    cited_keys,
     messages,
     output_schema,
     prompt_sources,
@@ -27,8 +28,10 @@ from otlet.writing.domain.draft import (
 )
 
 GENERATE_DRAFT = "writing.generate_draft"
-# Room for the answer: about two tokens a word, plus the JSON around the text.
-OUTPUT_TOKENS = {length: words * 2 + 600 for length, words in WORDS.items()}
+# Room for the answer: about three tokens a word, plus the JSON around the text and what a
+# « thinking » model (qwen3) writes before answering. A short draft cut at 1,200 tokens was
+# seen (Joël's case, 2026-10-17).
+OUTPUT_TOKENS = {length: words * 3 + 1000 for length, words in WORDS.items()}
 # A local model on a small machine writes slowly: a draft may take minutes.
 TIMEOUT_SECONDS = 600.0
 
@@ -85,8 +88,11 @@ class ArticleStore(Protocol):
         document: dict[str, Any],
         written: Written,
         cut_sources: Sequence[str],
+        unused_sources: Sequence[str],
     ) -> tuple[UUID, int]:
-        """Creates the article of the brief if needed, adds the version; (article, number)."""
+        """Creates the article of the brief if needed, adds the version; (article, number).
+        `cut_sources` and `unused_sources`: titles of items of the brief whose text was cut,
+        or that the draft does not cite."""
         ...
 
     def finish(
@@ -149,11 +155,21 @@ class Drafts:
         context_tokens, local = writer.room(user_id, fields.model)
         sources = prompt_sources(texts, source_budget(context_tokens, local))
         keys = [source.key for source in sources]
+        checks = 0
+
+        def validate(raw: str) -> list[str]:
+            # The first answer must cite every source: if not, the gateway sends it back once
+            # with the sources it left out. The repaired answer is kept even if it still
+            # leaves some out: the version then says which (a warning, not a failure).
+            nonlocal checks
+            checks += 1
+            return check_answer(raw, keys, every_source=checks == 1)
+
         written = writer.write(
             user_id,
             messages(fields, sources),
             output_schema(keys),
-            lambda raw: check_answer(raw, keys),
+            validate,
             fields.model,
             OUTPUT_TOKENS[fields.length],
         )
@@ -163,8 +179,10 @@ class Drafts:
             )
             return
         title, document = to_document(written.text, sources, fields.language)
-        cut = [source.key for source in sources if source.cut]
+        cut = [source.source.title for source in sources if source.cut]
+        cited = cited_keys(written.text)
+        unused = [source.source.title for source in sources if source.key not in cited]
         made = self._articles.add_version(
-            workspace_id, user_id, generation.brief_id, title, document, written, cut
+            workspace_id, user_id, generation.brief_id, title, document, written, cut, unused
         )
         self._articles.finish(workspace_id, generation_id, None, written.attempts, made)

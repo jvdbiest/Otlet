@@ -1687,6 +1687,8 @@ export interface components {
             provider_kind: string | null;
             /** Title */
             title: string;
+            /** Unused Sources */
+            unused_sources: string[];
         };
         /**
          * View

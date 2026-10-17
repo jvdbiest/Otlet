@@ -107,6 +107,16 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
                 : t("draft.byPerson", { number: shown.number, date: formatDate(shown.created_at) })}
             </span>
           </div>
+          {shown.unused_sources.length > 0 && (
+            <div role="note" className={styles.warning}>
+              <p>{t("draft.unused", { count: shown.unused_sources.length })}</p>
+              <ul>
+                {shown.unused_sources.map((title) => (
+                  <li key={title}>{title}</li>
+                ))}
+              </ul>
+            </div>
+          )}
           {shown.cut_sources.length > 0 && (
             <p className={styles.notice}>{t("draft.cut", { sources: shown.cut_sources.join(", ") })}</p>
           )}

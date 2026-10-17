@@ -16,7 +16,8 @@ class Version:
     provider_kind: str | None
     model: str | None
     prompt_version: str | None
-    cut_sources: tuple[str, ...]  # sources whose text was cut to fit the model
+    cut_sources: tuple[str, ...]  # titles of the items whose text was cut to fit the model
+    unused_sources: tuple[str, ...]  # titles of the items of the brief the draft does not cite
     created_at: datetime
 
 

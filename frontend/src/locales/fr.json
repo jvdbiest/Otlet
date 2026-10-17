@@ -609,6 +609,7 @@
       "quota": "Quota atteint chez les fournisseurs du profil.",
       "unavailable": "Aucun modèle n'a répondu.",
       "blocked": "Ce modèle est bloqué sur cette instance."
-    }
+    },
+    "unused": "{count, plural, one {Ce brouillon n'utilise pas cet élément du brief, malgré une demande de correction au modèle :} other {Ce brouillon n'utilise pas ces # éléments du brief, malgré une demande de correction au modèle :}}"
   }
 }

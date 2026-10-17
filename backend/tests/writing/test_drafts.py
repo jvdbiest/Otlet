@@ -225,7 +225,10 @@ def test_a_draft_becomes_a_version_of_the_article_of_the_brief(world: World) -> 
     assert article is not None and article.title == "La veille libre, deux sources"
     version = article.versions[0]
     assert (version.origin, version.provider_kind, version.model) == ("ia", "ollama", "llama3.1")
-    assert version.prompt_version == "redaction-1" and version.cut_sources == ()
+    assert (
+        version.prompt_version == "redaction-2"
+        and version.cut_sources == () == version.unused_sources
+    )
     sources = version.document["attrs"]["sources"]
     assert [(s["id"], s["titre"], s["url"]) for s in sources] == [
         ("S1", "Article de journal", "https://journal.example.org/1"),
@@ -264,3 +267,25 @@ def test_a_failed_draft_says_why_and_makes_no_version(world: World) -> None:
     world.drafts.run(context.workspace_id, context.user_id, generation.id)
     world.drafts.run(context.workspace_id, context.user_id, uuid.uuid4())
     assert world.drafts.start(context, uuid.uuid4()) is None
+
+
+def test_a_draft_that_leaves_a_source_out_is_sent_back_then_says_so(world: World) -> None:
+    context = world.context
+    agence, journal = items(world)
+    brief = world.briefs.create(
+        context, BriefFields(title="Deux sources", item_ids=(journal, agence))
+    )
+    only_first = json.loads(json.dumps(ANSWER))
+    only_first["sections"][1]["paragraphs"][0]["source_ids"] = ["S1"]
+    world.fake.answer = json.dumps(only_first)  # the same answer, before and after the repair
+    generation = world.drafts.start(context, brief.id)
+    assert generation is not None
+    world.drafts.run(context.workspace_id, context.user_id, generation.id)
+    done = world.drafts.generation(context, generation.id)
+    assert done is not None and (done.status, done.version) == ("done", 1)
+    assert [a["result"] for a in done.attempts] == ["ok", "ok"]  # sent back once
+    repair = world.fake.requests[-1]["body"]["messages"][-1]["content"]
+    assert "sources not used: S2" in repair
+    article = world.drafts.article(context, brief.id)
+    assert article is not None
+    assert article.versions[0].unused_sources == ("Article de agence",)

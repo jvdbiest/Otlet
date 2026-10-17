@@ -100,3 +100,28 @@ def test_provisioning_takes_over_what_a_superuser_created(database: TestDatabase
                     " DROP TABLE legacy_jobs; DROP TYPE legacy_state"
                 )
             )
+
+
+def test_search_role_owns_one_function_and_logs_in_nowhere(migrated: TestDatabase) -> None:
+    with db.create_engine(migrated.admin_url).connect() as connection:
+        row = connection.execute(
+            sa.text(
+                "SELECT rolcanlogin, rolbypassrls, rolsuper FROM pg_roles WHERE rolname = :name"
+            ),
+            {"name": roles.SEARCH},
+        ).one()
+        functions = (
+            connection.execute(
+                sa.text("SELECT proname FROM pg_proc WHERE pg_get_userbyid(proowner) = :name"),
+                {"name": roles.SEARCH},
+            )
+            .scalars()
+            .all()
+        )
+        app_is_member = connection.execute(
+            sa.text("SELECT pg_has_role(:app, :search, 'MEMBER')"),
+            {"app": roles.APP, "search": roles.SEARCH},
+        ).scalar()
+    assert tuple(row) == (False, True, False)
+    assert functions == ["search_candidates"]
+    assert app_is_member is False

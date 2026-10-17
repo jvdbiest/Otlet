@@ -7,6 +7,10 @@ distinct. Provisioning runs once per database with a superuser connection, befor
   otlet_owner`, so what they create belongs to the owner.
 - `otlet_app` (login) reads and writes rows only: it cannot create objects, does not own any
   table, and cannot bypass row-level security.
+- `otlet_search` (no login) owns one function only, the full-text search of ADR-0033. It
+  bypasses row-level security, which keeps PostgreSQL from using the full-text index, and the
+  function filters on the current workspace itself. The owner may take it, to create that
+  function in a migration.
 """
 
 import psycopg
@@ -15,6 +19,7 @@ from psycopg import sql
 OWNER = "otlet_owner"
 MIGRATOR = "otlet_migrator"
 APP = "otlet_app"
+SEARCH = "otlet_search"
 EXTENSIONS = ("vector", "pg_trgm", "unaccent")
 
 _ROLE_OPTIONS = "NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS"
@@ -31,12 +36,19 @@ def provision(admin_url: str, migrator_password: str, app_password: str) -> None
     named in `admin_url` (a superuser connection, libpq form `postgresql://…`). Idempotent."""
     with psycopg.connect(admin_url, autocommit=True) as connection, connection.cursor() as cursor:
         database = sql.Identifier(connection.info.dbname)
-        owner, migrator, app = (sql.Identifier(name) for name in (OWNER, MIGRATOR, APP))
+        owner, migrator, app, search = (
+            sql.Identifier(name) for name in (OWNER, MIGRATOR, APP, SEARCH)
+        )
         options = sql.SQL(_ROLE_OPTIONS)
 
-        for name in (OWNER, MIGRATOR, APP):
+        for name in (OWNER, MIGRATOR, APP, SEARCH):
             _ensure_role(cursor, name)
         cursor.execute(sql.SQL("ALTER ROLE {} NOLOGIN {}").format(owner, options))
+        cursor.execute(
+            sql.SQL(
+                "ALTER ROLE {} NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION BYPASSRLS"
+            ).format(search)
+        )
         cursor.execute(
             sql.SQL("ALTER ROLE {} LOGIN {} PASSWORD {}").format(
                 migrator, options, sql.Literal(migrator_password)
@@ -48,6 +60,8 @@ def provision(admin_url: str, migrator_password: str, app_password: str) -> None
             )
         )
         cursor.execute(sql.SQL("GRANT {} TO {}").format(owner, migrator))
+        cursor.execute(sql.SQL("GRANT {} TO {}").format(search, owner))
+        cursor.execute(sql.SQL("GRANT USAGE ON SCHEMA public TO {}").format(search))
 
         for extension in EXTENSIONS:
             cursor.execute(
@@ -128,6 +142,9 @@ def provision(admin_url: str, migrator_password: str, app_password: str) -> None
             " WHERE n.nspname = 'public'"
             " AND NOT EXISTS (SELECT 1 FROM pg_depend AS d"
             " WHERE d.objid = p.oid AND d.deptype = 'e')"
+            # The search function belongs to its own role (ADR-0033).
+            " AND pg_get_userbyid(p.proowner) <> %s",
+            (SEARCH,),
         )
         for function, definer in cursor.fetchall():
             cursor.execute(

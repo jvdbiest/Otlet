@@ -328,3 +328,78 @@ def test_a_topic_may_take_every_item_of_its_sources(world: World) -> None:
         world.context, topic.id, name="Moto", keywords=[], source_ids=[motos], whole_sources=True
     )
     assert alone is not None and alone.keywords == ()
+
+
+def test_search_never_crosses_workspaces(world: World) -> None:
+    """The candidates of a search bypass row-level security (ADR-0033): their function must
+    keep to the current workspace by itself."""
+    mine = world.source("mine")
+    world.publish(mine, "1", "Le gouvernement annonce un plan")
+    other = make_context(world.engine, "bob@example.org")
+    theirs = world.collection.add_source(
+        other.workspace_id,
+        name="theirs",
+        url="https://theirs.example.org/feed",
+        feed_url="https://theirs.example.org/feed",
+        site_url=None,
+        interval_minutes=60,
+    ).id
+    entry = FeedEntry(
+        guid="2",
+        url=None,
+        title="Un autre gouvernement",
+        author=None,
+        published_at=NOW,
+        summary=None,
+        content=None,
+        language="fr",
+    )
+    outcome = Outcome(fetched_at=NOW, next_fetch_at=NOW + timedelta(hours=1), success=True)
+    world.collection.finish_collection(
+        other.workspace_id, theirs, outcome, [NewItem(entry, TextStatus.FULL_TEXT, "test")]
+    )
+    world.run_jobs()
+    assert [f.item.title for f in world.watch.search(world.context, "gouvernement")] == [
+        "Le gouvernement annonce un plan"
+    ]
+    assert [f.item.title for f in world.watch.search(other, "gouvernement")] == [
+        "Un autre gouvernement"
+    ]
+    with world.engine.connect() as connection:  # no workspace context
+        assert (
+            connection.execute(
+                sa.text("SELECT count(*) FROM search_candidates('gouvernement')")
+            ).scalar()
+            == 0
+        )
+
+
+def test_search_candidates_can_use_the_full_text_index(
+    world: World, migrated: TestDatabase
+) -> None:
+    """Under the policy, `@@` cannot drive an index scan (it is not leakproof); in the
+    function, run by its own role, it can (ADR-0033, P01)."""
+    body = (
+        "EXPLAIN SELECT id FROM source_items"
+        " WHERE search @@ websearch_to_tsquery('french'::regconfig, 'gouvernement')"
+    )
+    plans = {}
+    with db.create_engine(migrated.admin_url).connect() as connection:
+        connection.execute(sa.text("SET enable_seqscan = off"))
+        for role in ("otlet_search", "otlet_app"):
+            connection.execute(sa.text(f"SET ROLE {role}"))
+            connection.execute(
+                sa.text("SELECT set_config('app.workspace_id', :w, false)"),
+                {"w": str(world.context.workspace_id)},
+            )
+            plans[role] = "\n".join(connection.execute(sa.text(body)).scalars())
+            connection.execute(sa.text("RESET ROLE"))
+        owner = connection.execute(
+            sa.text(
+                "SELECT pg_get_userbyid(proowner), prosecdef FROM pg_proc"
+                " WHERE proname = 'search_candidates'"
+            )
+        ).one()
+    assert "source_items_search" in plans["otlet_search"]
+    assert "source_items_search" not in plans["otlet_app"]
+    assert tuple(owner) == ("otlet_search", True)

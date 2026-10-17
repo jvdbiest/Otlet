@@ -3,10 +3,13 @@
 
     python measure.py --url postgresql+psycopg://otlet_app:…@db/otlet --pass 1 [--smoke]
     python measure.py --url … --selectivity
+    python measure.py --url … --explain --admin-url postgresql://postgres:…@db/otlet
 
 Each search goes through otlet.watch.adapters.postgres.PostgresWatchStore.search, which opens
 the workspace transaction of the product (forced row-level security) and returns 50 results.
-Writes results/pass<n>-<time>.json, or results/selectivity.json.
+Writes results/pass<n>-<time>.json, results/selectivity.json, or results/explain.txt: the plan
+of the text match of `search_candidates`, under its own role (ADR-0033), for the first query
+of each family.
 """
 
 from __future__ import annotations
@@ -25,8 +28,9 @@ sys.path.insert(0, str(HERE.parent / "bench"))
 import sqlalchemy as sa  # noqa: E402
 from bench import Bench, write_result  # noqa: E402
 
+from otlet.collection.domain.model import SEARCH_CONFIGS, SIMPLE_SEARCH  # noqa: E402
 from otlet.platform import database  # noqa: E402
-from otlet.watch.adapters.postgres import CONFIGS, PostgresWatchStore  # noqa: E402
+from otlet.watch.adapters.postgres import PostgresWatchStore  # noqa: E402
 
 CLIENTS, EXECUTIONS, WARMUP_SECONDS = 4, 500, 30
 RESULTS = 50
@@ -34,14 +38,14 @@ RESULTS = 50
 
 def selectivity(engine: sa.Engine, workspace: uuid.UUID, families: dict[str, list[str]]) -> int:
     """The share of the items of the workspace that each query matches (information only)."""
-    matches = " OR ".join(f"search @@ websearch_to_tsquery('{c}', :q)" for c in CONFIGS)
     report: dict[str, object] = {}
     with database.workspace_transaction(engine, workspace) as connection:
         total = connection.execute(sa.text("SELECT count(*) FROM source_items")).scalar_one()
         for family, queries in families.items():
             shares = [
                 connection.execute(
-                    sa.text(f"SELECT count(*) FROM source_items WHERE {matches}"),  # noqa: S608
+                    # The items that match, in every language configuration (ADR-0033).
+                    sa.text("SELECT count(*) FROM search_candidates(:q)"),
                     {"q": query},
                 ).scalar_one()
                 / total
@@ -59,6 +63,29 @@ def selectivity(engine: sa.Engine, workspace: uuid.UUID, families: dict[str, lis
     return 0
 
 
+def explain(admin_url: str, workspace: uuid.UUID, families: dict[str, list[str]]) -> int:
+    """The plan of the body of search_candidates (migration 0012), run as otlet_search."""
+    configs = (*dict.fromkeys(SEARCH_CONFIGS.values()), SIMPLE_SEARCH)
+    matches = " OR ".join(
+        f"i.search @@ websearch_to_tsquery('{config}'::regconfig, :q)" for config in configs
+    )
+    body = (
+        "EXPLAIN (ANALYZE, BUFFERS) SELECT i.id FROM source_items AS i"  # noqa: S608
+        f" WHERE i.workspace_id = :w AND ({matches})"
+    )
+    lines = []
+    engine = database.create_engine(admin_url)
+    with engine.begin() as connection:
+        connection.execute(sa.text("SET LOCAL ROLE otlet_search"))
+        for family, queries in families.items():
+            plan = connection.execute(sa.text(body), {"w": workspace, "q": queries[0]}).scalars()
+            lines += [f"=== {family}: {queries[0]!r}", *plan, ""]
+    out = HERE / "results" / "explain.txt"
+    out.write_text("\n".join(lines), encoding="utf-8")
+    print(f"Plans: {out}")
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--url", required=True)
@@ -66,6 +93,8 @@ def main() -> int:
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--smoke", action="store_true", help="20 executions, never a measure")
     parser.add_argument("--selectivity", action="store_true")
+    parser.add_argument("--explain", action="store_true")
+    parser.add_argument("--admin-url", help="for --explain: a superuser connection")
     args = parser.parse_args()
 
     manifest = json.loads((HERE / "data" / "manifest.json").read_text(encoding="utf-8"))
@@ -74,6 +103,8 @@ def main() -> int:
     engine = database.create_engine(args.url, pool_size=CLIENTS, max_overflow=0)
     if args.selectivity:
         return selectivity(engine, workspace, families)
+    if args.explain:
+        return explain(args.admin_url, workspace, families)
 
     store = PostgresWatchStore(engine, lambda connection, name, **kwargs: 0)
 

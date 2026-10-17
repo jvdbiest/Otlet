@@ -395,3 +395,14 @@ def test_the_language_is_guessed_when_nothing_declares_it(world: World) -> None:
         ("feed", "fr", "french"),
         ("manual_text", "en", "english"),
     ]
+
+
+def test_a_site_that_refuses_readers_is_named_so(world: World) -> None:
+    world.web.pages[FEED] = (403, HTML, b"<html><body>Access Denied</body></html>")
+    with pytest.raises(CollectionError) as caught:
+        world.collection.add_source(world.context, FEED)
+    assert caught.value.code == "fetch_refused"
+    world.web.pages[FEED] = (500, HTML, b"")
+    with pytest.raises(CollectionError) as caught:
+        world.collection.add_source(world.context, FEED)
+    assert caught.value.code == "fetch_http_error"

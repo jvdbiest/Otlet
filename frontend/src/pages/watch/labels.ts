@@ -34,6 +34,7 @@ const REASONS = [
 const ERRORS = [
   "invalid_url",
   "fetch_http_error",
+  "fetch_refused",
   "feed_not_found",
   "already_followed",
   "invalid_name",
@@ -42,6 +43,7 @@ const ERRORS = [
   "invalid_text",
   "invalid_declaration",
   "no_keywords",
+  "no_sources",
   "invalid_terms",
   "invalid_languages",
   "invalid_description",

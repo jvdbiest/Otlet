@@ -12,16 +12,18 @@ local engine (Ollama on the network) with an `AddressPolicy`. No other module ma
 provider SDK (import contract).
 """
 
+import ipaddress
 import json
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from typing import Any, cast
 
 import anthropic
 import openai
 
 from otlet.ai.application.ports import Adapter
-from otlet.ai.domain.model import AiError, Answer, Completion, Protocol
-from otlet.platform.http import AddressPolicy, BlockedAddressError
+from otlet.ai.domain.model import AiError, Answer, Completion, ModelEntry, Protocol
+from otlet.ai.domain.settings import InstancePolicy
+from otlet.platform.http import DEFAULT_PORTS, AddressPolicy, BlockedAddressError
 from otlet.platform.sdk_http import guarded_sdk_client, refused
 
 
@@ -149,3 +151,17 @@ def adapter_for(protocol: Protocol, policy: AddressPolicy) -> Adapter:
     if protocol is Protocol.ANTHROPIC:
         return AnthropicNative(policy)
     return OpenAICompatible(policy)
+
+
+def address_policy(policy: InstancePolicy) -> AddressPolicy:
+    """Public addresses, plus the internal networks and ports the administrator allowed for a
+    local engine (Ollama on the network)."""
+    return AddressPolicy(
+        allowed_networks=tuple(ipaddress.ip_network(n) for n in policy.local_networks),
+        allowed_ports=DEFAULT_PORTS | frozenset(policy.local_ports),
+    )
+
+
+def adapter_factory(policy: InstancePolicy) -> Callable[[ModelEntry], Adapter]:
+    addresses = address_policy(policy)
+    return lambda model: adapter_for(model.protocol, addresses)

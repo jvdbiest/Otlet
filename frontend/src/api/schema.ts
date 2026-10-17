@@ -4,6 +4,44 @@
  */
 
 export interface paths {
+    "/api/ai/budget": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Budget */
+        get: operations["get_budget_api_ai_budget_get"];
+        /** Set Budget */
+        put: operations["set_budget_api_ai_budget_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai/calls": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Recent Calls
+         * @description The last calls of the user: result, tokens, cost and duration, never the content.
+         */
+        get: operations["recent_calls_api_ai_calls_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/ai/catalogue": {
         parameters: {
             query?: never;
@@ -13,6 +51,43 @@ export interface paths {
         };
         /** Catalogue */
         get: operations["catalogue_api_ai_catalogue_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai/checks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Check
+         * @description « Tester » : one small structured answer through the profile, by the worker.
+         */
+        post: operations["start_check_api_ai_checks_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai/checks/{check_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Check */
+        get: operations["get_check_api_ai_checks__check_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -627,6 +702,24 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** BudgetView */
+        BudgetView: {
+            /** Currency */
+            currency: string;
+            /** Limit */
+            limit: string;
+            /**
+             * Month
+             * Format: date
+             */
+            month: string;
+            /** Reserved */
+            reserved: string;
+            /** Spent */
+            spent: string;
+            /** Usable */
+            usable: string;
+        };
         /** BulkResult */
         BulkResult: {
             /** Changed */
@@ -644,6 +737,32 @@ export interface components {
             action: "keep" | "dismiss" | "archive" | "pin" | "to_sort";
             /** Item Ids */
             item_ids: string[];
+        };
+        /** CallView */
+        CallView: {
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /** Cost */
+            cost: string;
+            /** Detail */
+            detail: string;
+            /** Model */
+            model: string;
+            /** Provider Kind */
+            provider_kind: string;
+            /** Result */
+            result: string;
+            /** Seconds */
+            seconds: string;
+            /** Tokens In */
+            tokens_in: number;
+            /** Tokens Out */
+            tokens_out: number;
+            /** Usage */
+            usage: string;
         };
         /** CatalogueView */
         CatalogueView: {
@@ -843,6 +962,11 @@ export interface components {
              */
             status: "tested" | "untested" | "blocked";
         };
+        /** NewLimit */
+        NewLimit: {
+            /** Monthly Limit */
+            monthly_limit: number | string;
+        };
         /** NewPassword */
         NewPassword: {
             /** New Password */
@@ -889,6 +1013,25 @@ export interface components {
             local_networks?: string[];
             /** Local Ports */
             local_ports?: number[];
+        };
+        /** ProfileCheckView */
+        ProfileCheckView: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Finished At */
+            finished_at: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Result */
+            result: {
+                [key: string]: unknown;
+            } | null;
         };
         /** ProfileEntryView */
         ProfileEntryView: {
@@ -1164,6 +1307,79 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    get_budget_api_ai_budget_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BudgetView"];
+                };
+            };
+        };
+    };
+    set_budget_api_ai_budget_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewLimit"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BudgetView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    recent_calls_api_ai_calls_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CallView"][];
+                };
+            };
+        };
+    };
     catalogue_api_ai_catalogue_get: {
         parameters: {
             query?: never;
@@ -1180,6 +1396,57 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CatalogueView"];
+                };
+            };
+        };
+    };
+    start_check_api_ai_checks_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileCheckView"];
+                };
+            };
+        };
+    };
+    get_check_api_ai_checks__check_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                check_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileCheckView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

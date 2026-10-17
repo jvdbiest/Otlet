@@ -69,6 +69,24 @@ class InstancePolicy:
             raise SettingsError("invalid_port", "a port is between 1 and 65535")
         return cls(allowed, tuple(dict.fromkeys(cleaned)), checked_ports)
 
+    def refuses(self, endpoint: str) -> bool:
+        """An address written as an internal IP (or localhost) outside the networks and ports
+        the administrator allowed: refused when the user saves it, so that they know at once.
+        A host name is only resolved, and checked, at each call (SSRF)."""
+        parts = urlsplit(endpoint)
+        host = parts.hostname or ""
+        if host == "localhost":
+            host = "127.0.0.1"
+        try:
+            address = ipaddress.ip_address(host)
+        except ValueError:
+            return False
+        if address.is_global:
+            return False
+        port = parts.port or (443 if parts.scheme == "https" else 80)
+        allowed = any(address in ipaddress.ip_network(n) for n in self.local_networks)
+        return not (allowed and port in self.local_ports)
+
     def status(self, entry: ModelEntry) -> Status:
         """The status a user sees: a paid model the administrator allowed is « non testé »
         until its 50 briefs are measured (ADR-0027 §7)."""

@@ -20,6 +20,7 @@ import { SourcesPage } from "./pages/watch/SourcesPage.tsx";
 import { TopicItemsPage } from "./pages/watch/TopicItemsPage.tsx";
 import { TopicsPage } from "./pages/watch/TopicsPage.tsx";
 import { WatchLayout } from "./pages/watch/WatchLayout.tsx";
+import { AiSettingsPage } from "./pages/settings/AiSettingsPage.tsx";
 import { sessionQuery } from "./session.ts";
 
 interface RouterContext {
@@ -80,6 +81,9 @@ function sectionRoute<Path extends string>(path: Path, section: Section) {
   });
 }
 
+// Settings (F05): the AI settings of the user.
+const settingsRoute = createRoute({ getParentRoute: () => appRoute, path: "/reglages", component: AiSettingsPage });
+
 // The watch section (U01): items, sources, manual entry, and one item.
 const watchRoute = createRoute({
   getParentRoute: () => appRoute,
@@ -113,7 +117,7 @@ const routeTree = rootRoute.addChildren([
     watchRoute.addChildren([itemsRoute, topicsRoute, topicRoute, sourcesRoute, manualRoute, itemRoute]),
     sectionRoute("/redaction", "writing"),
     sectionRoute("/bibliotheque", "library"),
-    sectionRoute("/reglages", "settings"),
+    settingsRoute,
   ]),
 ]);
 

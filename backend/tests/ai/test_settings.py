@@ -39,6 +39,18 @@ def test_a_paid_provider_becomes_untested_once_the_administrator_allows_it() -> 
     assert caught.value.code == "invalid_network"
 
 
+def test_an_internal_address_needs_the_network_and_the_port_allowed() -> None:
+    policy = InstancePolicy.checked([], ["192.168.129.249/32"], [11434], CATALOGUE)
+    assert not policy.refuses("http://192.168.129.249:11434/v1")
+    assert policy.refuses("http://192.168.129.249:8080/v1")  # port not allowed
+    assert policy.refuses("http://192.168.129.250:11434/v1")  # network not allowed
+    assert policy.refuses("http://localhost:11434/v1")
+    assert InstancePolicy().refuses("http://10.0.0.5:11434/v1")
+    # Public addresses, and host names (resolved and checked at each call), pass here.
+    assert not InstancePolicy().refuses("https://api.groq.com/openai/v1")
+    assert not InstancePolicy().refuses("https://8.8.8.8/v1")
+
+
 def test_a_local_engine_may_run_a_model_the_catalogue_does_not_list() -> None:
     custom = CATALOGUE.model("ollama", "mistral:7b")
     assert custom is not None and custom.status is Status.UNTESTED and custom.price_in == 0
@@ -141,3 +153,40 @@ def test_providers_keys_and_profiles_belong_to_their_user(
     # Removing a provider removes it from the profile.
     assert settings.delete_provider(alice, groq.id)
     assert [e.model for e in settings.profile(alice).entries] == ["qwen2.5:1.5b-instruct"]
+
+
+@requires_database
+def test_the_worker_opens_the_key_of_its_user_only(
+    migrated: TestDatabase, keys: tuple[X25519PrivateKey, Path], tmp_path: Path
+) -> None:
+    from otlet.ai.adapters.keys import SealedKeys
+
+    private, public_file = keys
+    private_file = tmp_path / "private.pem"
+    private_file.write_bytes(
+        private.private_bytes(
+            serialization.Encoding.PEM,
+            serialization.PrivateFormat.PKCS8,
+            serialization.NoEncryption(),
+        )
+    )
+    engine = db.create_engine(migrated.app_url)
+    settings = AiSettings(PostgresAiSettings(engine), CATALOGUE, PublicKeySealer(public_file))
+    alice, bob = user(engine, "alice@example.org"), user(engine, "bob@example.org")
+    groq = settings.add_provider(
+        alice, name="Groq", kind="groq", endpoint=None, api_key="gsk-secret-123456"
+    )
+    with pytest.raises(SettingsError) as caught:  # localhost, not allowed by the administrator
+        settings.add_provider(alice, name="Local", kind="ollama", endpoint=None, api_key=None)
+    assert caught.value.code == "address_not_allowed"
+    local = settings.add_provider(
+        alice, name="Local", kind="ollama", endpoint="http://ollama:11434/v1", api_key=None
+    )
+    opener = SealedKeys(engine, private_file)
+    assert opener.open(alice, groq.id) == "gsk-secret-123456"
+    assert opener.open(alice, local.id) is None
+    assert opener.open(bob, groq.id) is None  # not his provider
+    from otlet.platform.secrets import PrivateKeyUnavailable
+
+    with pytest.raises(PrivateKeyUnavailable):
+        SealedKeys(engine, None).open(alice, groq.id)  # the API has no private key

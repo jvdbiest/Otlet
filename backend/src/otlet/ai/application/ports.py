@@ -1,9 +1,12 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """What the gateway needs from the outside world (ADR-0027 §1)."""
 
+from datetime import date
+from decimal import Decimal
 from typing import Protocol
 from uuid import UUID
 
+from otlet.ai.domain.budget import BudgetState, Reservation
 from otlet.ai.domain.model import Answer, Catalogue, Completion
 from otlet.ai.domain.settings import InstancePolicy, Profile, Provider
 
@@ -65,3 +68,17 @@ class Sealer(Protocol):
     def seal(self, plaintext: bytes, context: bytes) -> bytes:
         """Seals a secret with the public key of the instance (DR6)."""
         ...
+
+
+class BudgetStore(Protocol):
+    def limit(self, user_id: UUID) -> Decimal: ...
+
+    def set_limit(self, user_id: UUID, month: date, limit: Decimal) -> None: ...
+
+    def state(self, user_id: UUID, month: date) -> BudgetState: ...
+
+    def reserve(self, user_id: UUID, month: date, amount: Decimal) -> Reservation | None:
+        """None when the reservation would go beyond the limit minus the guard band."""
+        ...
+
+    def settle(self, reservation: Reservation, cost: Decimal) -> None: ...

@@ -42,7 +42,9 @@ async def _run(settings: Settings) -> None:
     load_jobs()
     url = settings.require_database_url()
     environment = JobEnvironment(
-        engine=database.create_engine(url), enqueue=procrastinate_queue.enqueuer(url)
+        engine=database.create_engine(url),
+        enqueue=procrastinate_queue.enqueuer(url),
+        secrets_private_key_file=settings.secrets_private_key_file,
     )
     app = procrastinate_queue.build_app(url, environment, registry)
     async with app.open_async():

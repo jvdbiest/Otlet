@@ -141,3 +141,35 @@ def test_providers_keys_and_profiles_belong_to_their_user(
     # Removing a provider removes it from the profile.
     assert settings.delete_provider(alice, groq.id)
     assert [e.model for e in settings.profile(alice).entries] == ["qwen2.5:1.5b-instruct"]
+
+
+@requires_database
+def test_the_worker_opens_the_key_of_its_user_only(
+    migrated: TestDatabase, keys: tuple[X25519PrivateKey, Path], tmp_path: Path
+) -> None:
+    from otlet.ai.adapters.keys import SealedKeys
+
+    private, public_file = keys
+    private_file = tmp_path / "private.pem"
+    private_file.write_bytes(
+        private.private_bytes(
+            serialization.Encoding.PEM,
+            serialization.PrivateFormat.PKCS8,
+            serialization.NoEncryption(),
+        )
+    )
+    engine = db.create_engine(migrated.app_url)
+    settings = AiSettings(PostgresAiSettings(engine), CATALOGUE, PublicKeySealer(public_file))
+    alice, bob = user(engine, "alice@example.org"), user(engine, "bob@example.org")
+    groq = settings.add_provider(
+        alice, name="Groq", kind="groq", endpoint=None, api_key="gsk-secret-123456"
+    )
+    local = settings.add_provider(alice, name="Local", kind="ollama", endpoint=None, api_key=None)
+    opener = SealedKeys(engine, private_file)
+    assert opener.open(alice, groq.id) == "gsk-secret-123456"
+    assert opener.open(alice, local.id) is None
+    assert opener.open(bob, groq.id) is None  # not his provider
+    from otlet.platform.secrets import PrivateKeyUnavailable
+
+    with pytest.raises(PrivateKeyUnavailable):
+        SealedKeys(engine, None).open(alice, groq.id)  # the API has no private key

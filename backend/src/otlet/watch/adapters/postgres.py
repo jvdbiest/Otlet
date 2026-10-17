@@ -10,7 +10,6 @@ import sqlalchemy as sa
 
 from otlet.collection.adapters.postgres import ITEM_COLUMNS, ITEMS_FROM, SORT_DATE, item_from_row
 from otlet.collection.application.collection import COLLECT_SOURCE
-from otlet.collection.domain.model import SEARCH_CONFIGS, SIMPLE_SEARCH
 from otlet.jobs.application.registry import Enqueue
 from otlet.platform.database import scoped_transaction, workspace_transaction
 from otlet.platform.rls import here
@@ -53,7 +52,6 @@ TITLE_SIMILARITY = 0.9
 TITLE_MIN_LENGTH = 20
 SAME_STORY_SECONDS = 2 * 24 * 3600
 SEARCH_WINDOW = 1000  # candidates ranked by a search (ADR-0021)
-CONFIGS = (*dict.fromkeys(SEARCH_CONFIGS.values()), SIMPLE_SEARCH)
 
 
 def _topic(row: sa.Row[Any]) -> Topic:
@@ -474,16 +472,16 @@ class PostgresWatchStore:
         user_id: UUID | None = None,
         topics: TopicFilter = NO_TOPIC_FILTER,
     ) -> list[FoundItem]:
-        """Bounded ranking (ADR-0021): the GIN index and the date keep the 1,000 most recent
-        items that match the query, in any language configuration; only those are ranked."""
-        matches = " OR ".join(
-            f"i.search @@ websearch_to_tsquery('{config}', :q)" for config in CONFIGS
-        )
+        """Bounded ranking (ADR-0021): the 1,000 most recent items that match the query, in any
+        language configuration, are the only ones ranked. The matching items come from
+        `search_candidates`, the one way to use the GIN index under row-level security
+        (ADR-0033); the rest of the query stays under the policies."""
         with workspace_transaction(self._engine, workspace_id) as connection:
             rows = connection.execute(
                 sa.text(
                     "WITH found AS ("  # noqa: S608
-                    f" SELECT i.id FROM source_items AS i WHERE ({matches}) AND {here('i')}"
+                    " SELECT i.id FROM source_items AS i"
+                    f" WHERE i.id IN (SELECT search_candidates(:q)) AND {here('i')}"
                     "  AND i.duplicate_of IS NULL"
                     f"{TOPICS}"
                     f" ORDER BY {SORT_DATE} DESC LIMIT {SEARCH_WINDOW})"

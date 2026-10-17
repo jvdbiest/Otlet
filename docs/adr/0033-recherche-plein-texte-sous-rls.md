@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Statut | Proposé |
+| Statut | Accepté (2026-10-17) |
 | Date | 2026-10-17 |
 | Décideur | Joël |
 | Documents touchés | ADR-0021, ADR-0032 §4 ; `TECH_CHOICES.md` §7.4, §8.4 ; `RISKS.md` M-12 ; `otlet.platform.roles` |
@@ -14,12 +14,14 @@ P01 a mesuré la recherche de la veille sur un corpus réel de 100 000 élément
 
 La RLS est la seconde barrière d'isolation entre espaces (ADR-0021, M-12). Elle doit rester active pour toutes les autres lectures.
 
-## Décision proposée
+## Décision
 
-1. **Un rôle dédié** `otlet_search` (sans connexion, `BYPASSRLS`, sans autre privilège que la lecture des colonnes utiles de `source_items`) est créé par `otlet db provision`, qui s'exécute déjà en superutilisateur.
-2. **Une fonction** `search_candidates(q text, window int)`, `SECURITY DEFINER`, détenue par ce rôle, avec un `search_path` fixe, renvoie les identifiants des éléments candidats. Elle lit l'espace courant elle-même (`app.workspace_id`) : l'appelant ne peut pas en choisir un autre. Sans contexte, elle ne renvoie rien. Seul `otlet_app` peut l'appeler.
-3. **La requête de la recherche** garde son classement, sa jointure au tri et aux sujets, sous RLS comme aujourd'hui : seule la sélection des candidats passe par la fonction.
-4. **Tests** : le test d'isolation vérifie qu'un mot présent dans deux espaces ne renvoie que les éléments du sien, et rien sans contexte. Un test vérifie, avec `EXPLAIN` sous le rôle applicatif, que l'index GIN est utilisé.
+Décision de Joël du 2026-10-17 : la fonction dédiée, plutôt que l'opérateur déclaré étanche, « plus explicite, plus maintenable et mieux documentée ».
+
+1. **Un rôle dédié** `otlet_search` (sans connexion, `BYPASSRLS`, sans autre privilège que la lecture de trois colonnes de `source_items` : `id`, `workspace_id`, `search`) est créé par `otlet db provision`, qui s'exécute déjà en superutilisateur. Le propriétaire du schéma peut le prendre, pour lui confier la fonction dans une migration ; l'application ne le peut pas.
+2. **Une fonction** `search_candidates(q text)`, `SECURITY DEFINER`, détenue par ce rôle, avec un `search_path` fixe, renvoie les identifiants des éléments de l'espace dont le texte correspond, dans les huit configurations de langue (migration 0012). Une nouvelle langue demande une nouvelle migration de la fonction. Elle lit l'espace courant elle-même (`app.workspace_id`) : l'appelant ne peut pas en choisir un autre. Sans contexte, elle ne renvoie rien. Seul `otlet_app` peut l'appeler.
+3. **La requête de la recherche** garde sous RLS tout le reste : l'exclusion des doublons, le filtre par sujets, la fenêtre des 1 000 plus récents, le classement, le tri et les sujets de l'utilisateur. Seule la correspondance du texte passe par la fonction.
+4. **Tests** : un mot présent dans deux espaces ne renvoie que les éléments du sien, et la fonction ne renvoie rien sans contexte. Un test compare les plans sous les deux rôles : l'index plein texte n'est utilisable que sous `otlet_search`. Un autre vérifie que ce rôle ne se connecte pas, contourne la RLS, ne possède que cette fonction, et que l'application n'en est pas membre.
 5. **Remesure P01b** : même protocole, même corpus, même seuil, après la correction.
 
 Le même modèle existe déjà : `find_identity` (ADR-0028) et `unwatched_items` (ADR-0032 §5) sont des fonctions du propriétaire qui lisent au-delà de la RLS pour un besoin précis.

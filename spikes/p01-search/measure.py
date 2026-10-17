@@ -26,7 +26,7 @@ import sqlalchemy as sa  # noqa: E402
 from bench import Bench, write_result  # noqa: E402
 
 from otlet.platform import database  # noqa: E402
-from otlet.watch.adapters.postgres import CONFIGS, PostgresWatchStore  # noqa: E402
+from otlet.watch.adapters.postgres import PostgresWatchStore  # noqa: E402
 
 CLIENTS, EXECUTIONS, WARMUP_SECONDS = 4, 500, 30
 RESULTS = 50
@@ -34,14 +34,14 @@ RESULTS = 50
 
 def selectivity(engine: sa.Engine, workspace: uuid.UUID, families: dict[str, list[str]]) -> int:
     """The share of the items of the workspace that each query matches (information only)."""
-    matches = " OR ".join(f"search @@ websearch_to_tsquery('{c}', :q)" for c in CONFIGS)
     report: dict[str, object] = {}
     with database.workspace_transaction(engine, workspace) as connection:
         total = connection.execute(sa.text("SELECT count(*) FROM source_items")).scalar_one()
         for family, queries in families.items():
             shares = [
                 connection.execute(
-                    sa.text(f"SELECT count(*) FROM source_items WHERE {matches}"),  # noqa: S608
+                    # The items that match, in every language configuration (ADR-0033).
+                    sa.text("SELECT count(*) FROM search_candidates(:q)"),
                     {"q": query},
                 ).scalar_one()
                 / total

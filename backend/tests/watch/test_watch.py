@@ -403,3 +403,23 @@ def test_search_candidates_can_use_the_full_text_index(
     assert "source_items_search" in plans["otlet_search"]
     assert "source_items_search" not in plans["otlet_app"]
     assert tuple(owner) == ("otlet_search", True)
+
+
+def test_search_candidates_tests_one_merged_query(world: World, migrated: TestDatabase) -> None:
+    """Eight conditions, one per language, made the planner add up their estimates and read
+    the whole table (P01c); a single merged query keeps every search on the index (ADR-0034).
+    The search still finds each language and phrases."""
+    with db.create_engine(migrated.admin_url).connect() as connection:
+        source = connection.execute(
+            sa.text("SELECT prosrc FROM pg_proc WHERE proname = 'search_candidates'")
+        ).scalar_one()
+    assert source.count("@@") == 1 and "string_agg(DISTINCT" in source
+    mixed = world.source("mixed")
+    world.publish(mixed, "1", "Le monde change", "Une revue du monde entier.")
+    world.publish(mixed, "2", "The world changes", "A review of the whole world.", language="en")
+    world.run_jobs()
+    assert [f.item.title for f in world.watch.search(world.context, "monde")] == ["Le monde change"]
+    assert [f.item.title for f in world.watch.search(world.context, '"whole world"')] == [
+        "The world changes"
+    ]
+    assert world.watch.search(world.context, "introuvable") == []

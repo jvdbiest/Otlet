@@ -100,6 +100,10 @@ for number in $passes; do
     echo "### $(date -u +%H:%M:%S) pass $number"
     python_env "measure.py --url '$app_url' --pass $number $flag"
 done
+if [ -z "$flag" ]; then
+    echo "### $(date -u +%H:%M:%S) one client (information)"
+    python_env "measure.py --url '$app_url' --pass 4 --clients 1"
+fi
 sudo chown -R "$(id -u)" results data
 echo "### $(date -u +%H:%M:%S) done"
 REMOTE

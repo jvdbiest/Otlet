@@ -64,10 +64,12 @@ def selectivity(engine: sa.Engine, workspace: uuid.UUID, families: dict[str, lis
 
 
 def explain(admin_url: str, workspace: uuid.UUID, families: dict[str, list[str]]) -> int:
-    """The plan of the body of search_candidates (migration 0013), run as otlet_search."""
+    """The plan of the body of search_candidates (migration 0014), run as otlet_search."""
     configs = (*dict.fromkeys(SEARCH_CONFIGS.values()), SIMPLE_SEARCH)
-    matches = " OR ".join(
-        f"i.search @@ websearch_to_tsquery('{config}'::regconfig, :q)" for config in configs
+    queries = ", ".join(f"websearch_to_tsquery('{config}'::regconfig, :q)" for config in configs)
+    matches = (
+        "i.search @@ (SELECT string_agg(DISTINCT '(' || t::text || ')', ' | ')::tsquery"
+        f" FROM unnest(ARRAY[{queries}]) AS t WHERE numnode(t) > 0)"
     )
     body = (
         "EXPLAIN (ANALYZE, BUFFERS) SELECT i.id FROM source_items AS i"  # noqa: S608
@@ -94,6 +96,7 @@ def main() -> int:
     parser.add_argument("--pass", dest="number", type=int, default=0)
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--smoke", action="store_true", help="20 executions, never a measure")
+    parser.add_argument("--clients", type=int, default=CLIENTS, help="information: 1 for solo use")
     parser.add_argument("--selectivity", action="store_true")
     parser.add_argument("--explain", action="store_true")
     parser.add_argument("--admin-url", help="for --explain: a superuser connection")
@@ -117,10 +120,12 @@ def main() -> int:
         return run
 
     executions, warmup = (20, 1) if args.smoke else (EXECUTIONS, WARMUP_SECONDS)
-    bench = Bench(clients=CLIENTS, warmup_seconds=warmup, seed=args.seed + args.number)
+    bench = Bench(clients=args.clients, warmup_seconds=warmup, seed=args.seed + args.number)
     result = bench.run({name: workload(q) for name, q in families.items()}, executions)
     result.update(pass_number=args.number, items=manifest["items"], smoke=args.smoke)
     name = f"smoke-pass{args.number}" if args.smoke else f"pass{args.number}"
+    if args.clients != CLIENTS:
+        name += f"-{args.clients}client"
     path = write_result(result, HERE / "results", name)
     workloads = result["workloads"]
     summary = {name: w["p95_ms"] for name, w in workloads.items()}  # type: ignore[union-attr]

@@ -78,3 +78,4 @@ date,heures,domaine,etape,tache,note
 2026-10-17,2,projet,E1,P01,correction ADR-0033 (rôle et fonction de recherche, tests), rapport P01b et banc ; estimation grossière (Claude)
 2026-10-17,1.5,projet,E1,P01,mesure P01b, analyse des plans, fenêtre dans la fonction (migration 0013), rapport P01c ; estimation grossière (Claude)
 2026-10-17,2.5,projet,E1,P01,mesure P01c, essais d'information des leviers, cause de la traîne, ADR-0034 ; estimation grossière (Claude)
+2026-10-17,1,projet,E1,P01,requête fusionnée (ADR-0034, migration 0014), rapport P01d ; estimation grossière (Claude)

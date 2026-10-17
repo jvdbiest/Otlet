@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Statut | Proposé |
+| Statut | Accepté (2026-10-17) |
 | Date | 2026-10-17 |
 | Décideur | Joël |
 | Documents touchés | ADR-0033, ADR-0021, ADR-0032 §4 ; migration de `search_candidates` |
@@ -14,10 +14,12 @@ Depuis l'ADR-0033, la recherche utilise son index. P01c reste pourtant au-dessus
 
 L'analyse de P01c (§4) montre la cause. `search_candidates` teste le texte dans huit configurations de langue, par huit conditions reliées par OU. Pour un mot comme « monde », presque toutes donnent le même mot réduit. Le planificateur additionne pourtant leurs estimations : il attend 55 584 éléments au lieu de 12 361, juge qu'il vaut mieux lire toute la table, et décompresse alors chaque vecteur (2,5 s pour une seule recherche). Les réglages de session (JIT, plans génériques, parcours complet interdit) ne corrigent pas ce choix.
 
-## Décision proposée
+## Décision
+
+Décision de Joël du 2026-10-17 : la requête fusionnée, et la fenêtre de 1 000.
 
 1. **Une seule requête.** La fonction calcule une fois les huit variantes, retire les doublons, et les réunit en une seule requête plein texte (`a | b | …`). Elle la teste par une seule condition, que l'index sert toujours. Le reste de l'ADR-0033 ne change pas : le même rôle, le même filtre sur l'espace et la même fenêtre prise dans la fonction.
-2. **La fenêtre de classement, à choisir par Joël.**
+2. **La fenêtre de classement reste à 1 000** (choix de Joël). Les deux options étudiées :
    - **1 000 (inchangée)** : le classement porte sur les 1 000 éléments les plus récents qui correspondent. Essai d'information : Q1 à 393 ms au p95, les autres familles entre 172 et 302 ms.
    - **300** : le classement ne porte que sur les 300 plus récents ; un article plus ancien mais très pertinent peut ne pas apparaître dans les 50 premiers résultats. Essai d'information : Q1 à 329 ms, les autres entre 126 et 246 ms.
 3. **Remesure P01d** : le protocole de P01c, le même corpus et les mêmes requêtes.

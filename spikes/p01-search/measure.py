@@ -45,7 +45,7 @@ def selectivity(engine: sa.Engine, workspace: uuid.UUID, families: dict[str, lis
             shares = [
                 connection.execute(
                     # The items that match, in every language configuration (ADR-0033).
-                    sa.text("SELECT count(*) FROM search_candidates(:q)"),
+                    sa.text("SELECT count(*) FROM search_candidates(:q, NULL)"),
                     {"q": query},
                 ).scalar_one()
                 / total

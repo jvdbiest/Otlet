@@ -368,7 +368,7 @@ def test_search_never_crosses_workspaces(world: World) -> None:
     with world.engine.connect() as connection:  # no workspace context
         assert (
             connection.execute(
-                sa.text("SELECT count(*) FROM search_candidates('gouvernement')")
+                sa.text("SELECT count(*) FROM search_candidates('gouvernement', NULL)")
             ).scalar()
             == 0
         )

@@ -664,6 +664,45 @@
         "title": "HTTPValidationError",
         "type": "object"
       },
+      "InstalledModelView": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "size": {
+            "title": "Size",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "size"
+        ],
+        "title": "InstalledModelView",
+        "type": "object"
+      },
+      "InstalledView": {
+        "properties": {
+          "can_install": {
+            "title": "Can Install",
+            "type": "boolean"
+          },
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/InstalledModelView"
+            },
+            "title": "Models",
+            "type": "array"
+          }
+        },
+        "required": [
+          "models",
+          "can_install"
+        ],
+        "title": "InstalledView",
+        "type": "object"
+      },
       "ItemTopicView": {
         "properties": {
           "contributions": {
@@ -1175,6 +1214,11 @@
       },
       "PolicyView": {
         "properties": {
+          "allow_model_install": {
+            "default": false,
+            "title": "Allow Model Install",
+            "type": "boolean"
+          },
           "allowed_paid": {
             "items": {
               "type": "string"
@@ -1395,6 +1439,102 @@
           "created_at"
         ],
         "title": "ProviderView",
+        "type": "object"
+      },
+      "PullBody": {
+        "properties": {
+          "model": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Model",
+            "type": "string"
+          }
+        },
+        "required": [
+          "model"
+        ],
+        "title": "PullBody",
+        "type": "object"
+      },
+      "PullView": {
+        "properties": {
+          "completed": {
+            "title": "Completed",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "provider_id": {
+            "format": "uuid",
+            "title": "Provider Id",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "running",
+              "done",
+              "failed"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "step": {
+            "title": "Step",
+            "type": "string"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "provider_id",
+          "model",
+          "status",
+          "step",
+          "completed",
+          "total",
+          "error",
+          "created_at",
+          "finished_at"
+        ],
+        "title": "PullView",
         "type": "object"
       },
       "RefreshView": {
@@ -2428,6 +2568,138 @@
           }
         },
         "summary": "Update Provider"
+      }
+    },
+    "/api/ai/providers/{provider_id}/models": {
+      "get": {
+        "description": "The models installed on the local engine of a provider (Ollama), read from the engine.",
+        "operationId": "installed_models_api_ai_providers__provider_id__models_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Provider Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstalledView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Installed Models"
+      }
+    },
+    "/api/ai/providers/{provider_id}/pulls": {
+      "post": {
+        "description": "Has the local engine download a model, if the administrator allows it; follow it\nwith `/pulls/{pull_id}`.",
+        "operationId": "start_pull_api_ai_providers__provider_id__pulls_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Provider Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PullBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PullView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Start Pull"
+      }
+    },
+    "/api/ai/pulls/{pull_id}": {
+      "get": {
+        "operationId": "get_pull_api_ai_pulls__pull_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pull_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Pull Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PullView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Pull"
       }
     },
     "/api/auth/login": {

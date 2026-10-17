@@ -164,6 +164,7 @@ class PostgresAiSettings:
             allowed_paid=frozenset(value.get("allowed_paid", [])),
             local_networks=tuple(value.get("local_networks", [])),
             local_ports=tuple(value.get("local_ports", [])),
+            allow_model_install=bool(value.get("allow_model_install", False)),
         )
 
     def save_policy(self, policy: InstancePolicy) -> None:
@@ -171,6 +172,7 @@ class PostgresAiSettings:
             "allowed_paid": sorted(policy.allowed_paid),
             "local_networks": list(policy.local_networks),
             "local_ports": list(policy.local_ports),
+            "allow_model_install": policy.allow_model_install,
         }
         with self._engine.begin() as connection:
             connection.execute(

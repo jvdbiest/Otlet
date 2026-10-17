@@ -203,3 +203,54 @@ export function useStartCheck() {
     },
   });
 }
+
+export type InstalledView = components["schemas"]["InstalledView"];
+export type PullView = components["schemas"]["PullView"];
+
+/** The models installed on the local engine (Ollama) of a provider, read from the engine. */
+export const installedQuery = (providerId: string) =>
+  queryOptions({
+    queryKey: [...KEY, "providers", providerId, "models"],
+    queryFn: async (): Promise<InstalledView> => {
+      const { data, error, response } = await api.GET("/api/ai/providers/{provider_id}/models", {
+        params: { path: { provider_id: providerId } },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    retry: false,
+    staleTime: 30_000,
+  });
+
+export const pullQuery = (pullId: string) =>
+  queryOptions({
+    queryKey: [...KEY, "pulls", pullId],
+    queryFn: async (): Promise<PullView> => {
+      const { data, error, response } = await api.GET("/api/ai/pulls/{pull_id}", {
+        params: { path: { pull_id: pullId } },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    // A download takes minutes: followed every two seconds until it ends.
+    refetchInterval: (query) => (query.state.data?.finished_at ? false : 2_000),
+  });
+
+export function useStartPull() {
+  return useMutation({
+    mutationFn: async ({ providerId, model }: { providerId: string; model: string }) => {
+      const { data, error, response } = await api.POST("/api/ai/providers/{provider_id}/pulls", {
+        params: { path: { provider_id: providerId } },
+        body: { model },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+  });
+}

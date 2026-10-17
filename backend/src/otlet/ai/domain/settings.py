@@ -40,6 +40,8 @@ class InstancePolicy:
     allowed_paid: frozenset[str] = frozenset()
     local_networks: tuple[str, ...] = ()  # CIDR, e.g. 192.168.1.0/24
     local_ports: tuple[int, ...] = ()
+    # Users may have the local engine download models onto its machine (Ollama: pull).
+    allow_model_install: bool = False
 
     @classmethod
     def checked(
@@ -48,6 +50,7 @@ class InstancePolicy:
         networks: Iterable[str],
         ports: Iterable[int],
         catalogue: Catalogue,
+        allow_model_install: bool = False,
     ) -> "InstancePolicy":
         paid = {e.provider for e in catalogue.entries if e.paid}
         allowed = frozenset(p.strip() for p in allowed_paid)
@@ -67,7 +70,7 @@ class InstancePolicy:
         checked_ports = tuple(sorted(set(ports)))
         if any(not 1 <= port <= 65535 for port in checked_ports):
             raise SettingsError("invalid_port", "a port is between 1 and 65535")
-        return cls(allowed, tuple(dict.fromkeys(cleaned)), checked_ports)
+        return cls(allowed, tuple(dict.fromkeys(cleaned)), checked_ports, allow_model_install)
 
     def refuses(self, endpoint: str) -> bool:
         """An address written as an internal IP (or localhost) outside the networks and ports

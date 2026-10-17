@@ -3,20 +3,24 @@
 private key that opens the keys of providers (DR6).
 
 - `ai.check_profile`: « Tester » — one small structured answer through the user's profile.
+- `ai.pull_model`: the download of a model by a local engine, followed until it is done.
 """
 
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from otlet.ai.adapters.budget_postgres import PostgresBudget
 from otlet.ai.adapters.catalogue_file import PackagedCatalogue
 from otlet.ai.adapters.checks_postgres import PostgresChecks
 from otlet.ai.adapters.journal_postgres import PostgresCallJournal
 from otlet.ai.adapters.keys import SealedKeys
+from otlet.ai.adapters.ollama import OllamaHost
 from otlet.ai.adapters.postgres import PostgresAiSettings
 from otlet.ai.adapters.providers import adapter_factory
+from otlet.ai.adapters.pulls_postgres import PostgresPulls
 from otlet.ai.application.budget import Budget
 from otlet.ai.application.checks import CHECK_PROFILE, run_check
 from otlet.ai.application.gateway import Gateway
+from otlet.ai.application.models import PULL_MODEL, Models
 from otlet.jobs.application.registry import JobEnvironment, job
 
 
@@ -42,3 +46,16 @@ def check_profile(environment: JobEnvironment, user_id: str, check_id: str) -> N
         UUID(user_id),
         UUID(check_id),
     )
+
+
+# One attempt: a download that failed says why in its record; the user starts it again.
+@job(PULL_MODEL, attempts=1)
+def pull_model(environment: JobEnvironment, user_id: str, pull_id: str) -> None:
+    engine = environment.engine
+    Models(
+        PostgresAiSettings(engine),
+        PackagedCatalogue().load(),
+        OllamaHost(),
+        PostgresPulls(engine, environment.enqueue),
+        uuid4,
+    ).run_pull(UUID(user_id), UUID(pull_id))

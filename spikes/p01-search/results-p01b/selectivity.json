@@ -1,0 +1,23 @@
+{
+  "Q1 mot fréquent": {
+    "median_share": 0.0934,
+    "max_share": 0.3126,
+    "queries_over_10_percent": 23
+  },
+  "Q2 mot rare": {
+    "median_share": 0.0145,
+    "max_share": 0.2116,
+    "queries_over_10_percent": 6
+  },
+  "Q3 deux ou trois mots": {
+    "median_share": 0.0027,
+    "max_share": 0.0607,
+    "queries_over_10_percent": 0
+  },
+  "Q4 expression": {
+    "median_share": 0.002,
+    "max_share": 0.125,
+    "queries_over_10_percent": 1
+  },
+  "items_in_workspace": 80014
+}

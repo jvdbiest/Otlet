@@ -1,6 +1,13 @@
 {
   "_comment": "Models known to the instance (ADR-0027 §2). Prices per million tokens, in the currency below; 0 for local models. A paid provider stays blocked here: only the administrator of an instance allows it. Statuses: tested (C1 of S4 held on the 50 briefs), untested (usable, with a warning), blocked. Names and prices of paid models are indicative: they are checked against the provider, and its 50 briefs measured, before the administrator allows it (ADR-0027 §7).",
   "currency": "EUR",
+  "providers": {
+    "ollama": {"label": "Ollama", "protocol": "openai", "endpoint": "http://localhost:11434/v1", "api_key": false, "custom_models": true},
+    "groq": {"label": "Groq", "protocol": "openai", "endpoint": "https://api.groq.com/openai/v1", "api_key": true, "custom_models": false},
+    "openrouter": {"label": "OpenRouter", "protocol": "openai", "endpoint": "https://openrouter.ai/api/v1", "api_key": true, "custom_models": false},
+    "openai": {"label": "OpenAI", "protocol": "openai", "endpoint": "https://api.openai.com/v1", "api_key": true, "custom_models": false},
+    "anthropic": {"label": "Anthropic", "protocol": "anthropic", "endpoint": "https://api.anthropic.com", "api_key": true, "custom_models": false}
+  },
   "models": [
     {"provider": "ollama", "protocol": "openai", "model": "qwen2.5:1.5b-instruct", "structured_output": "json_schema", "context": 32768, "price_in": 0, "price_out": 0, "status": "tested", "paid": false, "local": true},
     {"provider": "ollama", "protocol": "openai", "model": "qwen2.5:7b-instruct", "structured_output": "json_schema", "context": 32768, "price_in": 0, "price_out": 0, "status": "untested", "paid": false, "local": true},

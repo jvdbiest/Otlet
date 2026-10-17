@@ -46,6 +46,35 @@
         "title": "BulkTriage",
         "type": "object"
       },
+      "CatalogueView": {
+        "properties": {
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "kinds": {
+            "items": {
+              "$ref": "#/components/schemas/KindView"
+            },
+            "title": "Kinds",
+            "type": "array"
+          },
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/ModelView"
+            },
+            "title": "Models",
+            "type": "array"
+          }
+        },
+        "required": [
+          "currency",
+          "kinds",
+          "models"
+        ],
+        "title": "CatalogueView",
+        "type": "object"
+      },
       "CheckView": {
         "properties": {
           "allowed": {
@@ -453,6 +482,39 @@
         "title": "ItemWatchView",
         "type": "object"
       },
+      "KindView": {
+        "properties": {
+          "api_key": {
+            "title": "Api Key",
+            "type": "boolean"
+          },
+          "custom_models": {
+            "title": "Custom Models",
+            "type": "boolean"
+          },
+          "endpoint": {
+            "title": "Endpoint",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "label",
+          "endpoint",
+          "api_key",
+          "custom_models"
+        ],
+        "title": "KindView",
+        "type": "object"
+      },
       "ManualText": {
         "properties": {
           "declared_origin": {
@@ -514,6 +576,59 @@
         "title": "ManualUrl",
         "type": "object"
       },
+      "ModelView": {
+        "properties": {
+          "context": {
+            "title": "Context",
+            "type": "integer"
+          },
+          "local": {
+            "title": "Local",
+            "type": "boolean"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "paid": {
+            "title": "Paid",
+            "type": "boolean"
+          },
+          "price_in": {
+            "title": "Price In",
+            "type": "string"
+          },
+          "price_out": {
+            "title": "Price Out",
+            "type": "string"
+          },
+          "provider": {
+            "title": "Provider",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "tested",
+              "untested",
+              "blocked"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "provider",
+          "model",
+          "status",
+          "paid",
+          "local",
+          "context",
+          "price_in",
+          "price_out"
+        ],
+        "title": "ModelView",
+        "type": "object"
+      },
       "NewPassword": {
         "properties": {
           "new_password": {
@@ -527,6 +642,52 @@
           "new_password"
         ],
         "title": "NewPassword",
+        "type": "object"
+      },
+      "NewProvider": {
+        "properties": {
+          "api_key": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key"
+          },
+          "endpoint": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Endpoint"
+          },
+          "kind": {
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Kind",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "kind"
+        ],
+        "title": "NewProvider",
         "type": "object"
       },
       "NewSource": {
@@ -593,6 +754,74 @@
         "title": "Password",
         "type": "object"
       },
+      "PolicyView": {
+        "properties": {
+          "allowed_paid": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Allowed Paid",
+            "type": "array"
+          },
+          "local_networks": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Local Networks",
+            "type": "array"
+          },
+          "local_ports": {
+            "items": {
+              "type": "integer"
+            },
+            "maxItems": 20,
+            "title": "Local Ports",
+            "type": "array"
+          }
+        },
+        "title": "PolicyView",
+        "type": "object"
+      },
+      "ProfileEntryView": {
+        "properties": {
+          "model": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Model",
+            "type": "string"
+          },
+          "provider_id": {
+            "format": "uuid",
+            "title": "Provider Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "provider_id",
+          "model"
+        ],
+        "title": "ProfileEntryView",
+        "type": "object"
+      },
+      "ProfileView": {
+        "properties": {
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/ProfileEntryView"
+            },
+            "maxItems": 8,
+            "title": "Entries",
+            "type": "array"
+          }
+        },
+        "required": [
+          "entries"
+        ],
+        "title": "ProfileView",
+        "type": "object"
+      },
       "ProgressView": {
         "properties": {
           "decisions": {
@@ -614,6 +843,93 @@
           "decisions"
         ],
         "title": "ProgressView",
+        "type": "object"
+      },
+      "ProviderChanges": {
+        "description": "`api_key` is taken into account only with `replace_key`: an empty field of the form keeps\nthe key, which the interface never receives.",
+        "properties": {
+          "api_key": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key"
+          },
+          "endpoint": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Endpoint",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "replace_key": {
+            "default": false,
+            "title": "Replace Key",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "endpoint"
+        ],
+        "title": "ProviderChanges",
+        "type": "object"
+      },
+      "ProviderView": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "endpoint": {
+            "title": "Endpoint",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "key_hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Key Hint"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "endpoint",
+          "key_hint",
+          "created_at"
+        ],
+        "title": "ProviderView",
         "type": "object"
       },
       "RefreshView": {
@@ -1234,6 +1550,271 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/ai/catalogue": {
+      "get": {
+        "operationId": "catalogue_api_ai_catalogue_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogueView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Catalogue"
+      }
+    },
+    "/api/ai/policy": {
+      "get": {
+        "operationId": "get_policy_api_ai_policy_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Policy"
+      },
+      "put": {
+        "operationId": "set_policy_api_ai_policy_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyView"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Policy"
+      }
+    },
+    "/api/ai/profile": {
+      "get": {
+        "operationId": "get_profile_api_ai_profile_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Profile"
+      },
+      "put": {
+        "operationId": "set_profile_api_ai_profile_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileView"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Profile"
+      }
+    },
+    "/api/ai/providers": {
+      "get": {
+        "operationId": "list_providers_api_ai_providers_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProviderView"
+                  },
+                  "title": "Response List Providers Api Ai Providers Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Providers"
+      },
+      "post": {
+        "operationId": "add_provider_api_ai_providers_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewProvider"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Provider"
+      }
+    },
+    "/api/ai/providers/{provider_id}": {
+      "delete": {
+        "operationId": "delete_provider_api_ai_providers__provider_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Provider Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Provider"
+      },
+      "put": {
+        "operationId": "update_provider_api_ai_providers__provider_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Provider Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProviderChanges"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Provider"
+      }
+    },
     "/api/auth/login": {
       "post": {
         "operationId": "login_api_auth_login_post",

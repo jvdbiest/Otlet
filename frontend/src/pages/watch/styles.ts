@@ -18,6 +18,7 @@ export const styles = css as Record<
   | "chipsMode"
   | "check"
   | "danger"
+  | "dangerZone"
   | "error"
   | "field"
   | "filter"

@@ -83,6 +83,14 @@
   },
   "item": {
     "back": "Revenir à la veille",
+    "remove": {
+      "title": "Supprimer définitivement",
+      "help": "Opération exceptionnelle : l'élément disparaît pour tout l'espace, avec son texte, ses sujets et son tri. Otlet garde seulement son adresse, pour que la collecte ne le reprenne pas. Pour sortir un élément du flux, écartez-le ou archivez-le plutôt.",
+      "button": "Supprimer définitivement…",
+      "confirm": "Supprimer cet élément pour tout l'espace ? C'est irréversible.",
+      "yes": "Oui, supprimer",
+      "no": "Annuler"
+    },
     "original": "Lire l'original",
     "by": "par {author}",
     "published": "Publié le {date}",
@@ -302,6 +310,7 @@
       "to_sort": "À trier",
       "kept": "Retenus",
       "pinned": "Épinglés",
+      "archived": "Archivés",
       "dismissed": "Écartés",
       "all": "Tout"
     },
@@ -322,11 +331,13 @@
       "selected": "{count, plural, one {# élément sélectionné} other {# éléments sélectionnés}}",
       "keep": "Retenir",
       "pin": "Épingler",
+      "archive": "Archiver",
       "dismiss": "Écarter",
       "to_sort": "Remettre à trier",
       "done": {
         "keep": "{count, plural, one {# élément retenu.} other {# éléments retenus.}}",
         "pin": "{count, plural, one {# élément épinglé.} other {# éléments épinglés.}}",
+        "archive": "{count, plural, one {# élément archivé.} other {# éléments archivés.}}",
         "dismiss": "{count, plural, one {# élément écarté.} other {# éléments écartés.}}",
         "to_sort": "{count, plural, one {# élément remis à trier.} other {# éléments remis à trier.}}"
       }
@@ -347,11 +358,13 @@
     "keep": "Retenir",
     "dismiss": "Écarter",
     "undo": "Remettre à trier",
+    "archive": "Archiver",
     "pin": "Épingler",
     "unpin": "Désépingler",
     "markUnread": "Marquer comme non lu",
     "kept": "Retenu",
     "dismissed": "Écarté",
+    "archived": "Archivé",
     "pinned": "Épinglé",
     "unread": "Non lu",
     "actions": "Trier « {title} »",
@@ -361,6 +374,7 @@
       "kept": "Vous n'avez encore rien retenu.",
       "pinned": "Aucun élément épinglé.",
       "dismissed": "Aucun élément écarté.",
+      "archived": "Aucun élément archivé. Archivez un élément retenu une fois que vous en avez fini.",
       "all": "Aucun élément pour l'instant."
     }
   },

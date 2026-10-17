@@ -10,14 +10,16 @@ from uuid import UUID
 class Decision(StrEnum):
     KEPT = "kept"  # retained: the briefs of I2 start from these
     DISMISSED = "dismissed"
+    ARCHIVED = "archived"  # done with: out of the current views, still searchable
 
 
 class View(StrEnum):
     """The parts of the feed a user looks at."""
 
-    TO_SORT = "to_sort"  # neither kept nor dismissed: the default
+    TO_SORT = "to_sort"  # no decision yet: the default
     KEPT = "kept"
     DISMISSED = "dismissed"
+    ARCHIVED = "archived"
     PINNED = "pinned"
     ALL = "all"
 

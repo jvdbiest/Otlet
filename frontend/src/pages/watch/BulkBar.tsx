@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { type BulkAction, useBulkTriage } from "../../triage.ts";
 import { styles } from "./styles.ts";
 
-const ACTIONS: readonly BulkAction[] = ["keep", "pin", "dismiss", "to_sort"];
+const ACTIONS: readonly BulkAction[] = ["keep", "pin", "archive", "dismiss", "to_sort"];
 
 /** Selection of the shown items, and the actions that apply to all of them at once (I1). */
 export function BulkBar({

@@ -246,3 +246,15 @@ def test_a_change_applies_to_several_items_at_once(setup: Setup) -> None:
     assert titles(feed, context) == ["Article 0", "Article 1", "Article 2"]
     other = context_for(setup.engine, "bob@example.org")
     assert feed.change_many(other, ids, Change(pinned=True)) == 0
+
+
+def test_an_archived_item_leaves_the_current_views(setup: Setup) -> None:
+    feed, context, ids = setup.feed, setup.context, setup.ids
+    feed.change(context, ids[0], Change(decision=Decision.KEPT))
+    feed.change_many(context, [ids[0], ids[1]], Change(decision=Decision.ARCHIVED))
+    assert titles(feed, context, view=View.ARCHIVED) == ["Article 0", "Article 1"]
+    assert titles(feed, context) == ["Article 2"]
+    assert titles(feed, context, view=View.KEPT) == []
+    assert len(titles(feed, context, view=View.ALL)) == 3
+    feed.change(context, ids[0], Change(clear_decision=True))
+    assert titles(feed, context) == ["Article 0", "Article 2"]

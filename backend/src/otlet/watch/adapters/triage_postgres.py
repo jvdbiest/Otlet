@@ -31,6 +31,7 @@ VIEWS = {
     View.TO_SORT: "tr.decision IS NULL",
     View.KEPT: "tr.decision = 'kept'",
     View.DISMISSED: "tr.decision = 'dismissed'",
+    View.ARCHIVED: "tr.decision = 'archived'",
     View.PINNED: "coalesce(tr.pinned, false)",
     View.ALL: "true",
 }

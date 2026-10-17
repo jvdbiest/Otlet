@@ -406,3 +406,18 @@ def test_a_site_that_refuses_readers_is_named_so(world: World) -> None:
     with pytest.raises(CollectionError) as caught:
         world.collection.add_source(world.context, FEED)
     assert caught.value.code == "fetch_http_error"
+
+
+def test_a_removed_item_does_not_come_back(world: World) -> None:
+    open_site(world.web, "a", "b")
+    source = world.collection.add_source(world.context, FEED)
+    world.run_jobs()
+    removed = next(i for i in world.collection.list_items(world.context) if i.title == "Article a")
+    other = make_context(world.engine, "bob@example.org")
+    assert not world.collection.remove_item(other, removed.id)  # another workspace: nothing
+    assert world.collection.remove_item(world.context, removed.id)
+    assert world.collection.get_item(world.context, removed.id) is None
+    assert not world.collection.remove_item(world.context, removed.id)
+    world.collection.collect(world.context.workspace_id, source.id)
+    world.run_jobs()
+    assert [i.title for i in world.collection.list_items(world.context)] == ["Article b"]

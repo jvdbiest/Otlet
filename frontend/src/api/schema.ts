@@ -230,7 +230,12 @@ export interface paths {
         get: operations["get_item_api_workspaces__workspace_id__items__item_id__get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * Remove Item
+         * @description Removes an item from the watch of the whole workspace, with its text. An item of a
+         *     feed leaves its address behind, so that the collection does not bring it back.
+         */
+        delete: operations["remove_item_api_workspaces__workspace_id__items__item_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -517,14 +522,14 @@ export interface components {
         };
         /**
          * BulkTriage
-         * @description One action of the feed for several items: keep, dismiss, pin, or back to sort.
+         * @description One action of the feed for several items: keep, dismiss, archive, pin, or back to sort.
          */
         BulkTriage: {
             /**
              * Action
              * @enum {string}
              */
-            action: "keep" | "dismiss" | "pin" | "to_sort";
+            action: "keep" | "dismiss" | "archive" | "pin" | "to_sort";
             /** Item Ids */
             item_ids: string[];
         };
@@ -848,7 +853,7 @@ export interface components {
          */
         TriageChange: {
             /** Decision */
-            decision?: ("kept" | "dismissed") | null;
+            decision?: ("kept" | "dismissed" | "archived") | null;
             /** Pinned */
             pinned?: boolean | null;
             /** Read */
@@ -857,7 +862,7 @@ export interface components {
         /** TriageView */
         TriageView: {
             /** Decision */
-            decision: ("kept" | "dismissed") | null;
+            decision: ("kept" | "dismissed" | "archived") | null;
             /** Pinned */
             pinned: boolean;
             /** Read At */
@@ -890,7 +895,7 @@ export interface components {
          * @description The parts of the feed a user looks at.
          * @enum {string}
          */
-        View: "to_sort" | "kept" | "dismissed" | "pinned" | "all";
+        View: "to_sort" | "kept" | "dismissed" | "archived" | "pinned" | "all";
         /** WorkspaceView */
         WorkspaceView: {
             /** Id */
@@ -1327,6 +1332,36 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ItemView"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_item_api_workspaces__workspace_id__items__item_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

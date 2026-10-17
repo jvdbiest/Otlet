@@ -7,7 +7,7 @@ export type FeedItemView = components["schemas"]["FeedItemView"];
 export type TriageView = components["schemas"]["TriageView"];
 export type TopicTagView = components["schemas"]["TopicTagView"];
 export type ProgressView = components["schemas"]["ProgressView"];
-export type FeedView = "to_sort" | "kept" | "pinned" | "dismissed" | "all";
+export type FeedView = "to_sort" | "kept" | "pinned" | "archived" | "dismissed" | "all";
 
 export const FEED_PAGE_SIZE = 50;
 
@@ -85,7 +85,7 @@ export const itemTriageQuery = (workspaceId: string, itemId: string) =>
   });
 
 export interface TriageChange {
-  decision?: "kept" | "dismissed" | null;
+  decision?: "kept" | "dismissed" | "archived" | null;
   pinned?: boolean;
   read?: boolean;
 }
@@ -107,7 +107,7 @@ export function useChangeTriage(workspaceId: string) {
   });
 }
 
-export type BulkAction = "keep" | "dismiss" | "pin" | "to_sort";
+export type BulkAction = "keep" | "dismiss" | "archive" | "pin" | "to_sort";
 
 /** One action for several items of the feed at once; answers how many changed. */
 export function useBulkTriage(workspaceId: string) {

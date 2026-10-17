@@ -15,12 +15,13 @@
         "type": "object"
       },
       "BulkTriage": {
-        "description": "One action of the feed for several items: keep, dismiss, pin, or back to sort.",
+        "description": "One action of the feed for several items: keep, dismiss, archive, pin, or back to sort.",
         "properties": {
           "action": {
             "enum": [
               "keep",
               "dismiss",
+              "archive",
               "pin",
               "to_sort"
             ],
@@ -1046,7 +1047,8 @@
               {
                 "enum": [
                   "kept",
-                  "dismissed"
+                  "dismissed",
+                  "archived"
                 ],
                 "type": "string"
               },
@@ -1089,7 +1091,8 @@
               {
                 "enum": [
                   "kept",
-                  "dismissed"
+                  "dismissed",
+                  "archived"
                 ],
                 "type": "string"
               },
@@ -1193,6 +1196,7 @@
           "to_sort",
           "kept",
           "dismissed",
+          "archived",
           "pinned",
           "all"
         ],
@@ -1868,6 +1872,48 @@
       }
     },
     "/api/workspaces/{workspace_id}/items/{item_id}": {
+      "delete": {
+        "description": "Removes an item from the watch of the whole workspace, with its text. An item of a\nfeed leaves its address behind, so that the collection does not bring it back.",
+        "operationId": "remove_item_api_workspaces__workspace_id__items__item_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Item Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Remove Item"
+      },
       "get": {
         "operationId": "get_item_api_workspaces__workspace_id__items__item_id__get",
         "parameters": [

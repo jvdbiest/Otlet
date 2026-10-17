@@ -26,7 +26,7 @@ import { TopicBadge } from "./TopicBadge.tsx";
 import { TopicMenu } from "./TopicMenu.tsx";
 import { TriageActions } from "./TriageActions.tsx";
 
-const VIEWS: readonly FeedView[] = ["to_sort", "kept", "pinned", "dismissed", "all"];
+const VIEWS: readonly FeedView[] = ["to_sort", "kept", "pinned", "archived", "dismissed", "all"];
 
 /** The feed of the user: what is left to sort first, then what was kept, pinned or dismissed
  * (X02, F-VEI-04, F-VEI-05). */

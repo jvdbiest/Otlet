@@ -19,7 +19,7 @@ from otlet.workspaces.domain.model import WorkspaceContext
 
 
 class TriageView(BaseModel):
-    decision: Literal["kept", "dismissed"] | None
+    decision: Literal["kept", "dismissed", "archived"] | None
     pinned: bool
     read_at: datetime | None
 
@@ -51,16 +51,16 @@ class FeedItemView(BaseModel):
 class TriageChange(BaseModel):
     """A field left out keeps its value; `decision: null` clears the decision."""
 
-    decision: Literal["kept", "dismissed"] | None = None
+    decision: Literal["kept", "dismissed", "archived"] | None = None
     pinned: bool | None = None
     read: bool | None = None
 
 
 class BulkTriage(BaseModel):
-    """One action of the feed for several items: keep, dismiss, pin, or back to sort."""
+    """One action of the feed for several items: keep, dismiss, archive, pin, or back to sort."""
 
     item_ids: list[UUID] = Field(min_length=1, max_length=200)
-    action: Literal["keep", "dismiss", "pin", "to_sort"]
+    action: Literal["keep", "dismiss", "archive", "pin", "to_sort"]
 
 
 class BulkResult(BaseModel):
@@ -70,6 +70,7 @@ class BulkResult(BaseModel):
 BULK_CHANGES = {
     "keep": Change(decision=Decision.KEPT),
     "dismiss": Change(decision=Decision.DISMISSED),
+    "archive": Change(decision=Decision.ARCHIVED),
     "pin": Change(pinned=True),
     "to_sort": Change(clear_decision=True),
 }

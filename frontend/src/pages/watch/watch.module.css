@@ -484,3 +484,9 @@
 .selected {
   outline: 2px solid var(--accent);
 }
+
+.dangerZone {
+  margin-top: var(--space-6, 2rem);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}

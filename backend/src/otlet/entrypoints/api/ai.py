@@ -4,16 +4,18 @@ profile of the signed-in user, and the policy of the instance, changed by its ad
 
 Keys go in, never out: a provider shows only the last characters of its key."""
 
+import uuid
 from collections.abc import Callable
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal, Protocol
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
 from otlet.ai.application.budget import Budget
+from otlet.ai.application.checks import Check, CheckStore
 from otlet.ai.application.settings import AiSettings
 from otlet.ai.domain.budget import LIMIT_MAX
 from otlet.ai.domain.settings import (
@@ -32,6 +34,10 @@ from otlet.identity.domain.model import Session
 from otlet.platform.secrets import SecretError
 
 PREFIX = "/api/ai"
+
+
+class CallJournalReader(Protocol):
+    def recent(self, user_id: UUID, limit: int = 50) -> list[dict[str, Any]]: ...
 
 
 class KindView(BaseModel):
@@ -132,6 +138,35 @@ class NewLimit(BaseModel):
     monthly_limit: Decimal = Field(ge=0, le=LIMIT_MAX)
 
 
+class ProfileCheckView(BaseModel):
+    id: UUID
+    created_at: datetime
+    finished_at: datetime | None
+    result: dict[str, Any] | None
+
+    @classmethod
+    def of(cls, check: Check) -> "ProfileCheckView":
+        return cls(
+            id=check.id,
+            created_at=check.created_at,
+            finished_at=check.finished_at,
+            result=check.result,
+        )
+
+
+class CallView(BaseModel):
+    usage: str
+    provider_kind: str
+    model: str
+    result: str
+    detail: str
+    tokens_in: int
+    tokens_out: int
+    cost: Decimal
+    seconds: Decimal
+    at: datetime
+
+
 def _refused(error: SettingsError) -> HTTPException:
     codes = {"name_taken": status.HTTP_409_CONFLICT, "admin_only": status.HTTP_403_FORBIDDEN}
     return HTTPException(codes.get(error.code, status.HTTP_422_UNPROCESSABLE_CONTENT), error.code)
@@ -144,6 +179,8 @@ def _no_key() -> HTTPException:
 def build_router(
     settings: AiSettings,
     budget: Budget,
+    checks: CheckStore,
+    journal: CallJournalReader,
     auth: Authentication,
     current_session: Callable[..., Session],
 ) -> APIRouter:
@@ -268,6 +305,23 @@ def build_router(
     def set_budget(body: NewLimit, session: CurrentSession) -> BudgetView:
         budget.set_limit(session.user_id, body.monthly_limit)
         return budget_view(session.user_id)
+
+    @router.post("/checks", status_code=status.HTTP_202_ACCEPTED)
+    def start_check(session: CurrentSession) -> ProfileCheckView:
+        """« Tester » : one small structured answer through the profile, by the worker."""
+        return ProfileCheckView.of(checks.create(session.user_id, uuid.uuid4()))
+
+    @router.get("/checks/{check_id}")
+    def get_check(check_id: UUID, session: CurrentSession) -> ProfileCheckView:
+        check = checks.get(session.user_id, check_id)
+        if check is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "check_not_found")
+        return ProfileCheckView.of(check)
+
+    @router.get("/calls")
+    def recent_calls(session: CurrentSession) -> list[CallView]:
+        """The last calls of the user: result, tokens, cost and duration, never the content."""
+        return [CallView(**call) for call in journal.recent(session.user_id)]
 
     @router.get("/policy")
     def get_policy(session: CurrentSession) -> PolicyView:

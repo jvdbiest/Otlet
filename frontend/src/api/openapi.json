@@ -85,6 +85,65 @@
         "title": "BulkTriage",
         "type": "object"
       },
+      "CallView": {
+        "properties": {
+          "at": {
+            "format": "date-time",
+            "title": "At",
+            "type": "string"
+          },
+          "cost": {
+            "title": "Cost",
+            "type": "string"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "provider_kind": {
+            "title": "Provider Kind",
+            "type": "string"
+          },
+          "result": {
+            "title": "Result",
+            "type": "string"
+          },
+          "seconds": {
+            "title": "Seconds",
+            "type": "string"
+          },
+          "tokens_in": {
+            "title": "Tokens In",
+            "type": "integer"
+          },
+          "tokens_out": {
+            "title": "Tokens Out",
+            "type": "integer"
+          },
+          "usage": {
+            "title": "Usage",
+            "type": "string"
+          }
+        },
+        "required": [
+          "usage",
+          "provider_kind",
+          "model",
+          "result",
+          "detail",
+          "tokens_in",
+          "tokens_out",
+          "cost",
+          "seconds",
+          "at"
+        ],
+        "title": "CallView",
+        "type": "object"
+      },
       "CatalogueView": {
         "properties": {
           "currency": {
@@ -843,6 +902,52 @@
           }
         },
         "title": "PolicyView",
+        "type": "object"
+      },
+      "ProfileCheckView": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          }
+        },
+        "required": [
+          "id",
+          "created_at",
+          "finished_at",
+          "result"
+        ],
+        "title": "ProfileCheckView",
         "type": "object"
       },
       "ProfileEntryView": {
@@ -1665,6 +1770,29 @@
         "summary": "Set Budget"
       }
     },
+    "/api/ai/calls": {
+      "get": {
+        "description": "The last calls of the user: result, tokens, cost and duration, never the content.",
+        "operationId": "recent_calls_api_ai_calls_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CallView"
+                  },
+                  "title": "Response Recent Calls Api Ai Calls Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Recent Calls"
+      }
+    },
     "/api/ai/catalogue": {
       "get": {
         "operationId": "catalogue_api_ai_catalogue_get",
@@ -1681,6 +1809,65 @@
           }
         },
         "summary": "Catalogue"
+      }
+    },
+    "/api/ai/checks": {
+      "post": {
+        "description": "« Tester » : one small structured answer through the profile, by the worker.",
+        "operationId": "start_check_api_ai_checks_post",
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileCheckView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Start Check"
+      }
+    },
+    "/api/ai/checks/{check_id}": {
+      "get": {
+        "operationId": "get_check_api_ai_checks__check_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "check_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Check Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileCheckView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Check"
       }
     },
     "/api/ai/policy": {

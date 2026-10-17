@@ -47,7 +47,7 @@
     "settings": {
       "title": "Réglages",
       "empty": "Aucun réglage pour l'instant.",
-      "next": "Vous pourrez bientôt choisir vos fournisseurs et modèles d'IA et vos budgets ici."
+      "next": "Les réglages de l'IA sont disponibles ; d'autres réglages viendront."
     },
     "notFound": {
       "title": "Page introuvable",
@@ -388,5 +388,103 @@
     "todo": "À faire",
     "go": "Y aller",
     "hide": "Masquer"
+  },
+  "ai": {
+    "title": "Réglages de l'IA",
+    "intro": "Vous choisissez vos fournisseurs et vos modèles. L'administrateur de l'instance peut seulement autoriser ou bloquer. Rien n'est publié par l'IA sans votre accord.",
+    "saved": "Enregistré.",
+    "providers": {
+      "title": "Mes fournisseurs",
+      "empty": "Aucun fournisseur pour l'instant. Ajoutez-en un ci-dessous, par exemple l'Ollama de votre NAS.",
+      "noKey": "sans clé",
+      "key": "clé {hint}",
+      "remove": "Retirer {name}",
+      "add": "Ajouter un fournisseur",
+      "kind": "Type",
+      "name": "Nom",
+      "endpoint": "Adresse",
+      "localHelp": "Pour un modèle local (Ollama…), l'adresse doit être sur un réseau et un port autorisés par l'administrateur.",
+      "apiKey": "Clé d'API",
+      "keyHelp": "La clé est scellée dès réception : l'interface ne pourra plus jamais l'afficher, seul le traitement en arrière-plan l'ouvre.",
+      "save": "Ajouter"
+    },
+    "profile": {
+      "title": "Mon profil",
+      "help": "Les modèles sont essayés dans l'ordre : si le premier est indisponible ou à court de quota, le suivant prend le relais.",
+      "noProvider": "Ajoutez d'abord un fournisseur.",
+      "provider": "Fournisseur n° {position}",
+      "model": "Modèle n° {position}",
+      "up": "Monter le modèle n° {position}",
+      "remove": "Retirer le modèle n° {position}",
+      "add": "Ajouter un modèle",
+      "save": "Enregistrer le profil"
+    },
+    "status": {
+      "tested": "testé",
+      "untested": "non testé",
+      "blocked": "bloqué"
+    },
+    "budget": {
+      "title": "Mon budget",
+      "help": "Avant chaque appel payant, son coût maximal est réservé ; un appel qui dépasserait le budget du mois n'est pas lancé. Les modèles locaux sont gratuits.",
+      "state": "Ce mois : {spent} {currency} dépensés, {reserved} {currency} réservés, {usable} {currency} encore utilisables.",
+      "limit": "Plafond mensuel ({currency})",
+      "save": "Enregistrer"
+    },
+    "check": {
+      "title": "Tester",
+      "help": "Demande un titre et trois mots-clés au format structuré, en suivant votre profil. Un modèle local sur le NAS peut prendre une minute.",
+      "start": "Tester mon profil",
+      "running": "Test en cours…",
+      "ok": "Réussi avec {model} ({provider}) en {seconds} s.",
+      "failed": {
+        "no_profile": "Votre profil est vide : choisissez au moins un modèle.",
+        "budget": "Le test dépasserait votre budget du mois.",
+        "refused": "Le fournisseur a refusé la demande.",
+        "invalid": "Le modèle n'a pas su répondre au format demandé, même après une correction.",
+        "quota": "Quota atteint chez tous les fournisseurs du profil.",
+        "unavailable": "Aucun modèle du profil n'a répondu. Pour un modèle local, vérifiez qu'il tourne et que l'administrateur a autorisé son adresse.",
+        "blocked": "Les modèles du profil sont bloqués par l'instance."
+      }
+    },
+    "result": {
+      "ok": "réussi",
+      "quota": "quota atteint",
+      "unavailable": "indisponible",
+      "refused": "refusé",
+      "blocked": "bloqué",
+      "budget": "budget insuffisant",
+      "invalid": "réponse invalide"
+    },
+    "journal": {
+      "title": "Derniers appels",
+      "tokens": "{input} → {output} jetons"
+    },
+    "policy": {
+      "title": "Administration de l'instance",
+      "help": "Les modèles payants sont bloqués tant que vous ne les autorisez pas. Les modèles locaux ne sont joignables que sur les réseaux et ports listés ici.",
+      "paid": "Fournisseurs payants autorisés",
+      "networks": "Réseaux locaux autorisés",
+      "networksHelp": "Un réseau par ligne, par exemple 192.168.129.0/24.",
+      "ports": "Ports autorisés",
+      "save": "Enregistrer la politique"
+    },
+    "errors": {
+      "admin_only": "Réservé à l'administrateur de l'instance.",
+      "duplicate_model": "Ce modèle est déjà dans le profil.",
+      "invalid_endpoint": "Adresse invalide : elle commence par http:// ou https://.",
+      "invalid_key": "Clé d'API invalide.",
+      "invalid_name": "Nom invalide.",
+      "invalid_network": "Réseau invalide.",
+      "invalid_port": "Port invalide.",
+      "key_required": "Ce fournisseur demande une clé d'API.",
+      "model_blocked": "Ce modèle est bloqué sur cette instance.",
+      "name_taken": "Vous avez déjà un fournisseur de ce nom.",
+      "profile_too_long": "Le profil est trop long.",
+      "unknown_kind": "Type de fournisseur inconnu.",
+      "unknown_model": "Modèle inconnu pour ce fournisseur.",
+      "unknown_provider": "Fournisseur inconnu.",
+      "address_not_allowed": "Cette adresse locale n'est pas autorisée : l'administrateur de l'instance doit autoriser son réseau et son port dans Réglages > IA."
+    }
   }
 }

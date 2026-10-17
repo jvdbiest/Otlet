@@ -86,13 +86,14 @@ class AiSettings:
         if found is None:
             raise SettingsError("unknown_kind", f"unknown provider kind {kind}")
         key = check_key(api_key, required=found.api_key)
+        address = self._reachable(endpoint or found.endpoint)
         provider_id = uuid.uuid4()
         return self._store.add_provider(
             user_id,
             provider_id,
             name=check_name(name),
             kind=found.name,
-            endpoint=check_endpoint(endpoint or found.endpoint),
+            endpoint=address,
             sealed_key=None
             if key is None
             else self._sealer.seal(key.encode(), key_context(provider_id)),
@@ -118,17 +119,27 @@ class AiSettings:
             return None
         kind = self._catalogue.kind(current.kind)
         key = check_key(api_key, required=replace_key and kind is not None and kind.api_key)
+        address = self._reachable(endpoint)
         return self._store.update_provider(
             user_id,
             provider_id,
             name=check_name(name),
-            endpoint=check_endpoint(endpoint),
+            endpoint=address,
             sealed_key=None
             if key is None
             else self._sealer.seal(key.encode(), key_context(provider_id)),
             key_hint=None if key is None else key_hint(key),
             replace_key=replace_key,
         )
+
+    def _reachable(self, endpoint: str) -> str:
+        cleaned = check_endpoint(endpoint)
+        if self._store.policy().refuses(cleaned):
+            raise SettingsError(
+                "address_not_allowed",
+                "an internal address must be allowed by the administrator of the instance",
+            )
+        return cleaned
 
     def delete_provider(self, user_id: UUID, provider_id: UUID) -> bool:
         return self._store.delete_provider(user_id, provider_id)

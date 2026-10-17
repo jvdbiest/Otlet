@@ -39,6 +39,18 @@ def test_a_paid_provider_becomes_untested_once_the_administrator_allows_it() -> 
     assert caught.value.code == "invalid_network"
 
 
+def test_an_internal_address_needs_the_network_and_the_port_allowed() -> None:
+    policy = InstancePolicy.checked([], ["192.168.129.249/32"], [11434], CATALOGUE)
+    assert not policy.refuses("http://192.168.129.249:11434/v1")
+    assert policy.refuses("http://192.168.129.249:8080/v1")  # port not allowed
+    assert policy.refuses("http://192.168.129.250:11434/v1")  # network not allowed
+    assert policy.refuses("http://localhost:11434/v1")
+    assert InstancePolicy().refuses("http://10.0.0.5:11434/v1")
+    # Public addresses, and host names (resolved and checked at each call), pass here.
+    assert not InstancePolicy().refuses("https://api.groq.com/openai/v1")
+    assert not InstancePolicy().refuses("https://8.8.8.8/v1")
+
+
 def test_a_local_engine_may_run_a_model_the_catalogue_does_not_list() -> None:
     custom = CATALOGUE.model("ollama", "mistral:7b")
     assert custom is not None and custom.status is Status.UNTESTED and custom.price_in == 0
@@ -164,7 +176,12 @@ def test_the_worker_opens_the_key_of_its_user_only(
     groq = settings.add_provider(
         alice, name="Groq", kind="groq", endpoint=None, api_key="gsk-secret-123456"
     )
-    local = settings.add_provider(alice, name="Local", kind="ollama", endpoint=None, api_key=None)
+    with pytest.raises(SettingsError) as caught:  # localhost, not allowed by the administrator
+        settings.add_provider(alice, name="Local", kind="ollama", endpoint=None, api_key=None)
+    assert caught.value.code == "address_not_allowed"
+    local = settings.add_provider(
+        alice, name="Local", kind="ollama", endpoint="http://ollama:11434/v1", api_key=None
+    )
     opener = SealedKeys(engine, private_file)
     assert opener.open(alice, groq.id) == "gsk-secret-123456"
     assert opener.open(alice, local.id) is None

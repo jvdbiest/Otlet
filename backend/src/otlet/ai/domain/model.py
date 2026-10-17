@@ -83,9 +83,34 @@ class ModelEntry:
 
 
 @dataclass(frozen=True, slots=True)
+class ProviderKind:
+    """A kind of provider the instance knows: how to reach it by default, whether it needs a
+    key, and whether its user may name a model the catalogue does not list (local engines)."""
+
+    name: str
+    label: str
+    protocol: Protocol
+    endpoint: str
+    api_key: bool
+    custom_models: bool
+
+    @classmethod
+    def of(cls, name: str, data: Mapping[str, Any]) -> "ProviderKind":
+        return cls(
+            name=name,
+            label=str(data["label"]),
+            protocol=Protocol(data["protocol"]),
+            endpoint=str(data["endpoint"]),
+            api_key=bool(data["api_key"]),
+            custom_models=bool(data["custom_models"]),
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class Catalogue:
     entries: tuple[ModelEntry, ...]
     currency: str = "EUR"
+    kinds: tuple[ProviderKind, ...] = ()
 
     @classmethod
     def of(cls, data: Mapping[str, Any]) -> "Catalogue":
@@ -97,13 +122,44 @@ class Catalogue:
             if entry.paid and entry.status is not Status.BLOCKED:
                 # ADR-0027 §2: a paid provider is allowed by the administrator, never by data.
                 raise ValueError(f"paid model {entry.provider}/{entry.model} must be blocked")
-        return cls(entries, str(data.get("currency", "EUR")))
+        kinds = tuple(
+            ProviderKind.of(name, kind) for name, kind in data.get("providers", {}).items()
+        )
+        names = {kind.name for kind in kinds}
+        if kinds and any(entry.provider not in names for entry in entries):
+            raise ValueError("a model names a provider the catalogue does not describe")
+        return cls(entries, str(data.get("currency", "EUR")), kinds)
 
     def find(self, provider: str, model: str) -> ModelEntry | None:
         return next((e for e in self.entries if (e.provider, e.model) == (provider, model)), None)
 
     def providers(self) -> tuple[str, ...]:
         return tuple(dict.fromkeys(e.provider for e in self.entries))
+
+    def kind(self, name: str) -> ProviderKind | None:
+        return next((kind for kind in self.kinds if kind.name == name), None)
+
+    def model(self, provider: str, model: str) -> ModelEntry | None:
+        """The entry of a model, or, for a local engine whose user names a model the catalogue
+        does not list, a free « non testé » entry; None when the provider does not allow it."""
+        found = self.find(provider, model)
+        if found is not None:
+            return found
+        kind = self.kind(provider)
+        if kind is None or not kind.custom_models:
+            return None
+        return ModelEntry(
+            provider=provider,
+            model=model,
+            protocol=kind.protocol,
+            structured_output=StructuredOutput.JSON_SCHEMA,
+            context=0,
+            price_in=Decimal(0),
+            price_out=Decimal(0),
+            status=Status.UNTESTED,
+            paid=False,
+            local=True,
+        )
 
 
 @dataclass(frozen=True, slots=True)

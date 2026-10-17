@@ -4,6 +4,95 @@
  */
 
 export interface paths {
+    "/api/ai/catalogue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Catalogue */
+        get: operations["catalogue_api_ai_catalogue_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai/policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Policy */
+        get: operations["get_policy_api_ai_policy_get"];
+        /** Set Policy */
+        put: operations["set_policy_api_ai_policy_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Profile */
+        get: operations["get_profile_api_ai_profile_get"];
+        /** Set Profile */
+        put: operations["set_profile_api_ai_profile_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai/providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Providers */
+        get: operations["list_providers_api_ai_providers_get"];
+        put?: never;
+        /** Add Provider */
+        post: operations["add_provider_api_ai_providers_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai/providers/{provider_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Provider */
+        put: operations["update_provider_api_ai_providers__provider_id__put"];
+        post?: never;
+        /** Delete Provider */
+        delete: operations["delete_provider_api_ai_providers__provider_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/login": {
         parameters: {
             query?: never;
@@ -533,6 +622,15 @@ export interface components {
             /** Item Ids */
             item_ids: string[];
         };
+        /** CatalogueView */
+        CatalogueView: {
+            /** Currency */
+            currency: string;
+            /** Kinds */
+            kinds: components["schemas"]["KindView"][];
+            /** Models */
+            models: components["schemas"]["ModelView"][];
+        };
         /** CheckView */
         CheckView: {
             /** Allowed */
@@ -655,6 +753,19 @@ export interface components {
             /** Topics */
             topics: components["schemas"]["ItemTopicView"][];
         };
+        /** KindView */
+        KindView: {
+            /** Api Key */
+            api_key: boolean;
+            /** Custom Models */
+            custom_models: boolean;
+            /** Endpoint */
+            endpoint: string;
+            /** Label */
+            label: string;
+            /** Name */
+            name: string;
+        };
         /** ManualText */
         ManualText: {
             /** Declared Origin */
@@ -673,10 +784,43 @@ export interface components {
             /** Url */
             url: string;
         };
+        /** ModelView */
+        ModelView: {
+            /** Context */
+            context: number;
+            /** Local */
+            local: boolean;
+            /** Model */
+            model: string;
+            /** Paid */
+            paid: boolean;
+            /** Price In */
+            price_in: string;
+            /** Price Out */
+            price_out: string;
+            /** Provider */
+            provider: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "tested" | "untested" | "blocked";
+        };
         /** NewPassword */
         NewPassword: {
             /** New Password */
             new_password: string;
+        };
+        /** NewProvider */
+        NewProvider: {
+            /** Api Key */
+            api_key?: string | null;
+            /** Endpoint */
+            endpoint?: string | null;
+            /** Kind */
+            kind: string;
+            /** Name */
+            name: string;
         };
         /** NewSource */
         NewSource: {
@@ -700,6 +844,30 @@ export interface components {
             /** Password */
             password: string;
         };
+        /** PolicyView */
+        PolicyView: {
+            /** Allowed Paid */
+            allowed_paid?: string[];
+            /** Local Networks */
+            local_networks?: string[];
+            /** Local Ports */
+            local_ports?: number[];
+        };
+        /** ProfileEntryView */
+        ProfileEntryView: {
+            /** Model */
+            model: string;
+            /**
+             * Provider Id
+             * Format: uuid
+             */
+            provider_id: string;
+        };
+        /** ProfileView */
+        ProfileView: {
+            /** Entries */
+            entries: components["schemas"]["ProfileEntryView"][];
+        };
         /** ProgressView */
         ProgressView: {
             /** Decisions */
@@ -708,6 +876,45 @@ export interface components {
             sources: number;
             /** Topics */
             topics: number;
+        };
+        /**
+         * ProviderChanges
+         * @description `api_key` is taken into account only with `replace_key`: an empty field of the form keeps
+         *     the key, which the interface never receives.
+         */
+        ProviderChanges: {
+            /** Api Key */
+            api_key?: string | null;
+            /** Endpoint */
+            endpoint: string;
+            /** Name */
+            name: string;
+            /**
+             * Replace Key
+             * @default false
+             */
+            replace_key: boolean;
+        };
+        /** ProviderView */
+        ProviderView: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Endpoint */
+            endpoint: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Key Hint */
+            key_hint: string | null;
+            /** Kind */
+            kind: string;
+            /** Name */
+            name: string;
         };
         /** RefreshView */
         RefreshView: {
@@ -914,6 +1121,249 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    catalogue_api_ai_catalogue_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogueView"];
+                };
+            };
+        };
+    };
+    get_policy_api_ai_policy_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PolicyView"];
+                };
+            };
+        };
+    };
+    set_policy_api_ai_policy_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PolicyView"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PolicyView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_profile_api_ai_profile_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileView"];
+                };
+            };
+        };
+    };
+    set_profile_api_ai_profile_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfileView"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_providers_api_ai_providers_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderView"][];
+                };
+            };
+        };
+    };
+    add_provider_api_ai_providers_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewProvider"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_provider_api_ai_providers__provider_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProviderChanges"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_provider_api_ai_providers__provider_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     login_api_auth_login_post: {
         parameters: {
             query?: never;

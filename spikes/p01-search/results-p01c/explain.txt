@@ -1,0 +1,187 @@
+=== Q1 mot fréquent: 'grand'
+Limit  (cost=14001.95..14004.45 rows=1000 width=24) (actual time=79.927..80.292 rows=1000.00 loops=1)
+  Buffers: shared hit=11017
+  ->  Sort  (cost=14001.95..14050.58 rows=19450 width=24) (actual time=79.925..80.140 rows=1000.00 loops=1)
+        Sort Key: (LEAST(COALESCE(published_at, collected_at), collected_at)) DESC
+        Sort Method: top-N heapsort  Memory: 169kB
+        Buffers: shared hit=11017
+        ->  Bitmap Heap Scan on source_items i  (cost=858.05..12935.53 rows=19450 width=24) (actual time=21.913..72.250 rows=19483.00 loops=1)
+              Recheck Cond: ((search @@ '''grand'''::tsquery) AND (workspace_id = '83c9e5db-8f89-497f-ba6d-d33e22266a0b'::uuid))
+              Filter: (duplicate_of IS NULL)
+              Heap Blocks: exact=10900
+              Buffers: shared hit=11014
+              ->  BitmapAnd  (cost=858.05..858.05 rows=19450 width=0) (actual time=19.668..19.670 rows=0.00 loops=1)
+                    Buffers: shared hit=114
+                    ->  Bitmap Index Scan on source_items_search  (cost=0.00..136.33 rows=24210 width=0) (actual time=6.811..6.812 rows=24364.00 loops=1)
+                          Index Cond: (search @@ '''grand'''::tsquery)
+                          Index Searches: 1
+                          Buffers: shared hit=13
+                    ->  Bitmap Index Scan on source_items_hash  (cost=0.00..711.74 rows=80340 width=0) (actual time=11.986..11.986 rows=80014.00 loops=1)
+                          Index Cond: (workspace_id = '83c9e5db-8f89-497f-ba6d-d33e22266a0b'::uuid)
+                          Index Searches: 1
+                          Buffers: shared hit=101
+Planning:
+  Buffers: shared hit=370
+Planning Time: 6.329 ms
+Execution Time: 80.779 ms
+
+=== Q2 mot rare: 'hood'
+Limit  (cost=4072.11..4074.61 rows=1000 width=24) (actual time=4.399..4.608 rows=883.00 loops=1)
+  Buffers: shared hit=1102
+  ->  Sort  (cost=4072.11..4080.01 rows=3158 width=24) (actual time=4.396..4.486 rows=883.00 loops=1)
+        Sort Key: (LEAST(COALESCE(published_at, collected_at), collected_at)) DESC
+        Sort Method: quicksort  Memory: 87kB
+        Buffers: shared hit=1102
+        ->  Bitmap Heap Scan on source_items i  (cost=70.14..3898.96 rows=3158 width=24) (actual time=1.611..4.094 rows=883.00 loops=1)
+              Recheck Cond: ((search @@ '''hood'''::tsquery) OR (search @@ '''hood'''::tsquery) OR (search @@ '''hood'''::tsquery) OR (search @@ '''hod'''::tsquery) OR (search @@ '''hood'''::tsquery) OR (search @@ '''hood'''::tsquery) OR (search @@ '''hood'''::tsquery) OR (search @@ '''hood'''::tsquery))
+              Filter: ((duplicate_of IS NULL) AND (workspace_id = '83c9e5db-8f89-497f-ba6d-d33e22266a0b'::uuid))
+              Rows Removed by Filter: 217
+              Heap Blocks: exact=1063
+              Buffers: shared hit=1102
+              ->  BitmapOr  (cost=70.14..70.14 rows=4000 width=0) (actual time=1.413..1.417 rows=0.00 loops=1)
+                    Buffers: shared hit=39
+                    ->  Bitmap Index Scan on source_items_search  (cost=0.00..7.98 rows=500 width=0) (actual time=0.447..0.447 rows=1100.00 loops=1)
+                          Index Cond: (search @@ '''hood'''::tsquery)
+                          Index Searches: 1
+                          Buffers: shared hit=5
+                    ->  Bitmap Index Scan on source_items_search  (cost=0.00..7.98 rows=500 width=0) (actual time=0.149..0.149 rows=1100.00 loops=1)
+                          Index Cond: (search @@ '''hood'''::tsquery)
+                          Index Searches: 1
+                          Buffers: shared hit=5
+                    ->  Bitmap Index Scan on source_items_search  (cost=0.00..7.98 rows=500 width=0) (actual time=0.143..0.143 rows=1100.00 loops=1)
+                          Index Cond: (search @@ '''hood'''::tsquery)
+                          Index Searches: 1
+                          Buffers: shared hit=5
+                    ->  Bitmap Index Scan on source_items_search  (cost=0.00..7.98 rows=500 width=0) (actual time=0.022..0.022 rows=0.00 loops=1)
+                          Index Cond: (search @@ '''hod'''::tsquery)
+                          Index Searches: 1
+                          Buffers: shared hit=4
+                    ->  Bitmap Index Scan on source_items_search  (cost=0.00..7.98 rows=500 width=0) (actual time=0.145..0.145 rows=1100.00 loops=1)
+                          Index Cond: (search @@ '''hood'''::tsquery)
+                          Index Searches: 1
+                          Buffers: shared hit=5
+                    ->  Bitmap Index Scan on source_items_search  (cost=0.00..7.98 rows=500 width=0) (actual time=0.143..0.144 rows=1100.00 loops=1)
+                          Index Cond: (search @@ '''hood'''::tsquery)
+                          Index Searches: 1
+                          Buffers: shared hit=5
+                    ->  Bitmap Index Scan on source_items_search  (cost=0.00..7.98 rows=500 width=0) (actual time=0.218..0.218 rows=1100.00 loops=1)
+                          Index Cond: (search @@ '''hood'''::tsquery)
+                          Index Searches: 1
+                          Buffers: shared hit=5
+                    ->  Bitmap Index Scan on source_items_search  (cost=0.00..7.98 rows=500 width=0) (actual time=0.144..0.144 rows=1100.00 loops=1)
+                          Index Cond: (search @@ '''hood'''::tsquery)
+                          Index Searches: 1
+                          Buffers: shared hit=5
+Planning:
+  Buffers: shared hit=9
+Planning Time: 1.048 ms
+Execution Time: 4.802 ms
+
+=== Q3 deux ou trois mots: 'motos enchères billy'
+Limit  (cost=114.15..114.16 rows=2 width=24) (actual time=1.874..1.925 rows=209.00 loops=1)
+  Buffers: shared hit=363
+  ->  Sort  (cost=114.15..114.16 rows=2 width=24) (actual time=1.872..1.894 rows=209.00 loops=1)
+        Sort Key: (LEAST(COALESCE(published_at, collected_at), collected_at)) DESC
+        Sort Method: quicksort  Memory: 39kB
+        Buffers: shared hit=363
+        ->  Bitmap Heap Scan on source_items i  (cost=111.87..114.14 rows=2 width=24) (actual time=1.123..1.801 rows=209.00 loops=1)
+              Recheck Cond: ((search @@ '''motos'' & ''encher'' & ''billy'''::tsquery) OR (search @@ '''moto'' & ''enchèr'' & ''billi'''::tsquery) OR (search @@ '''motos'' & ''enchèr'' & ''billy'''::tsquery) OR (search @@ '''motos'' & ''enchères'' & ''billy'''::tsquery) OR (search @@ '''mot'' & ''enchères'' & ''billy'''::tsquery) OR (search @@ '''motos'' & ''enchères'' & ''billy'''::tsquery) OR (search @@ '''mot'' & ''enchères'' & ''billy'''::tsquery) OR (search @@ '''motos'' & ''enchères'' & ''billy'''::tsquery))
+              Filter: ((duplicate_of IS NULL) AND (workspace_id = '83c9e5db-8f89-497f-ba6d-d33e22266a0b'::uuid))
+              Rows Removed by Filter: 56
+              Heap Blocks: exact=263
+              Buffers: shared hit=363
+              ->  BitmapOr  (cost=111.87..111.87 rows=2 width=0) (actual time=1.044..1.048 rows=0.00 loops=1)
+                    Buffers: shared hit=100
+                    ->  Bitmap Index Scan on source_items_search  (cost=0.00..13.98 rows=1 width=0) (actual time=0.563..0.563 rows=265.00 loops=1)
+                          Index Cond: (search @@ '''motos'' & ''encher'' & ''billy'''::tsquery)
+                          Index Searches: 1
+                          Buffers: shared hit=18
+                    ->  Bitmap Index Scan on source_items_search  (cost=0.00..13.99 rows=1 width=0) (actual time=0.072..0.072 rows=0.00 loops=1)
+                          Index Cond: (search @@ '''moto'' & ''enchèr'' & ''billi'''::tsquery)
+                          Index Searches: 1
+                          Buffers: shared hit=12
+                    ->  Bitmap Index Scan on source_items_search  (cost=0.00..13.98 rows=1 width=0) (actual time=0.030..0.030 rows=0.00 loops=1)
+                          Index Cond: (search @@ '''motos'' & ''enchèr'' & ''billy'''::tsquery)
+                          Index Searches: 1
+                          Buffers: shared hit=12
+                    ->  Bitmap Index Scan on source_items_search  (cost=0.00..13.98 rows=1 width=0) (actual time=0.070..0.070 rows=0.00 loops=1)
+                          Index Cond: (search @@ '''motos'' & ''enchères'' & ''billy'''::tsquery)
+                          Index Searches: 1
+                          Buffers: shared hit=12
+                    ->  Bitmap Index Scan on source_items_search  (cost=0.00..13.98 rows=1 width=0) (actual time=0.092..0.092 rows=0.00 loops=1)
+                          Index Cond: (search @@ '''mot'' & ''enchères'' & ''billy'''::tsquery)
+                          Index Searches: 1
+                          Buffers: shared hit=11
+                    ->  Bitmap Index Scan on source_items_search  (cost=0.00..13.98 rows=1 width=0) (actual time=0.063..0.063 rows=0.00 loops=1)
+                          Index Cond: (search @@ '''motos'' & ''enchères'' & ''billy'''::tsquery)
+                          Index Searches: 1
+                          Buffers: shared hit=12
+                    ->  Bitmap Index Scan on source_items_search  (cost=0.00..13.98 rows=1 width=0) (actual time=0.057..0.057 rows=0.00 loops=1)
+                          Index Cond: (search @@ '''mot'' & ''enchères'' & ''billy'''::tsquery)
+                          Index Searches: 1
+                          Buffers: shared hit=11
+                    ->  Bitmap Index Scan on source_items_search  (cost=0.00..13.98 rows=1 width=0) (actual time=0.094..0.094 rows=0.00 loops=1)
+                          Index Cond: (search @@ '''motos'' & ''enchères'' & ''billy'''::tsquery)
+                          Index Searches: 1
+                          Buffers: shared hit=12
+Planning:
+  Buffers: shared hit=9
+Planning Time: 0.953 ms
+Execution Time: 2.008 ms
+
+=== Q4 expression: '"through one"'
+Limit  (cost=9774.50..9777.00 rows=1000 width=24) (actual time=36.932..37.269 rows=1000.00 loops=1)
+  Buffers: shared hit=7672
+  ->  Sort  (cost=9774.50..9800.83 rows=10531 width=24) (actual time=36.930..37.136 rows=1000.00 loops=1)
+        Sort Key: (LEAST(COALESCE(published_at, collected_at), collected_at)) DESC
+        Sort Method: top-N heapsort  Memory: 167kB
+        Buffers: shared hit=7672
+        ->  Bitmap Heap Scan on source_items i  (cost=880.00..9197.10 rows=10531 width=24) (actual time=15.319..33.469 rows=9998.00 loops=1)
+              Recheck Cond: (((search @@ '''through'' <-> ''one'''::tsquery) OR (search @@ '''one'''::tsquery) OR (search @@ '''through'' <-> ''one'''::tsquery) OR (search @@ '''through'' <-> ''one'''::tsquery) OR (search @@ '''through'' <-> ''one'''::tsquery) OR (search @@ '''throug'' <-> ''one'''::tsquery) OR (search @@ '''through'' <-> ''one'''::tsquery) OR (search @@ '''through'' <-> ''one'''::tsquery)) AND (workspace_id = '83c9e5db-8f89-497f-ba6d-d33e22266a0b'::uuid))
+              Filter: (duplicate_of IS NULL)
+              Heap Blocks: exact=7451
+              Buffers: shared hit=7672
+              ->  BitmapAnd  (cost=880.00..880.00 rows=10577 width=0) (actual time=13.832..13.839 rows=0.00 loops=1)
+                    Buffers: shared hit=182
+                    ->  BitmapOr  (cost=165.38..165.38 rows=13165 width=0) (actual time=4.732..4.736 rows=0.00 loops=1)
+                          Buffers: shared hit=81
+                          ->  Bitmap Index Scan on source_items_search  (cost=0.00..10.05 rows=64 width=0) (actual time=0.225..0.225 rows=0.00 loops=1)
+                                Index Cond: (search @@ '''through'' <-> ''one'''::tsquery)
+                                Index Searches: 1
+                                Buffers: shared hit=9
+                          ->  Bitmap Index Scan on source_items_search  (cost=0.00..73.98 rows=12720 width=0) (actual time=4.285..4.286 rows=12518.00 loops=1)
+                                Index Cond: (search @@ '''one'''::tsquery)
+                                Index Searches: 1
+                                Buffers: shared hit=10
+                          ->  Bitmap Index Scan on source_items_search  (cost=0.00..10.05 rows=64 width=0) (actual time=0.034..0.035 rows=0.00 loops=1)
+                                Index Cond: (search @@ '''through'' <-> ''one'''::tsquery)
+                                Index Searches: 1
+                                Buffers: shared hit=9
+                          ->  Bitmap Index Scan on source_items_search  (cost=0.00..10.05 rows=64 width=0) (actual time=0.022..0.023 rows=0.00 loops=1)
+                                Index Cond: (search @@ '''through'' <-> ''one'''::tsquery)
+                                Index Searches: 1
+                                Buffers: shared hit=9
+                          ->  Bitmap Index Scan on source_items_search  (cost=0.00..10.05 rows=64 width=0) (actual time=0.021..0.021 rows=0.00 loops=1)
+                                Index Cond: (search @@ '''through'' <-> ''one'''::tsquery)
+                                Index Searches: 1
+                                Buffers: shared hit=9
+                          ->  Bitmap Index Scan on source_items_search  (cost=0.00..10.05 rows=64 width=0) (actual time=0.101..0.101 rows=2.00 loops=1)
+                                Index Cond: (search @@ '''throug'' <-> ''one'''::tsquery)
+                                Index Searches: 1
+                                Buffers: shared hit=17
+                          ->  Bitmap Index Scan on source_items_search  (cost=0.00..10.05 rows=64 width=0) (actual time=0.021..0.021 rows=0.00 loops=1)
+                                Index Cond: (search @@ '''through'' <-> ''one'''::tsquery)
+                                Index Searches: 1
+                                Buffers: shared hit=9
+                          ->  Bitmap Index Scan on source_items_search  (cost=0.00..10.05 rows=64 width=0) (actual time=0.019..0.019 rows=0.00 loops=1)
+                                Index Cond: (search @@ '''through'' <-> ''one'''::tsquery)
+                                Index Searches: 1
+                                Buffers: shared hit=9
+                    ->  Bitmap Index Scan on source_items_hash  (cost=0.00..711.74 rows=80340 width=0) (actual time=8.592..8.592 rows=80014.00 loops=1)
+                          Index Cond: (workspace_id = '83c9e5db-8f89-497f-ba6d-d33e22266a0b'::uuid)
+                          Index Searches: 1
+                          Buffers: shared hit=101
+Planning:
+  Buffers: shared hit=9
+Planning Time: 0.928 ms
+Execution Time: 37.998 ms

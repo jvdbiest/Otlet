@@ -41,3 +41,4 @@ La numérotation continue celle de l'architecture.
 | [0031](0031-collecte-des-sources.md) | Collecte des sources : client protégé, règles des sites et statut juridique | Accepté (U01) |
 | [0032](0032-sujets-score-doublons-recherche.md) | Sujets, score lexical expliqué, doublons et recherche | Proposé (U02) |
 | [0033](0033-recherche-plein-texte-sous-rls.md) | Recherche plein texte par une fonction dédiée, sous RLS | Accepté (P01) |
+| [0034](0034-recherche-requete-fusionnee.md) | Recherche plein texte : une seule requête pour toutes les langues | Proposé (P01c) |

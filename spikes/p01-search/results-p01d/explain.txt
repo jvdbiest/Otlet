@@ -1,0 +1,117 @@
+=== Q1 mot fréquent: 'grand'
+Limit  (cost=566.19..567.19 rows=400 width=24) (actual time=73.429..73.745 rows=1000.00 loops=1)
+  Buffers: shared hit=11998
+  InitPlan 1
+    ->  Aggregate  (cost=0.19..0.21 rows=1 width=32) (actual time=0.154..0.158 rows=1.00 loops=1)
+          Buffers: shared hit=3
+          ->  Sort  (cost=0.15..0.15 rows=3 width=32) (actual time=0.131..0.135 rows=8.00 loops=1)
+                Sort Key: ((('('::text || (t.t)::text) || ')'::text))
+                Sort Method: quicksort  Memory: 25kB
+                Buffers: shared hit=3
+                ->  Function Scan on unnest t  (cost=0.00..0.12 rows=3 width=32) (actual time=0.031..0.037 rows=8.00 loops=1)
+                      Filter: (numnode(t) > 0)
+  ->  Sort  (cost=565.98..566.98 rows=400 width=24) (actual time=73.426..73.587 rows=1000.00 loops=1)
+        Sort Key: (LEAST(COALESCE(i.published_at, i.collected_at), i.collected_at)) DESC
+        Sort Method: top-N heapsort  Memory: 169kB
+        Buffers: shared hit=11998
+        ->  Bitmap Heap Scan on source_items i  (cost=8.08..548.69 rows=400 width=24) (actual time=9.524..65.382 rows=19483.00 loops=1)
+              Recheck Cond: (search @@ (InitPlan 1).col1)
+              Filter: ((duplicate_of IS NULL) AND (workspace_id = '83c9e5db-8f89-497f-ba6d-d33e22266a0b'::uuid))
+              Rows Removed by Filter: 4881
+              Heap Blocks: exact=11979
+              Buffers: shared hit=11995
+              ->  Bitmap Index Scan on source_items_search  (cost=0.00..7.98 rows=500 width=0) (actual time=7.135..7.135 rows=24364.00 loops=1)
+                    Index Cond: (search @@ (InitPlan 1).col1)
+                    Index Searches: 1
+                    Buffers: shared hit=16
+Planning:
+  Buffers: shared hit=397
+Planning Time: 6.685 ms
+Execution Time: 74.358 ms
+
+=== Q2 mot rare: 'hood'
+Limit  (cost=566.19..567.19 rows=400 width=24) (actual time=3.620..3.866 rows=883.00 loops=1)
+  Buffers: shared hit=1071
+  InitPlan 1
+    ->  Aggregate  (cost=0.19..0.21 rows=1 width=32) (actual time=0.087..0.090 rows=1.00 loops=1)
+          ->  Sort  (cost=0.15..0.15 rows=3 width=32) (actual time=0.072..0.074 rows=8.00 loops=1)
+                Sort Key: ((('('::text || (t.t)::text) || ')'::text))
+                Sort Method: quicksort  Memory: 25kB
+                ->  Function Scan on unnest t  (cost=0.00..0.12 rows=3 width=32) (actual time=0.037..0.041 rows=8.00 loops=1)
+                      Filter: (numnode(t) > 0)
+  ->  Sort  (cost=565.98..566.98 rows=400 width=24) (actual time=3.618..3.707 rows=883.00 loops=1)
+        Sort Key: (LEAST(COALESCE(i.published_at, i.collected_at), i.collected_at)) DESC
+        Sort Method: quicksort  Memory: 87kB
+        Buffers: shared hit=1071
+        ->  Bitmap Heap Scan on source_items i  (cost=8.08..548.69 rows=400 width=24) (actual time=0.704..3.275 rows=883.00 loops=1)
+              Recheck Cond: (search @@ (InitPlan 1).col1)
+              Filter: ((duplicate_of IS NULL) AND (workspace_id = '83c9e5db-8f89-497f-ba6d-d33e22266a0b'::uuid))
+              Rows Removed by Filter: 217
+              Heap Blocks: exact=1063
+              Buffers: shared hit=1071
+              ->  Bitmap Index Scan on source_items_search  (cost=0.00..7.98 rows=500 width=0) (actual time=0.533..0.533 rows=1100.00 loops=1)
+                    Index Cond: (search @@ (InitPlan 1).col1)
+                    Index Searches: 1
+                    Buffers: shared hit=8
+Planning:
+  Buffers: shared hit=2
+Planning Time: 0.532 ms
+Execution Time: 4.054 ms
+
+=== Q3 deux ou trois mots: 'motos enchères billy'
+Limit  (cost=566.19..567.19 rows=400 width=24) (actual time=2.850..2.898 rows=209.00 loops=1)
+  Buffers: shared hit=350
+  InitPlan 1
+    ->  Aggregate  (cost=0.19..0.21 rows=1 width=32) (actual time=0.106..0.109 rows=1.00 loops=1)
+          ->  Sort  (cost=0.15..0.15 rows=3 width=32) (actual time=0.083..0.087 rows=8.00 loops=1)
+                Sort Key: ((('('::text || (t.t)::text) || ')'::text))
+                Sort Method: quicksort  Memory: 26kB
+                ->  Function Scan on unnest t  (cost=0.00..0.12 rows=3 width=32) (actual time=0.014..0.024 rows=8.00 loops=1)
+                      Filter: (numnode(t) > 0)
+  ->  Sort  (cost=565.98..566.98 rows=400 width=24) (actual time=2.848..2.866 rows=209.00 loops=1)
+        Sort Key: (LEAST(COALESCE(i.published_at, i.collected_at), i.collected_at)) DESC
+        Sort Method: quicksort  Memory: 39kB
+        Buffers: shared hit=350
+        ->  Bitmap Heap Scan on source_items i  (cost=8.08..548.69 rows=400 width=24) (actual time=2.074..2.772 rows=209.00 loops=1)
+              Recheck Cond: (search @@ (InitPlan 1).col1)
+              Filter: ((duplicate_of IS NULL) AND (workspace_id = '83c9e5db-8f89-497f-ba6d-d33e22266a0b'::uuid))
+              Rows Removed by Filter: 56
+              Heap Blocks: exact=263
+              Buffers: shared hit=350
+              ->  Bitmap Index Scan on source_items_search  (cost=0.00..7.98 rows=500 width=0) (actual time=2.019..2.019 rows=265.00 loops=1)
+                    Index Cond: (search @@ (InitPlan 1).col1)
+                    Index Searches: 1
+                    Buffers: shared hit=87
+Planning:
+  Buffers: shared hit=2
+Planning Time: 0.622 ms
+Execution Time: 3.003 ms
+
+=== Q4 expression: '"through one"'
+Limit  (cost=566.19..567.19 rows=400 width=24) (actual time=32.368..32.648 rows=1000.00 loops=1)
+  Buffers: shared hit=8741
+  InitPlan 1
+    ->  Aggregate  (cost=0.19..0.21 rows=1 width=32) (actual time=0.048..0.052 rows=1.00 loops=1)
+          ->  Sort  (cost=0.15..0.15 rows=3 width=32) (actual time=0.032..0.035 rows=8.00 loops=1)
+                Sort Key: ((('('::text || (t.t)::text) || ')'::text))
+                Sort Method: quicksort  Memory: 25kB
+                ->  Function Scan on unnest t  (cost=0.00..0.12 rows=3 width=32) (actual time=0.013..0.019 rows=8.00 loops=1)
+                      Filter: (numnode(t) > 0)
+  ->  Sort  (cost=565.98..566.98 rows=400 width=24) (actual time=32.365..32.513 rows=1000.00 loops=1)
+        Sort Key: (LEAST(COALESCE(i.published_at, i.collected_at), i.collected_at)) DESC
+        Sort Method: top-N heapsort  Memory: 167kB
+        Buffers: shared hit=8741
+        ->  Bitmap Heap Scan on source_items i  (cost=8.08..548.69 rows=400 width=24) (actual time=7.582..28.660 rows=9998.00 loops=1)
+              Recheck Cond: (search @@ (InitPlan 1).col1)
+              Filter: ((duplicate_of IS NULL) AND (workspace_id = '83c9e5db-8f89-497f-ba6d-d33e22266a0b'::uuid))
+              Rows Removed by Filter: 2520
+              Heap Blocks: exact=8707
+              Buffers: shared hit=8741
+              ->  Bitmap Index Scan on source_items_search  (cost=0.00..7.98 rows=500 width=0) (actual time=5.919..5.920 rows=12518.00 loops=1)
+                    Index Cond: (search @@ (InitPlan 1).col1)
+                    Index Searches: 1
+                    Buffers: shared hit=34
+Planning:
+  Buffers: shared hit=2
+Planning Time: 0.484 ms
+Execution Time: 33.066 ms

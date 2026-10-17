@@ -42,3 +42,4 @@ La numérotation continue celle de l'architecture.
 | [0032](0032-sujets-score-doublons-recherche.md) | Sujets, score lexical expliqué, doublons et recherche | Proposé (U02) |
 | [0033](0033-recherche-plein-texte-sous-rls.md) | Recherche plein texte par une fonction dédiée, sous RLS | Accepté (P01) |
 | [0034](0034-recherche-requete-fusionnee.md) | Recherche plein texte : une seule requête pour toutes les langues | Accepté (P01c) |
+| [0035](0035-recherche-seuil-e1.md) | Recherche plein texte : clore L2 pour É1, ou poursuivre | Proposé (P01d) |

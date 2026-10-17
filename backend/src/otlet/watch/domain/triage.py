@@ -78,3 +78,34 @@ class Period:
 
 
 ANY_TIME = Period()
+
+
+class Sort(StrEnum):
+    """How the feed is ordered (U03); pinned items stay first in the views that pin them."""
+
+    DATE = "date"  # the most recent first: the default
+    SCORE = "score"  # the best score of the item first, then the date
+    TOPIC = "topic"  # by main topic, in alphabetical order, then the date; no topic last
+    SOURCE = "source"  # by source, in alphabetical order, then the date; manual entries last
+
+
+class GroupBy(StrEnum):
+    TOPIC = "topic"  # the main topic of each item: an item is in one group only
+    SOURCE = "source"
+
+
+@dataclass(frozen=True, slots=True)
+class Group:
+    """One group of the feed: `key` is None for the items without topic (or without source)."""
+
+    key: UUID | None
+    name: str
+    count: int
+
+
+@dataclass(frozen=True, slots=True)
+class InGroup:
+    """Keeps the items of one group of the feed."""
+
+    by: GroupBy
+    key: UUID | None

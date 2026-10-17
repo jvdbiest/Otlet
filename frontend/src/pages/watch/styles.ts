@@ -24,6 +24,7 @@ export const styles = css as Record<
   | "filter"
   | "form"
   | "good"
+  | "group"
   | "help"
   | "journal"
   | "limited"

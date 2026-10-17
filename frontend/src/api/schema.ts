@@ -133,12 +133,35 @@ export interface paths {
         };
         /**
          * Get Feed
-         * @description The feed of the user: pinned items first, then the most recent (in date order only
-         *     for `all`); `before` (the id of the last item of the previous page) pages back.
+         * @description The feed of the user: pinned items first (except for `all`), then in the order of
+         *     `sort`; `before` (the id of the last item of the previous page) pages back.
          *     `topic_id`, repeated, keeps the items of at least one of these topics, or of all of
-         *     them with `all_topics`; `since` and `until` keep the items dated in between.
+         *     them with `all_topics`; `since` and `until` keep the items dated in between;
+         *     `group_by` with `group` keeps one group of `/feed/groups` (no `group`: the items
+         *     without topic, or the manual entries).
          */
         get: operations["get_feed_api_workspaces__workspace_id__feed_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/feed/groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Feed Groups
+         * @description The groups of the feed, by main topic or by source, with the same filters as
+         *     `/feed`, and how many items each holds; the group without key comes last.
+         */
+        get: operations["feed_groups_api_workspaces__workspace_id__feed_groups_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -594,6 +617,20 @@ export interface components {
             topics: components["schemas"]["TopicTagView"][];
             triage: components["schemas"]["TriageView"];
         };
+        /**
+         * GroupBy
+         * @enum {string}
+         */
+        GroupBy: "topic" | "source";
+        /** GroupView */
+        GroupView: {
+            /** Count */
+            count: number;
+            /** Key */
+            key: string | null;
+            /** Name */
+            name: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -733,6 +770,12 @@ export interface components {
             csrf_token: string;
             user: components["schemas"]["UserView"];
         };
+        /**
+         * Sort
+         * @description How the feed is ordered (U03); pinned items stay first in the views that pin them.
+         * @enum {string}
+         */
+        Sort: "date" | "score" | "topic" | "source";
         /** SourceChanges */
         SourceChanges: {
             /** Active */
@@ -1143,6 +1186,9 @@ export interface operations {
                 all_topics?: boolean;
                 since?: string | null;
                 until?: string | null;
+                sort?: components["schemas"]["Sort"];
+                group_by?: components["schemas"]["GroupBy"] | null;
+                group?: string | null;
             };
             header?: never;
             path: {
@@ -1159,6 +1205,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FeedItemView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    feed_groups_api_workspaces__workspace_id__feed_groups_get: {
+        parameters: {
+            query: {
+                by: components["schemas"]["GroupBy"];
+                view?: components["schemas"]["View"];
+                source_id?: string | null;
+                unread?: boolean;
+                topic_id?: string[];
+                all_topics?: boolean;
+                since?: string | null;
+                until?: string | null;
+            };
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupView"][];
                 };
             };
             /** @description Validation Error */

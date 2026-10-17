@@ -185,3 +185,22 @@ def test_ids_written_in_the_prose_are_taken_out() -> None:
     _, document = to_document(json.dumps(raw), sources, "fr")
     text = document["content"][2]["content"][0]["text"]
     assert text == "Le constructeur annonce une autonomie revue."
+
+
+def test_the_writing_instructions_follow_the_rules_of_the_product() -> None:
+    sources = prompt_sources([source("A", "a"), source("B", "b")], 9000)
+    plain = messages(BriefFields(title="T", item_ids=()), sources)
+    assert "Writing instructions" not in plain[0][1]
+    fields = BriefFields(
+        title="T",
+        item_ids=(),
+        angle="Ce que deux hivers de route m'ont appris",
+        instructions="Fusionne les deux éléments ; pas de liste à puces.",
+    )
+    (_, system), (_, user) = messages(fields, sources)
+    rules = system.index("Answer with one JSON object only")
+    asked = system.index("Writing instructions from the author")
+    assert rules < asked and system.endswith("Fusionne les deux éléments ; pas de liste à puces.")
+    # The angle stays in the brief, as what the author wants to say; the instructions do not.
+    assert "Angle and own contribution of the author: Ce que deux hivers" in user
+    assert "Fusionne" not in user

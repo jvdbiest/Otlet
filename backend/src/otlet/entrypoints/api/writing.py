@@ -50,6 +50,7 @@ class BriefView(BaseModel):
     id: UUID
     title: str
     angle: str
+    instructions: str
     audience: str
     tone: str
     length: Literal["short", "medium", "long"]
@@ -70,6 +71,7 @@ class BriefView(BaseModel):
             id=brief.id,
             title=fields.title,
             angle=fields.angle,
+            instructions=fields.instructions,
             audience=fields.audience,
             tone=fields.tone,
             length=fields.length.value,
@@ -89,6 +91,7 @@ class BriefBody(BaseModel):
     title: str
     item_ids: list[UUID] = Field(min_length=1, max_length=ITEMS_MAX)
     angle: str = ""
+    instructions: str = ""
     audience: str = ""
     tone: str = ""
     length: Literal["short", "medium", "long"] = "medium"
@@ -102,6 +105,7 @@ class BriefBody(BaseModel):
             title=self.title,
             item_ids=tuple(self.item_ids),
             angle=self.angle,
+            instructions=self.instructions,
             audience=self.audience,
             tone=self.tone,
             length=Length(self.length),

@@ -19,7 +19,8 @@ from otlet.writing.domain.brief import (
 )
 
 BRIEF_COLUMNS = (
-    "b.id, b.workspace_id, b.created_by, b.title, b.angle, b.audience, b.tone, b.length,"
+    "b.id, b.workspace_id, b.created_by, b.title, b.angle, b.instructions, b.audience, b.tone,"
+    " b.length,"
     " b.language, b.channel, b.provider_id, b.model, b.created_at, b.updated_at"
 )
 # The items of the brief, in order, with what the brief shows of them.
@@ -57,6 +58,7 @@ def _brief(row: sa.Row[Any]) -> Brief:
             title=row.title,
             item_ids=tuple(item.id for item in items),
             angle=row.angle,
+            instructions=row.instructions,
             audience=row.audience,
             tone=row.tone,
             length=Length(row.length),
@@ -74,6 +76,7 @@ def _values(fields: BriefFields) -> dict[str, object]:
     return {
         "title": fields.title,
         "angle": fields.angle,
+        "instructions": fields.instructions,
         "audience": fields.audience,
         "tone": fields.tone,
         "length": fields.length.value,
@@ -108,10 +111,10 @@ class PostgresBriefStore:
             self._check_items(connection, fields)
             self._write(
                 connection,
-                "INSERT INTO briefs (id, workspace_id, created_by, title, angle, audience, tone,"
-                " length, language, channel, provider_id, model)"
-                " VALUES (:id, :workspace, :user, :title, :angle, :audience, :tone, :length,"
-                " :language, :channel, :provider, :model) RETURNING id",
+                "INSERT INTO briefs (id, workspace_id, created_by, title, angle, instructions,"
+                " audience, tone, length, language, channel, provider_id, model)"
+                " VALUES (:id, :workspace, :user, :title, :angle, :instructions, :audience, :tone,"
+                " :length, :language, :channel, :provider, :model) RETURNING id",
                 {"id": brief_id, "workspace": workspace_id, "user": user_id, **_values(fields)},
             )
             self._set_items(connection, workspace_id, brief_id, fields)
@@ -125,7 +128,8 @@ class PostgresBriefStore:
             self._check_items(connection, fields)
             found = self._write(
                 connection,
-                "UPDATE briefs SET title = :title, angle = :angle, audience = :audience,"
+                "UPDATE briefs SET title = :title, angle = :angle, instructions = :instructions,"
+                " audience = :audience,"
                 " tone = :tone, length = :length, language = :language, channel = :channel,"
                 " provider_id = :provider, model = :model, updated_at = now()"
                 f" WHERE id = :id AND {here()} RETURNING id",

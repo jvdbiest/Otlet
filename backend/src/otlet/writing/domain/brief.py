@@ -13,6 +13,7 @@ from uuid import UUID
 
 TITLE_MAX_LENGTH = 200
 ANGLE_MAX_LENGTH = 4000
+INSTRUCTIONS_MAX_LENGTH = 2000
 FIELD_MAX_LENGTH = 200  # audience, tone, channel
 MODEL_MAX_LENGTH = 200
 ITEMS_MAX = 20
@@ -48,6 +49,9 @@ class BriefFields:
     title: str
     item_ids: tuple[UUID, ...]
     angle: str = ""
+    # How to write, for the model: structure, what to stress or avoid (Joël, 2026-10-17). The
+    # angle says what the author wants to say; these say how the draft is written.
+    instructions: str = ""
     audience: str = ""
     tone: str = ""
     length: Length = Length.MEDIUM
@@ -63,6 +67,12 @@ class BriefFields:
         angle = self.angle.strip()
         if len(angle) > ANGLE_MAX_LENGTH:
             raise BriefError("invalid_angle", f"an angle has at most {ANGLE_MAX_LENGTH} characters")
+        instructions = self.instructions.strip()
+        if len(instructions) > INSTRUCTIONS_MAX_LENGTH:
+            raise BriefError(
+                "invalid_instructions",
+                f"instructions have at most {INSTRUCTIONS_MAX_LENGTH} characters",
+            )
         short = {"audience": self.audience, "tone": self.tone, "channel": self.channel}
         for name, value in short.items():
             if len(value.strip()) > FIELD_MAX_LENGTH:
@@ -84,6 +94,7 @@ class BriefFields:
             title=title,
             item_ids=items,
             angle=angle,
+            instructions=instructions,
             audience=self.audience.strip(),
             tone=self.tone.strip(),
             length=self.length,

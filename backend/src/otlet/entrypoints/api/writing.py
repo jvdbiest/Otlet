@@ -22,6 +22,7 @@ from otlet.writing.domain.brief import (
     BriefFields,
     BriefItem,
     Length,
+    Mode,
     ModelChoice,
 )
 
@@ -54,6 +55,7 @@ class BriefView(BaseModel):
     audience: str
     tone: str
     length: Literal["short", "medium", "long"]
+    mode: Literal["synthesis", "panorama"]
     language: str
     channel: str
     provider_id: UUID | None  # None: the profile of the author
@@ -75,6 +77,7 @@ class BriefView(BaseModel):
             audience=fields.audience,
             tone=fields.tone,
             length=fields.length.value,
+            mode=fields.mode.value,
             language=fields.language,
             channel=fields.channel,
             provider_id=None if fields.model is None else fields.model.provider_id,
@@ -95,6 +98,7 @@ class BriefBody(BaseModel):
     audience: str = ""
     tone: str = ""
     length: Literal["short", "medium", "long"] = "medium"
+    mode: Literal["synthesis", "panorama"] = "synthesis"
     language: str = "fr"
     channel: str = ""
     provider_id: UUID | None = None  # with `model`; none for the profile of the author
@@ -109,6 +113,7 @@ class BriefBody(BaseModel):
             audience=self.audience,
             tone=self.tone,
             length=Length(self.length),
+            mode=Mode(self.mode),
             language=self.language,
             channel=self.channel,
             model=None

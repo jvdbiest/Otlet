@@ -75,6 +75,15 @@
             "title": "Length",
             "type": "string"
           },
+          "mode": {
+            "default": "synthesis",
+            "enum": [
+              "synthesis",
+              "panorama"
+            ],
+            "title": "Mode",
+            "type": "string"
+          },
           "model": {
             "anyOf": [
               {
@@ -232,6 +241,14 @@
             "title": "Length",
             "type": "string"
           },
+          "mode": {
+            "enum": [
+              "synthesis",
+              "panorama"
+            ],
+            "title": "Mode",
+            "type": "string"
+          },
           "model": {
             "anyOf": [
               {
@@ -285,6 +302,7 @@
           "audience",
           "tone",
           "length",
+          "mode",
           "language",
           "channel",
           "provider_id",

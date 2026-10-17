@@ -15,12 +15,13 @@ from otlet.writing.domain.brief import (
     BriefFields,
     BriefItem,
     Length,
+    Mode,
     ModelChoice,
 )
 
 BRIEF_COLUMNS = (
     "b.id, b.workspace_id, b.created_by, b.title, b.angle, b.instructions, b.audience, b.tone,"
-    " b.length,"
+    " b.length, b.mode,"
     " b.language, b.channel, b.provider_id, b.model, b.created_at, b.updated_at"
 )
 # The items of the brief, in order, with what the brief shows of them.
@@ -62,6 +63,7 @@ def _brief(row: sa.Row[Any]) -> Brief:
             audience=row.audience,
             tone=row.tone,
             length=Length(row.length),
+            mode=Mode(row.mode),
             language=row.language,
             channel=row.channel,
             model=model,
@@ -80,6 +82,7 @@ def _values(fields: BriefFields) -> dict[str, object]:
         "audience": fields.audience,
         "tone": fields.tone,
         "length": fields.length.value,
+        "mode": fields.mode.value,
         "language": fields.language,
         "channel": fields.channel,
         "provider": None if fields.model is None else fields.model.provider_id,
@@ -112,9 +115,9 @@ class PostgresBriefStore:
             self._write(
                 connection,
                 "INSERT INTO briefs (id, workspace_id, created_by, title, angle, instructions,"
-                " audience, tone, length, language, channel, provider_id, model)"
+                " audience, tone, length, mode, language, channel, provider_id, model)"
                 " VALUES (:id, :workspace, :user, :title, :angle, :instructions, :audience, :tone,"
-                " :length, :language, :channel, :provider, :model) RETURNING id",
+                " :length, :mode, :language, :channel, :provider, :model) RETURNING id",
                 {"id": brief_id, "workspace": workspace_id, "user": user_id, **_values(fields)},
             )
             self._set_items(connection, workspace_id, brief_id, fields)
@@ -130,7 +133,8 @@ class PostgresBriefStore:
                 connection,
                 "UPDATE briefs SET title = :title, angle = :angle, instructions = :instructions,"
                 " audience = :audience,"
-                " tone = :tone, length = :length, language = :language, channel = :channel,"
+                " tone = :tone, length = :length, mode = :mode, language = :language,"
+                " channel = :channel,"
                 " provider_id = :provider, model = :model, updated_at = now()"
                 f" WHERE id = :id AND {here()} RETURNING id",
                 {"id": brief_id, **_values(fields)},

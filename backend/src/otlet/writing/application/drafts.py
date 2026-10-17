@@ -14,7 +14,7 @@ from uuid import UUID
 
 from otlet.workspaces.domain.model import WorkspaceContext
 from otlet.writing.domain.article import Article, Generation
-from otlet.writing.domain.brief import Brief, ModelChoice
+from otlet.writing.domain.brief import Brief, Mode, ModelChoice
 from otlet.writing.domain.draft import (
     WORDS,
     SourceText,
@@ -32,6 +32,9 @@ GENERATE_DRAFT = "writing.generate_draft"
 # « thinking » model (qwen3) writes before answering. A short draft cut at 1,200 tokens was
 # seen (Joël's case, 2026-10-17).
 OUTPUT_TOKENS = {length: words * 3 + 1000 for length, words in WORDS.items()}
+# A local model costs nothing per token, and a « thinking » one (qwen3, gemma4) spends its
+# output on reasoning first: gemma4 was cut mid-answer under 1,900 tokens. It gets more room.
+LOCAL_OUTPUT_TOKENS = 8192
 # A local model on a small machine writes slowly: a draft may take minutes.
 TIMEOUT_SECONDS = 600.0
 
@@ -163,7 +166,9 @@ class Drafts:
             # leaves some out: the version then says which (a warning, not a failure).
             nonlocal checks
             checks += 1
-            return check_answer(raw, keys, every_source=checks == 1)
+            first = checks == 1
+            synthesis = fields.mode is Mode.SYNTHESIS
+            return check_answer(raw, keys, every_source=first, crossing=first and synthesis)
 
         written = writer.write(
             user_id,
@@ -171,7 +176,7 @@ class Drafts:
             output_schema(keys),
             validate,
             fields.model,
-            OUTPUT_TOKENS[fields.length],
+            max(OUTPUT_TOKENS[fields.length], LOCAL_OUTPUT_TOKENS if local else 0),
         )
         if written.text is None:
             self._articles.finish(

@@ -8,12 +8,13 @@ import { ApiError } from "../../api/client.ts";
 import { itemQuery } from "../../collection.ts";
 import { useWorkspaceId } from "../../session.ts";
 import { feedQuery, ANY_TIME } from "../../triage.ts";
-import { briefQuery, briefsQuery, useDeleteBrief, useSaveBrief, type BriefLength, type BriefView } from "../../writing.ts";
+import { briefQuery, briefsQuery, useDeleteBrief, useSaveBrief, type BriefLength, type BriefMode, type BriefView } from "../../writing.ts";
 import { errorText, formatDate } from "../watch/labels.ts";
 import { styles } from "../watch/styles.ts";
 import { DraftPanel } from "./DraftPanel.tsx";
 
 const LENGTHS: readonly BriefLength[] = ["short", "medium", "long"];
+const MODES: readonly BriefMode[] = ["synthesis", "panorama"];
 const LANGUAGES = ["fr", "en", "de", "nl", "es", "it", "pt"] as const;
 const BRIEF_ERRORS = [
   "invalid_title",
@@ -126,6 +127,7 @@ function BriefForm({
   const [audience, setAudience] = useState(brief?.audience ?? "");
   const [tone, setTone] = useState(brief?.tone ?? "");
   const [length, setLength] = useState<BriefLength>(brief?.length ?? "medium");
+  const [mode, setMode] = useState<BriefMode>(brief?.mode ?? "synthesis");
   const [language, setLanguage] = useState(brief?.language ?? "fr");
   const [channel, setChannel] = useState(brief?.channel ?? "");
   const [model, setModel] = useState(brief?.provider_id ? `${brief.provider_id}|${brief.model ?? ""}` : "");
@@ -152,6 +154,7 @@ function BriefForm({
                 audience,
                 tone,
                 length,
+                mode,
                 language,
                 channel,
                 item_ids: itemIds,
@@ -232,6 +235,23 @@ function BriefForm({
               setTone(event.target.value);
             }}
           />
+        </div>
+        <div className={styles.field}>
+          <label htmlFor="brief-mode">{t("brief.mode")}</label>
+          <select
+            id="brief-mode"
+            value={mode}
+            onChange={(event) => {
+              setMode(MODES.find((choice) => choice === event.target.value) ?? "synthesis");
+            }}
+          >
+            {MODES.map((choice) => (
+              <option key={choice} value={choice}>
+                {t(`brief.modes.${choice}`)}
+              </option>
+            ))}
+          </select>
+          <span className={styles.help}>{t(`brief.modeHelp.${mode}`)}</span>
         </div>
         <div className={styles.search}>
           <div className={styles.field}>

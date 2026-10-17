@@ -5,7 +5,7 @@ three parts of the prompt, the answer checked, and the document built from it.""
 import json
 from datetime import UTC, datetime
 
-from otlet.writing.domain.brief import BriefFields, Length
+from otlet.writing.domain.brief import BriefFields, Length, Mode
 from otlet.writing.domain.draft import (
     LOCAL_SOURCE_CHARS,
     SOURCE_MIN_CHARS,
@@ -171,9 +171,9 @@ def test_every_source_of_the_brief_must_be_cited() -> None:
     fields = BriefFields(title="T", item_ids=(), language="fr")
     sources = prompt_sources([source(str(n), "texte") for n in range(3)], 9000)
     user = messages(fields, sources)[1][1]
-    assert "Use every source (S1, S2, S3)" in user
+    assert "Every source (S1, S2, S3) is cited at least once" in user
     alone = messages(fields, sources[:1])[1][1]
-    assert "Use every source" not in alone
+    assert "Every source" not in alone and "Mode:" not in alone
 
 
 def test_ids_written_in_the_prose_are_taken_out() -> None:
@@ -204,3 +204,27 @@ def test_the_writing_instructions_follow_the_rules_of_the_product() -> None:
     # The angle stays in the brief, as what the author wants to say; the instructions do not.
     assert "Angle and own contribution of the author: Ce que deux hivers" in user
     assert "Fusionne" not in user
+
+
+def test_a_synthesis_crosses_the_sources_a_panorama_takes_them_in_turn() -> None:
+    sources = prompt_sources([source("A", "a"), source("B", "b")], 9000)
+    synthesis = messages(BriefFields(title="T", item_ids=()), sources)[1][1]
+    assert "Mode: synthesis" in synthesis and "never about a single source" in synthesis
+    panorama = messages(BriefFields(title="T", item_ids=(), mode=Mode.PANORAMA), sources)[1][1]
+    assert "Mode: overview" in panorama and "a section for each" in panorama
+    # A synthesis whose paragraphs never cite two sources is sent back once.
+    apart = json.loads(answer())
+    apart["sections"][0]["paragraphs"][0]["source_ids"] = ["S2"]
+    keys = ["S1", "S2"]
+    assert check_answer(json.dumps(apart), keys) == []
+    assert check_answer(json.dumps(apart), keys, crossing=True) == [
+        "no paragraph draws on two sources: this is a synthesis, build sections around ideas the"
+        " sources share and cite two sources or more in most paragraphs"
+    ]
+    assert check_answer(answer(), keys, crossing=True) == []  # one paragraph cites S1 and S2
+    # With one source, there is nothing to cross.
+    alone = json.loads(answer(sources_used=["S1"]))
+    for section in alone["sections"]:
+        for paragraph in section["paragraphs"]:
+            paragraph["source_ids"] = ["S1"]
+    assert check_answer(json.dumps(alone), ["S1"], crossing=True) == []

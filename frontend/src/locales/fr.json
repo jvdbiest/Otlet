@@ -324,17 +324,11 @@
       "pin": "Épingler",
       "dismiss": "Écarter",
       "to_sort": "Remettre à trier",
-      "remove": "Supprimer…",
-      "confirmLabel": "Confirmer la suppression",
-      "confirm": "{count, plural, one {Supprimer cet élément pour tout l'espace, avec son texte ? Il ne reviendra pas à la prochaine collecte.} other {Supprimer ces # éléments pour tout l'espace, avec leur texte ? Ils ne reviendront pas à la prochaine collecte.}}",
-      "confirmRemove": "Supprimer définitivement",
-      "cancel": "Annuler",
       "done": {
         "keep": "{count, plural, one {# élément retenu.} other {# éléments retenus.}}",
         "pin": "{count, plural, one {# élément épinglé.} other {# éléments épinglés.}}",
         "dismiss": "{count, plural, one {# élément écarté.} other {# éléments écartés.}}",
-        "to_sort": "{count, plural, one {# élément remis à trier.} other {# éléments remis à trier.}}",
-        "remove": "{count, plural, one {# élément supprimé.} other {# éléments supprimés.}}"
+        "to_sort": "{count, plural, one {# élément remis à trier.} other {# éléments remis à trier.}}"
       }
     },
     "period": {

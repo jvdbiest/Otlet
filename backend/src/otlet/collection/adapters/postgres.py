@@ -315,15 +315,6 @@ class PostgresCollectionStore:
             ).first()
         ):
             return None
-        if connection.execute(
-            # An item the user removed stays removed (migration 0014).
-            sa.text(
-                f"SELECT 1 FROM removed_items WHERE source_id = :source AND {here()}"
-                " AND (guid = :guid OR normalized_url = :normalized)"
-            ),
-            {"source": source_id, "guid": entry.guid, "normalized": normalized},
-        ).first():
-            return None
         # A page read later may still tell the language: only a text already final is guessed.
         language = entry.language
         if language is None and item.text_status is not TextStatus.PENDING:
@@ -506,23 +497,6 @@ class PostgresCollectionStore:
                 connection, EXTRACT_ITEM, workspace_id=str(workspace_id), item_id=str(item_id)
             )
             return self._get_item(connection, item_id)
-
-    def remove_items(self, workspace_id: UUID, item_ids: list[UUID]) -> int:
-        with workspace_transaction(self._engine, workspace_id) as connection:
-            connection.execute(
-                sa.text(
-                    "INSERT INTO removed_items (workspace_id, source_id, guid, normalized_url)"
-                    " SELECT workspace_id, source_id, guid, normalized_url FROM source_items"
-                    f" WHERE id = ANY(:ids) AND origin = 'feed' AND {here()}"
-                    " ON CONFLICT (source_id, guid) DO NOTHING"
-                ),
-                {"ids": item_ids},
-            )
-            removed = connection.execute(
-                sa.text(f"DELETE FROM source_items WHERE id = ANY(:ids) AND {here()} RETURNING id"),
-                {"ids": item_ids},
-            ).all()
-        return len(removed)
 
     def add_manual_text(
         self,

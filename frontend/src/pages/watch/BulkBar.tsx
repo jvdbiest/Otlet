@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useRemoveItems } from "../../collection.ts";
 import { type BulkAction, useBulkTriage } from "../../triage.ts";
 import { styles } from "./styles.ts";
 
@@ -21,8 +20,6 @@ export function BulkBar({
 }) {
   const { t } = useTranslation();
   const triage = useBulkTriage(workspaceId);
-  const remove = useRemoveItems(workspaceId);
-  const [confirming, setConfirming] = useState(false);
   const [done, setDone] = useState<string | null>(null);
   const all = useRef<HTMLInputElement>(null);
   const shown = selected.filter((id) => visible.includes(id));
@@ -40,10 +37,9 @@ export function BulkBar({
       </p>
     );
   }
-  const busy = triage.isPending || remove.isPending;
+  const busy = triage.isPending;
   const finish = (message: string) => {
     setDone(message);
-    setConfirming(false);
     onSelect([]);
   };
   return (
@@ -63,7 +59,7 @@ export function BulkBar({
       <span className={styles.meta} aria-live="polite">
         {shown.length > 0 ? t("triage.bulk.selected", { count: shown.length }) : done}
       </span>
-      {shown.length > 0 && !confirming && (
+      {shown.length > 0 && (
         <div className={styles.row}>
           {ACTIONS.map((action) => (
             <button
@@ -85,47 +81,9 @@ export function BulkBar({
               {t(`triage.bulk.${action}`)}
             </button>
           ))}
-          <button
-            type="button"
-            className={styles.danger}
-            disabled={busy}
-            onClick={() => {
-              setConfirming(true);
-            }}
-          >
-            {t("triage.bulk.remove")}
-          </button>
         </div>
       )}
-      {confirming && (
-        <div className={styles.row} role="alertdialog" aria-label={t("triage.bulk.confirmLabel")}>
-          <span>{t("triage.bulk.confirm", { count: shown.length })}</span>
-          <button
-            type="button"
-            className={styles.danger}
-            disabled={busy}
-            onClick={() => {
-              remove.mutate(shown, {
-                onSuccess: (count) => {
-                  finish(t("triage.bulk.done.remove", { count }));
-                },
-              });
-            }}
-          >
-            {t("triage.bulk.confirmRemove")}
-          </button>
-          <button
-            type="button"
-            className={styles.button}
-            onClick={() => {
-              setConfirming(false);
-            }}
-          >
-            {t("triage.bulk.cancel")}
-          </button>
-        </div>
-      )}
-      {(triage.error !== null || remove.error !== null) && (
+      {triage.error !== null && (
         <span role="alert" className={styles.error}>
           {t("errors.generic")}
         </span>

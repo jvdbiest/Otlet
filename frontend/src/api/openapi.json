@@ -237,25 +237,6 @@
         "title": "HTTPValidationError",
         "type": "object"
       },
-      "ItemSelection": {
-        "properties": {
-          "item_ids": {
-            "items": {
-              "format": "uuid",
-              "type": "string"
-            },
-            "maxItems": 200,
-            "minItems": 1,
-            "title": "Item Ids",
-            "type": "array"
-          }
-        },
-        "required": [
-          "item_ids"
-        ],
-        "title": "ItemSelection",
-        "type": "object"
-      },
       "ItemTopicView": {
         "properties": {
           "contributions": {
@@ -650,19 +631,6 @@
           "topics"
         ],
         "title": "RefreshView",
-        "type": "object"
-      },
-      "RemovedView": {
-        "properties": {
-          "removed": {
-            "title": "Removed",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "removed"
-        ],
-        "title": "RemovedView",
         "type": "object"
       },
       "ScoredItemView": {
@@ -1847,57 +1815,6 @@
           }
         },
         "summary": "Add Manual Url"
-      }
-    },
-    "/api/workspaces/{workspace_id}/items/remove": {
-      "post": {
-        "description": "Removes items from the watch of the whole workspace, with their text. An item of a\nfeed leaves its address behind, so that the collection does not bring it back.",
-        "operationId": "remove_items_api_workspaces__workspace_id__items_remove_post",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "workspace_id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "title": "Workspace Id",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ItemSelection"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RemovedView"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Remove Items"
       }
     },
     "/api/workspaces/{workspace_id}/items/triage": {

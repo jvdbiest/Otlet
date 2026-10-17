@@ -197,20 +197,3 @@ export function useAddManualText(workspaceId: string) {
   });
 }
 
-/** Removes items from the watch of the whole workspace, with their text; answers how many. */
-export function useRemoveItems(workspaceId: string) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (itemIds: string[]) => {
-      const { data, error, response } = await api.POST("/api/workspaces/{workspace_id}/items/remove", {
-        params: { path: { workspace_id: workspaceId } },
-        body: { item_ids: itemIds },
-      });
-      if (data === undefined) {
-        throw apiError(response, error);
-      }
-      return data.removed;
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
-  });
-}

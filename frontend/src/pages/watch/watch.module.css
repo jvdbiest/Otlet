@@ -490,3 +490,15 @@
   padding-top: var(--space-4);
   border-top: 1px solid var(--border);
 }
+
+/* A group of the feed (U03): a heading that folds, then its items. */
+.group {
+  margin-bottom: var(--space-4);
+}
+
+.group > summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1.1rem;
+  padding: var(--space-2) 0;
+}

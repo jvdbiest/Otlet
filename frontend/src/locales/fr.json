@@ -376,6 +376,24 @@
       "dismissed": "Aucun élément écarté.",
       "archived": "Aucun élément archivé. Archivez un élément retenu une fois que vous en avez fini.",
       "all": "Aucun élément pour l'instant."
+    },
+    "display": {
+      "sort": "Trier par",
+      "sorts": {
+        "date": "Date",
+        "score": "Score, puis date",
+        "topic": "Sujet",
+        "source": "Source"
+      },
+      "group": "Grouper par",
+      "groups": {
+        "none": "Aucun",
+        "topic": "Sujet",
+        "source": "Source"
+      },
+      "heading": "{name} ({count})",
+      "noTopic": "Sans sujet",
+      "manual": "Saisies manuelles"
     }
   },
   "start": {

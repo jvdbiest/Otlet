@@ -14,8 +14,12 @@ from otlet.watch.domain.triage import (
     ANY_TIME,
     NO_TOPIC_FILTER,
     Decision,
+    Group,
+    GroupBy,
+    InGroup,
     Period,
     Progress,
+    Sort,
     TopicFilter,
     TopicTag,
     Triage,
@@ -57,7 +61,24 @@ class TriageStore(Protocol):
         limit: int,
         topics: TopicFilter = NO_TOPIC_FILTER,
         period: Period = ANY_TIME,
+        sort: Sort = Sort.DATE,
+        group: InGroup | None = None,
     ) -> list[FeedItem]: ...
+
+    def groups(
+        self,
+        workspace_id: UUID,
+        user_id: UUID,
+        *,
+        by: GroupBy,
+        view: View,
+        source_id: UUID | None,
+        unread_only: bool,
+        topics: TopicFilter = NO_TOPIC_FILTER,
+        period: Period = ANY_TIME,
+    ) -> list[Group]:
+        """The groups of the feed and how many items each shows with these filters."""
+        ...
 
     def triage(self, workspace_id: UUID, user_id: UUID, item_id: UUID) -> Triage | None:
         """The triage of an item of the workspace (the default for one never sorted), or None
@@ -92,6 +113,8 @@ class Feed:
         limit: int = 50,
         topics: TopicFilter = NO_TOPIC_FILTER,
         period: Period = ANY_TIME,
+        sort: Sort = Sort.DATE,
+        group: InGroup | None = None,
     ) -> list[FeedItem]:
         return self._store.feed(
             context.workspace_id,
@@ -101,6 +124,30 @@ class Feed:
             unread_only=unread_only,
             before=before,
             limit=min(max(limit, 1), FEED_MAX),
+            topics=topics,
+            period=period,
+            sort=sort,
+            group=group,
+        )
+
+    def groups(
+        self,
+        context: WorkspaceContext,
+        *,
+        by: GroupBy,
+        view: View = View.TO_SORT,
+        source_id: UUID | None = None,
+        unread_only: bool = False,
+        topics: TopicFilter = NO_TOPIC_FILTER,
+        period: Period = ANY_TIME,
+    ) -> list[Group]:
+        return self._store.groups(
+            context.workspace_id,
+            context.user_id,
+            by=by,
+            view=view,
+            source_id=source_id,
+            unread_only=unread_only,
             topics=topics,
             period=period,
         )

@@ -14,8 +14,12 @@ from otlet.watch.domain.triage import (
     ANY_TIME,
     NO_TOPIC_FILTER,
     Decision,
+    Group,
+    GroupBy,
+    InGroup,
     Period,
     Progress,
+    Sort,
     TopicFilter,
     TopicTag,
     Triage,
@@ -64,7 +68,7 @@ def period_parameters(period: Period) -> dict[str, object]:
 # The topics of each item, best score first (the first is its main topic).
 TOPIC_TAGS = (
     "(SELECT coalesce(json_agg(json_build_object('id', t.id, 'name', t.name, 'score', m.score)"
-    "  ORDER BY m.score DESC, t.name), '[]') FROM topic_matches AS m"
+    "  ORDER BY m.score DESC, t.name, t.id), '[]') FROM topic_matches AS m"
     " JOIN topics AS t ON t.id = m.topic_id AND t.workspace_id = m.workspace_id"
     " WHERE m.item_id = i.id AND m.workspace_id = i.workspace_id) AS topic_tags"
 )
@@ -76,8 +80,48 @@ def topic_tags_of(row: sa.Row[Any]) -> tuple[TopicTag, ...]:
     )
 
 
-# Pinned items first, then the most recent; the cursor follows the same order.
-ORDER_KEY = f"(CASE WHEN coalesce(tr.pinned, false) THEN 1 ELSE 0 END), {SORT_DATE}, i.id"
+# The main topic of each item (U03): its best score, as the first of its tags.
+MAIN_TOPIC = (
+    " LEFT JOIN LATERAL (SELECT m.topic_id, t.name, m.score FROM topic_matches AS m"
+    " JOIN topics AS t ON t.id = m.topic_id AND t.workspace_id = m.workspace_id"
+    " WHERE m.item_id = i.id AND m.workspace_id = i.workspace_id"
+    " ORDER BY m.score DESC, t.name, t.id LIMIT 1) AS mt ON true"
+)
+LAST = "-1000000"  # below any rank: the items without topic, or without source, come last
+# Every key of the feed is in descending order, so that the cursor is one row comparison; an
+# alphabetical order is the opposite of the rank of the name among the topics or sources.
+SORT_KEYS = {
+    Sort.DATE: (),
+    Sort.SCORE: ("coalesce(mt.score, -1)",),
+    Sort.TOPIC: (
+        f"CASE WHEN mt.topic_id IS NULL THEN {LAST} ELSE -(SELECT count(*) FROM topics AS t2"
+        f" WHERE {here('t2')} AND (lower(t2.name), t2.id) < (lower(mt.name), mt.topic_id)) END",
+    ),
+    Sort.SOURCE: (
+        f"CASE WHEN i.source_id IS NULL THEN {LAST} ELSE -(SELECT count(*) FROM sources AS s2"
+        f" WHERE {here('s2')} AND (lower(s2.name), s2.id) < (lower(s.name), s.id)) END",
+    ),
+}
+PINNED_KEY = "(CASE WHEN coalesce(tr.pinned, false) THEN 1 ELSE 0 END)"
+GROUP_COLUMNS = {
+    GroupBy.TOPIC: ("mt.topic_id", "mt.name"),
+    GroupBy.SOURCE: ("i.source_id", "s.name"),
+}
+
+
+def order_keys(view: View, sort: Sort) -> list[str]:
+    """Pinned items first, except in 'Tout'; then the key of the sort; then the most recent."""
+    pinned = [] if view is View.ALL else [PINNED_KEY]
+    return [*pinned, *SORT_KEYS[sort], SORT_DATE, "i.id"]
+
+
+def group_clause(group: InGroup | None) -> str:
+    if group is None:
+        return ""
+    column = GROUP_COLUMNS[group.by][0]
+    if group.key is None:
+        return f" AND {column} IS NULL"
+    return f" AND {column} = CAST(:group_key AS uuid)"
 
 
 def triage_of(row: sa.Row[Any]) -> Triage:
@@ -86,6 +130,36 @@ def triage_of(row: sa.Row[Any]) -> Triage:
         pinned=row.pinned,
         read_at=row.read_at,
     )
+
+
+def _filters(view: View, group: InGroup | None) -> str:
+    """The items of the feed: the view, the source, unread, the topics, the period, the group."""
+    return (
+        f"{here('i')} AND {VIEWS[view]}"
+        # Without a source filter, a story shows once: its copies are counted.
+        " AND (CASE WHEN CAST(:source AS uuid) IS NULL THEN i.duplicate_of IS NULL"
+        "      ELSE i.source_id = :source END)"
+        " AND (NOT CAST(:unread AS boolean) OR tr.read_at IS NULL)"
+        f"{TOPICS}{period_clause(SORT_DATE)}{group_clause(group)}"
+    )
+
+
+def _parameters(
+    user_id: UUID,
+    source_id: UUID | None,
+    unread_only: bool,
+    topics: TopicFilter,
+    period: Period,
+    group: InGroup | None,
+) -> dict[str, object]:
+    return {
+        "user": user_id,
+        "source": source_id,
+        "unread": unread_only,
+        "group_key": None if group is None else group.key,
+        **topic_parameters(topics),
+        **period_parameters(period),
+    }
 
 
 class PostgresTriageStore:
@@ -104,41 +178,58 @@ class PostgresTriageStore:
         limit: int,
         topics: TopicFilter = NO_TOPIC_FILTER,
         period: Period = ANY_TIME,
+        sort: Sort = Sort.DATE,
+        group: InGroup | None = None,
     ) -> list[FeedItem]:
-        # 'Tout' is in date order only; the other views put the pinned items first.
-        order_key = f"{SORT_DATE}, i.id" if view is View.ALL else ORDER_KEY
-        order_by = (
-            f"{SORT_DATE} DESC, i.id DESC"
-            if view is View.ALL
-            else f"coalesce(tr.pinned, false) DESC, {SORT_DATE} DESC, i.id DESC"
-        )
+        keys = order_keys(view, sort)
+        order_key = ", ".join(keys)
+        order_by = ", ".join(f"{key} DESC" for key in keys)
         with workspace_transaction(self._engine, workspace_id) as connection:
             rows = connection.execute(
                 sa.text(
                     f"SELECT {ITEM_COLUMNS}, {TRIAGE_COLUMNS}, {TOPIC_TAGS}"
-                    f" FROM {ITEMS_FROM}{TRIAGE_JOIN}"
-                    f" WHERE {here('i')} AND {VIEWS[view]}"
-                    # Without a source filter, a story shows once: its copies are counted.
-                    " AND (CASE WHEN CAST(:source AS uuid) IS NULL THEN i.duplicate_of IS NULL"
-                    "      ELSE i.source_id = :source END)"
-                    " AND (NOT CAST(:unread AS boolean) OR tr.read_at IS NULL)"
-                    f"{TOPICS}{period_clause(SORT_DATE)}"
+                    f" FROM {ITEMS_FROM}{TRIAGE_JOIN}{MAIN_TOPIC}"
+                    f" WHERE {_filters(view, group)}"
                     f" AND (CAST(:before AS uuid) IS NULL OR ({order_key}) < ("
-                    f"   SELECT {order_key} FROM source_items AS i{TRIAGE_JOIN}"
+                    f"   SELECT {order_key} FROM {ITEMS_FROM}{TRIAGE_JOIN}{MAIN_TOPIC}"
                     f"   WHERE i.id = :before AND {here('i')}))"
                     f" ORDER BY {order_by} LIMIT :limit"
                 ),
                 {
-                    "user": user_id,
-                    "source": source_id,
-                    "unread": unread_only,
+                    **_parameters(user_id, source_id, unread_only, topics, period, group),
                     "before": before,
                     "limit": limit,
-                    **topic_parameters(topics),
-                    **period_parameters(period),
                 },
             ).all()
         return [FeedItem(item_from_row(row), triage_of(row), topic_tags_of(row)) for row in rows]
+
+    def groups(
+        self,
+        workspace_id: UUID,
+        user_id: UUID,
+        *,
+        by: GroupBy,
+        view: View,
+        source_id: UUID | None,
+        unread_only: bool,
+        topics: TopicFilter = NO_TOPIC_FILTER,
+        period: Period = ANY_TIME,
+    ) -> list[Group]:
+        """The groups of the feed with as many items as the feed shows with these filters, in
+        alphabetical order; the group without topic (or source) comes last."""
+        key, name = GROUP_COLUMNS[by]
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            rows = connection.execute(
+                sa.text(
+                    f"SELECT {key} AS key, {name} AS name, count(*) AS items"
+                    f" FROM {ITEMS_FROM}{TRIAGE_JOIN}{MAIN_TOPIC}"
+                    f" WHERE {_filters(view, None)}"
+                    f" GROUP BY {key}, {name}"
+                    f" ORDER BY {key} IS NULL, lower({name}), {key}"
+                ),
+                _parameters(user_id, source_id, unread_only, topics, period, None),
+            ).all()
+        return [Group(row.key, row.name or "", row.items) for row in rows]
 
     def triage(self, workspace_id: UUID, user_id: UUID, item_id: UUID) -> Triage | None:
         with workspace_transaction(self._engine, workspace_id) as connection:

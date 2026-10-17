@@ -254,6 +254,45 @@
         "title": "FoundItemView",
         "type": "object"
       },
+      "GroupBy": {
+        "enum": [
+          "topic",
+          "source"
+        ],
+        "title": "GroupBy",
+        "type": "string"
+      },
+      "GroupView": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "key": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Key"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "count"
+        ],
+        "title": "GroupView",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1000,6 +1039,17 @@
         ],
         "title": "SessionView",
         "type": "object"
+      },
+      "Sort": {
+        "description": "How the feed is ordered (U03); pinned items stay first in the views that pin them.",
+        "enum": [
+          "date",
+          "score",
+          "topic",
+          "source"
+        ],
+        "title": "Sort",
+        "type": "string"
       },
       "SourceChanges": {
         "properties": {
@@ -2044,7 +2094,7 @@
     },
     "/api/workspaces/{workspace_id}/feed": {
       "get": {
-        "description": "The feed of the user: pinned items first, then the most recent (in date order only\nfor `all`); `before` (the id of the last item of the previous page) pages back.\n`topic_id`, repeated, keeps the items of at least one of these topics, or of all of\nthem with `all_topics`; `since` and `until` keep the items dated in between.",
+        "description": "The feed of the user: pinned items first (except for `all`), then in the order of\n`sort`; `before` (the id of the last item of the previous page) pages back.\n`topic_id`, repeated, keeps the items of at least one of these topics, or of all of\nthem with `all_topics`; `since` and `until` keep the items dated in between;\n`group_by` with `group` keeps one group of `/feed/groups` (no `group`: the items\nwithout topic, or the manual entries).",
         "operationId": "get_feed_api_workspaces__workspace_id__feed_get",
         "parameters": [
           {
@@ -2180,6 +2230,48 @@
               ],
               "title": "Until"
             }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Sort",
+              "default": "date"
+            }
+          },
+          {
+            "in": "query",
+            "name": "group_by",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/GroupBy"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Group By"
+            }
+          },
+          {
+            "in": "query",
+            "name": "group",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Group"
+            }
           }
         ],
         "responses": {
@@ -2209,6 +2301,154 @@
           }
         },
         "summary": "Get Feed"
+      }
+    },
+    "/api/workspaces/{workspace_id}/feed/groups": {
+      "get": {
+        "description": "The groups of the feed, by main topic or by source, with the same filters as\n`/feed`, and how many items each holds; the group without key comes last.",
+        "operationId": "feed_groups_api_workspaces__workspace_id__feed_groups_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "by",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/GroupBy"
+            }
+          },
+          {
+            "in": "query",
+            "name": "view",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/View",
+              "default": "to_sort"
+            }
+          },
+          {
+            "in": "query",
+            "name": "source_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "unread",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Unread",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "topic_id",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "maxItems": 100,
+              "title": "Topic Id",
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "all_topics",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "All Topics",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Since"
+            }
+          },
+          {
+            "in": "query",
+            "name": "until",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Until"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/GroupView"
+                  },
+                  "title": "Response Feed Groups Api Workspaces  Workspace Id  Feed Groups Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Feed Groups"
       }
     },
     "/api/workspaces/{workspace_id}/items": {

@@ -587,5 +587,29 @@
       "model_blocked": "Ce modèle est bloqué sur cette instance."
     },
     "angleExample": "Par exemple : je roule en moto électrique depuis deux ans. Je veux montrer ce que ces annonces changent vraiment au quotidien, et ce que les articles cités ne disent pas sur l'autonomie en hiver."
+  },
+  "draft": {
+    "title": "Brouillon",
+    "help": "Le modèle du brief (ou votre profil) écrit un brouillon à partir de vos consignes et du texte des éléments, en citant ses sources. Chaque génération crée une nouvelle version ; les précédentes sont gardées.",
+    "generate": "Générer le brouillon",
+    "again": "Générer une nouvelle version",
+    "running": "Génération en cours depuis {since}… Un modèle local peut prendre plusieurs minutes.",
+    "version": "Version affichée",
+    "versionLabel": "Version {number} ({date})",
+    "byModel": "Version {number}, écrite par {model} ({provider}) le {date}",
+    "byPerson": "Version {number}, modifiée par vous le {date}",
+    "cut": "Le texte de ces sources a été raccourci pour tenir dans le modèle : {sources}.",
+    "sources": "Sources",
+    "failed": {
+      "no_profile": "Aucun modèle : choisissez-en un dans le brief, ou dans Réglages > IA.",
+      "no_sources": "Le brief n'a plus d'élément.",
+      "budget": "Ce brouillon dépasserait votre budget du mois.",
+      "refused": "Le fournisseur a refusé la demande.",
+      "invalid": "Le modèle n'a pas su répondre au format demandé, même après une correction. Essayez un autre modèle.",
+      "quota": "Quota atteint chez les fournisseurs du profil.",
+      "unavailable": "Aucun modèle n'a répondu.",
+      "blocked": "Ce modèle est bloqué sur cette instance."
+    },
+    "unused": "{count, plural, one {Ce brouillon n'utilise pas cet élément du brief, malgré une demande de correction au modèle :} other {Ce brouillon n'utilise pas ces # éléments du brief, malgré une demande de correction au modèle :}}"
   }
 }

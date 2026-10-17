@@ -3,7 +3,7 @@
 
 from collections.abc import Callable
 from datetime import datetime
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -13,6 +13,8 @@ from otlet.entrypoints.api.auth import same_origin
 from otlet.entrypoints.api.workspaces import PREFIX
 from otlet.workspaces.domain.model import WorkspaceContext
 from otlet.writing.application.briefs import Briefs
+from otlet.writing.application.drafts import Drafts
+from otlet.writing.domain.article import Article, Generation, Version
 from otlet.writing.domain.brief import (
     ITEMS_MAX,
     Brief,
@@ -111,11 +113,86 @@ class BriefBody(BaseModel):
         )
 
 
+class GenerationView(BaseModel):
+    id: UUID
+    brief_id: UUID
+    status: Literal["running", "done", "failed"]
+    error: str | None
+    version: int | None
+    attempts: list[dict[str, Any]]  # provider, model, result, seconds: never the text
+    created_at: datetime
+    finished_at: datetime | None
+
+    @classmethod
+    def of(cls, generation: Generation) -> "GenerationView":
+        return cls(
+            id=generation.id,
+            brief_id=generation.brief_id,
+            status=generation.status,
+            error=generation.error,
+            version=generation.version,
+            attempts=list(generation.attempts),
+            created_at=generation.created_at,
+            finished_at=generation.finished_at,
+        )
+
+
+class VersionView(BaseModel):
+    number: int
+    title: str
+    document: dict[str, Any]  # « Document plateforme v1 » (ADR-0023)
+    origin: Literal["ia", "humain"]
+    provider_kind: str | None
+    model: str | None
+    prompt_version: str | None
+    cut_sources: list[str]
+    unused_sources: list[str]  # items of the brief the draft does not cite
+    created_at: datetime
+
+    @classmethod
+    def of(cls, version: Version) -> "VersionView":
+        return cls(
+            number=version.number,
+            title=version.title,
+            document=version.document,
+            origin=version.origin,
+            provider_kind=version.provider_kind,
+            model=version.model,
+            prompt_version=version.prompt_version,
+            cut_sources=list(version.cut_sources),
+            unused_sources=list(version.unused_sources),
+            created_at=version.created_at,
+        )
+
+
+class ArticleView(BaseModel):
+    id: UUID
+    title: str
+    versions: list[VersionView]  # the latest last
+
+    @classmethod
+    def of(cls, article: Article) -> "ArticleView":
+        return cls(
+            id=article.id,
+            title=article.title,
+            versions=[VersionView.of(v) for v in article.versions],
+        )
+
+
+class DraftView(BaseModel):
+    """The article of a brief, if any, and its latest generation, if any."""
+
+    article: ArticleView | None
+    generation: GenerationView | None
+
+
 def _refused(error: BriefError) -> HTTPException:
     return HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, error.code)
 
 
-def build_router(briefs: Briefs, workspace_context: Callable[..., WorkspaceContext]) -> APIRouter:
+def build_router(
+    briefs: Briefs, drafts: Drafts, workspace_context: Callable[..., WorkspaceContext]
+) -> APIRouter:
     Context = Annotated[WorkspaceContext, Depends(workspace_context)]
     router = APIRouter(prefix=PREFIX + "/{workspace_id}", dependencies=[Depends(same_origin)])
 
@@ -153,5 +230,33 @@ def build_router(briefs: Briefs, workspace_context: Callable[..., WorkspaceConte
     def delete_brief(brief_id: UUID, context: Context) -> None:
         if not briefs.delete(context, brief_id):
             raise HTTPException(status.HTTP_404_NOT_FOUND, "brief_not_found")
+
+    @router.get("/briefs/{brief_id}/draft")
+    def get_draft(brief_id: UUID, context: Context) -> DraftView:
+        """The article written from the brief, with its versions, and the latest generation."""
+        if briefs.get(context, brief_id) is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "brief_not_found")
+        article = drafts.article(context, brief_id)
+        generation = drafts.latest_generation(context, brief_id)
+        return DraftView(
+            article=None if article is None else ArticleView.of(article),
+            generation=None if generation is None else GenerationView.of(generation),
+        )
+
+    @router.post("/briefs/{brief_id}/generations", status_code=status.HTTP_202_ACCEPTED)
+    def generate(brief_id: UUID, context: Context) -> GenerationView:
+        """Asks the worker for a draft of the brief, a new version of its article; while one
+        runs, the same is answered."""
+        generation = drafts.start(context, brief_id)
+        if generation is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "brief_not_found")
+        return GenerationView.of(generation)
+
+    @router.get("/generations/{generation_id}")
+    def get_generation(generation_id: UUID, context: Context) -> GenerationView:
+        generation = drafts.generation(context, generation_id)
+        if generation is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "generation_not_found")
+        return GenerationView.of(generation)
 
     return router

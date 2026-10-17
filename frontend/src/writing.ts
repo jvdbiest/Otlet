@@ -78,3 +78,41 @@ export function useDeleteBrief(workspaceId: string) {
     onSuccess: refresh,
   });
 }
+
+export type DraftView = components["schemas"]["DraftView"];
+export type VersionView = components["schemas"]["VersionView"];
+export type GenerationView = components["schemas"]["GenerationView"];
+
+/** The article of a brief and its latest generation, followed while a generation runs. */
+export const draftQuery = (workspaceId: string, briefId: string) =>
+  queryOptions({
+    queryKey: ["workspaces", workspaceId, "briefs", briefId, "draft"],
+    queryFn: async (): Promise<DraftView> => {
+      const { data, error, response } = await api.GET("/api/workspaces/{workspace_id}/briefs/{brief_id}/draft", {
+        params: { path: { workspace_id: workspaceId, brief_id: briefId } },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    // A local model may write for minutes: followed every three seconds until it ends.
+    refetchInterval: (query) => (query.state.data?.generation?.status === "running" ? 3_000 : false),
+  });
+
+export function useGenerateDraft(workspaceId: string, briefId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { data, error, response } = await api.POST(
+        "/api/workspaces/{workspace_id}/briefs/{brief_id}/generations",
+        { params: { path: { workspace_id: workspaceId, brief_id: briefId } } },
+      );
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: draftQuery(workspaceId, briefId).queryKey }),
+  });
+}

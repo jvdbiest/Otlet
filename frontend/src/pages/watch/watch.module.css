@@ -513,3 +513,15 @@ a.primary {
   font-size: 1.1rem;
   padding: var(--space-2) 0;
 }
+
+/* An item to pick or to take out of a brief: its button stays beside its title, however long. */
+.pick {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-2);
+  align-items: start;
+}
+
+.pick:has(> span:first-child) {
+  grid-template-columns: 1fr auto;
+}

@@ -372,11 +372,13 @@ function BriefItems({
         {itemIds.map((id) => {
           const item = known.get(id);
           return (
-            <li key={id} className={styles.row}>
-              <Link to="/veille/elements/$itemId" params={{ itemId: id }}>
-                {item?.title ?? t("app.loading")}
-              </Link>
-              <span className={styles.meta}>{item?.source_name ?? t("watch.manualOrigin")}</span>
+            <li key={id} className={styles.pick}>
+              <span>
+                <Link to="/veille/elements/$itemId" params={{ itemId: id }}>
+                  {item?.title ?? t("app.loading")}
+                </Link>{" "}
+                <span className={styles.meta}>{item?.source_name ?? t("watch.manualOrigin")}</span>
+              </span>
               <button
                 type="button"
                 className={styles.button}
@@ -397,7 +399,7 @@ function BriefItems({
           <summary>{t("brief.addKept", { count: addable.length })}</summary>
           <ul className={styles.list}>
             {addable.map((entry) => (
-              <li key={entry.item.id} className={styles.row}>
+              <li key={entry.item.id} className={styles.pick}>
                 <button
                   type="button"
                   className={styles.button}
@@ -408,8 +410,10 @@ function BriefItems({
                 >
                   +
                 </button>
-                <span>{entry.item.title}</span>
-                <span className={styles.meta}>{entry.item.source_name ?? t("watch.manualOrigin")}</span>
+                <span>
+                  {entry.item.title}{" "}
+                  <span className={styles.meta}>{entry.item.source_name ?? t("watch.manualOrigin")}</span>
+                </span>
               </li>
             ))}
           </ul>

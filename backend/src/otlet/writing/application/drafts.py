@@ -54,8 +54,8 @@ class Writer(Protocol):
     """The AI gateway, as the writing module sees it."""
 
     def room(self, user_id: UUID, model: ModelChoice | None) -> tuple[int, bool]:
-        """The window of the first model to be tried (tokens, 0 when unknown), and whether it
-        runs on a local engine."""
+        """The context window of the first model to be tried, in tokens (the provider's
+        setting, the catalogue, or the default of a local engine), and whether it is local."""
         ...
 
     def write(
@@ -92,6 +92,7 @@ class ArticleStore(Protocol):
         written: Written,
         cut_sources: Sequence[str],
         unused_sources: Sequence[str],
+        context_overflow: bool,
     ) -> tuple[UUID, int]:
         """Creates the article of the brief if needed, adds the version; (article, number).
         `cut_sources` and `unused_sources`: titles of items of the brief whose text was cut,
@@ -155,8 +156,9 @@ class Drafts:
             self._articles.finish(workspace_id, generation_id, "no_sources", (), None)
             return
         fields = brief.fields
-        context_tokens, local = writer.room(user_id, fields.model)
-        sources = prompt_sources(texts, source_budget(context_tokens, local))
+        window, local = writer.room(user_id, fields.model)
+        output = OUTPUT_TOKENS[fields.length]
+        sources = prompt_sources(texts, source_budget(window, output))
         keys = [source.key for source in sources]
         checks = 0
 
@@ -176,7 +178,7 @@ class Drafts:
             output_schema(keys),
             validate,
             fields.model,
-            max(OUTPUT_TOKENS[fields.length], LOCAL_OUTPUT_TOKENS if local else 0),
+            max(output, LOCAL_OUTPUT_TOKENS if local else 0),
         )
         if written.text is None:
             self._articles.finish(
@@ -187,7 +189,19 @@ class Drafts:
         cut = [source.source.title for source in sources if source.cut]
         cited = cited_keys(written.text)
         unused = [source.source.title for source in sources if source.key not in cited]
+        # More tokens than the window: a local engine may have dropped the start of the
+        # conversation, where the rules are (Ollama does so without a word).
+        last = written.attempts[-1] if written.attempts else {}
+        overflow = int(last.get("tokens_in", 0)) + int(last.get("tokens_out", 0)) > window
         made = self._articles.add_version(
-            workspace_id, user_id, generation.brief_id, title, document, written, cut, unused
+            workspace_id,
+            user_id,
+            generation.brief_id,
+            title,
+            document,
+            written,
+            cut,
+            unused,
+            overflow,
         )
         self._articles.finish(workspace_id, generation_id, None, written.attempts, made)

@@ -25,6 +25,10 @@ class CatalogueSource(Protocol):
 class SettingsStore(Protocol):
     """The providers and profile of a user, and the policy of the instance."""
 
+    def set_context_window(
+        self, user_id: UUID, provider_id: UUID, window: int | None
+    ) -> Provider | None: ...
+
     def list_providers(self, user_id: UUID) -> list[Provider]: ...
 
     def add_provider(

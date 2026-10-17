@@ -12,7 +12,9 @@ For a request, the gateway tries the models of the user's profile, in order:
 - 5xx or timeout: one more try, then the next model;
 - 400 (refused): stop at once, no retry, no fallback;
 - 404 (no such model or address on that engine): the next model;
-- an output that fails validation: one repair, on the same model, with the errors.
+- an output that fails validation: one repair, on the same model, with the errors; but an
+  output cut by the room left (output limit or context window) is not repaired, it is
+  « out_of_room »: the same request would be cut again.
 
 Every attempt is written to the call journal of the user.
 """
@@ -196,6 +198,10 @@ class Gateway:
             user_id, request, provider, model, adapter, key, messages, outcome
         )
         errors = validate(answer.text)
+        if errors and answer.truncated:
+            outcome.model, outcome.provider_id = model, provider.id
+            outcome.error, outcome.text = "out_of_room", None
+            return outcome
         if errors:  # one repair, on the same model
             outcome.repaired = True
             messages = (
@@ -214,7 +220,7 @@ class Gateway:
             errors = validate(answer.text)
         outcome.model, outcome.provider_id = model, provider.id
         if errors:
-            outcome.error = "invalid"
+            outcome.error = "out_of_room" if answer.truncated else "invalid"
             outcome.text = None
         else:
             outcome.error = None  # an earlier model's failure is superseded by this answer

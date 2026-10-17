@@ -173,6 +173,7 @@ class Answer:
     text: str  # the JSON of the structured output
     tokens_in: int
     tokens_out: int
+    truncated: bool = False  # stopped by the output limit or the context window
 
 
 @dataclass(frozen=True, slots=True)

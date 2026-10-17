@@ -81,11 +81,13 @@ class OpenAICompatible:
         finally:
             client.close()
         usage = response.usage
-        text = response.choices[0].message.content if response.choices else None
+        choice = response.choices[0] if response.choices else None
+        text = choice.message.content if choice else None
         return Answer(
             text or "",
             usage.prompt_tokens if usage else 0,
             usage.completion_tokens if usage else 0,
+            truncated=choice is not None and choice.finish_reason == "length",
         )
 
 
@@ -141,7 +143,12 @@ class AnthropicNative:
             client.close()
         tool: Any = next((block for block in response.content if block.type == "tool_use"), None)
         text = json.dumps(tool.input) if tool is not None else ""
-        return Answer(text, response.usage.input_tokens, response.usage.output_tokens)
+        return Answer(
+            text,
+            response.usage.input_tokens,
+            response.usage.output_tokens,
+            truncated=response.stop_reason == "max_tokens",
+        )
 
 
 def _connection_detail(error: Exception) -> str:

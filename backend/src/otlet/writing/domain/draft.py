@@ -26,10 +26,10 @@ PROMPT_VERSION = "redaction-4"
 SCHEMA_NAME = "article_draft"
 SECTIONS = (2, 6)
 SOURCE_MIN_CHARS = 600
-# The room for the sources: a local engine often runs with a short window whatever the model
-# allows; a remote model gets half of its window, in characters (about 3 per token).
-LOCAL_SOURCE_CHARS = 9_000
-REMOTE_SOURCE_CHARS_MAX = 60_000
+# The room for the sources: the window of the model (set on its provider, or from the
+# catalogue), less the answer and the instructions, in characters (about 3 per token).
+PROMPT_OVERHEAD_TOKENS = 800  # the rules, the brief and the tags around the sources
+CHARS_PER_TOKEN = 3
 WORDS = {Length.SHORT: 300, Length.MEDIUM: 600, Length.LONG: 1200}
 LANGUAGE_NAMES = {
     "fr": "français",
@@ -61,10 +61,11 @@ class PromptSource:
     cut: bool
 
 
-def source_budget(context_tokens: int, local: bool) -> int:
-    if local or context_tokens <= 0:
-        return LOCAL_SOURCE_CHARS
-    return min(context_tokens * 3 // 2, REMOTE_SOURCE_CHARS_MAX)
+def source_budget(window_tokens: int, output_tokens: int) -> int:
+    """Characters of sources that fit in the window with the answer; at least a few hundred
+    characters a source (prompt_sources), whatever the window."""
+    room = window_tokens - output_tokens - PROMPT_OVERHEAD_TOKENS
+    return max(room, 0) * CHARS_PER_TOKEN
 
 
 def prompt_sources(sources: list[SourceText], budget: int) -> list[PromptSource]:

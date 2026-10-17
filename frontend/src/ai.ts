@@ -133,6 +133,24 @@ export function useUpdateProvider() {
   });
 }
 
+/** The context window of a provider: null for automatic. */
+export function useSetContextWindow() {
+  const refresh = useRefresh();
+  return useMutation({
+    mutationFn: async ({ id, window }: { id: string; window: number | null }) => {
+      const { data, error, response } = await api.PUT("/api/ai/providers/{provider_id}/context-window", {
+        params: { path: { provider_id: id } },
+        body: { context_window: window },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: refresh,
+  });
+}
+
 export function useDeleteProvider() {
   const refresh = useRefresh();
   return useMutation({

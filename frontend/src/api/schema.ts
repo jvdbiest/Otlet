@@ -168,6 +168,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/ai/providers/{provider_id}/context-window": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Context Window
+         * @description The context window of the provider's models: automatic, or the number of tokens the
+         *     user set (a local engine's depends on its machine).
+         */
+        put: operations["set_context_window_api_ai_providers__provider_id__context_window_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/ai/providers/{provider_id}/models": {
         parameters: {
             query?: never;
@@ -1083,6 +1104,14 @@ export interface components {
             /** Url */
             url: string;
         };
+        /**
+         * ContextWindowBody
+         * @description None: automatic (the window of each model from the catalogue, 4,096 for a local engine).
+         */
+        ContextWindowBody: {
+            /** Context Window */
+            context_window?: number | null;
+        };
         /** ContributionView */
         ContributionView: {
             /** Count */
@@ -1431,6 +1460,8 @@ export interface components {
         };
         /** ProviderView */
         ProviderView: {
+            /** Context Window */
+            context_window: number | null;
             /**
              * Created At
              * Format: date-time
@@ -1679,6 +1710,8 @@ export interface components {
         };
         /** VersionView */
         VersionView: {
+            /** Context Overflow */
+            context_overflow: boolean;
             /**
              * Created At
              * Format: date-time
@@ -2087,6 +2120,41 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_context_window_api_ai_providers__provider_id__context_window_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContextWindowBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderView"];
+                };
             };
             /** @description Validation Error */
             422: {

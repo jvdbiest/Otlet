@@ -8,7 +8,7 @@ from uuid import UUID
 
 from otlet.ai.application.gateway import Gateway, ProfileSource, Request
 from otlet.ai.domain.model import Catalogue, Message
-from otlet.ai.domain.settings import ProfileEntry
+from otlet.ai.domain.settings import LOCAL_DEFAULT_WINDOW, ProfileEntry, effective_window
 from otlet.writing.application.drafts import TIMEOUT_SECONDS, Written
 from otlet.writing.domain.brief import ModelChoice
 from otlet.writing.domain.draft import SCHEMA_NAME
@@ -32,9 +32,9 @@ class GatewayWriter:
             if provider is None or first is None
             else self._catalogue.model(provider.kind, first.model)
         )
-        if entry is None:
-            return 0, True  # unknown: the smallest room
-        return entry.context, entry.local
+        if provider is None or entry is None:
+            return LOCAL_DEFAULT_WINDOW, True  # unknown: the smallest room
+        return effective_window(provider, entry.context, entry.local), entry.local
 
     def write(
         self,

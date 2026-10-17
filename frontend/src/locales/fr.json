@@ -467,7 +467,8 @@
         "invalid": "Le modèle n'a pas su répondre au format demandé, même après une correction.",
         "quota": "Quota atteint chez tous les fournisseurs du profil.",
         "unavailable": "Aucun modèle du profil n'a répondu. Pour un modèle local, vérifiez qu'il tourne et que l'administrateur a autorisé son adresse.",
-        "blocked": "Les modèles du profil sont bloqués par l'instance."
+        "blocked": "Les modèles du profil sont bloqués par l'instance.",
+        "out_of_room": "Le modèle a manqué de place : sa réponse a été coupée. Agrandissez la fenêtre de contexte du fournisseur, ou choisissez un modèle plus grand."
       },
       "summary": "{answered, plural, =0 {Aucun des {count} modèles n'a répondu.} one {# modèle sur {count} a répondu.} other {# modèles sur {count} ont répondu.}}",
       "repaired": "Sa première réponse ne respectait pas le format demandé : Otlet lui a demandé une correction, qui a réussi (deuxième ligne ci-dessous)."
@@ -515,7 +516,8 @@
       "engine_unreachable": "Le moteur local ne répond pas.",
       "install_not_allowed": "L'administrateur de l'instance n'autorise pas l'installation de modèles.",
       "invalid_model_name": "Ce nom de modèle n'est pas valide (par exemple qwen3:8b).",
-      "not_a_local_engine": "Seul un moteur local liste ses modèles."
+      "not_a_local_engine": "Seul un moteur local liste ses modèles.",
+      "invalid_context_window": "Une fenêtre de contexte compte de 2 048 à 2 000 000 jetons."
     },
     "models": {
       "loading": "Lecture des modèles installés…",
@@ -532,6 +534,15 @@
       "done": "{name} est installé.",
       "use": "Utiliser {name}",
       "failed": "L'installation de {name} a échoué : {error}"
+    },
+    "window": {
+      "title": "Fenêtre de contexte",
+      "auto": "Automatique",
+      "custom": "Personnalisée",
+      "tokens": "Fenêtre de contexte de {name}, en jetons",
+      "helpLocal": "Pour un moteur local, la fenêtre dépend de la machine : « Automatique » suppose 4 096 jetons, la valeur par défaut d'Ollama. Si vous avez réglé OLLAMA_CONTEXT_LENGTH, indiquez la même valeur ici.",
+      "helpRemote": "« Automatique » utilise la fenêtre de chaque modèle, connue d'Otlet. Une valeur personnalisée la réduit, par exemple pour envoyer moins de texte.",
+      "save": "Enregistrer la fenêtre"
     }
   },
   "brief": {
@@ -621,8 +632,10 @@
       "invalid": "Le modèle n'a pas su répondre au format demandé, même après une correction. Essayez un autre modèle.",
       "quota": "Quota atteint chez les fournisseurs du profil.",
       "unavailable": "Aucun modèle n'a répondu.",
-      "blocked": "Ce modèle est bloqué sur cette instance."
+      "blocked": "Ce modèle est bloqué sur cette instance.",
+      "out_of_room": "Le modèle a manqué de place : sa réponse a été coupée avant la fin. Agrandissez la fenêtre de contexte du fournisseur (Réglages > IA), ou raccourcissez le brief."
     },
-    "unused": "{count, plural, one {Ce brouillon n'utilise pas cet élément du brief, malgré une demande de correction au modèle :} other {Ce brouillon n'utilise pas ces # éléments du brief, malgré une demande de correction au modèle :}}"
+    "unused": "{count, plural, one {Ce brouillon n'utilise pas cet élément du brief, malgré une demande de correction au modèle :} other {Ce brouillon n'utilise pas ces # éléments du brief, malgré une demande de correction au modèle :}}",
+    "overflow": "Ce brouillon a dépassé la fenêtre de contexte du modèle : un moteur local a pu effacer le début de la conversation, où se trouvent les règles d'Otlet. Relisez-le avec soin, et agrandissez la fenêtre du fournisseur."
   }
 }

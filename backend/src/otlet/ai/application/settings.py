@@ -19,6 +19,7 @@ from otlet.ai.domain.settings import (
     Provider,
     SettingsError,
     api_endpoint,
+    check_context_window,
     check_endpoint,
     check_key,
     check_name,
@@ -144,6 +145,12 @@ class AiSettings:
                 "an internal address must be allowed by the administrator of the instance",
             )
         return cleaned
+
+    def set_context_window(
+        self, user_id: UUID, provider_id: UUID, window: int | None
+    ) -> Provider | None:
+        """None: automatic. None is answered when the provider is not the user's."""
+        return self._store.set_context_window(user_id, provider_id, check_context_window(window))
 
     def delete_provider(self, user_id: UUID, provider_id: UUID) -> bool:
         return self._store.delete_provider(user_id, provider_id)

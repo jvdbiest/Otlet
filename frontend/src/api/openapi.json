@@ -522,6 +522,24 @@
         "title": "CheckView",
         "type": "object"
       },
+      "ContextWindowBody": {
+        "description": "None: automatic (the window of each model from the catalogue, 4,096 for a local engine).",
+        "properties": {
+          "context_window": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context Window"
+          }
+        },
+        "title": "ContextWindowBody",
+        "type": "object"
+      },
       "ContributionView": {
         "properties": {
           "count": {
@@ -1564,6 +1582,17 @@
       },
       "ProviderView": {
         "properties": {
+          "context_window": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context Window"
+          },
           "created_at": {
             "format": "date-time",
             "title": "Created At",
@@ -1604,7 +1633,8 @@
           "kind",
           "endpoint",
           "key_hint",
-          "created_at"
+          "created_at",
+          "context_window"
         ],
         "title": "ProviderView",
         "type": "object"
@@ -2294,6 +2324,10 @@
       },
       "VersionView": {
         "properties": {
+          "context_overflow": {
+            "title": "Context Overflow",
+            "type": "boolean"
+          },
           "created_at": {
             "format": "date-time",
             "title": "Created At",
@@ -2378,6 +2412,7 @@
           "prompt_version",
           "cut_sources",
           "unused_sources",
+          "context_overflow",
           "created_at"
         ],
         "title": "VersionView",
@@ -2827,6 +2862,57 @@
           }
         },
         "summary": "Update Provider"
+      }
+    },
+    "/api/ai/providers/{provider_id}/context-window": {
+      "put": {
+        "description": "The context window of the provider's models: automatic, or the number of tokens the\nuser set (a local engine's depends on its machine).",
+        "operationId": "set_context_window_api_ai_providers__provider_id__context_window_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Provider Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContextWindowBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Context Window"
       }
     },
     "/api/ai/providers/{provider_id}/models": {

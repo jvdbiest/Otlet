@@ -73,6 +73,7 @@ class ProviderView(BaseModel):
     endpoint: str
     key_hint: str | None
     created_at: datetime
+    context_window: int | None  # None: automatic
 
     @classmethod
     def of(cls, provider: Provider) -> "ProviderView":
@@ -83,6 +84,7 @@ class ProviderView(BaseModel):
             endpoint=provider.endpoint,
             key_hint=provider.key_hint,
             created_at=provider.created_at,
+            context_window=provider.context_window,
         )
 
 
@@ -110,6 +112,12 @@ class ProfileEntryView(BaseModel):
 
 class ProfileView(BaseModel):
     entries: list[ProfileEntryView] = Field(max_length=PROFILE_MAX)
+
+
+class ContextWindowBody(BaseModel):
+    """None: automatic (the window of each model from the catalogue, 4,096 for a local engine)."""
+
+    context_window: int | None = None
 
 
 class PolicyView(BaseModel):
@@ -344,6 +352,22 @@ def build_router(
         if pull is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "pull_not_found")
         return PullView.of(pull)
+
+    @router.put("/providers/{provider_id}/context-window")
+    def set_context_window(
+        provider_id: UUID, body: ContextWindowBody, session: CurrentSession
+    ) -> ProviderView:
+        """The context window of the provider's models: automatic, or the number of tokens the
+        user set (a local engine's depends on its machine)."""
+        try:
+            provider = settings.set_context_window(
+                session.user_id, provider_id, body.context_window
+            )
+        except SettingsError as error:
+            raise _refused(error) from error
+        if provider is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "provider_not_found")
+        return ProviderView.of(provider)
 
     @router.delete("/providers/{provider_id}", status_code=status.HTTP_204_NO_CONTENT)
     def delete_provider(provider_id: UUID, session: CurrentSession) -> None:

@@ -156,6 +156,7 @@ class VersionView(BaseModel):
     prompt_version: str | None
     cut_sources: list[str]
     unused_sources: list[str]  # items of the brief the draft does not cite
+    context_overflow: bool  # the call went past the window: the start may have been dropped
     created_at: datetime
 
     @classmethod
@@ -170,6 +171,7 @@ class VersionView(BaseModel):
             prompt_version=version.prompt_version,
             cut_sources=list(version.cut_sources),
             unused_sources=list(version.unused_sources),
+            context_overflow=version.context_overflow,
             created_at=version.created_at,
         )
 

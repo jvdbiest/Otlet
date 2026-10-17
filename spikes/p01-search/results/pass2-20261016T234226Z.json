@@ -1,0 +1,54 @@
+{
+  "started": "2026-10-16T22:28:17+00:00",
+  "duration_s": 4448.73,
+  "clients": 4,
+  "warmup_s": 30,
+  "seed": 3,
+  "executions_per_workload": 500,
+  "host": "ee987e234b0b",
+  "workloads": {
+    "Q1 mot fréquent": {
+      "count": 500,
+      "errors": 0,
+      "min_ms": 2193.03,
+      "p50_ms": 8939.29,
+      "p95_ms": 13389.83,
+      "p99_ms": 14137.55,
+      "max_ms": 15552.04,
+      "mean_ms": 7964.62
+    },
+    "Q2 mot rare": {
+      "count": 500,
+      "errors": 0,
+      "min_ms": 2036.47,
+      "p50_ms": 9223.75,
+      "p95_ms": 13906.01,
+      "p99_ms": 14906.22,
+      "max_ms": 15385.22,
+      "mean_ms": 7602.63
+    },
+    "Q3 deux ou trois mots": {
+      "count": 500,
+      "errors": 0,
+      "min_ms": 2189.69,
+      "p50_ms": 9677.94,
+      "p95_ms": 14347.98,
+      "p99_ms": 15054.41,
+      "max_ms": 18987.87,
+      "mean_ms": 10224.46
+    },
+    "Q4 expression": {
+      "count": 500,
+      "errors": 0,
+      "min_ms": 2006.86,
+      "p50_ms": 9735.86,
+      "p95_ms": 14471.09,
+      "p99_ms": 15109.87,
+      "max_ms": 15494.85,
+      "mean_ms": 9788.09
+    }
+  },
+  "pass_number": 2,
+  "items": 100000,
+  "smoke": false
+}

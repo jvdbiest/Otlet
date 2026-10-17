@@ -1,0 +1,15 @@
+{
+  "sha256": "9d31f5534459c48668b09b9466d8b3b92f76d318c7436dfa1784807749479f50",
+  "documents": 625,
+  "full_text": 531,
+  "languages": {
+    "fr": 386,
+    "en": 239
+  },
+  "paragraphs": {
+    "fr": 2893,
+    "en": 3186
+  },
+  "distinct_words": 25366,
+  "items_generated": 100000
+}

@@ -45,7 +45,7 @@ def selectivity(engine: sa.Engine, workspace: uuid.UUID, families: dict[str, lis
             shares = [
                 connection.execute(
                     # The items that match, in every language configuration (ADR-0033).
-                    sa.text("SELECT count(*) FROM search_candidates(:q)"),
+                    sa.text("SELECT count(*) FROM search_candidates(:q, NULL)"),
                     {"q": query},
                 ).scalar_one()
                 / total
@@ -64,14 +64,16 @@ def selectivity(engine: sa.Engine, workspace: uuid.UUID, families: dict[str, lis
 
 
 def explain(admin_url: str, workspace: uuid.UUID, families: dict[str, list[str]]) -> int:
-    """The plan of the body of search_candidates (migration 0012), run as otlet_search."""
+    """The plan of the body of search_candidates (migration 0013), run as otlet_search."""
     configs = (*dict.fromkeys(SEARCH_CONFIGS.values()), SIMPLE_SEARCH)
     matches = " OR ".join(
         f"i.search @@ websearch_to_tsquery('{config}'::regconfig, :q)" for config in configs
     )
     body = (
         "EXPLAIN (ANALYZE, BUFFERS) SELECT i.id FROM source_items AS i"  # noqa: S608
-        f" WHERE i.workspace_id = :w AND ({matches})"
+        f" WHERE i.workspace_id = :w AND i.duplicate_of IS NULL AND ({matches})"
+        " ORDER BY least(coalesce(i.published_at, i.collected_at), i.collected_at) DESC"
+        " LIMIT 1000"
     )
     lines = []
     engine = database.create_engine(admin_url)

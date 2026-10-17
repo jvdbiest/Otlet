@@ -94,7 +94,8 @@ def pools(documents: list[dict[str, str]]) -> dict[str, dict[str, list[str]]]:
 def queries(documents: list[dict[str, str]], rng: random.Random) -> dict[str, list[str]]:
     titles = [d["title"] for d in documents]
     words_of = [[w.lower() for w in WORD.findall(t) if w.lower() not in STOP] for t in titles]
-    frequency = collections.Counter(w for words in words_of for w in set(words))
+    # Ordered, not a set: the draw must not depend on the hash seed of the process (P01b §4).
+    frequency = collections.Counter(w for words in words_of for w in dict.fromkeys(words))
     ranked = [w for w, _ in frequency.most_common()]
     frequent = ranked[: max(QUERIES_PER_FAMILY, len(ranked) // 100)]
     rare = [w for w, n in frequency.items() if 1 <= n <= 10]

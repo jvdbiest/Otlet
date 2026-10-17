@@ -11,6 +11,7 @@
 # P01b (after ADR-0033): OTLET_P01_CORPUS=<path on the measure host> reuses the corpus kept from
 # P01 instead of exporting the items of today, and OTLET_P01_RESULTS=results-p01b keeps the
 # results apart from those of P01.
+# OTLET_P01_QUERIES=<path on the measure host> measures with the queries kept from P01.
 set -eu
 
 corpus_host="${1:?usage: run-p01.sh <corpus host> <measure host> [--smoke]}"
@@ -20,6 +21,7 @@ cd "$(dirname "$0")/../.."
 ssh_opts="${OTLET_SSH_OPTS:-}"
 kept_corpus="${OTLET_P01_CORPUS:-}"
 results_dir="${OTLET_P01_RESULTS:-results}"
+kept_queries="${OTLET_P01_QUERIES:-}"
 
 # shellcheck disable=SC2086
 tar -cf - --exclude=results --exclude=data --exclude=__pycache__ --exclude=.venv \
@@ -43,7 +45,7 @@ else
 fi
 
 # shellcheck disable=SC2086
-ssh $ssh_opts "$measure_host" SMOKE="$smoke" sh -s <<'REMOTE'
+ssh $ssh_opts "$measure_host" SMOKE="$smoke" KEPT_QUERIES="$kept_queries" sh -s <<'REMOTE'
 set -eu
 cd ~/otlet-p01/spikes/p01-search
 mkdir -p results
@@ -84,6 +86,10 @@ flag=""
 echo "### $(date -u +%H:%M:%S) roles (M-12), schema and data set"
 python_env "-c \"from otlet.platform import roles; roles.provision('$admin', '$migrator', '$app')\""
 python_env "generate.py --admin-url '$admin' --migrator-url '$migrator_url' $flag"
+if [ -n "$KEPT_QUERIES" ]; then
+    sudo cp "$KEPT_QUERIES" data/queries.json
+    echo "### queries: kept ($(sha256sum data/queries.json | cut -c1-16))"
+fi
 echo "### $(date -u +%H:%M:%S) selectivity (information)"
 python_env "measure.py --url '$app_url' --selectivity"
 echo "### $(date -u +%H:%M:%S) plans of the search function (information)"

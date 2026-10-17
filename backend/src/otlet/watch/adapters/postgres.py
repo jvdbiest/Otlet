@@ -475,22 +475,29 @@ class PostgresWatchStore:
         """Bounded ranking (ADR-0021): the 1,000 most recent items that match the query, in any
         language configuration, are the only ones ranked. The matching items come from
         `search_candidates`, the one way to use the GIN index under row-level security
-        (ADR-0033); the rest of the query stays under the policies."""
+        (ADR-0033), which also takes the window when no topic is chosen; the topics, the
+        ranking and the triage stay under the policies."""
+        # The topic filter reads the matches under the policies: the window comes after it.
+        window = None if topics.topic_ids else SEARCH_WINDOW
         with workspace_transaction(self._engine, workspace_id) as connection:
             rows = connection.execute(
                 sa.text(
                     "WITH found AS ("  # noqa: S608
-                    " SELECT i.id FROM source_items AS i"
-                    f" WHERE i.id IN (SELECT search_candidates(:q)) AND {here('i')}"
-                    "  AND i.duplicate_of IS NULL"
+                    " SELECT i.id FROM search_candidates(:q, :window) AS i WHERE true"
                     f"{TOPICS}"
-                    f" ORDER BY {SORT_DATE} DESC LIMIT {SEARCH_WINDOW})"
+                    f" ORDER BY i.sort_date DESC LIMIT {SEARCH_WINDOW})"
                     f" SELECT {ITEM_COLUMNS}, {TRIAGE_COLUMNS}, {TOPIC_TAGS},"
                     " ts_rank(i.search, websearch_to_tsquery(i.search_config, :q)) AS rank"
                     f" FROM found JOIN {ITEMS_FROM} ON i.id = found.id{TRIAGE_JOIN}"
                     f" ORDER BY rank DESC, {SORT_DATE} DESC, i.id DESC LIMIT :limit"
                 ),
-                {"q": query, "limit": limit, "user": user_id, **topic_parameters(topics)},
+                {
+                    "q": query,
+                    "window": window,
+                    "limit": limit,
+                    "user": user_id,
+                    **topic_parameters(topics),
+                },
             ).all()
         return [
             FoundItem(item_from_row(row), float(row.rank), triage_of(row), topic_tags_of(row))

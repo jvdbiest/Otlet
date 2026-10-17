@@ -24,6 +24,8 @@ Décision de Joël du 2026-10-17 : la fonction dédiée, plutôt que l'opérateu
 4. **Tests** : un mot présent dans deux espaces ne renvoie que les éléments du sien, et la fonction ne renvoie rien sans contexte. Un test compare les plans sous les deux rôles : l'index plein texte n'est utilisable que sous `otlet_search`. Un autre vérifie que ce rôle ne se connecte pas, contourne la RLS, ne possède que cette fonction, et que l'application n'en est pas membre.
 5. **Remesure P01b** : même protocole, même corpus, même seuil, après la correction.
 
+**Complément du 2026-10-17, après P01b** (échec partiel : l'index sert, mais la fenêtre des 1 000 plus récents relisait chaque candidat sous RLS). La fonction devient `search_candidates(q text, window_size integer)` et renvoie, pour chaque candidat, son identifiant, son espace et sa date. Elle écarte elle-même les reprises d'une même histoire et garde les `window_size` plus récents ; la recherche lui passe 1 000 quand aucun sujet n'est choisi, et rien sinon, car le filtre par sujets lit les correspondances sous RLS et doit précéder la fenêtre. Le rôle `otlet_search` lit en plus `published_at`, `collected_at` et `duplicate_of` (migration 0013). Remesure P01c, avec les requêtes exactes de P01.
+
 Le même modèle existe déjà : `find_identity` (ADR-0028) et `unwatched_items` (ADR-0032 §5) sont des fonctions du propriétaire qui lisent au-delà de la RLS pour un besoin précis.
 
 ## Conséquences

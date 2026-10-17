@@ -1,0 +1,165 @@
+=== Q1 mot fréquent: 'grand'
+Bitmap Heap Scan on source_items i  (cost=855.15..12825.58 rows=19288 width=16) (actual time=22.534..68.205 rows=19483.00 loops=1)
+  Recheck Cond: ((search @@ '''grand'''::tsquery) AND (workspace_id = '83c9e5db-8f89-497f-ba6d-d33e22266a0b'::uuid))
+  Heap Blocks: exact=10900
+  Buffers: shared hit=11014
+  ->  BitmapAnd  (cost=855.15..855.15 rows=19288 width=0) (actual time=20.234..20.236 rows=0.00 loops=1)
+        Buffers: shared hit=114
+        ->  Bitmap Index Scan on source_items_search  (cost=0.00..135.49 rows=24043 width=0) (actual time=6.749..6.750 rows=24364.00 loops=1)
+              Index Cond: (search @@ '''grand'''::tsquery)
+              Index Searches: 1
+              Buffers: shared hit=13
+        ->  Bitmap Index Scan on source_items_hash  (cost=0.00..709.77 rows=80223 width=0) (actual time=12.698..12.698 rows=80014.00 loops=1)
+              Index Cond: (workspace_id = '83c9e5db-8f89-497f-ba6d-d33e22266a0b'::uuid)
+              Index Searches: 1
+              Buffers: shared hit=101
+Planning:
+  Buffers: shared hit=326
+Planning Time: 6.061 ms
+Execution Time: 70.521 ms
+
+=== Q2 mot rare: 'firing'
+Bitmap Heap Scan on source_items i  (cost=810.54..6595.86 rows=6414 width=16) (actual time=12.078..17.663 rows=3761.00 loops=1)
+  Recheck Cond: (((search @@ '''firing'''::tsquery) OR (search @@ '''fire'''::tsquery) OR (search @@ '''firing'''::tsquery) OR (search @@ '''firing'''::tsquery) OR (search @@ '''firing'''::tsquery) OR (search @@ '''firing'''::tsquery) OR (search @@ '''firing'''::tsquery) OR (search @@ '''firing'''::tsquery)) AND (workspace_id = '83c9e5db-8f89-497f-ba6d-d33e22266a0b'::uuid))
+  Heap Blocks: exact=3344
+  Buffers: shared hit=3480
+  ->  BitmapAnd  (cost=810.54..810.54 rows=6586 width=0) (actual time=11.423..11.430 rows=0.00 loops=1)
+        Buffers: shared hit=136
+        ->  BitmapOr  (cost=98.92..98.92 rows=8210 width=0) (actual time=2.366..2.370 rows=0.00 loops=1)
+              Buffers: shared hit=35
+              ->  Bitmap Index Scan on source_items_search  (cost=0.00..7.98 rows=500 width=0) (actual time=0.036..0.036 rows=0.00 loops=1)
+                    Index Cond: (search @@ '''firing'''::tsquery)
+                    Index Searches: 1
+                    Buffers: shared hit=4
+              ->  Bitmap Index Scan on source_items_search  (cost=0.00..30.25 rows=4710 width=0) (actual time=2.304..2.304 rows=4687.00 loops=1)
+                    Index Cond: (search @@ '''fire'''::tsquery)
+                    Index Searches: 1
+                    Buffers: shared hit=7
+              ->  Bitmap Index Scan on source_items_search  (cost=0.00..7.98 rows=500 width=0) (actual time=0.009..0.010 rows=0.00 loops=1)
+                    Index Cond: (search @@ '''firing'''::tsquery)
+                    Index Searches: 1
+                    Buffers: shared hit=4
+              ->  Bitmap Index Scan on source_items_search  (cost=0.00..7.98 rows=500 width=0) (actual time=0.003..0.003 rows=0.00 loops=1)
+                    Index Cond: (search @@ '''firing'''::tsquery)
+                    Index Searches: 1
+                    Buffers: shared hit=4
+              ->  Bitmap Index Scan on source_items_search  (cost=0.00..7.98 rows=500 width=0) (actual time=0.003..0.003 rows=0.00 loops=1)
+                    Index Cond: (search @@ '''firing'''::tsquery)
+                    Index Searches: 1
+                    Buffers: shared hit=4
+              ->  Bitmap Index Scan on source_items_search  (cost=0.00..7.98 rows=500 width=0) (actual time=0.003..0.003 rows=0.00 loops=1)
+                    Index Cond: (search @@ '''firing'''::tsquery)
+                    Index Searches: 1
+                    Buffers: shared hit=4
+              ->  Bitmap Index Scan on source_items_search  (cost=0.00..7.98 rows=500 width=0) (actual time=0.003..0.003 rows=0.00 loops=1)
+                    Index Cond: (search @@ '''firing'''::tsquery)
+                    Index Searches: 1
+                    Buffers: shared hit=4
+              ->  Bitmap Index Scan on source_items_search  (cost=0.00..7.98 rows=500 width=0) (actual time=0.003..0.003 rows=0.00 loops=1)
+                    Index Cond: (search @@ '''firing'''::tsquery)
+                    Index Searches: 1
+                    Buffers: shared hit=4
+        ->  Bitmap Index Scan on source_items_hash  (cost=0.00..709.77 rows=80223 width=0) (actual time=8.776..8.776 rows=80014.00 loops=1)
+              Index Cond: (workspace_id = '83c9e5db-8f89-497f-ba6d-d33e22266a0b'::uuid)
+              Index Searches: 1
+              Buffers: shared hit=101
+Planning:
+  Buffers: shared hit=9
+Planning Time: 0.821 ms
+Execution Time: 18.884 ms
+
+=== Q3 deux ou trois mots: 'motos enchères billy'
+Bitmap Heap Scan on source_items i  (cost=111.87..114.14 rows=2 width=16) (actual time=1.022..1.671 rows=209.00 loops=1)
+  Recheck Cond: ((search @@ '''motos'' & ''encher'' & ''billy'''::tsquery) OR (search @@ '''moto'' & ''enchèr'' & ''billi'''::tsquery) OR (search @@ '''motos'' & ''enchèr'' & ''billy'''::tsquery) OR (search @@ '''motos'' & ''enchères'' & ''billy'''::tsquery) OR (search @@ '''mot'' & ''enchères'' & ''billy'''::tsquery) OR (search @@ '''motos'' & ''enchères'' & ''billy'''::tsquery) OR (search @@ '''mot'' & ''enchères'' & ''billy'''::tsquery) OR (search @@ '''motos'' & ''enchères'' & ''billy'''::tsquery))
+  Filter: (workspace_id = '83c9e5db-8f89-497f-ba6d-d33e22266a0b'::uuid)
+  Rows Removed by Filter: 56
+  Heap Blocks: exact=263
+  Buffers: shared hit=363
+  ->  BitmapOr  (cost=111.87..111.87 rows=2 width=0) (actual time=0.958..0.960 rows=0.00 loops=1)
+        Buffers: shared hit=100
+        ->  Bitmap Index Scan on source_items_search  (cost=0.00..13.98 rows=1 width=0) (actual time=0.554..0.554 rows=265.00 loops=1)
+              Index Cond: (search @@ '''motos'' & ''encher'' & ''billy'''::tsquery)
+              Index Searches: 1
+              Buffers: shared hit=18
+        ->  Bitmap Index Scan on source_items_search  (cost=0.00..13.99 rows=1 width=0) (actual time=0.079..0.079 rows=0.00 loops=1)
+              Index Cond: (search @@ '''moto'' & ''enchèr'' & ''billi'''::tsquery)
+              Index Searches: 1
+              Buffers: shared hit=12
+        ->  Bitmap Index Scan on source_items_search  (cost=0.00..13.98 rows=1 width=0) (actual time=0.031..0.031 rows=0.00 loops=1)
+              Index Cond: (search @@ '''motos'' & ''enchèr'' & ''billy'''::tsquery)
+              Index Searches: 1
+              Buffers: shared hit=12
+        ->  Bitmap Index Scan on source_items_search  (cost=0.00..13.98 rows=1 width=0) (actual time=0.027..0.027 rows=0.00 loops=1)
+              Index Cond: (search @@ '''motos'' & ''enchères'' & ''billy'''::tsquery)
+              Index Searches: 1
+              Buffers: shared hit=12
+        ->  Bitmap Index Scan on source_items_search  (cost=0.00..13.98 rows=1 width=0) (actual time=0.066..0.066 rows=0.00 loops=1)
+              Index Cond: (search @@ '''mot'' & ''enchères'' & ''billy'''::tsquery)
+              Index Searches: 1
+              Buffers: shared hit=11
+        ->  Bitmap Index Scan on source_items_search  (cost=0.00..13.98 rows=1 width=0) (actual time=0.078..0.078 rows=0.00 loops=1)
+              Index Cond: (search @@ '''motos'' & ''enchères'' & ''billy'''::tsquery)
+              Index Searches: 1
+              Buffers: shared hit=12
+        ->  Bitmap Index Scan on source_items_search  (cost=0.00..13.98 rows=1 width=0) (actual time=0.055..0.055 rows=0.00 loops=1)
+              Index Cond: (search @@ '''mot'' & ''enchères'' & ''billy'''::tsquery)
+              Index Searches: 1
+              Buffers: shared hit=11
+        ->  Bitmap Index Scan on source_items_search  (cost=0.00..13.98 rows=1 width=0) (actual time=0.065..0.065 rows=0.00 loops=1)
+              Index Cond: (search @@ '''motos'' & ''enchères'' & ''billy'''::tsquery)
+              Index Searches: 1
+              Buffers: shared hit=12
+Planning:
+  Buffers: shared hit=9
+Planning Time: 1.330 ms
+Execution Time: 1.746 ms
+
+=== Q4 expression: '"through one"'
+Bitmap Heap Scan on source_items i  (cost=877.17..9104.88 rows=10420 width=16) (actual time=18.890..32.751 rows=9998.00 loops=1)
+  Recheck Cond: (((search @@ '''through'' <-> ''one'''::tsquery) OR (search @@ '''one'''::tsquery) OR (search @@ '''through'' <-> ''one'''::tsquery) OR (search @@ '''through'' <-> ''one'''::tsquery) OR (search @@ '''through'' <-> ''one'''::tsquery) OR (search @@ '''throug'' <-> ''one'''::tsquery) OR (search @@ '''through'' <-> ''one'''::tsquery) OR (search @@ '''through'' <-> ''one'''::tsquery)) AND (workspace_id = '83c9e5db-8f89-497f-ba6d-d33e22266a0b'::uuid))
+  Heap Blocks: exact=7451
+  Buffers: shared hit=7672
+  ->  BitmapAnd  (cost=877.17..877.17 rows=10465 width=0) (actual time=17.246..17.253 rows=0.00 loops=1)
+        Buffers: shared hit=182
+        ->  BitmapOr  (cost=164.55..164.55 rows=13044 width=0) (actual time=5.280..5.284 rows=0.00 loops=1)
+              Buffers: shared hit=81
+              ->  Bitmap Index Scan on source_items_search  (cost=0.00..10.05 rows=63 width=0) (actual time=0.138..0.139 rows=0.00 loops=1)
+                    Index Cond: (search @@ '''through'' <-> ''one'''::tsquery)
+                    Index Searches: 1
+                    Buffers: shared hit=9
+              ->  Bitmap Index Scan on source_items_search  (cost=0.00..73.39 rows=12603 width=0) (actual time=4.745..4.745 rows=12518.00 loops=1)
+                    Index Cond: (search @@ '''one'''::tsquery)
+                    Index Searches: 1
+                    Buffers: shared hit=10
+              ->  Bitmap Index Scan on source_items_search  (cost=0.00..10.05 rows=63 width=0) (actual time=0.081..0.081 rows=0.00 loops=1)
+                    Index Cond: (search @@ '''through'' <-> ''one'''::tsquery)
+                    Index Searches: 1
+                    Buffers: shared hit=9
+              ->  Bitmap Index Scan on source_items_search  (cost=0.00..10.05 rows=63 width=0) (actual time=0.026..0.026 rows=0.00 loops=1)
+                    Index Cond: (search @@ '''through'' <-> ''one'''::tsquery)
+                    Index Searches: 1
+                    Buffers: shared hit=9
+              ->  Bitmap Index Scan on source_items_search  (cost=0.00..10.05 rows=63 width=0) (actual time=0.021..0.021 rows=0.00 loops=1)
+                    Index Cond: (search @@ '''through'' <-> ''one'''::tsquery)
+                    Index Searches: 1
+                    Buffers: shared hit=9
+              ->  Bitmap Index Scan on source_items_search  (cost=0.00..10.05 rows=63 width=0) (actual time=0.191..0.191 rows=2.00 loops=1)
+                    Index Cond: (search @@ '''throug'' <-> ''one'''::tsquery)
+                    Index Searches: 1
+                    Buffers: shared hit=17
+              ->  Bitmap Index Scan on source_items_search  (cost=0.00..10.05 rows=63 width=0) (actual time=0.024..0.024 rows=0.00 loops=1)
+                    Index Cond: (search @@ '''through'' <-> ''one'''::tsquery)
+                    Index Searches: 1
+                    Buffers: shared hit=9
+              ->  Bitmap Index Scan on source_items_search  (cost=0.00..10.05 rows=63 width=0) (actual time=0.049..0.049 rows=0.00 loops=1)
+                    Index Cond: (search @@ '''through'' <-> ''one'''::tsquery)
+                    Index Searches: 1
+                    Buffers: shared hit=9
+        ->  Bitmap Index Scan on source_items_hash  (cost=0.00..709.77 rows=80223 width=0) (actual time=11.302..11.302 rows=80014.00 loops=1)
+              Index Cond: (workspace_id = '83c9e5db-8f89-497f-ba6d-d33e22266a0b'::uuid)
+              Index Searches: 1
+              Buffers: shared hit=101
+Planning:
+  Buffers: shared hit=9
+Planning Time: 0.757 ms
+Execution Time: 34.107 ms

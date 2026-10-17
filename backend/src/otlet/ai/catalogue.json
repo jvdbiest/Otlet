@@ -1,0 +1,12 @@
+{
+  "_comment": "Models known to the instance (ADR-0027 §2). Prices per million tokens, in the currency below; 0 for local models. A paid provider stays blocked here: only the administrator of an instance allows it. Statuses: tested (C1 of S4 held on the 50 briefs), untested (usable, with a warning), blocked. Names and prices of paid models are indicative: they are checked against the provider, and its 50 briefs measured, before the administrator allows it (ADR-0027 §7).",
+  "currency": "EUR",
+  "models": [
+    {"provider": "ollama", "protocol": "openai", "model": "qwen2.5:1.5b-instruct", "structured_output": "json_schema", "context": 32768, "price_in": 0, "price_out": 0, "status": "tested", "paid": false, "local": true},
+    {"provider": "ollama", "protocol": "openai", "model": "qwen2.5:7b-instruct", "structured_output": "json_schema", "context": 32768, "price_in": 0, "price_out": 0, "status": "untested", "paid": false, "local": true},
+    {"provider": "groq", "protocol": "openai", "model": "llama-3.3-70b-versatile", "structured_output": "json_schema", "context": 131072, "price_in": 0.55, "price_out": 0.75, "status": "blocked", "paid": true},
+    {"provider": "openrouter", "protocol": "openai", "model": "mistralai/mistral-small-3.2-24b-instruct", "structured_output": "json_schema", "context": 131072, "price_in": 0.1, "price_out": 0.3, "status": "blocked", "paid": true},
+    {"provider": "openai", "protocol": "openai", "model": "gpt-4.1-mini", "structured_output": "json_schema", "context": 1047576, "price_in": 0.4, "price_out": 1.6, "status": "blocked", "paid": true},
+    {"provider": "anthropic", "protocol": "anthropic", "model": "claude-haiku-5-5", "structured_output": "tool", "context": 200000, "price_in": 1, "price_out": 5, "status": "blocked", "paid": true}
+  ]
+}

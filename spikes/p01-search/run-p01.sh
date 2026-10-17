@@ -87,7 +87,7 @@ echo "### $(date -u +%H:%M:%S) roles (M-12), schema and data set"
 python_env "-c \"from otlet.platform import roles; roles.provision('$admin', '$migrator', '$app')\""
 python_env "generate.py --admin-url '$admin' --migrator-url '$migrator_url' $flag"
 if [ -n "$KEPT_QUERIES" ]; then
-    cp "$KEPT_QUERIES" data/queries.json
+    sudo cp "$KEPT_QUERIES" data/queries.json
     echo "### queries: kept ($(sha256sum data/queries.json | cut -c1-16))"
 fi
 echo "### $(date -u +%H:%M:%S) selectivity (information)"

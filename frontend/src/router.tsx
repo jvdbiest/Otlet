@@ -21,6 +21,7 @@ import { TopicItemsPage } from "./pages/watch/TopicItemsPage.tsx";
 import { TopicsPage } from "./pages/watch/TopicsPage.tsx";
 import { WatchLayout } from "./pages/watch/WatchLayout.tsx";
 import { AiSettingsPage } from "./pages/settings/AiSettingsPage.tsx";
+import { BriefPage, BriefsPage, NewBriefPage } from "./pages/writing/BriefsPage.tsx";
 import { sessionQuery } from "./session.ts";
 
 interface RouterContext {
@@ -81,6 +82,26 @@ function sectionRoute<Path extends string>(path: Path, section: Section) {
   });
 }
 
+// Writing (U03): the briefs, a new brief on items chosen in the watch, one brief.
+const briefsRoute = createRoute({ getParentRoute: () => appRoute, path: "/redaction", component: BriefsPage });
+const newBriefRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/redaction/nouveau",
+  validateSearch: (search: Record<string, unknown>): { items: string } => ({
+    items: typeof search.items === "string" ? search.items : "",
+  }),
+  component: function NewBrief() {
+    return <NewBriefPage items={newBriefRoute.useSearch().items} />;
+  },
+});
+const briefRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/redaction/briefs/$briefId",
+  component: function Brief() {
+    return <BriefPage briefId={briefRoute.useParams().briefId} />;
+  },
+});
+
 // Settings (F05): the AI settings of the user.
 const settingsRoute = createRoute({ getParentRoute: () => appRoute, path: "/reglages", component: AiSettingsPage });
 
@@ -115,7 +136,9 @@ const routeTree = rootRoute.addChildren([
   appRoute.addChildren([
     indexRoute,
     watchRoute.addChildren([itemsRoute, topicsRoute, topicRoute, sourcesRoute, manualRoute, itemRoute]),
-    sectionRoute("/redaction", "writing"),
+    briefsRoute,
+    newBriefRoute,
+    briefRoute,
     sectionRoute("/bibliotheque", "library"),
     settingsRoute,
   ]),

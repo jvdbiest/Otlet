@@ -2,7 +2,9 @@
 """ASGI application: health endpoint and the built interface served as static files (TC-03)."""
 
 import logging
+from collections.abc import Sequence
 from pathlib import PurePath
+from uuid import UUID
 
 import sqlalchemy as sa
 from fastapi import FastAPI
@@ -21,10 +23,11 @@ from otlet.ai.adapters.postgres import PostgresAiSettings
 from otlet.ai.adapters.sealing import PublicKeySealer
 from otlet.ai.application.budget import Budget
 from otlet.ai.application.settings import AiSettings
+from otlet.ai.domain.settings import ProfileEntry, SettingsError
 from otlet.collection.adapters.parsing import FeedparserReader, ReadabilityReader
 from otlet.collection.adapters.postgres import PostgresCollectionStore
 from otlet.collection.application.collection import Collection
-from otlet.entrypoints.api import ai, auth, collection, triage, watch, workspaces
+from otlet.entrypoints.api import ai, auth, collection, triage, watch, workspaces, writing
 from otlet.identity.adapters.argon2_hasher import Argon2Hasher
 from otlet.identity.adapters.postgres import PostgresIdentityStore
 from otlet.identity.application.authentication import Authentication
@@ -34,10 +37,15 @@ from otlet.platform.config import Settings
 from otlet.platform.http import SafeClient
 from otlet.watch.adapters.postgres import PostgresWatchStore
 from otlet.watch.adapters.triage_postgres import PostgresTriageStore
-from otlet.watch.application.triage import Feed
+from otlet.watch.application.triage import Change, Feed
 from otlet.watch.application.watch import Watch
+from otlet.watch.domain.triage import Decision
 from otlet.workspaces.adapters.postgres import PostgresWorkspaceStore
 from otlet.workspaces.application.workspaces import Workspaces
+from otlet.workspaces.domain.model import WorkspaceContext
+from otlet.writing.adapters.postgres import PostgresBriefStore
+from otlet.writing.application.briefs import Briefs
+from otlet.writing.domain.brief import BriefError, ModelChoice
 
 logger = logging.getLogger(__name__)
 
@@ -96,13 +104,28 @@ def create_app(settings: Settings) -> FastAPI:
         watch_router = watch.build_router(
             Watch(PostgresWatchStore(engine, enqueue)), workspace_context
         )
-        triage_router = triage.build_router(Feed(PostgresTriageStore(engine)), workspace_context)
+        feed = Feed(PostgresTriageStore(engine))
+        triage_router = triage.build_router(feed, workspace_context)
+        ai_settings = AiSettings(
+            PostgresAiSettings(engine),
+            PackagedCatalogue().load(),
+            PublicKeySealer(settings.secrets_public_key_file),
+        )
+
+        def mark_writing(context: WorkspaceContext, item_ids: Sequence[UUID]) -> None:
+            feed.change_many(context, list(item_ids), Change(decision=Decision.WRITING))
+
+        def check_model(user_id: UUID, choice: ModelChoice) -> None:
+            try:
+                ai_settings.check_choice(user_id, ProfileEntry(choice.provider_id, choice.model))
+            except SettingsError as error:
+                raise BriefError(error.code, str(error)) from error
+
+        writing_router = writing.build_router(
+            Briefs(PostgresBriefStore(engine), mark_writing, check_model), workspace_context
+        )
         ai_router = ai.build_router(
-            AiSettings(
-                PostgresAiSettings(engine),
-                PackagedCatalogue().load(),
-                PublicKeySealer(settings.secrets_public_key_file),
-            ),
+            ai_settings,
             Budget(PostgresBudget(engine)),
             PostgresChecks(engine, enqueue),
             PostgresCallJournal(engine),
@@ -116,6 +139,7 @@ def create_app(settings: Settings) -> FastAPI:
             watch_router,
             triage_router,
             ai_router,
+            writing_router,
         ]
         for router in routers:
             app.include_router(router)

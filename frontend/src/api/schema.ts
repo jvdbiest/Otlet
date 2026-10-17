@@ -288,6 +288,49 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/briefs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Briefs
+         * @description The briefs of the workspace, the most recently changed first.
+         */
+        get: operations["list_briefs_api_workspaces__workspace_id__briefs_get"];
+        put?: never;
+        /**
+         * Create Brief
+         * @description Creates a brief; its items move to drafting in the triage of its author.
+         */
+        post: operations["create_brief_api_workspaces__workspace_id__briefs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/briefs/{brief_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Brief */
+        get: operations["get_brief_api_workspaces__workspace_id__briefs__brief_id__get"];
+        /** Update Brief */
+        put: operations["update_brief_api_workspaces__workspace_id__briefs__brief_id__put"];
+        post?: never;
+        /** Delete Brief */
+        delete: operations["delete_brief_api_workspaces__workspace_id__briefs__brief_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/feed": {
         parameters: {
             query?: never;
@@ -702,6 +745,111 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** BriefBody */
+        BriefBody: {
+            /**
+             * Angle
+             * @default
+             */
+            angle: string;
+            /**
+             * Audience
+             * @default
+             */
+            audience: string;
+            /**
+             * Channel
+             * @default
+             */
+            channel: string;
+            /** Item Ids */
+            item_ids: string[];
+            /**
+             * Language
+             * @default fr
+             */
+            language: string;
+            /**
+             * Length
+             * @default medium
+             * @enum {string}
+             */
+            length: "short" | "medium" | "long";
+            /** Model */
+            model?: string | null;
+            /** Provider Id */
+            provider_id?: string | null;
+            /** Title */
+            title: string;
+            /**
+             * Tone
+             * @default
+             */
+            tone: string;
+        };
+        /** BriefItemView */
+        BriefItemView: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Published At */
+            published_at: string | null;
+            /** Source Id */
+            source_id: string | null;
+            /** Source Name */
+            source_name: string | null;
+            /** Title */
+            title: string;
+            /** Url */
+            url: string | null;
+        };
+        /** BriefView */
+        BriefView: {
+            /** Angle */
+            angle: string;
+            /** Audience */
+            audience: string;
+            /** Channel */
+            channel: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Items */
+            items: components["schemas"]["BriefItemView"][];
+            /** Language */
+            language: string;
+            /**
+             * Length
+             * @enum {string}
+             */
+            length: "short" | "medium" | "long";
+            /** Model */
+            model: string | null;
+            /** Provider Id */
+            provider_id: string | null;
+            /** Single Source */
+            single_source: boolean;
+            /** Sources */
+            sources: number;
+            /** Title */
+            title: string;
+            /** Tone */
+            tone: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
         /** BudgetView */
         BudgetView: {
             /** Currency */
@@ -1246,7 +1394,7 @@ export interface components {
          */
         TriageChange: {
             /** Decision */
-            decision?: ("kept" | "dismissed" | "archived") | null;
+            decision?: ("kept" | "writing" | "dismissed" | "archived") | null;
             /** Pinned */
             pinned?: boolean | null;
             /** Read */
@@ -1255,7 +1403,7 @@ export interface components {
         /** TriageView */
         TriageView: {
             /** Decision */
-            decision: ("kept" | "dismissed" | "archived") | null;
+            decision: ("kept" | "writing" | "dismissed" | "archived") | null;
             /** Pinned */
             pinned: boolean;
             /** Read At */
@@ -1288,7 +1436,7 @@ export interface components {
          * @description The parts of the feed a user looks at.
          * @enum {string}
          */
-        View: "to_sort" | "kept" | "dismissed" | "archived" | "pinned" | "all";
+        View: "to_sort" | "kept" | "writing" | "dismissed" | "archived" | "pinned" | "all";
         /** WorkspaceView */
         WorkspaceView: {
             /** Id */
@@ -1879,6 +2027,170 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["WorkspaceView"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_briefs_api_workspaces__workspace_id__briefs_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BriefView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_brief_api_workspaces__workspace_id__briefs_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BriefBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BriefView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_brief_api_workspaces__workspace_id__briefs__brief_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                brief_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BriefView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_brief_api_workspaces__workspace_id__briefs__brief_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                brief_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BriefBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BriefView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_brief_api_workspaces__workspace_id__briefs__brief_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                brief_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

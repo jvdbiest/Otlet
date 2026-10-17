@@ -28,6 +28,7 @@ export function TriageActions({
   return (
     <div className={styles.row} role="group" aria-label={t("triage.actions", { title })}>
       {triage.decision === "kept" && <span className={styles.good}>{t("triage.kept")}</span>}
+      {triage.decision === "writing" && <span className={styles.good}>{t("triage.writing")}</span>}
       {triage.decision === "dismissed" && <span className={styles.neutral}>{t("triage.dismissed")}</span>}
       {triage.decision === "archived" && <span className={styles.neutral}>{t("triage.archived")}</span>}
       {triage.pinned && <span className={styles.limited}>{t("triage.pinned")}</span>}
@@ -54,7 +55,7 @@ export function TriageActions({
         </>
       ) : (
         <>
-          {triage.decision === "kept" && (
+          {(triage.decision === "kept" || triage.decision === "writing") && (
             <Button
               className={styles.button}
               isDisabled={busy}

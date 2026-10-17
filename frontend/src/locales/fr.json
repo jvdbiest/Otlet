@@ -37,7 +37,7 @@
     "writing": {
       "title": "Rédaction",
       "empty": "Aucun brouillon pour l'instant.",
-      "next": "Vous pourrez bientôt construire un brief et obtenir un brouillon sourcé ici."
+      "next": "Construisez un brief sur vos éléments retenus ; le brouillon sourcé viendra ensuite."
     },
     "library": {
       "title": "Bibliothèque",
@@ -309,6 +309,7 @@
       "label": "Partie du flux",
       "to_sort": "À trier",
       "kept": "Retenus",
+      "writing": "En rédaction",
       "pinned": "Épinglés",
       "archived": "Archivés",
       "dismissed": "Écartés",
@@ -340,7 +341,8 @@
         "archive": "{count, plural, one {# élément archivé.} other {# éléments archivés.}}",
         "dismiss": "{count, plural, one {# élément écarté.} other {# éléments écartés.}}",
         "to_sort": "{count, plural, one {# élément remis à trier.} other {# éléments remis à trier.}}"
-      }
+      },
+      "brief": "Créer un brief"
     },
     "period": {
       "label": "Période",
@@ -375,7 +377,8 @@
       "pinned": "Aucun élément épinglé.",
       "dismissed": "Aucun élément écarté.",
       "archived": "Aucun élément archivé. Archivez un élément retenu une fois que vous en avez fini.",
-      "all": "Aucun élément pour l'instant."
+      "all": "Aucun élément pour l'instant.",
+      "writing": "Aucun élément en rédaction. Créez un brief à partir de vos éléments retenus."
     },
     "display": {
       "sort": "Trier par",
@@ -394,7 +397,8 @@
       "heading": "{name} ({count})",
       "noTopic": "Sans sujet",
       "manual": "Saisies manuelles"
-    }
+    },
+    "writing": "En rédaction"
   },
   "start": {
     "title": "Bien démarrer",
@@ -503,6 +507,59 @@
       "unknown_model": "Modèle inconnu pour ce fournisseur.",
       "unknown_provider": "Fournisseur inconnu.",
       "address_not_allowed": "Cette adresse locale n'est pas autorisée : l'administrateur de l'instance doit autoriser son réseau et son port dans Réglages > IA."
+    }
+  },
+  "brief": {
+    "intro": "Un brief rassemble les éléments d'un article et vos consignes : d'abord votre angle et votre apport propre, puis le public, le ton, la longueur et le modèle.",
+    "new": "Nouveau brief",
+    "empty": "Aucun brief pour l'instant. Sélectionnez des éléments retenus dans la veille, puis « Créer un brief ».",
+    "summary": "{items, plural, one {# élément} other {# éléments}}, {sources, plural, one {# source} other {# sources}}",
+    "changed": "modifié le {date}",
+    "back": "Revenir aux briefs",
+    "notFound": "Ce brief n'existe pas ou plus.",
+    "angle": "Angle et apport propre",
+    "angleHelp": "Ce que vous voulez dire, votre expérience, votre analyse : c'est ce qui fait de l'article le vôtre, et pas une réécriture de plus des sources.",
+    "noAngle": "Pas encore d'angle ni d'apport propre : le brouillon risque de seulement résumer les sources.",
+    "title": "Titre de travail",
+    "items": "{count, plural, =0 {Éléments} one {Élément (#)} other {Éléments (#)}}",
+    "noItems": "Aucun élément : ajoutez-en au moins un.",
+    "removeItem": "Retirer « {title} » du brief",
+    "addKept": "{count, plural, one {Ajouter un élément retenu (# disponible)} other {Ajouter des éléments retenus (# disponibles)}}",
+    "addItem": "Ajouter « {title} » au brief",
+    "singleSource": "Une seule source : un article d'actualité en croise d'habitude au moins deux. Le brief reste possible.",
+    "audience": "Public",
+    "tone": "Ton",
+    "length": "Longueur",
+    "lengths": {
+      "short": "Court (environ 300 mots)",
+      "medium": "Moyen (environ 600 mots)",
+      "long": "Long (environ 1 200 mots)"
+    },
+    "language": "Langue",
+    "channel": "Canal visé",
+    "model": "Modèle",
+    "profile": "Mon profil (l'ordre de Réglages > IA)",
+    "modelHelp": "Par défaut, vos modèles sont essayés dans l'ordre de votre profil. Vous pouvez choisir un modèle précis pour ce brief.",
+    "create": "Créer le brief",
+    "save": "Enregistrer",
+    "saved": "Enregistré.",
+    "delete": "Supprimer ce brief",
+    "confirmDelete": "Supprimer ce brief ? Ses éléments restent en rédaction.",
+    "confirm": "Oui, supprimer",
+    "cancel": "Annuler",
+    "errors": {
+      "invalid_title": "Donnez un titre de travail (200 caractères au plus).",
+      "invalid_angle": "L'angle compte 4 000 caractères au plus.",
+      "invalid_audience": "Le public compte 200 caractères au plus.",
+      "invalid_tone": "Le ton compte 200 caractères au plus.",
+      "invalid_channel": "Le canal compte 200 caractères au plus.",
+      "invalid_language": "Langue inconnue.",
+      "invalid_items": "Un brief compte de 1 à 20 éléments.",
+      "invalid_model": "Choisissez un modèle.",
+      "unknown_item": "Un élément n'existe plus dans la veille.",
+      "unknown_provider": "Ce fournisseur n'est pas l'un des vôtres.",
+      "unknown_model": "Ce fournisseur ne propose pas ce modèle.",
+      "model_blocked": "Ce modèle est bloqué sur cette instance."
     }
   }
 }

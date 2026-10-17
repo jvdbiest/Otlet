@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { type BulkAction, useBulkTriage } from "../../triage.ts";
@@ -61,6 +62,9 @@ export function BulkBar({
       </span>
       {shown.length > 0 && (
         <div className={styles.row}>
+          <Link to="/redaction/nouveau" search={{ items: shown.join(",") }} className={styles.primary}>
+            {t("triage.bulk.brief")}
+          </Link>
           {ACTIONS.map((action) => (
             <button
               key={action}

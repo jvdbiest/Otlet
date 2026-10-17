@@ -82,3 +82,5 @@ date,heures,domaine,etape,tache,note
 2026-10-17,3,fonction,E1,X02,actions en masse, ordre de la vue Tout, filtre par période ; estimation grossière (Claude)
 2026-10-17,2,fonction,E1,X02,état Archivé et suppression depuis la fiche (migration 0015) ; estimation grossière (Claude)
 2026-10-17,1,projet,E1,P01,mesure P01d, rapport et ADR-0035 ; estimation grossière (Claude)
+2026-10-17,8,fonction,E1,F05,"passerelle IA en cinq tranches (catalogue, profils, budget, generate, Réglages > IA), essai réel avec Ollama ; estimation grossière (Claude)"
+2026-10-17,2.5,fonction,E1,X02,trier et grouper la veille (retour de Joël) ; estimation grossière (Claude)

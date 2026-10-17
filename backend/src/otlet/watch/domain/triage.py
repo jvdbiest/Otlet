@@ -9,6 +9,7 @@ from uuid import UUID
 
 class Decision(StrEnum):
     KEPT = "kept"  # retained: the briefs of I2 start from these
+    WRITING = "writing"  # in a brief: drafting (U03)
     DISMISSED = "dismissed"
     ARCHIVED = "archived"  # done with: out of the current views, still searchable
 
@@ -18,6 +19,7 @@ class View(StrEnum):
 
     TO_SORT = "to_sort"  # no decision yet: the default
     KEPT = "kept"
+    WRITING = "writing"
     DISMISSED = "dismissed"
     ARCHIVED = "archived"
     PINNED = "pinned"

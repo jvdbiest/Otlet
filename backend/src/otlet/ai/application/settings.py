@@ -149,6 +149,13 @@ class AiSettings:
     def profile(self, user_id: UUID) -> Profile:
         return self._store.profile(user_id)
 
+    def check_choice(self, user_id: UUID, entry: ProfileEntry) -> None:
+        """Refuses, as a profile would, a model chosen for one task (a brief): a provider of
+        the user, a model it may run, allowed by the instance."""
+        check_profile(
+            [entry], self._store.list_providers(user_id), self._catalogue, self._store.policy()
+        )
+
     def set_profile(self, user_id: UUID, entries: Sequence[ProfileEntry]) -> Profile:
         profile = check_profile(
             entries, self._store.list_providers(user_id), self._catalogue, self._store.policy()

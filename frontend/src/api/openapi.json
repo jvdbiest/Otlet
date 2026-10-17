@@ -1,6 +1,266 @@
 {
   "components": {
     "schemas": {
+      "BriefBody": {
+        "properties": {
+          "angle": {
+            "default": "",
+            "title": "Angle",
+            "type": "string"
+          },
+          "audience": {
+            "default": "",
+            "title": "Audience",
+            "type": "string"
+          },
+          "channel": {
+            "default": "",
+            "title": "Channel",
+            "type": "string"
+          },
+          "item_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Item Ids",
+            "type": "array"
+          },
+          "language": {
+            "default": "fr",
+            "title": "Language",
+            "type": "string"
+          },
+          "length": {
+            "default": "medium",
+            "enum": [
+              "short",
+              "medium",
+              "long"
+            ],
+            "title": "Length",
+            "type": "string"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "provider_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider Id"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "tone": {
+            "default": "",
+            "title": "Tone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "item_ids"
+        ],
+        "title": "BriefBody",
+        "type": "object"
+      },
+      "BriefItemView": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id"
+          },
+          "source_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Name"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "url",
+          "source_id",
+          "source_name",
+          "published_at"
+        ],
+        "title": "BriefItemView",
+        "type": "object"
+      },
+      "BriefView": {
+        "properties": {
+          "angle": {
+            "title": "Angle",
+            "type": "string"
+          },
+          "audience": {
+            "title": "Audience",
+            "type": "string"
+          },
+          "channel": {
+            "title": "Channel",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BriefItemView"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "language": {
+            "title": "Language",
+            "type": "string"
+          },
+          "length": {
+            "enum": [
+              "short",
+              "medium",
+              "long"
+            ],
+            "title": "Length",
+            "type": "string"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "provider_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider Id"
+          },
+          "single_source": {
+            "title": "Single Source",
+            "type": "boolean"
+          },
+          "sources": {
+            "title": "Sources",
+            "type": "integer"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "tone": {
+            "title": "Tone",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "angle",
+          "audience",
+          "tone",
+          "length",
+          "language",
+          "channel",
+          "provider_id",
+          "model",
+          "items",
+          "sources",
+          "single_source",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "BriefView",
+        "type": "object"
+      },
       "BudgetView": {
         "properties": {
           "currency": {
@@ -1579,6 +1839,7 @@
               {
                 "enum": [
                   "kept",
+                  "writing",
                   "dismissed",
                   "archived"
                 ],
@@ -1623,6 +1884,7 @@
               {
                 "enum": [
                   "kept",
+                  "writing",
                   "dismissed",
                   "archived"
                 ],
@@ -1727,6 +1989,7 @@
         "enum": [
           "to_sort",
           "kept",
+          "writing",
           "dismissed",
           "archived",
           "pinned",
@@ -2392,6 +2655,249 @@
           }
         },
         "summary": "Get Workspace"
+      }
+    },
+    "/api/workspaces/{workspace_id}/briefs": {
+      "get": {
+        "description": "The briefs of the workspace, the most recently changed first.",
+        "operationId": "list_briefs_api_workspaces__workspace_id__briefs_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BriefView"
+                  },
+                  "title": "Response List Briefs Api Workspaces  Workspace Id  Briefs Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Briefs"
+      },
+      "post": {
+        "description": "Creates a brief; its items move to drafting in the triage of its author.",
+        "operationId": "create_brief_api_workspaces__workspace_id__briefs_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BriefBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BriefView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Brief"
+      }
+    },
+    "/api/workspaces/{workspace_id}/briefs/{brief_id}": {
+      "delete": {
+        "operationId": "delete_brief_api_workspaces__workspace_id__briefs__brief_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "brief_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Brief Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Brief"
+      },
+      "get": {
+        "operationId": "get_brief_api_workspaces__workspace_id__briefs__brief_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "brief_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Brief Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BriefView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Brief"
+      },
+      "put": {
+        "operationId": "update_brief_api_workspaces__workspace_id__briefs__brief_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "brief_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Brief Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BriefBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BriefView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Brief"
       }
     },
     "/api/workspaces/{workspace_id}/feed": {

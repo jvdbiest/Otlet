@@ -30,7 +30,7 @@ from otlet.workspaces.domain.model import WorkspaceContext
 
 
 class TriageView(BaseModel):
-    decision: Literal["kept", "dismissed", "archived"] | None
+    decision: Literal["kept", "writing", "dismissed", "archived"] | None
     pinned: bool
     read_at: datetime | None
 
@@ -72,7 +72,7 @@ class GroupView(BaseModel):
 class TriageChange(BaseModel):
     """A field left out keeps its value; `decision: null` clears the decision."""
 
-    decision: Literal["kept", "dismissed", "archived"] | None = None
+    decision: Literal["kept", "writing", "dismissed", "archived"] | None = None
     pinned: bool | None = None
     read: bool | None = None
 

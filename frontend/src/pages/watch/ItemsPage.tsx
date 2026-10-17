@@ -30,7 +30,7 @@ import { TopicBadge } from "./TopicBadge.tsx";
 import { TopicMenu } from "./TopicMenu.tsx";
 import { TriageActions } from "./TriageActions.tsx";
 
-const VIEWS: readonly FeedView[] = ["to_sort", "kept", "pinned", "archived", "dismissed", "all"];
+const VIEWS: readonly FeedView[] = ["to_sort", "kept", "writing", "pinned", "archived", "dismissed", "all"];
 const SORTS: readonly FeedSort[] = ["date", "score", "topic", "source"];
 const GROUPS: readonly GroupBy[] = ["topic", "source"];
 

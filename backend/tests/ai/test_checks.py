@@ -114,6 +114,7 @@ def test_a_check_runs_through_the_profile_and_is_journaled(
         assert [r["body"]["model"] for r in fake.requests] == ["qwen2.5:1.5b-instruct", "llama3.1"]
         calls = journal.recent(alice)
         assert [(c["result"], c["provider_kind"]) for c in calls] == [("ok", "ollama")] * 2
+        assert journal.clear(alice) == 2 and journal.recent(alice) == []
         sent = fake.requests[-1]["body"]
         assert sent["response_format"]["json_schema"]["name"] == "check"
     finally:

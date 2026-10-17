@@ -2,10 +2,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { draftQuery, useGenerateDraft, type GenerationView } from "../../writing.ts";
+import { draftQuery, useClearDetails, useGenerateDraft, type GenerationView } from "../../writing.ts";
 import { errorText, formatDate } from "../watch/labels.ts";
 import { styles } from "../watch/styles.ts";
 import { DocumentView, type PlatformDocument } from "./DocumentView.tsx";
+import { GenerationDetails } from "./GenerationDetails.tsx";
 
 const FAILURES = [
   "no_profile",
@@ -28,6 +29,8 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
   const { t } = useTranslation();
   const draft = useQuery(draftQuery(workspaceId, briefId));
   const generate = useGenerateDraft(workspaceId, briefId);
+  const clear = useClearDetails(workspaceId, briefId);
+  const [confirming, setConfirming] = useState(false);
   const [chosen, setChosen] = useState<number | null>(null);
   if (draft.data === undefined) {
     return null;
@@ -77,6 +80,10 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
               </li>
             ))}
           </ul>
+          <GenerationDetails
+            details={generation.details}
+            heading={t("draft.details.failedHeading", { date: formatDate(generation.created_at) })}
+          />
         </div>
       )}
       {shown !== undefined && (
@@ -126,12 +133,57 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
           {shown.cut_sources.length > 0 && (
             <p className={styles.notice}>{t("draft.cut", { sources: shown.cut_sources.join(", ") })}</p>
           )}
+          <GenerationDetails
+            details={shown.details}
+            heading={t("draft.details.heading", { number: shown.number, date: formatDate(shown.created_at) })}
+          />
           <DocumentView
             document={shown.document as unknown as PlatformDocument}
             title={shown.title}
             prefix={`v${String(shown.number)}`}
           />
         </>
+      )}
+      {(versions.length > 0 || generation !== null) && (
+        <p className={styles.row}>
+          {confirming ? (
+            <>
+              <span>{t("draft.details.confirmClear")}</span>
+              <button
+                type="button"
+                className={styles.button}
+                onClick={() => {
+                  clear.mutate(undefined, {
+                    onSuccess: () => {
+                      setConfirming(false);
+                    },
+                  });
+                }}
+              >
+                {t("draft.details.clear")}
+              </button>
+              <button
+                type="button"
+                className={styles.button}
+                onClick={() => {
+                  setConfirming(false);
+                }}
+              >
+                {t("brief.cancel")}
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              className={styles.linkButton}
+              onClick={() => {
+                setConfirming(true);
+              }}
+            >
+              {t("draft.details.clearAll")}
+            </button>
+          )}
+        </p>
       )}
     </section>
   );

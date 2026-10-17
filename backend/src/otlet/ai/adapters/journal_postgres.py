@@ -39,6 +39,13 @@ class PostgresCallJournal:
                 },
             )
 
+    def clear(self, user_id: UUID) -> int:
+        """Empties the journal of the user; the budget keeps its own account."""
+        with scoped_transaction(self._engine, user_id=user_id) as connection:
+            return connection.execute(
+                sa.text("DELETE FROM ai_calls WHERE user_id = :user"), {"user": user_id}
+            ).rowcount
+
     def recent(self, user_id: UUID, limit: int = 50) -> list[dict[str, Any]]:
         with scoped_transaction(self._engine, user_id=user_id) as connection:
             rows = (

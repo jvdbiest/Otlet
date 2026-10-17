@@ -19,6 +19,7 @@ import {
   useSavePolicy,
   useSaveProfile,
   useStartCheck,
+  useClearCalls,
   useSetContextWindow,
   useStartPull,
   type CatalogueView,
@@ -866,9 +867,18 @@ function Policy({ catalogue }: { catalogue: CatalogueView }) {
 function Journal() {
   const { t } = useTranslation();
   const calls = useQuery(callsQuery);
+  const clear = useClearCalls();
+  const [copied, setCopied] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   if (calls.data === undefined || calls.data.length === 0) {
     return null;
   }
+  const text = calls.data
+    .map(
+      (call) =>
+        `${formatDate(call.at)} · ${call.usage} · ${call.provider_kind} · ${call.model} · ${call.result}${call.detail ? ` (${call.detail})` : ""} · ${String(call.tokens_in)} → ${String(call.tokens_out)} jetons · ${call.seconds} s`,
+    )
+    .join("\n");
   return (
     <section className={styles.panel} aria-labelledby="ai-journal">
       <h2 id="ai-journal">{t("ai.journal.title")}</h2>
@@ -880,6 +890,57 @@ function Journal() {
           </li>
         ))}
       </ul>
+      <p className={styles.row}>
+        <button
+          type="button"
+          className={styles.button}
+          onClick={() => {
+            void navigator.clipboard.writeText(text).then(() => {
+              setCopied(true);
+            });
+          }}
+        >
+          {t("ai.journal.copy")}
+        </button>
+        {copied && <span className={styles.meta}>{t("draft.details.copied")}</span>}
+        {confirming ? (
+          <>
+            <span>{t("ai.journal.confirmClear")}</span>
+            <button
+              type="button"
+              className={styles.button}
+              onClick={() => {
+                clear.mutate(undefined, {
+                  onSuccess: () => {
+                    setConfirming(false);
+                  },
+                });
+              }}
+            >
+              {t("ai.journal.clear")}
+            </button>
+            <button
+              type="button"
+              className={styles.button}
+              onClick={() => {
+                setConfirming(false);
+              }}
+            >
+              {t("brief.cancel")}
+            </button>
+          </>
+        ) : (
+          <button
+            type="button"
+            className={styles.button}
+            onClick={() => {
+              setConfirming(true);
+            }}
+          >
+            {t("ai.journal.clear")}
+          </button>
+        )}
+      </p>
     </section>
   );
 }

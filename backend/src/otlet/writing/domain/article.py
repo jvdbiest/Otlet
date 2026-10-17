@@ -20,6 +20,7 @@ class Version:
     unused_sources: tuple[str, ...]  # titles of the items of the brief the draft does not cite
     context_overflow: bool  # more tokens than the window: the start may have been dropped
     created_at: datetime
+    details: dict[str, Any] = field(default_factory=dict)  # of the generation that made it
 
 
 @dataclass(frozen=True, slots=True)
@@ -45,3 +46,6 @@ class Generation:
     attempts: tuple[dict[str, Any], ...]  # provider, model, result, seconds: never the text
     created_at: datetime
     finished_at: datetime | None
+    # What it was written with: brief settings, window, room for the sources, what each source
+    # sent, the reasons of refused answers. Never the prompt nor the answer.
+    details: dict[str, Any] = field(default_factory=dict)

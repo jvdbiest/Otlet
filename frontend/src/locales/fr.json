@@ -484,7 +484,10 @@
     },
     "journal": {
       "title": "Derniers appels",
-      "tokens": "{input} → {output} jetons"
+      "tokens": "{input} → {output} jetons",
+      "copy": "Copier le journal",
+      "clear": "Effacer le journal",
+      "confirmClear": "Effacer tout le journal de vos appels IA ? Votre budget n'est pas touché."
     },
     "policy": {
       "title": "Administration de l'instance",
@@ -636,6 +639,17 @@
       "out_of_room": "Le modèle a manqué de place : sa réponse a été coupée avant la fin. Agrandissez la fenêtre de contexte du fournisseur (Réglages > IA), ou raccourcissez le brief."
     },
     "unused": "{count, plural, one {Ce brouillon n'utilise pas cet élément du brief, malgré une demande de correction au modèle :} other {Ce brouillon n'utilise pas ces # éléments du brief, malgré une demande de correction au modèle :}}",
-    "overflow": "Ce brouillon a dépassé la fenêtre de contexte du modèle : un moteur local a pu effacer le début de la conversation, où se trouvent les règles d'Otlet. Relisez-le avec soin, et agrandissez la fenêtre du fournisseur."
+    "overflow": "Ce brouillon a dépassé la fenêtre de contexte du modèle : un moteur local a pu effacer le début de la conversation, où se trouvent les règles d'Otlet. Relisez-le avec soin, et agrandissez la fenêtre du fournisseur.",
+    "details": {
+      "title": "Détails de génération",
+      "heading": "Version {number} ({date})",
+      "failedHeading": "Génération échouée ({date})",
+      "none": "Pas de détails pour cette version (effacés, ou version antérieure à leur enregistrement).",
+      "copy": "Copier les détails",
+      "copied": "Copié.",
+      "clearAll": "Effacer les détails de génération de ce brief",
+      "confirmClear": "Effacer les détails et les tentatives de toutes les générations de ce brief ? Les versions restent.",
+      "clear": "Oui, effacer"
+    }
   }
 }

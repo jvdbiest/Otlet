@@ -129,6 +129,7 @@ class GenerationView(BaseModel):
     error: str | None
     version: int | None
     attempts: list[dict[str, Any]]  # provider, model, result, seconds: never the text
+    details: dict[str, Any]  # what it was written with: never the prompt nor the answer
     created_at: datetime
     finished_at: datetime | None
 
@@ -141,6 +142,7 @@ class GenerationView(BaseModel):
             error=generation.error,
             version=generation.version,
             attempts=list(generation.attempts),
+            details=generation.details,
             created_at=generation.created_at,
             finished_at=generation.finished_at,
         )
@@ -157,6 +159,7 @@ class VersionView(BaseModel):
     cut_sources: list[str]
     unused_sources: list[str]  # items of the brief the draft does not cite
     context_overflow: bool  # the call went past the window: the start may have been dropped
+    details: dict[str, Any]  # of the generation that made it; {} once cleared
     created_at: datetime
 
     @classmethod
@@ -172,6 +175,7 @@ class VersionView(BaseModel):
             cut_sources=list(version.cut_sources),
             unused_sources=list(version.unused_sources),
             context_overflow=version.context_overflow,
+            details=version.details,
             created_at=version.created_at,
         )
 
@@ -253,6 +257,13 @@ def build_router(
             article=None if article is None else ArticleView.of(article),
             generation=None if generation is None else GenerationView.of(generation),
         )
+
+    @router.delete("/briefs/{brief_id}/details", status_code=status.HTTP_204_NO_CONTENT)
+    def clear_details(brief_id: UUID, context: Context) -> None:
+        """Empties the details and attempts of the drafts of the brief (diagnostics only: the
+        versions themselves stay)."""
+        if drafts.clear_details(context, brief_id) is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "brief_not_found")
 
     @router.post("/briefs/{brief_id}/generations", status_code=status.HTTP_202_ACCEPTED)
     def generate(brief_id: UUID, context: Context) -> GenerationView:

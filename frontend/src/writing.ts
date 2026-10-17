@@ -117,3 +117,19 @@ export function useGenerateDraft(workspaceId: string, briefId: string) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: draftQuery(workspaceId, briefId).queryKey }),
   });
 }
+
+/** Empties the details and attempts of the drafts of a brief; the versions stay. */
+export function useClearDetails(workspaceId: string, briefId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { error, response } = await api.DELETE("/api/workspaces/{workspace_id}/briefs/{brief_id}/details", {
+        params: { path: { workspace_id: workspaceId, brief_id: briefId } },
+      });
+      if (!response.ok) {
+        throw apiError(response, error);
+      }
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: draftQuery(workspaceId, briefId).queryKey }),
+  });
+}

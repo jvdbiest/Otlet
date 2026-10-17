@@ -36,7 +36,11 @@ export interface paths {
         get: operations["recent_calls_api_ai_calls_get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * Clear Calls
+         * @description Empties the journal of the user's calls; the budget keeps its own account.
+         */
+        delete: operations["clear_calls_api_ai_calls_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -405,6 +409,27 @@ export interface paths {
         post?: never;
         /** Delete Brief */
         delete: operations["delete_brief_api_workspaces__workspace_id__briefs__brief_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/briefs/{brief_id}/details": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Clear Details
+         * @description Empties the details and attempts of the drafts of the brief (diagnostics only: the
+         *     versions themselves stay).
+         */
+        delete: operations["clear_details_api_workspaces__workspace_id__briefs__brief_id__details_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1181,6 +1206,10 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            /** Details */
+            details: {
+                [key: string]: unknown;
+            };
             /** Error */
             error: string | null;
             /** Finished At */
@@ -1719,6 +1748,10 @@ export interface components {
             created_at: string;
             /** Cut Sources */
             cut_sources: string[];
+            /** Details */
+            details: {
+                [key: string]: unknown;
+            };
             /** Document */
             document: {
                 [key: string]: unknown;
@@ -1835,6 +1868,24 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["CallView"][];
                 };
+            };
+        };
+    };
+    clear_calls_api_ai_calls_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -2616,6 +2667,36 @@ export interface operations {
         };
     };
     delete_brief_api_workspaces__workspace_id__briefs__brief_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                brief_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    clear_details_api_workspaces__workspace_id__briefs__brief_id__details_delete: {
         parameters: {
             query?: never;
             header?: never;

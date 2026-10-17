@@ -439,7 +439,8 @@
       "up": "Monter le modèle n° {position}",
       "remove": "Retirer le modèle n° {position}",
       "add": "Ajouter un modèle",
-      "save": "Enregistrer le profil"
+      "save": "Enregistrer le profil",
+      "statuses": "« testé » : mesuré par le projet Otlet (format, qualité, coût) ; « non testé » : pas encore mesuré par le projet, il peut très bien fonctionner ; « bloqué » : l'administrateur ne l'a pas autorisé. Le bouton « Tester » ci-dessous vérifie seulement que vos modèles répondent, il ne change pas ces statuts."
     },
     "status": {
       "tested": "testé",
@@ -468,7 +469,8 @@
         "unavailable": "Aucun modèle du profil n'a répondu. Pour un modèle local, vérifiez qu'il tourne et que l'administrateur a autorisé son adresse.",
         "blocked": "Les modèles du profil sont bloqués par l'instance."
       },
-      "summary": "{answered, plural, =0 {Aucun des {count} modèles n'a répondu.} one {# modèle sur {count} a répondu.} other {# modèles sur {count} ont répondu.}}"
+      "summary": "{answered, plural, =0 {Aucun des {count} modèles n'a répondu.} one {# modèle sur {count} a répondu.} other {# modèles sur {count} ont répondu.}}",
+      "repaired": "Sa première réponse ne respectait pas le format demandé : Otlet lui a demandé une correction, qui a réussi (deuxième ligne ci-dessous)."
     },
     "result": {
       "ok": "réussi",

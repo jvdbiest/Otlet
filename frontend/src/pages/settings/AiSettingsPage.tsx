@@ -239,6 +239,7 @@ function Profile({ catalogue }: { catalogue: CatalogueView }) {
     <section className={styles.panel} aria-labelledby="ai-profile">
       <h2 id="ai-profile">{t("ai.profile.title")}</h2>
       <p className={styles.help}>{t("ai.profile.help")}</p>
+      <p className={styles.help}>{t("ai.profile.statuses")}</p>
       {list.length === 0 ? (
         <p className={styles.meta}>{t("ai.profile.noProvider")}</p>
       ) : (
@@ -582,6 +583,7 @@ interface ModelResult {
   provider: string | null;
   model: string | null;
   answer: { title?: string; keywords?: string[] } | null;
+  repaired?: boolean;
   attempts: { provider: string; model: string; result: string; seconds: number }[];
 }
 
@@ -598,6 +600,7 @@ function ModelOutcome({ model }: { model: ModelResult }) {
           <p>
             <strong>{model.answer?.title}</strong> — {(model.answer?.keywords ?? []).join(", ")}
           </p>
+          {model.repaired === true && <p className={styles.meta}>{t("ai.check.repaired")}</p>}
         </>
       ) : (
         <p>

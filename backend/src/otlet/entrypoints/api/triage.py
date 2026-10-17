@@ -14,7 +14,18 @@ from otlet.entrypoints.api.auth import same_origin
 from otlet.entrypoints.api.collection import ItemView
 from otlet.entrypoints.api.workspaces import PREFIX
 from otlet.watch.application.triage import Change, Feed
-from otlet.watch.domain.triage import Decision, Period, TopicFilter, TopicTag, Triage, View
+from otlet.watch.domain.triage import (
+    Decision,
+    Group,
+    GroupBy,
+    InGroup,
+    Period,
+    Sort,
+    TopicFilter,
+    TopicTag,
+    Triage,
+    View,
+)
 from otlet.workspaces.domain.model import WorkspaceContext
 
 
@@ -46,6 +57,16 @@ class FeedItemView(BaseModel):
     item: ItemView
     triage: TriageView
     topics: list[TopicTagView]  # best score first: the first is the main topic
+
+
+class GroupView(BaseModel):
+    key: UUID | None  # None: the items without topic, or the manual entries
+    name: str
+    count: int
+
+    @classmethod
+    def of(cls, group: Group) -> "GroupView":
+        return cls(key=group.key, name=group.name, count=group.count)
 
 
 class TriageChange(BaseModel):
@@ -106,11 +127,16 @@ def build_router(feed: Feed, workspace_context: Callable[..., WorkspaceContext])
         all_topics: bool = False,
         since: datetime | None = None,
         until: datetime | None = None,
+        sort: Sort = Sort.DATE,
+        group_by: GroupBy | None = None,
+        group: UUID | None = None,
     ) -> list[FeedItemView]:
-        """The feed of the user: pinned items first, then the most recent (in date order only
-        for `all`); `before` (the id of the last item of the previous page) pages back.
+        """The feed of the user: pinned items first (except for `all`), then in the order of
+        `sort`; `before` (the id of the last item of the previous page) pages back.
         `topic_id`, repeated, keeps the items of at least one of these topics, or of all of
-        them with `all_topics`; `since` and `until` keep the items dated in between."""
+        them with `all_topics`; `since` and `until` keep the items dated in between;
+        `group_by` with `group` keeps one group of `/feed/groups` (no `group`: the items
+        without topic, or the manual entries)."""
         items = feed.feed(
             context,
             view=view,
@@ -120,6 +146,8 @@ def build_router(feed: Feed, workspace_context: Callable[..., WorkspaceContext])
             limit=limit,
             topics=TopicFilter(tuple(topic_id), all_topics),
             period=period_of(since, until),
+            sort=sort,
+            group=None if group_by is None else InGroup(group_by, group),
         )
         return [
             FeedItemView(
@@ -129,6 +157,31 @@ def build_router(feed: Feed, workspace_context: Callable[..., WorkspaceContext])
             )
             for f in items
         ]
+
+    @router.get("/feed/groups")
+    def feed_groups(
+        context: Context,
+        by: GroupBy,
+        view: View = View.TO_SORT,
+        source_id: UUID | None = None,
+        unread: bool = False,
+        topic_id: Annotated[list[UUID], Query(max_length=100)] = [],  # noqa: B006 (FastAPI copies it)
+        all_topics: bool = False,
+        since: datetime | None = None,
+        until: datetime | None = None,
+    ) -> list[GroupView]:
+        """The groups of the feed, by main topic or by source, with the same filters as
+        `/feed`, and how many items each holds; the group without key comes last."""
+        groups = feed.groups(
+            context,
+            by=by,
+            view=view,
+            source_id=source_id,
+            unread_only=unread,
+            topics=TopicFilter(tuple(topic_id), all_topics),
+            period=period_of(since, until),
+        )
+        return [GroupView.of(group) for group in groups]
 
     @router.post("/items/triage")
     def change_many(body: BulkTriage, context: Context) -> BulkResult:

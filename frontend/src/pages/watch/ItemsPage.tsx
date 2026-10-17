@@ -2,6 +2,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
+import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import { Button, Form, Input, Label, TextField } from "react-aria-components";
 import { sourcesQuery, type ItemView } from "../../collection.ts";
@@ -10,13 +11,16 @@ import {
   ANY_TIME,
   FEED_PAGE_SIZE,
   feedQuery,
+  groupsQuery,
   type FeedFilter,
+  type FeedSort,
   type FeedView,
+  type GroupBy,
   type Period,
   type TopicTagView,
   type TriageView,
 } from "../../triage.ts";
-import { searchQuery, useRefreshWatch } from "../../watch.ts";
+import { searchQuery, useRefreshWatch, type FoundItemView } from "../../watch.ts";
 import { formatDate, textLabel, textTone } from "./labels.ts";
 import { BulkBar } from "./BulkBar.tsx";
 import { PeriodFilter } from "./PeriodFilter.tsx";
@@ -27,6 +31,33 @@ import { TopicMenu } from "./TopicMenu.tsx";
 import { TriageActions } from "./TriageActions.tsx";
 
 const VIEWS: readonly FeedView[] = ["to_sort", "kept", "pinned", "archived", "dismissed", "all"];
+const SORTS: readonly FeedSort[] = ["date", "score", "topic", "source"];
+const GROUPS: readonly GroupBy[] = ["topic", "source"];
+
+// The sort and the grouping are remembered in this browser, for the next visit.
+const SORT_KEY = "otlet.feed.sort";
+const GROUP_KEY = "otlet.feed.group";
+
+function remembered<T extends string>(key: string, among: readonly T[]): T | null {
+  try {
+    const value = window.localStorage.getItem(key);
+    return among.find((choice) => choice === value) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function remember(key: string, value: string | null) {
+  try {
+    if (value === null) {
+      window.localStorage.removeItem(key);
+    } else {
+      window.localStorage.setItem(key, value);
+    }
+  } catch {
+    // Without storage, the choice lasts until the page is left.
+  }
+}
 
 /** The feed of the user: what is left to sort first, then what was kept, pinned or dismissed
  * (X02, F-VEI-04, F-VEI-05). */
@@ -44,9 +75,10 @@ function Items({ workspaceId }: { workspaceId: string }) {
     topicIds: [],
     allTopics: false,
     period: ANY_TIME,
+    sort: remembered(SORT_KEY, SORTS) ?? "date",
+    group: null,
   });
-  // Older pages, each starting after the last item of the previous one.
-  const [pages, setPages] = useState<(string | null)[]>([null]);
+  const [groupBy, setGroupBy] = useState<GroupBy | null>(() => remembered(GROUP_KEY, GROUPS));
   const sources = useQuery(sourcesQuery(workspaceId));
   const [draft, setDraft] = useState("");
   const [query, setQuery] = useState("");
@@ -66,7 +98,6 @@ function Items({ workspaceId }: { workspaceId: string }) {
   };
   const update = (next: Partial<FeedFilter>) => {
     setFilter((current) => ({ ...current, ...next }));
-    setPages([null]);
     reset();
   };
 
@@ -101,6 +132,20 @@ function Items({ workspaceId }: { workspaceId: string }) {
           update({ period });
         }}
       />
+      <DisplayMenu
+        sort={filter.sort}
+        groupBy={groupBy}
+        searching={query !== ""}
+        onSort={(sort) => {
+          remember(SORT_KEY, sort);
+          update({ sort });
+        }}
+        onGroup={(next) => {
+          remember(GROUP_KEY, next);
+          setGroupBy(next);
+          reset();
+        }}
+      />
       <BulkBar workspaceId={workspaceId} visible={visible} selected={selected} onSelect={setSelected} />
       {query !== "" ? (
         <SearchResults
@@ -109,6 +154,7 @@ function Items({ workspaceId }: { workspaceId: string }) {
           topicIds={filter.topicIds}
           allTopics={filter.allTopics}
           period={filter.period}
+          groupBy={groupBy}
           selected={selected}
           onToggle={toggle}
           onLoaded={report}
@@ -162,31 +208,195 @@ function Items({ workspaceId }: { workspaceId: string }) {
               {t("triage.unreadOnly")}
             </label>
           </div>
-          {pages.map((before, index) => (
-            <FeedPage
-              key={before ?? "first"}
+          {groupBy === null ? (
+            <FeedPages
+              key={JSON.stringify(filter)}
               workspaceId={workspaceId}
               filter={filter}
-              before={before}
-              isLast={index === pages.length - 1}
-              onMore={(next) => {
-                setPages((current) => [...current, next]);
-              }}
+              prefix=""
               selected={selected}
               onToggle={toggle}
               onLoaded={report}
             />
-          ))}
+          ) : (
+            <FeedGroups
+              workspaceId={workspaceId}
+              filter={filter}
+              by={groupBy}
+              selected={selected}
+              onToggle={toggle}
+              onLoaded={report}
+            />
+          )}
         </>
       )}
     </>
   );
 }
 
+/** Trier par and Grouper par (U03): how the feed is shown, whatever the filters. During a
+ * search, the order stays the relevance; the grouping still applies. */
+function DisplayMenu({
+  sort,
+  groupBy,
+  searching,
+  onSort,
+  onGroup,
+}: {
+  sort: FeedSort;
+  groupBy: GroupBy | null;
+  searching: boolean;
+  onSort: (sort: FeedSort) => void;
+  onGroup: (groupBy: GroupBy | null) => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <div className={styles.search}>
+      {!searching && (
+        <div className={styles.field}>
+          <label htmlFor="feed-sort">{t("triage.display.sort")}</label>
+          <select
+            id="feed-sort"
+            value={sort}
+            onChange={(event) => {
+              onSort(SORTS.find((choice) => choice === event.target.value) ?? "date");
+            }}
+          >
+            {SORTS.map((choice) => (
+              <option key={choice} value={choice}>
+                {t(`triage.display.sorts.${choice}`)}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+      <div className={styles.field}>
+        <label htmlFor="feed-group">{t("triage.display.group")}</label>
+        <select
+          id="feed-group"
+          value={groupBy ?? ""}
+          onChange={(event) => {
+            onGroup(GROUPS.find((choice) => choice === event.target.value) ?? null);
+          }}
+        >
+          <option value="">{t("triage.display.groups.none")}</option>
+          {GROUPS.map((choice) => (
+            <option key={choice} value={choice}>
+              {t(`triage.display.groups.${choice}`)}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
+  );
+}
+
+function groupName(t: TFunction, by: GroupBy, name: string | null): string {
+  if (name !== null && name !== "") {
+    return name;
+  }
+  return by === "topic" ? t("triage.display.noTopic") : t("triage.display.manual");
+}
+
+/** The groups of the feed, each folded or not, with how many items the filters keep in it. */
+function FeedGroups({
+  workspaceId,
+  filter,
+  by,
+  selected,
+  onToggle,
+  onLoaded,
+}: {
+  workspaceId: string;
+  filter: FeedFilter;
+  by: GroupBy;
+  selected: string[];
+  onToggle: (id: string, on: boolean) => void;
+  onLoaded: (key: string, ids: string[]) => void;
+}) {
+  const { t } = useTranslation();
+  const groups = useQuery(groupsQuery(workspaceId, filter, by));
+  const [folded, setFolded] = useState<string[]>([]);
+  if (groups.isError) {
+    return <p role="alert">{t("watch.loadFailed")}</p>;
+  }
+  if (groups.data === undefined) {
+    return <p>{t("app.loading")}</p>;
+  }
+  if (groups.data.length === 0) {
+    return <p className={styles.meta}>{t(`triage.empty.${filter.view}`)}</p>;
+  }
+  return groups.data.map((group) => {
+    const id = group.key ?? "none";
+    const open = !folded.includes(id);
+    const inGroup: FeedFilter = { ...filter, group: { by, key: group.key } };
+    return (
+      <details
+        key={id}
+        open={open}
+        className={styles.group}
+        onToggle={(event) => {
+          const isOpen = event.currentTarget.open;
+          setFolded((current) => (isOpen ? current.filter((other) => other !== id) : [...current, id]));
+        }}
+      >
+        <summary>{t("triage.display.heading", { name: groupName(t, by, group.name), count: group.count })}</summary>
+        {open && (
+          <FeedPages
+            key={JSON.stringify(inGroup)}
+            workspaceId={workspaceId}
+            filter={inGroup}
+            prefix={`${id}:`}
+            selected={selected}
+            onToggle={onToggle}
+            onLoaded={onLoaded}
+          />
+        )}
+      </details>
+    );
+  });
+}
+
+/** The pages of the feed, each starting after the last item of the previous one. */
+function FeedPages({
+  workspaceId,
+  filter,
+  prefix,
+  selected,
+  onToggle,
+  onLoaded,
+}: {
+  workspaceId: string;
+  filter: FeedFilter;
+  prefix: string;
+  selected: string[];
+  onToggle: (id: string, on: boolean) => void;
+  onLoaded: (key: string, ids: string[]) => void;
+}) {
+  const [pages, setPages] = useState<(string | null)[]>([null]);
+  return pages.map((before, index) => (
+    <FeedPage
+      key={before ?? "first"}
+      workspaceId={workspaceId}
+      filter={filter}
+      before={before}
+      loadedKey={`${prefix}${before ?? "first"}`}
+      isLast={index === pages.length - 1}
+      onMore={(next) => {
+        setPages((current) => [...current, next]);
+      }}
+      selected={selected}
+      onToggle={onToggle}
+      onLoaded={onLoaded}
+    />
+  ));
+}
+
 function FeedPage({
   workspaceId,
   filter,
   before,
+  loadedKey,
   isLast,
   onMore,
   selected,
@@ -196,6 +406,7 @@ function FeedPage({
   workspaceId: string;
   filter: FeedFilter;
   before: string | null;
+  loadedKey: string;
   isLast: boolean;
   onMore: (before: string) => void;
   selected: string[];
@@ -206,9 +417,9 @@ function FeedPage({
   const feed = useQuery(feedQuery(workspaceId, filter, before));
   useEffect(() => {
     if (feed.data !== undefined) {
-      onLoaded(before ?? "first", feed.data.map((entry) => entry.item.id));
+      onLoaded(loadedKey, feed.data.map((entry) => entry.item.id));
     }
-  }, [feed.data, before, onLoaded]);
+  }, [feed.data, loadedKey, onLoaded]);
   if (feed.isError) {
     return <p role="alert">{t("watch.loadFailed")}</p>;
   }
@@ -356,6 +567,7 @@ function SearchResults({
   topicIds,
   allTopics,
   period,
+  groupBy,
   selected,
   onToggle,
   onLoaded,
@@ -365,6 +577,7 @@ function SearchResults({
   topicIds: string[];
   allTopics: boolean;
   period: Period;
+  groupBy: GroupBy | null;
   selected: string[];
   onToggle: (id: string, on: boolean) => void;
   onLoaded: (key: string, ids: string[]) => void;
@@ -382,28 +595,61 @@ function SearchResults({
   if (found.data === undefined) {
     return <p>{t("app.loading")}</p>;
   }
+  const list = (results: FoundItemView[]) => (
+    <ul className={styles.list}>
+      {results.map((result) => (
+        <ItemCard
+          key={result.item.id}
+          workspaceId={workspaceId}
+          item={result.item}
+          triage={result.triage}
+          topics={result.topics}
+          chosenTopics={topicIds}
+          selected={selected.includes(result.item.id)}
+          onToggle={(on) => {
+            onToggle(result.item.id, on);
+          }}
+        />
+      ))}
+    </ul>
+  );
   return (
     <>
       <p role="status">{t("watch.search.results", { count: found.data.length, q: query })}</p>
-      {found.data.length > 0 && (
-        <ul className={styles.list}>
-          {found.data.map((result) => (
-            <ItemCard
-              key={result.item.id}
-              workspaceId={workspaceId}
-              item={result.item}
-              triage={result.triage}
-              topics={result.topics}
-              chosenTopics={topicIds}
-              selected={selected.includes(result.item.id)}
-              onToggle={(on) => {
-                onToggle(result.item.id, on);
-              }}
-            />
-          ))}
-        </ul>
-      )}
+      {found.data.length > 0 &&
+        (groupBy === null
+          ? list(found.data)
+          : searchGroups(found.data, groupBy).map((group) => (
+              <details key={group.key ?? "none"} open className={styles.group}>
+                <summary>
+                  {t("triage.display.heading", {
+                    name: groupName(t, groupBy, group.name),
+                    count: group.results.length,
+                  })}
+                </summary>
+                {list(group.results)}
+              </details>
+            )))}
     </>
+  );
+}
+
+/** The results of a search in groups, as the feed groups its items. A search shows its best
+ * matches only: the groups count the results shown, and the best match stays first in each. */
+function searchGroups(results: FoundItemView[], by: GroupBy) {
+  const groups = new Map<string, { key: string | null; name: string | null; results: FoundItemView[] }>();
+  for (const result of results) {
+    const main = result.topics[0];
+    const key = by === "topic" ? (main?.id ?? null) : result.item.source_id;
+    const name = by === "topic" ? (main?.name ?? null) : result.item.source_name;
+    const group = groups.get(key ?? "") ?? { key, name, results: [] };
+    group.results.push(result);
+    groups.set(key ?? "", group);
+  }
+  return [...groups.values()].sort((a, b) =>
+    a.key === null || b.key === null
+      ? Number(a.key === null) - Number(b.key === null)
+      : (a.name ?? "").localeCompare(b.name ?? "", "fr", { sensitivity: "base" }),
   );
 }
 

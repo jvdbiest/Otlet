@@ -258,3 +258,89 @@ def test_an_archived_item_leaves_the_current_views(setup: Setup) -> None:
     assert len(titles(feed, context, view=View.ALL)) == 3
     feed.change(context, ids[0], Change(clear_decision=True))
     assert titles(feed, context) == ["Article 0", "Article 2"]
+
+
+def test_the_feed_sorts_and_groups_by_score_topic_and_source(setup: Setup) -> None:
+    from otlet.watch.adapters.postgres import PostgresWatchStore
+    from otlet.watch.application.watch import Watch
+    from otlet.watch.domain.triage import GroupBy, InGroup, Sort
+
+    feed, context, ids = setup.feed, setup.context, setup.ids
+    store = PostgresCollectionStore(setup.engine, lambda connection, name, **kwargs: 0)
+    agency = store.add_source(
+        context.workspace_id,
+        name="agence",  # lower case: the order of names ignores the case
+        url="https://a.example.org/feed",
+        feed_url="https://a.example.org/feed",
+        site_url=None,
+        interval_minutes=60,
+    ).id
+    entry = FeedEntry(
+        guid="9",
+        url=None,
+        title="Dépêche 9",
+        author=None,
+        published_at=NOW - timedelta(hours=4),
+        summary=None,
+        content=None,
+    )
+    store.finish_collection(
+        context.workspace_id,
+        agency,
+        Outcome(fetched_at=NOW, next_fetch_at=NOW, success=True),
+        [NewItem(entry, TextStatus.SUMMARY_ONLY, "test")],
+    )
+    watch = Watch(PostgresWatchStore(setup.engine, lambda connection, name, **kwargs: 0))
+    topics = {
+        name: watch.create_topic(context, name=name, keywords=keywords)
+        for name, keywords in (("B", ["1", "2"]), ("A", ["0", "1"]), ("C", ["1", "article"]))
+    }
+    for topic in topics.values():
+        watch.rescore_topic(context.workspace_id, topic.id, NOW)
+    # Main topics: Article 0 → A, Article 1 → C (best score), Article 2 → B; the dispatch: none.
+    items = feed.feed(context, view=View.ALL)
+    by_score = sorted(
+        items,
+        key=lambda f: (
+            -(f.topics[0].score if f.topics else -1),
+            NOW - (f.item.published_at or NOW),
+        ),
+    )
+    assert titles(feed, context, view=View.ALL, sort=Sort.SCORE) == [f.item.title for f in by_score]
+    assert by_score[0].item.title == "Article 1"
+    in_topics = ["Article 0", "Article 2", "Article 1", "Dépêche 9"]
+    assert titles(feed, context, view=View.ALL, sort=Sort.TOPIC) == in_topics
+    in_sources = ["Dépêche 9", "Article 0", "Article 1", "Article 2"]
+    assert titles(feed, context, view=View.ALL, sort=Sort.SOURCE) == in_sources
+    # The cursor follows the sort, page after page.
+    for sort, expected in ((Sort.TOPIC, in_topics), (Sort.SOURCE, in_sources)):
+        seen: list[str] = []
+        before = None
+        while page := feed.feed(context, view=View.ALL, sort=sort, limit=1, before=before):
+            seen.append(page[0].item.title)
+            before = page[0].item.id
+        assert seen == expected
+    # Pinned items stay first in the views that pin them, whatever the sort.
+    feed.change(context, ids[2], Change(pinned=True))
+    pinned_first = ["Article 2", "Article 0", "Article 1", "Dépêche 9"]
+    assert titles(feed, context, sort=Sort.TOPIC) == pinned_first
+    first = feed.feed(context, sort=Sort.TOPIC, limit=1)[0]
+    assert titles(feed, context, sort=Sort.TOPIC, before=first.item.id) == pinned_first[1:]
+    # Groups: alphabetical, the one without key last, counted with the filters of the feed.
+    groups = feed.groups(context, by=GroupBy.TOPIC, view=View.ALL)
+    assert [(g.key, g.name, g.count) for g in groups] == [
+        (topics["A"].id, "A", 1),
+        (topics["B"].id, "B", 1),
+        (topics["C"].id, "C", 1),
+        (None, "", 1),
+    ]
+    sources = feed.groups(context, by=GroupBy.SOURCE, view=View.ALL)
+    assert [(g.name, g.count) for g in sources] == [("agence", 1), ("Journal", 3)]
+    feed.change(context, ids[0], Change(decision=Decision.DISMISSED))
+    sources = feed.groups(context, by=GroupBy.SOURCE)
+    assert [(g.name, g.count) for g in sources] == [("agence", 1), ("Journal", 2)]
+    # One group of the feed, in the order of the sort.
+    alone = InGroup(GroupBy.TOPIC, None)
+    assert titles(feed, context, view=View.ALL, group=alone) == ["Dépêche 9"]
+    journal = InGroup(GroupBy.SOURCE, sources[1].key)
+    assert titles(feed, context, group=journal) == ["Article 2", "Article 1"]

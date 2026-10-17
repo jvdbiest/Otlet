@@ -4,6 +4,170 @@
  */
 
 export interface paths {
+    "/api/ai/budget": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Budget */
+        get: operations["get_budget_api_ai_budget_get"];
+        /** Set Budget */
+        put: operations["set_budget_api_ai_budget_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai/calls": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Recent Calls
+         * @description The last calls of the user: result, tokens, cost and duration, never the content.
+         */
+        get: operations["recent_calls_api_ai_calls_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai/catalogue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Catalogue */
+        get: operations["catalogue_api_ai_catalogue_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai/checks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Check
+         * @description « Tester » : one small structured answer through the profile, by the worker.
+         */
+        post: operations["start_check_api_ai_checks_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai/checks/{check_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Check */
+        get: operations["get_check_api_ai_checks__check_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai/policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Policy */
+        get: operations["get_policy_api_ai_policy_get"];
+        /** Set Policy */
+        put: operations["set_policy_api_ai_policy_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Profile */
+        get: operations["get_profile_api_ai_profile_get"];
+        /** Set Profile */
+        put: operations["set_profile_api_ai_profile_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai/providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Providers */
+        get: operations["list_providers_api_ai_providers_get"];
+        put?: never;
+        /** Add Provider */
+        post: operations["add_provider_api_ai_providers_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai/providers/{provider_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Provider */
+        put: operations["update_provider_api_ai_providers__provider_id__put"];
+        post?: never;
+        /** Delete Provider */
+        delete: operations["delete_provider_api_ai_providers__provider_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/login": {
         parameters: {
             query?: never;
@@ -133,12 +297,35 @@ export interface paths {
         };
         /**
          * Get Feed
-         * @description The feed of the user: pinned items first, then the most recent (in date order only
-         *     for `all`); `before` (the id of the last item of the previous page) pages back.
+         * @description The feed of the user: pinned items first (except for `all`), then in the order of
+         *     `sort`; `before` (the id of the last item of the previous page) pages back.
          *     `topic_id`, repeated, keeps the items of at least one of these topics, or of all of
-         *     them with `all_topics`; `since` and `until` keep the items dated in between.
+         *     them with `all_topics`; `since` and `until` keep the items dated in between;
+         *     `group_by` with `group` keeps one group of `/feed/groups` (no `group`: the items
+         *     without topic, or the manual entries).
          */
         get: operations["get_feed_api_workspaces__workspace_id__feed_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/feed/groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Feed Groups
+         * @description The groups of the feed, by main topic or by source, with the same filters as
+         *     `/feed`, and how many items each holds; the group without key comes last.
+         */
+        get: operations["feed_groups_api_workspaces__workspace_id__feed_groups_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -515,6 +702,24 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** BudgetView */
+        BudgetView: {
+            /** Currency */
+            currency: string;
+            /** Limit */
+            limit: string;
+            /**
+             * Month
+             * Format: date
+             */
+            month: string;
+            /** Reserved */
+            reserved: string;
+            /** Spent */
+            spent: string;
+            /** Usable */
+            usable: string;
+        };
         /** BulkResult */
         BulkResult: {
             /** Changed */
@@ -532,6 +737,41 @@ export interface components {
             action: "keep" | "dismiss" | "archive" | "pin" | "to_sort";
             /** Item Ids */
             item_ids: string[];
+        };
+        /** CallView */
+        CallView: {
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /** Cost */
+            cost: string;
+            /** Detail */
+            detail: string;
+            /** Model */
+            model: string;
+            /** Provider Kind */
+            provider_kind: string;
+            /** Result */
+            result: string;
+            /** Seconds */
+            seconds: string;
+            /** Tokens In */
+            tokens_in: number;
+            /** Tokens Out */
+            tokens_out: number;
+            /** Usage */
+            usage: string;
+        };
+        /** CatalogueView */
+        CatalogueView: {
+            /** Currency */
+            currency: string;
+            /** Kinds */
+            kinds: components["schemas"]["KindView"][];
+            /** Models */
+            models: components["schemas"]["ModelView"][];
         };
         /** CheckView */
         CheckView: {
@@ -594,6 +834,20 @@ export interface components {
             topics: components["schemas"]["TopicTagView"][];
             triage: components["schemas"]["TriageView"];
         };
+        /**
+         * GroupBy
+         * @enum {string}
+         */
+        GroupBy: "topic" | "source";
+        /** GroupView */
+        GroupView: {
+            /** Count */
+            count: number;
+            /** Key */
+            key: string | null;
+            /** Name */
+            name: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -655,6 +909,19 @@ export interface components {
             /** Topics */
             topics: components["schemas"]["ItemTopicView"][];
         };
+        /** KindView */
+        KindView: {
+            /** Api Key */
+            api_key: boolean;
+            /** Custom Models */
+            custom_models: boolean;
+            /** Endpoint */
+            endpoint: string;
+            /** Label */
+            label: string;
+            /** Name */
+            name: string;
+        };
         /** ManualText */
         ManualText: {
             /** Declared Origin */
@@ -673,10 +940,48 @@ export interface components {
             /** Url */
             url: string;
         };
+        /** ModelView */
+        ModelView: {
+            /** Context */
+            context: number;
+            /** Local */
+            local: boolean;
+            /** Model */
+            model: string;
+            /** Paid */
+            paid: boolean;
+            /** Price In */
+            price_in: string;
+            /** Price Out */
+            price_out: string;
+            /** Provider */
+            provider: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "tested" | "untested" | "blocked";
+        };
+        /** NewLimit */
+        NewLimit: {
+            /** Monthly Limit */
+            monthly_limit: number | string;
+        };
         /** NewPassword */
         NewPassword: {
             /** New Password */
             new_password: string;
+        };
+        /** NewProvider */
+        NewProvider: {
+            /** Api Key */
+            api_key?: string | null;
+            /** Endpoint */
+            endpoint?: string | null;
+            /** Kind */
+            kind: string;
+            /** Name */
+            name: string;
         };
         /** NewSource */
         NewSource: {
@@ -700,6 +1005,49 @@ export interface components {
             /** Password */
             password: string;
         };
+        /** PolicyView */
+        PolicyView: {
+            /** Allowed Paid */
+            allowed_paid?: string[];
+            /** Local Networks */
+            local_networks?: string[];
+            /** Local Ports */
+            local_ports?: number[];
+        };
+        /** ProfileCheckView */
+        ProfileCheckView: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Finished At */
+            finished_at: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Result */
+            result: {
+                [key: string]: unknown;
+            } | null;
+        };
+        /** ProfileEntryView */
+        ProfileEntryView: {
+            /** Model */
+            model: string;
+            /**
+             * Provider Id
+             * Format: uuid
+             */
+            provider_id: string;
+        };
+        /** ProfileView */
+        ProfileView: {
+            /** Entries */
+            entries: components["schemas"]["ProfileEntryView"][];
+        };
         /** ProgressView */
         ProgressView: {
             /** Decisions */
@@ -708,6 +1056,45 @@ export interface components {
             sources: number;
             /** Topics */
             topics: number;
+        };
+        /**
+         * ProviderChanges
+         * @description `api_key` is taken into account only with `replace_key`: an empty field of the form keeps
+         *     the key, which the interface never receives.
+         */
+        ProviderChanges: {
+            /** Api Key */
+            api_key?: string | null;
+            /** Endpoint */
+            endpoint: string;
+            /** Name */
+            name: string;
+            /**
+             * Replace Key
+             * @default false
+             */
+            replace_key: boolean;
+        };
+        /** ProviderView */
+        ProviderView: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Endpoint */
+            endpoint: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Key Hint */
+            key_hint: string | null;
+            /** Kind */
+            kind: string;
+            /** Name */
+            name: string;
         };
         /** RefreshView */
         RefreshView: {
@@ -733,6 +1120,12 @@ export interface components {
             csrf_token: string;
             user: components["schemas"]["UserView"];
         };
+        /**
+         * Sort
+         * @description How the feed is ordered (U03); pinned items stay first in the views that pin them.
+         * @enum {string}
+         */
+        Sort: "date" | "score" | "topic" | "source";
         /** SourceChanges */
         SourceChanges: {
             /** Active */
@@ -914,6 +1307,373 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    get_budget_api_ai_budget_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BudgetView"];
+                };
+            };
+        };
+    };
+    set_budget_api_ai_budget_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewLimit"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BudgetView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    recent_calls_api_ai_calls_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CallView"][];
+                };
+            };
+        };
+    };
+    catalogue_api_ai_catalogue_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogueView"];
+                };
+            };
+        };
+    };
+    start_check_api_ai_checks_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileCheckView"];
+                };
+            };
+        };
+    };
+    get_check_api_ai_checks__check_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                check_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileCheckView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_policy_api_ai_policy_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PolicyView"];
+                };
+            };
+        };
+    };
+    set_policy_api_ai_policy_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PolicyView"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PolicyView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_profile_api_ai_profile_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileView"];
+                };
+            };
+        };
+    };
+    set_profile_api_ai_profile_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfileView"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_providers_api_ai_providers_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderView"][];
+                };
+            };
+        };
+    };
+    add_provider_api_ai_providers_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewProvider"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_provider_api_ai_providers__provider_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProviderChanges"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_provider_api_ai_providers__provider_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     login_api_auth_login_post: {
         parameters: {
             query?: never;
@@ -1143,6 +1903,9 @@ export interface operations {
                 all_topics?: boolean;
                 since?: string | null;
                 until?: string | null;
+                sort?: components["schemas"]["Sort"];
+                group_by?: components["schemas"]["GroupBy"] | null;
+                group?: string | null;
             };
             header?: never;
             path: {
@@ -1159,6 +1922,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FeedItemView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    feed_groups_api_workspaces__workspace_id__feed_groups_get: {
+        parameters: {
+            query: {
+                by: components["schemas"]["GroupBy"];
+                view?: components["schemas"]["View"];
+                source_id?: string | null;
+                unread?: boolean;
+                topic_id?: string[];
+                all_topics?: boolean;
+                since?: string | null;
+                until?: string | null;
+            };
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupView"][];
                 };
             };
             /** @description Validation Error */

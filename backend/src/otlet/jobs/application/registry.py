@@ -9,6 +9,7 @@ did not set itself (ADR-0028).
 
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Protocol
 
 import sqlalchemy as sa
@@ -36,6 +37,9 @@ class JobEnvironment:
     engine: sa.Engine
     # Jobs that enqueue other jobs use this, on the connection of their own transaction.
     enqueue: Enqueue = no_queue
+    # The private key of the instance, mounted in the worker alone (DR6): jobs that open a
+    # sealed secret (the key of an AI provider) read it.
+    secrets_private_key_file: Path | None = None
 
 
 JobFunction = Callable[..., None]

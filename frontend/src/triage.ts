@@ -8,6 +8,14 @@ export type TriageView = components["schemas"]["TriageView"];
 export type TopicTagView = components["schemas"]["TopicTagView"];
 export type ProgressView = components["schemas"]["ProgressView"];
 export type FeedView = "to_sort" | "kept" | "pinned" | "archived" | "dismissed" | "all";
+export type GroupView = components["schemas"]["GroupView"];
+export type FeedSort = "date" | "score" | "topic" | "source";
+export type GroupBy = "topic" | "source";
+/** One group of the feed: `key` null is the group without topic, or the manual entries. */
+export interface FeedGroup {
+  by: GroupBy;
+  key: string | null;
+}
 
 export const FEED_PAGE_SIZE = 50;
 
@@ -26,6 +34,20 @@ export interface FeedFilter {
   topicIds: string[];
   allTopics: boolean;
   period: Period;
+  sort: FeedSort;
+  group: FeedGroup | null;
+}
+
+function filterParameters(filter: FeedFilter) {
+  return {
+    view: filter.view,
+    unread: filter.unread,
+    topic_id: filter.topicIds,
+    all_topics: filter.allTopics,
+    ...(filter.sourceId ? { source_id: filter.sourceId } : {}),
+    ...(filter.period.since ? { since: filter.period.since } : {}),
+    ...(filter.period.until ? { until: filter.period.until } : {}),
+  };
 }
 
 export const feedQuery = (workspaceId: string, filter: FeedFilter, before: string | null) =>
@@ -36,17 +58,30 @@ export const feedQuery = (workspaceId: string, filter: FeedFilter, before: strin
         params: {
           path: { workspace_id: workspaceId },
           query: {
-            view: filter.view,
-            unread: filter.unread,
-            topic_id: filter.topicIds,
-            all_topics: filter.allTopics,
+            ...filterParameters(filter),
             limit: FEED_PAGE_SIZE,
-            ...(filter.sourceId ? { source_id: filter.sourceId } : {}),
+            sort: filter.sort,
             ...(before ? { before } : {}),
-            ...(filter.period.since ? { since: filter.period.since } : {}),
-            ...(filter.period.until ? { until: filter.period.until } : {}),
+            ...(filter.group ? { group_by: filter.group.by } : {}),
+            ...(filter.group?.key ? { group: filter.group.key } : {}),
           },
         },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    refetchInterval: 60_000,
+  });
+
+/** The groups of the feed with these filters, and how many items each holds. */
+export const groupsQuery = (workspaceId: string, filter: FeedFilter, by: GroupBy) =>
+  queryOptions({
+    queryKey: ["workspaces", workspaceId, "feed", "groups", by, filter],
+    queryFn: async (): Promise<GroupView[]> => {
+      const { data, error, response } = await api.GET("/api/workspaces/{workspace_id}/feed/groups", {
+        params: { path: { workspace_id: workspaceId }, query: { ...filterParameters(filter), by } },
       });
       if (data === undefined) {
         throw apiError(response, error);

@@ -1,6 +1,45 @@
 {
   "components": {
     "schemas": {
+      "BudgetView": {
+        "properties": {
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "string"
+          },
+          "month": {
+            "format": "date",
+            "title": "Month",
+            "type": "string"
+          },
+          "reserved": {
+            "title": "Reserved",
+            "type": "string"
+          },
+          "spent": {
+            "title": "Spent",
+            "type": "string"
+          },
+          "usable": {
+            "title": "Usable",
+            "type": "string"
+          }
+        },
+        "required": [
+          "month",
+          "currency",
+          "limit",
+          "spent",
+          "reserved",
+          "usable"
+        ],
+        "title": "BudgetView",
+        "type": "object"
+      },
       "BulkResult": {
         "properties": {
           "changed": {
@@ -44,6 +83,94 @@
           "action"
         ],
         "title": "BulkTriage",
+        "type": "object"
+      },
+      "CallView": {
+        "properties": {
+          "at": {
+            "format": "date-time",
+            "title": "At",
+            "type": "string"
+          },
+          "cost": {
+            "title": "Cost",
+            "type": "string"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "provider_kind": {
+            "title": "Provider Kind",
+            "type": "string"
+          },
+          "result": {
+            "title": "Result",
+            "type": "string"
+          },
+          "seconds": {
+            "title": "Seconds",
+            "type": "string"
+          },
+          "tokens_in": {
+            "title": "Tokens In",
+            "type": "integer"
+          },
+          "tokens_out": {
+            "title": "Tokens Out",
+            "type": "integer"
+          },
+          "usage": {
+            "title": "Usage",
+            "type": "string"
+          }
+        },
+        "required": [
+          "usage",
+          "provider_kind",
+          "model",
+          "result",
+          "detail",
+          "tokens_in",
+          "tokens_out",
+          "cost",
+          "seconds",
+          "at"
+        ],
+        "title": "CallView",
+        "type": "object"
+      },
+      "CatalogueView": {
+        "properties": {
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "kinds": {
+            "items": {
+              "$ref": "#/components/schemas/KindView"
+            },
+            "title": "Kinds",
+            "type": "array"
+          },
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/ModelView"
+            },
+            "title": "Models",
+            "type": "array"
+          }
+        },
+        "required": [
+          "currency",
+          "kinds",
+          "models"
+        ],
+        "title": "CatalogueView",
         "type": "object"
       },
       "CheckView": {
@@ -223,6 +350,45 @@
           "topics"
         ],
         "title": "FoundItemView",
+        "type": "object"
+      },
+      "GroupBy": {
+        "enum": [
+          "topic",
+          "source"
+        ],
+        "title": "GroupBy",
+        "type": "string"
+      },
+      "GroupView": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "key": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Key"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "count"
+        ],
+        "title": "GroupView",
         "type": "object"
       },
       "HTTPValidationError": {
@@ -453,6 +619,39 @@
         "title": "ItemWatchView",
         "type": "object"
       },
+      "KindView": {
+        "properties": {
+          "api_key": {
+            "title": "Api Key",
+            "type": "boolean"
+          },
+          "custom_models": {
+            "title": "Custom Models",
+            "type": "boolean"
+          },
+          "endpoint": {
+            "title": "Endpoint",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "label",
+          "endpoint",
+          "api_key",
+          "custom_models"
+        ],
+        "title": "KindView",
+        "type": "object"
+      },
       "ManualText": {
         "properties": {
           "declared_origin": {
@@ -514,6 +713,81 @@
         "title": "ManualUrl",
         "type": "object"
       },
+      "ModelView": {
+        "properties": {
+          "context": {
+            "title": "Context",
+            "type": "integer"
+          },
+          "local": {
+            "title": "Local",
+            "type": "boolean"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "paid": {
+            "title": "Paid",
+            "type": "boolean"
+          },
+          "price_in": {
+            "title": "Price In",
+            "type": "string"
+          },
+          "price_out": {
+            "title": "Price Out",
+            "type": "string"
+          },
+          "provider": {
+            "title": "Provider",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "tested",
+              "untested",
+              "blocked"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "provider",
+          "model",
+          "status",
+          "paid",
+          "local",
+          "context",
+          "price_in",
+          "price_out"
+        ],
+        "title": "ModelView",
+        "type": "object"
+      },
+      "NewLimit": {
+        "properties": {
+          "monthly_limit": {
+            "anyOf": [
+              {
+                "maximum": 100000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Monthly Limit"
+          }
+        },
+        "required": [
+          "monthly_limit"
+        ],
+        "title": "NewLimit",
+        "type": "object"
+      },
       "NewPassword": {
         "properties": {
           "new_password": {
@@ -527,6 +801,52 @@
           "new_password"
         ],
         "title": "NewPassword",
+        "type": "object"
+      },
+      "NewProvider": {
+        "properties": {
+          "api_key": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key"
+          },
+          "endpoint": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Endpoint"
+          },
+          "kind": {
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Kind",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "kind"
+        ],
+        "title": "NewProvider",
         "type": "object"
       },
       "NewSource": {
@@ -593,6 +913,120 @@
         "title": "Password",
         "type": "object"
       },
+      "PolicyView": {
+        "properties": {
+          "allowed_paid": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Allowed Paid",
+            "type": "array"
+          },
+          "local_networks": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Local Networks",
+            "type": "array"
+          },
+          "local_ports": {
+            "items": {
+              "type": "integer"
+            },
+            "maxItems": 20,
+            "title": "Local Ports",
+            "type": "array"
+          }
+        },
+        "title": "PolicyView",
+        "type": "object"
+      },
+      "ProfileCheckView": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          }
+        },
+        "required": [
+          "id",
+          "created_at",
+          "finished_at",
+          "result"
+        ],
+        "title": "ProfileCheckView",
+        "type": "object"
+      },
+      "ProfileEntryView": {
+        "properties": {
+          "model": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Model",
+            "type": "string"
+          },
+          "provider_id": {
+            "format": "uuid",
+            "title": "Provider Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "provider_id",
+          "model"
+        ],
+        "title": "ProfileEntryView",
+        "type": "object"
+      },
+      "ProfileView": {
+        "properties": {
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/ProfileEntryView"
+            },
+            "maxItems": 8,
+            "title": "Entries",
+            "type": "array"
+          }
+        },
+        "required": [
+          "entries"
+        ],
+        "title": "ProfileView",
+        "type": "object"
+      },
       "ProgressView": {
         "properties": {
           "decisions": {
@@ -614,6 +1048,93 @@
           "decisions"
         ],
         "title": "ProgressView",
+        "type": "object"
+      },
+      "ProviderChanges": {
+        "description": "`api_key` is taken into account only with `replace_key`: an empty field of the form keeps\nthe key, which the interface never receives.",
+        "properties": {
+          "api_key": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key"
+          },
+          "endpoint": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Endpoint",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "replace_key": {
+            "default": false,
+            "title": "Replace Key",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "endpoint"
+        ],
+        "title": "ProviderChanges",
+        "type": "object"
+      },
+      "ProviderView": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "endpoint": {
+            "title": "Endpoint",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "key_hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Key Hint"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "endpoint",
+          "key_hint",
+          "created_at"
+        ],
+        "title": "ProviderView",
         "type": "object"
       },
       "RefreshView": {
@@ -684,6 +1205,17 @@
         ],
         "title": "SessionView",
         "type": "object"
+      },
+      "Sort": {
+        "description": "How the feed is ordered (U03); pinned items stay first in the views that pin them.",
+        "enum": [
+          "date",
+          "score",
+          "topic",
+          "source"
+        ],
+        "title": "Sort",
+        "type": "string"
       },
       "SourceChanges": {
         "properties": {
@@ -1234,6 +1766,407 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/ai/budget": {
+      "get": {
+        "operationId": "get_budget_api_ai_budget_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BudgetView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Budget"
+      },
+      "put": {
+        "operationId": "set_budget_api_ai_budget_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLimit"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BudgetView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Budget"
+      }
+    },
+    "/api/ai/calls": {
+      "get": {
+        "description": "The last calls of the user: result, tokens, cost and duration, never the content.",
+        "operationId": "recent_calls_api_ai_calls_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CallView"
+                  },
+                  "title": "Response Recent Calls Api Ai Calls Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Recent Calls"
+      }
+    },
+    "/api/ai/catalogue": {
+      "get": {
+        "operationId": "catalogue_api_ai_catalogue_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogueView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Catalogue"
+      }
+    },
+    "/api/ai/checks": {
+      "post": {
+        "description": "« Tester » : one small structured answer through the profile, by the worker.",
+        "operationId": "start_check_api_ai_checks_post",
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileCheckView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Start Check"
+      }
+    },
+    "/api/ai/checks/{check_id}": {
+      "get": {
+        "operationId": "get_check_api_ai_checks__check_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "check_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Check Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileCheckView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Check"
+      }
+    },
+    "/api/ai/policy": {
+      "get": {
+        "operationId": "get_policy_api_ai_policy_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Policy"
+      },
+      "put": {
+        "operationId": "set_policy_api_ai_policy_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyView"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Policy"
+      }
+    },
+    "/api/ai/profile": {
+      "get": {
+        "operationId": "get_profile_api_ai_profile_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Profile"
+      },
+      "put": {
+        "operationId": "set_profile_api_ai_profile_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileView"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Profile"
+      }
+    },
+    "/api/ai/providers": {
+      "get": {
+        "operationId": "list_providers_api_ai_providers_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProviderView"
+                  },
+                  "title": "Response List Providers Api Ai Providers Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Providers"
+      },
+      "post": {
+        "operationId": "add_provider_api_ai_providers_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewProvider"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Provider"
+      }
+    },
+    "/api/ai/providers/{provider_id}": {
+      "delete": {
+        "operationId": "delete_provider_api_ai_providers__provider_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Provider Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Provider"
+      },
+      "put": {
+        "operationId": "update_provider_api_ai_providers__provider_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "provider_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Provider Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProviderChanges"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Provider"
+      }
+    },
     "/api/auth/login": {
       "post": {
         "operationId": "login_api_auth_login_post",
@@ -1463,7 +2396,7 @@
     },
     "/api/workspaces/{workspace_id}/feed": {
       "get": {
-        "description": "The feed of the user: pinned items first, then the most recent (in date order only\nfor `all`); `before` (the id of the last item of the previous page) pages back.\n`topic_id`, repeated, keeps the items of at least one of these topics, or of all of\nthem with `all_topics`; `since` and `until` keep the items dated in between.",
+        "description": "The feed of the user: pinned items first (except for `all`), then in the order of\n`sort`; `before` (the id of the last item of the previous page) pages back.\n`topic_id`, repeated, keeps the items of at least one of these topics, or of all of\nthem with `all_topics`; `since` and `until` keep the items dated in between;\n`group_by` with `group` keeps one group of `/feed/groups` (no `group`: the items\nwithout topic, or the manual entries).",
         "operationId": "get_feed_api_workspaces__workspace_id__feed_get",
         "parameters": [
           {
@@ -1599,6 +2532,48 @@
               ],
               "title": "Until"
             }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Sort",
+              "default": "date"
+            }
+          },
+          {
+            "in": "query",
+            "name": "group_by",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/GroupBy"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Group By"
+            }
+          },
+          {
+            "in": "query",
+            "name": "group",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Group"
+            }
           }
         ],
         "responses": {
@@ -1628,6 +2603,154 @@
           }
         },
         "summary": "Get Feed"
+      }
+    },
+    "/api/workspaces/{workspace_id}/feed/groups": {
+      "get": {
+        "description": "The groups of the feed, by main topic or by source, with the same filters as\n`/feed`, and how many items each holds; the group without key comes last.",
+        "operationId": "feed_groups_api_workspaces__workspace_id__feed_groups_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "by",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/GroupBy"
+            }
+          },
+          {
+            "in": "query",
+            "name": "view",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/View",
+              "default": "to_sort"
+            }
+          },
+          {
+            "in": "query",
+            "name": "source_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "unread",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Unread",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "topic_id",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "maxItems": 100,
+              "title": "Topic Id",
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "all_topics",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "All Topics",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Since"
+            }
+          },
+          {
+            "in": "query",
+            "name": "until",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Until"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/GroupView"
+                  },
+                  "title": "Response Feed Groups Api Workspaces  Workspace Id  Feed Groups Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Feed Groups"
       }
     },
     "/api/workspaces/{workspace_id}/items": {

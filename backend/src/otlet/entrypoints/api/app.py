@@ -13,10 +13,18 @@ from starlette.staticfiles import StaticFiles
 from starlette.types import Scope
 
 from otlet import __version__
+from otlet.ai.adapters.budget_postgres import PostgresBudget
+from otlet.ai.adapters.catalogue_file import PackagedCatalogue
+from otlet.ai.adapters.checks_postgres import PostgresChecks
+from otlet.ai.adapters.journal_postgres import PostgresCallJournal
+from otlet.ai.adapters.postgres import PostgresAiSettings
+from otlet.ai.adapters.sealing import PublicKeySealer
+from otlet.ai.application.budget import Budget
+from otlet.ai.application.settings import AiSettings
 from otlet.collection.adapters.parsing import FeedparserReader, ReadabilityReader
 from otlet.collection.adapters.postgres import PostgresCollectionStore
 from otlet.collection.application.collection import Collection
-from otlet.entrypoints.api import auth, collection, triage, watch, workspaces
+from otlet.entrypoints.api import ai, auth, collection, triage, watch, workspaces
 from otlet.identity.adapters.argon2_hasher import Argon2Hasher
 from otlet.identity.adapters.postgres import PostgresIdentityStore
 from otlet.identity.application.authentication import Authentication
@@ -89,7 +97,26 @@ def create_app(settings: Settings) -> FastAPI:
             Watch(PostgresWatchStore(engine, enqueue)), workspace_context
         )
         triage_router = triage.build_router(Feed(PostgresTriageStore(engine)), workspace_context)
-        routers = [auth_router, workspace_router, collection_router, watch_router, triage_router]
+        ai_router = ai.build_router(
+            AiSettings(
+                PostgresAiSettings(engine),
+                PackagedCatalogue().load(),
+                PublicKeySealer(settings.secrets_public_key_file),
+            ),
+            Budget(PostgresBudget(engine)),
+            PostgresChecks(engine, enqueue),
+            PostgresCallJournal(engine),
+            authentication,
+            current_session,
+        )
+        routers = [
+            auth_router,
+            workspace_router,
+            collection_router,
+            watch_router,
+            triage_router,
+            ai_router,
+        ]
         for router in routers:
             app.include_router(router)
         # Read by the isolation tests, which check every route of these routers.

@@ -44,6 +44,8 @@ TDMREP_MAX_BYTES = 256 * 1024
 FEED_MAX_BYTES = 10 * 1024 * 1024
 PAGE_MAX_BYTES = 5 * 1024 * 1024
 DISCOVERY_CANDIDATES = 3
+# Answers of a site that refuses automated readers, whoever they are.
+REFUSED_STATUSES = frozenset({401, 403})
 CLAIM_BATCH = 100
 HTML_TYPES = ("text/html", "application/xhtml+xml")
 # Jobs of the module (otlet.collection.adapters.jobs), enqueued by the store; the scheduler
@@ -162,6 +164,10 @@ class Collection:
             result = self._fetcher.get(url, max_bytes=FEED_MAX_BYTES)
         except FetchError as error:
             raise fetch_error(error) from error
+        if result.status in REFUSED_STATUSES:
+            # Bot protections (Akamai, Cloudflare…) answer so to any reader that is not a
+            # browser; Otlet does not try to pass them (ADR-0031).
+            raise CollectionError("fetch_refused", f"the site refuses readers ({result.status})")
         if result.status >= 400:
             raise CollectionError("fetch_http_error", f"the address answered {result.status}")
         feed = self._feeds.read(result.body, result.url)

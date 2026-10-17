@@ -193,6 +193,7 @@
   "errors": {
     "invalid_url": "Saisissez une adresse web qui commence par http:// ou https://.",
     "fetch_http_error": "Le site a refusé de répondre.",
+    "fetch_refused": "Ce site bloque les lecteurs automatiques comme Otlet. Otlet ne contourne pas ces protections : ajoutez ses articles à la main (onglet « Ajouter à la main », en collant le texte), ou choisissez une autre source.",
     "feed_not_found": "Aucun flux RSS, Atom ou JSON trouvé à cette adresse.",
     "already_followed": "Vous suivez déjà ce flux.",
     "invalid_name": "Le nom doit compter entre 1 et 200 caractères.",

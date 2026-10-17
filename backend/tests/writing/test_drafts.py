@@ -55,7 +55,10 @@ ANSWER = {
         {
             "heading": "Ce qui change",
             "paragraphs": [
-                {"text": "Les outils libres couvrent la collecte et le tri.", "source_ids": ["S1"]}
+                {
+                    "text": "Les outils libres couvrent la collecte et le tri.",
+                    "source_ids": ["S1", "S2"],
+                }
             ],
         },
         {
@@ -226,7 +229,7 @@ def test_a_draft_becomes_a_version_of_the_article_of_the_brief(world: World) -> 
     version = article.versions[0]
     assert (version.origin, version.provider_kind, version.model) == ("ia", "ollama", "llama3.1")
     assert (
-        version.prompt_version == "redaction-4"
+        version.prompt_version == "redaction-5"
         and version.cut_sources == () == version.unused_sources
         and not version.context_overflow
     )
@@ -277,7 +280,8 @@ def test_a_draft_that_leaves_a_source_out_is_sent_back_then_says_so(world: World
         context, BriefFields(title="Deux sources", item_ids=(journal, agence))
     )
     only_first = json.loads(json.dumps(ANSWER))
-    only_first["sections"][1]["paragraphs"][0]["source_ids"] = ["S1"]
+    for section in only_first["sections"]:
+        section["paragraphs"][0]["source_ids"] = ["S1"]
     world.fake.answer = json.dumps(only_first)  # the same answer, before and after the repair
     generation = world.drafts.start(context, brief.id)
     assert generation is not None
@@ -287,12 +291,15 @@ def test_a_draft_that_leaves_a_source_out_is_sent_back_then_says_so(world: World
     assert [a["result"] for a in done.attempts] == ["ok", "ok"]  # sent back once
     repair = world.fake.requests[-1]["body"]["messages"][-1]["content"]
     assert "sources not used: S2" in repair
+    assert "sections drawing on one source: sections[0] (S1 only), sections[1]" in repair
     article = world.drafts.article(context, brief.id)
     assert article is not None
     assert article.versions[0].unused_sources == ("Article de agence",)
     # The details say why the first answer was sent back, and what each source sent.
     details = article.versions[0].details
     assert any("sources not used: S2" in e for e in details["refusals"][0])
+    # A synthesis: the sections that still draw on one source are named.
+    assert details["lone_sections"] == ["Ce qui change", "Ce qui reste à faire"]
     assert [s["key"] for s in details["sources"]] == ["S1", "S2"]
     assert details["brief"]["mode"] == "synthesis" and details["window_tokens"] == 4_096
     assert details["source_room_chars"] > 0 and details["local"] is True

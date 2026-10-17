@@ -22,7 +22,7 @@ from typing import Any
 
 from otlet.writing.domain.brief import BriefFields, Length, Mode
 
-PROMPT_VERSION = "redaction-4"
+PROMPT_VERSION = "redaction-5"
 SCHEMA_NAME = "article_draft"
 SECTIONS = (2, 6)
 SOURCE_MIN_CHARS = 600
@@ -144,8 +144,9 @@ MODES = {
     Mode.SYNTHESIS: (
         "Mode: synthesis. Build one line of reasoning across the sources: each section is about "
         "an idea, a question or a consequence that several sources share, never about a single "
-        "source. Most paragraphs draw on two sources or more and say how they agree, differ or "
-        "complete each other. Every source ({keys}) is cited at least once."
+        "source. Every section draws on two sources or more, and most paragraphs do too: say "
+        "how they agree, differ or complete each other. Every source ({keys}) is cited at "
+        "least once."
     ),
     Mode.PANORAMA: (
         "Mode: overview. After a lead that says what links the sources, present them one after "
@@ -212,7 +213,7 @@ def check_answer(
 ) -> list[str]:
     """The errors of an answer, in words a model can act on; empty when it is usable. With
     `every_source`, a source of the brief no paragraph cites is an error too; with `crossing`
-    (a synthesis of several sources), so is a draft whose paragraphs never cite two sources."""
+    (a synthesis of several sources), so is a section that draws on one source only."""
     try:
         data = json.loads(raw)
     except json.JSONDecodeError as error:
@@ -230,15 +231,18 @@ def check_answer(
         sections = []
     unknown: set[str] = set()
     cited: set[str] = set()
-    crossed = False
+    lone: list[str] = []
     for n, section in enumerate(sections):
-        if not isinstance(section, dict) or not _text(section.get("heading"), 3):
-            errors.append(f"sections[{n}].heading: a heading is required")
+        if not isinstance(section, dict):
+            errors.append(f"sections[{n}]: an object with a heading and paragraphs is required")
             continue
+        if not _text(section.get("heading"), 3):
+            errors.append(f"sections[{n}].heading: a heading is required")
         paragraphs = section.get("paragraphs")
         if not isinstance(paragraphs, list) or not paragraphs:
             errors.append(f"sections[{n}].paragraphs: one paragraph at least is required")
             continue
+        here: set[str] = set()
         for m, paragraph in enumerate(paragraphs):
             where = f"sections[{n}].paragraphs[{m}]"
             if not isinstance(paragraph, dict) or not _text(paragraph.get("text"), 20):
@@ -249,8 +253,10 @@ def check_answer(
                 errors.append(f"{where}.source_ids: the ids of its sources are required")
                 continue
             unknown |= {str(i) for i in ids if i not in keys}
-            cited |= {str(i) for i in ids if i in keys}
-            crossed = crossed or len({i for i in ids if i in keys}) > 1
+            here |= {str(i) for i in ids if i in keys}
+        cited |= here
+        if len(here) == 1:
+            lone.append(f"sections[{n}] ({next(iter(here))} only)")
     if unknown:
         errors.append(
             f"unknown source ids: {', '.join(sorted(unknown))}; allowed: {', '.join(keys)}"
@@ -261,10 +267,11 @@ def check_answer(
             f"sources not used: {', '.join(missing)}; every source of the brief must be cited"
             " by at least one paragraph: connect them in the article"
         )
-    if crossing and len(keys) > 1 and sections and not unknown and not crossed:
+    if crossing and len(keys) > 1 and sections and not unknown and lone:
         errors.append(
-            "no paragraph draws on two sources: this is a synthesis, build sections around"
-            " ideas the sources share and cite two sources or more in most paragraphs"
+            f"sections drawing on one source: {', '.join(lone)}; this is a synthesis, every"
+            " section must draw on two sources or more: rebuild these sections around an idea"
+            " the sources share, or merge them with another section"
         )
     return errors[:10]
 
@@ -273,6 +280,16 @@ def cited_keys(raw: str) -> set[str]:
     """The sources the paragraphs of a checked answer cite."""
     data = json.loads(raw)
     return {i for s in data["sections"] for p in s["paragraphs"] for i in p["source_ids"]}
+
+
+def lone_sections(raw: str) -> list[str]:
+    """The headings of the sections of a checked answer that draw on one source only."""
+    data = json.loads(raw)
+    return [
+        str(s["heading"])
+        for s in data["sections"]
+        if len({i for p in s["paragraphs"] for i in p["source_ids"]}) == 1
+    ]
 
 
 def to_document(raw: str, sources: list[PromptSource], language: str) -> tuple[str, dict[str, Any]]:

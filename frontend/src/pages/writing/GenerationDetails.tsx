@@ -26,6 +26,7 @@ interface Details {
   refusals?: string[][];
   attempts?: { provider?: string; model?: string; result?: string; seconds?: number; tokens_in?: number; tokens_out?: number }[];
   context_overflow?: boolean;
+  lone_sections?: string[];
 }
 
 const NUMBER = new Intl.NumberFormat("fr-BE");
@@ -68,6 +69,9 @@ function detailsText(raw: Record<string, unknown>, heading: string): string {
     lines.push(
       `Appel : ${attempt.model ?? "?"} (${attempt.provider ?? "?"}) · ${attempt.result ?? "?"} · ${String(attempt.seconds ?? 0)} s · ${NUMBER.format(attempt.tokens_in ?? 0)} jetons envoyés, ${NUMBER.format(attempt.tokens_out ?? 0)} reçus`,
     );
+  }
+  if (details.lone_sections?.length) {
+    lines.push(`Sections à une seule source : ${details.lone_sections.join(" ; ")}`);
   }
   if (details.context_overflow) {
     lines.push("La fenêtre de contexte a été dépassée.");

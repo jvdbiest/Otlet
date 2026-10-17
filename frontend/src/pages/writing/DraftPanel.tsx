@@ -24,6 +24,12 @@ function failure(generation: GenerationView): (typeof FAILURES)[number] {
   return FAILURES.find((code) => code === generation.error) ?? "unavailable";
 }
 
+/** The sections of a synthesis that still draw on one source, from the details. */
+function lone(details: Record<string, unknown>): string[] {
+  const found = details.lone_sections;
+  return Array.isArray(found) ? found.filter((h): h is string => typeof h === "string") : [];
+}
+
 /** The draft of a brief (U04): generate it, follow the generation, read its versions. */
 export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; briefId: string }) {
   const { t } = useTranslation();
@@ -126,6 +132,16 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
               <ul>
                 {shown.unused_sources.map((title) => (
                   <li key={title}>{title}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {lone(shown.details).length > 0 && (
+            <div role="note" className={styles.warning}>
+              <p>{t("draft.lone", { count: lone(shown.details).length })}</p>
+              <ul>
+                {lone(shown.details).map((heading) => (
+                  <li key={heading}>{heading}</li>
                 ))}
               </ul>
             </div>

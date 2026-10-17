@@ -10,6 +10,7 @@ from otlet.writing.domain.draft import (
     SOURCE_MIN_CHARS,
     SourceText,
     check_answer,
+    lone_sections,
     messages,
     output_schema,
     prompt_sources,
@@ -218,16 +219,30 @@ def test_a_synthesis_crosses_the_sources_a_panorama_takes_them_in_turn() -> None
     assert "Mode: synthesis" in synthesis and "never about a single source" in synthesis
     panorama = messages(BriefFields(title="T", item_ids=(), mode=Mode.PANORAMA), sources)[1][1]
     assert "Mode: overview" in panorama and "a section for each" in panorama
-    # A synthesis whose paragraphs never cite two sources is sent back once.
-    apart = json.loads(answer())
-    apart["sections"][0]["paragraphs"][0]["source_ids"] = ["S2"]
+    assert "Every section draws on two sources or more" in synthesis
+    # In a synthesis, a section that draws on one source only is sent back once, by name
+    # (Joël, 2026-10-18: one crossing paragraph out of seven was not a synthesis).
     keys = ["S1", "S2"]
-    assert check_answer(json.dumps(apart), keys) == []
-    assert check_answer(json.dumps(apart), keys, crossing=True) == [
-        "no paragraph draws on two sources: this is a synthesis, build sections around ideas the"
-        " sources share and cite two sources or more in most paragraphs"
+    assert check_answer(answer(), keys) == []
+    assert check_answer(answer(), keys, crossing=True) == [
+        "sections drawing on one source: sections[1] (S1 only); this is a synthesis, every"
+        " section must draw on two sources or more: rebuild these sections around an idea the"
+        " sources share, or merge them with another section"
     ]
-    assert check_answer(answer(), keys, crossing=True) == []  # one paragraph cites S1 and S2
+    assert lone_sections(answer()) == ["Mon expérience"]
+    # Two paragraphs of a section may each cite one source: the section still crosses them.
+    crossed = json.loads(answer())
+    crossed["sections"][1]["paragraphs"].append(
+        {"text": "Le constructeur répond que l'hiver coûte un quart.", "source_ids": ["S2"]}
+    )
+    assert check_answer(json.dumps(crossed), keys, crossing=True) == []
+    assert lone_sections(json.dumps(crossed)) == []
+    # A short heading does not hide the sources its section cites.
+    short = json.loads(json.dumps(crossed))
+    short["sections"][0]["heading"] = "A"
+    assert check_answer(json.dumps(short), keys, crossing=True) == [
+        "sections[0].heading: a heading is required"
+    ]
     # With one source, there is nothing to cross.
     alone = json.loads(answer(sources_used=["S1"]))
     for section in alone["sections"]:

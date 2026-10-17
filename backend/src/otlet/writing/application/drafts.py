@@ -21,6 +21,7 @@ from otlet.writing.domain.draft import (
     SourceText,
     check_answer,
     cited_keys,
+    lone_sections,
     messages,
     output_schema,
     prompt_sources,
@@ -256,4 +257,8 @@ class Drafts:
             overflow,
         )
         details["context_overflow"] = overflow
+        if fields.mode is Mode.SYNTHESIS and len(keys) > 1:
+            # The repaired answer is kept even if some sections still draw on one source:
+            # the version says which (a warning, not a failure).
+            details["lone_sections"] = lone_sections(written.text)
         self._articles.finish(workspace_id, generation_id, None, written.attempts, made, details)

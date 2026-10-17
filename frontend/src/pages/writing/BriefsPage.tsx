@@ -171,6 +171,7 @@ function BriefForm({
             id="brief-angle"
             rows={5}
             maxLength={4000}
+            placeholder={t("brief.angleExample")}
             value={angle}
             onChange={(event) => {
               setAngle(event.target.value);

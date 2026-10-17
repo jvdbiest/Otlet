@@ -74,3 +74,4 @@ date,heures,domaine,etape,tache,note
 2026-10-16,1,fonction,E1,X02,sujet principal en badge sur les cartes ; estimation grossière (Claude)
 2026-10-17,1,fonction,E1,U02,langue devinée des éléments sans langue (migration 0010) ; estimation grossière (Claude)
 2026-10-17,1.5,fonction,E1,U02,sujet défini par ses sources (case, score, migration 0011, ADR-0032) ; estimation grossière (Claude)
+2026-10-17,1.5,projet,E1,P01,mesure, analyse des plans, prototypes de correction, rapport et ADR-0033 ; estimation grossière (Claude)

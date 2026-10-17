@@ -1,0 +1,56 @@
+P01 — query plans, NAS VM, 2026-10-16 22:4x UTC, during pass 2 (EXPLAIN only, then one EXPLAIN ANALYZE).
+Database: the disposable P01 database (100,000 items), workspace with 80,014 items.
+
+1. ts_match_vq, the function of the operator tsvector @@ tsquery, is not leakproof:
+
+   proname     | proleakproof
+   ts_match_vq | f
+
+2. The candidate query of PostgresWatchStore.search, as otlet_app (forced RLS), word "zelensky":
+
+ Aggregate  (cost=18519.76..18519.77 rows=1 width=8)
+   ->  Limit  (cost=18390.80..18507.26 rows=1000 width=24)
+         ->  Gather Merge  (cost=18390.80..20666.67 rows=19541 width=24)
+               Workers Planned: 2
+               ->  Sort  (cost=17390.77..17411.13 rows=8142 width=24)
+                     Sort Key: (LEAST(COALESCE(i.published_at, i.collected_at), i.collected_at)) DESC
+                     ->  Parallel Seq Scan on source_items i  (cost=0.00..16944.35 rows=8142 width=24)
+                           Filter: ((duplicate_of IS NULL) AND (workspace_id = <app.workspace_id>)
+                                    AND ((workspace_id = <app.workspace_id>) OR (CURRENT_USER = 'otlet_owner'))
+                                    AND ((search @@ '''zelensky'''::tsquery) OR (search @@ '''zelenski'''::tsquery) OR … 8 configurations))
+
+   The GIN index source_items_search is never used: every search reads every row of the table.
+
+3. The same word, without RLS (superuser), single configuration:
+
+ Aggregate  (cost=547.72..547.73 rows=1 width=8)
+   ->  Bitmap Heap Scan on source_items i  (cost=8.10..546.47 rows=500 width=0)
+         Recheck Cond: (search @@ '''zelenski'''::tsquery)
+         ->  Bitmap Index Scan on source_items_search  (cost=0.00..7.98 rows=500 width=0)
+               Index Cond: (search @@ '''zelenski'''::tsquery)
+
+4. The full candidate query without RLS, explicit workspace predicate, word "gouvernement"
+   (EXPLAIN ANALYZE, while the 4 clients of pass 2 were running):
+
+ Aggregate (actual time=289.018..289.027 rows=1 loops=1)
+   ->  Limit (actual time=288.660..288.927 rows=1000 loops=1)
+         ->  Sort (actual time=288.657..288.792 rows=1000 loops=1)
+               ->  Bitmap Heap Scan on source_items i (actual time=99.586..275.059 rows=4527 loops=1)
+                     ->  BitmapAnd (actual time=86.787..86.793 rows=0 loops=1)
+                           ->  BitmapOr (actual time=13.456..13.461 rows=0 loops=1)
+                                 ->  Bitmap Index Scan on source_items_search (actual time=12.581..12.581 rows=5644 loops=1)
+                                 ->  … one per configuration
+   Execution: 289 ms under load.
+
+5. Prototype of the two fixes, throwaway PostgreSQL 18 (same image), 200,000 rows, forced RLS,
+   2026-10-17 on the NAS VM:
+
+   A. Function SECURITY DEFINER owned by a NOLOGIN BYPASSRLS role, explicit workspace predicate
+      read from app.workspace_id: 200 hits in the workspace, 0 without context;
+        Bitmap Heap Scan on items
+          Recheck Cond: (search @@ '''gouvern'''::tsquery)
+          Filter: (workspace_id = <app.workspace_id>)
+          ->  Bitmap Index Scan on items_search
+   B. ALTER FUNCTION ts_match_vq(tsvector, tsquery) LEAKPROOF, direct query as the application
+      role under RLS: same plan, Bitmap Index Scan on items_search, 200 hits.
+   Without either, the same query as the application role is a Parallel Seq Scan of 200,000 rows.

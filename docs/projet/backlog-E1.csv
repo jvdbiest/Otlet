@@ -7,7 +7,7 @@ X01,I0,X,"Coquille de l'interface : connexion, navigation, mise en page, clés d
 U01,I1,U,"Sources RSS : ajout, collecte planifiée, protection SSRF, robots.txt et TDMRep, statut juridique visible par source, saisie manuelle encadrée (M-08)",55,"Joël ajoute ses flux ; les éléments arrivent seuls ; tests SSRF verts ; statut juridique affiché",fait
 U02,I1,U,"Veille : sujets, dédoublonnage, score lexical explicable, recherche à classement borné (ADR-0021)",38,"Les éléments sont rangés par sujet avec un score expliqué ; la recherche répond",fait
 X02,I1,X,"Flux de tri (garder, écarter, filtrer, lire) et parcours d'accueil (FA §7.7)",30,"Joël utilise Otlet comme lecteur de veille pendant une semaine",a_faire
-P01,I1,P,"Remesure de la recherche plein texte (S1, L2) sur corpus réel, seuil de 300 ms, rapport commité avant mesure (ADR-0021)",4,"Rapport conclu ; L2 tranchée",a_faire
+P01,I1,P,"Remesure de la recherche plein texte (S1, L2) sur corpus réel, seuil de 300 ms, rapport commité avant mesure (ADR-0021)",4,"Rapport conclu ; L2 tranchée",fait
 F05,I2,F,"Passerelle IA de production : adaptateur compatible OpenAI, tableau des modèles et statuts, budgets à réservation, secrets chiffrés, profils par utilisateur (ADR-0027)",42,"Un appel structuré réussit avec Ollama ; budget et statuts testés en CI ; le profil appartient à l'utilisateur",a_faire
 U03,I2,U,"Brief : éléments triés, « angle et apport propre » (M-19), choix du fournisseur et du modèle par l'utilisateur",20,"Joël construit un brief et choisit son modèle",a_faire
 U04,I2,U,"Rédaction : document structuré, origine par bloc, versions, modèles de prompt, schéma énumératif des sources (ADR-0027)",42,"Un brouillon sourcé est produit, versionné, avec l'origine de chaque bloc",a_faire

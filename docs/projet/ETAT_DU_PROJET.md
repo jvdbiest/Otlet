@@ -1,6 +1,6 @@
 # État du projet Otlet
 
-Mis à jour le 2026-10-16. Une page : ce qu'il faut savoir pour reprendre le travail tout de suite. L'historique est dans Git, les décisions sont dans `docs/adr/`, les mesures dans `docs/spikes/`.
+Mis à jour le 2026-10-17. Une page : ce qu'il faut savoir pour reprendre le travail tout de suite. L'historique est dans Git, les décisions sont dans `docs/adr/`, les mesures dans `docs/spikes/`.
 
 ## Où on en est
 
@@ -10,7 +10,7 @@ Mis à jour le 2026-10-16. Une page : ce qu'il faut savoir pour reprendre le tra
 |---|---|
 | Socle B02 à B10 | Fait. B01 (création du dépôt) n'est pas coché au backlog, mais il est réalisé |
 | S6 Squelette de livraison | Conclue : partiel (mesurée sur VM, pas sur VPS). ADR-0019, ADR-0020 |
-| S1 PostgreSQL et RLS | Conclue : partiel. La recherche plein texte reste un **échec ouvert** jusqu'à une remesure sur corpus réel. ADR-0021 |
+| S1 PostgreSQL et RLS | Conclue : partiel. La recherche plein texte, remesurée par P01 sur corpus réel, échoue faute d'index utilisable sous RLS : correction proposée (ADR-0033), remesure P01b à suivre. ADR-0021 |
 | S2 File de tâches | Conclue : succès (Procrastinate). ADR-0022 |
 | S3 Format et éditeur | Conclue : succès (Tiptap). ADR-0023 |
 | S5 Similarité | Conclue : échec, de peu ; complément S5b conclu en échec sur la mémoire seule. Modèle retenu (ADR-0024) : potion-multilingual-128M par `model2vec` en int8, 870 Mio, qualité inchangée. Pile complète estimée à 2,4 Go en charge, sous 3,4 Go (déduction) |
@@ -21,9 +21,9 @@ Mis à jour le 2026-10-16. Une page : ce qu'il faut savoir pour reprendre le tra
 ## Prochaine action
 
 1. **I0 close** le 2026-10-16 (X01 fusionnée). I1 Lire en cours.
-2. U01, U02, U02b, U02c (filtre des sources), X02 (flux de tri et parcours d'accueil), le rapport de P01, les boutons de tri dans la recherche et le filtre par sujets à choix multiple sont sur `main` (2026-10-16). X02 sera « fait » après une semaine d'usage par Joël (critère du backlog). Joël fusionne `feat/sujet-carte` : le sujet principal en badge sur chaque carte du flux et de la recherche, « +N » pour les autres (demandé par Joël), et la langue devinée quand ni le flux ni la page ne la donnent (migration 0010 pour les éléments anciens). Puis `feat/sujet-sources` (empilée) : la case « Tous les éléments des sources cochées appartiennent au sujet » (complément de l'ADR-0032, migration 0011).
+2. Sur `main` (2026-10-16 et 17) : U01, U02, U02b, U02c (filtre des sources), X02 (flux de tri et parcours d'accueil), les boutons de tri dans la recherche, le filtre par sujets à choix multiple, le sujet principal en badge sur les cartes, la langue devinée des éléments (migration 0010) et les sujets définis par leurs sources (migration 0011). X02 sera « fait » après une semaine d'usage par Joël (critère du backlog).
 3. Joël répond à l'ADR-0032 (règles du score).
-4. P01 (remesure de la recherche plein texte sur corpus réel) : mesure en cours sur la VM du NAS ; la première passe donne un p95 d'environ 14 s par famille, pour un seuil de 300 ms. Elle clôt I1 avec la semaine d'usage de X02.
+4. **P01 conclue le 2026-10-17 : échec** (`docs/spikes/P01.md`). p95 de 13 à 14 s pour un seuil de 300 ms : sous RLS, l'index plein texte n'est jamais utilisé, car `@@` n'est pas étanche. Joël décide de l'**ADR-0033 (proposé)** : une fonction de recherche détenue par un rôle dédié. Ensuite la correction, puis la remesure P01b. I1 se clôt avec P01b et la semaine d'usage de X02.
 5. Joël note son temps une fois par semaine dans `docs/projet/journal-temps.csv` (domaine `projet`).
 6. Plus tard, avec l'accord de Joël pour chacun : mesurer les fournisseurs réels de S4 (50 briefs chacun, plafonds de dépense posés).
 

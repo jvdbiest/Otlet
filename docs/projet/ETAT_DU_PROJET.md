@@ -23,7 +23,7 @@ Mis à jour le 2026-10-17. Une page : ce qu'il faut savoir pour reprendre le tra
 1. **I0 close** le 2026-10-16 (X01 fusionnée). I1 Lire en cours.
 2. Sur `main` (2026-10-16 et 17) : U01, U02, U02b, U02c (filtre des sources), X02 (flux de tri et parcours d'accueil), les boutons de tri dans la recherche, le filtre par sujets à choix multiple, le sujet principal en badge sur les cartes, la langue devinée des éléments (migration 0010) et les sujets définis par leurs sources (migration 0011). X02 sera « fait » après une semaine d'usage par Joël (critère du backlog).
 3. Joël répond à l'ADR-0032 (règles du score).
-4. **P01 conclue le 2026-10-17 : échec** (`docs/spikes/P01.md`). p95 de 13 à 14 s pour un seuil de 300 ms : sous RLS, l'index plein texte n'est jamais utilisé, car `@@` n'est pas étanche. Joël décide de l'**ADR-0033 (proposé)** : une fonction de recherche détenue par un rôle dédié. Ensuite la correction, puis la remesure P01b. I1 se clôt avec P01b et la semaine d'usage de X02.
+4. **P01 conclue le 2026-10-17 : échec** (`docs/spikes/P01.md`) : sous RLS, l'index plein texte n'était jamais utilisé. **ADR-0033 accepté** le 2026-10-17 : `fix/recherche-index` fait passer la correspondance du texte par `search_candidates` (rôle `otlet_search`, migration 0012) et ouvre le rapport P01b (sections 1 à 3). Après sa fusion par Joël, la mesure P01b sur la VM du NAS, avec le corpus de P01 gardé dans `~/p01-corpus`. I1 se clôt avec P01b et la semaine d'usage de X02.
 5. Joël note son temps une fois par semaine dans `docs/projet/journal-temps.csv` (domaine `projet`).
 6. Plus tard, avec l'accord de Joël pour chacun : mesurer les fournisseurs réels de S4 (50 briefs chacun, plafonds de dépense posés).
 

@@ -8,6 +8,9 @@
 #    selectivity of the queries, then runs 3 passes (1 short trial with --smoke);
 # 3. brings results/ back and removes the disposable database.
 # The corpus itself never leaves the two machines (P01 §3.1).
+# P01b (after ADR-0033): OTLET_P01_CORPUS=<path on the measure host> reuses the corpus kept from
+# P01 instead of exporting the items of today, and OTLET_P01_RESULTS=results-p01b keeps the
+# results apart from those of P01.
 set -eu
 
 corpus_host="${1:?usage: run-p01.sh <corpus host> <measure host> [--smoke]}"
@@ -15,6 +18,8 @@ measure_host="${2:?usage: run-p01.sh <corpus host> <measure host> [--smoke]}"
 smoke="${3:-}"
 cd "$(dirname "$0")/../.."
 ssh_opts="${OTLET_SSH_OPTS:-}"
+kept_corpus="${OTLET_P01_CORPUS:-}"
+results_dir="${OTLET_P01_RESULTS:-results}"
 
 # shellcheck disable=SC2086
 tar -cf - --exclude=results --exclude=data --exclude=__pycache__ --exclude=.venv \
@@ -23,13 +28,19 @@ tar -cf - --exclude=results --exclude=data --exclude=__pycache__ --exclude=.venv
     | ssh $ssh_opts "$measure_host" \
         'sudo rm -rf ~/otlet-p01 && mkdir -p ~/otlet-p01/spikes/p01-search/data && tar -xf - -C ~/otlet-p01'
 
-echo "### corpus: real items of $corpus_host (feed items only, never versioned)"
-# shellcheck disable=SC2086
-ssh $ssh_opts "$corpus_host" "sudo docker exec otlet-x01-db-1 psql -U otlet -d otlet -tA -c \
+if [ -n "$kept_corpus" ]; then
+    echo "### corpus: kept on $measure_host ($kept_corpus)"
+    # shellcheck disable=SC2086
+    ssh $ssh_opts "$measure_host" "cp '$kept_corpus' ~/otlet-p01/spikes/p01-search/data/corpus.jsonl"
+else
+    echo "### corpus: real items of $corpus_host (feed items only, never versioned)"
+    # shellcheck disable=SC2086
+    ssh $ssh_opts "$corpus_host" "sudo docker exec otlet-x01-db-1 psql -U otlet -d otlet -tA -c \
     \"SELECT json_build_object('title', title, 'summary', summary, 'language', language,
        'text', CASE WHEN text_status = 'full_text' THEN coalesce(text, feed_content) END)
       FROM source_items WHERE origin = 'feed' AND text_status IN ('full_text', 'summary_only')\"" \
-    | ssh $ssh_opts "$measure_host" 'cat > ~/otlet-p01/spikes/p01-search/data/corpus.jsonl'
+        | ssh $ssh_opts "$measure_host" 'cat > ~/otlet-p01/spikes/p01-search/data/corpus.jsonl'
+fi
 
 # shellcheck disable=SC2086
 ssh $ssh_opts "$measure_host" SMOKE="$smoke" sh -s <<'REMOTE'
@@ -75,6 +86,8 @@ python_env "-c \"from otlet.platform import roles; roles.provision('$admin', '$m
 python_env "generate.py --admin-url '$admin' --migrator-url '$migrator_url' $flag"
 echo "### $(date -u +%H:%M:%S) selectivity (information)"
 python_env "measure.py --url '$app_url' --selectivity"
+echo "### $(date -u +%H:%M:%S) plans of the search function (information)"
+python_env "measure.py --url '$app_url' --explain --admin-url 'postgresql+psycopg://postgres:$super@p01-pg:5432/otlet'"
 passes="1 2 3"
 [ -n "$flag" ] && passes="1"
 for number in $passes; do
@@ -85,8 +98,11 @@ sudo chown -R "$(id -u)" results data
 echo "### $(date -u +%H:%M:%S) done"
 REMOTE
 
-mkdir -p spikes/p01-search/results
+copy=$(mktemp -d)
 # shellcheck disable=SC2086
 ssh $ssh_opts "$measure_host" 'cd ~/otlet-p01/spikes/p01-search && tar -cf - results' \
-    | tar -xf - -C spikes/p01-search
-echo "Results copied to spikes/p01-search/results/"
+    | tar -xf - -C "$copy"
+mkdir -p "spikes/p01-search/$results_dir"
+cp "$copy"/results/* "spikes/p01-search/$results_dir/"
+rm -rf "$copy"
+echo "Results copied to spikes/p01-search/$results_dir/"

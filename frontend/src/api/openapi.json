@@ -1,6 +1,51 @@
 {
   "components": {
     "schemas": {
+      "BulkResult": {
+        "properties": {
+          "changed": {
+            "title": "Changed",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "changed"
+        ],
+        "title": "BulkResult",
+        "type": "object"
+      },
+      "BulkTriage": {
+        "description": "One action of the feed for several items: keep, dismiss, archive, pin, or back to sort.",
+        "properties": {
+          "action": {
+            "enum": [
+              "keep",
+              "dismiss",
+              "archive",
+              "pin",
+              "to_sort"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "item_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 200,
+            "minItems": 1,
+            "title": "Item Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "item_ids",
+          "action"
+        ],
+        "title": "BulkTriage",
+        "type": "object"
+      },
       "CheckView": {
         "properties": {
           "allowed": {
@@ -1002,7 +1047,8 @@
               {
                 "enum": [
                   "kept",
-                  "dismissed"
+                  "dismissed",
+                  "archived"
                 ],
                 "type": "string"
               },
@@ -1045,7 +1091,8 @@
               {
                 "enum": [
                   "kept",
-                  "dismissed"
+                  "dismissed",
+                  "archived"
                 ],
                 "type": "string"
               },
@@ -1149,6 +1196,7 @@
           "to_sort",
           "kept",
           "dismissed",
+          "archived",
           "pinned",
           "all"
         ],
@@ -1415,7 +1463,7 @@
     },
     "/api/workspaces/{workspace_id}/feed": {
       "get": {
-        "description": "The feed of the user: pinned items first, then the most recent; `before` (the id of\nthe last item of the previous page) pages back. `topic_id`, repeated, keeps the items of\nat least one of these topics, or of all of them with `all_topics`.",
+        "description": "The feed of the user: pinned items first, then the most recent (in date order only\nfor `all`); `before` (the id of the last item of the previous page) pages back.\n`topic_id`, repeated, keeps the items of at least one of these topics, or of all of\nthem with `all_topics`; `since` and `until` keep the items dated in between.",
         "operationId": "get_feed_api_workspaces__workspace_id__feed_get",
         "parameters": [
           {
@@ -1516,6 +1564,40 @@
               "default": false,
               "title": "All Topics",
               "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Since"
+            }
+          },
+          {
+            "in": "query",
+            "name": "until",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Until"
             }
           }
         ],
@@ -1739,7 +1821,99 @@
         "summary": "Add Manual Url"
       }
     },
+    "/api/workspaces/{workspace_id}/items/triage": {
+      "post": {
+        "operationId": "change_many_api_workspaces__workspace_id__items_triage_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkTriage"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Change Many"
+      }
+    },
     "/api/workspaces/{workspace_id}/items/{item_id}": {
+      "delete": {
+        "description": "Removes an item from the watch of the whole workspace, with its text. An item of a\nfeed leaves its address behind, so that the collection does not bring it back.",
+        "operationId": "remove_item_api_workspaces__workspace_id__items__item_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Item Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Remove Item"
+      },
       "get": {
         "operationId": "get_item_api_workspaces__workspace_id__items__item_id__get",
         "parameters": [
@@ -2032,7 +2206,7 @@
     },
     "/api/workspaces/{workspace_id}/search": {
       "get": {
-        "description": "Full-text search of the items, best match first (ADR-0021: bounded ranking), within\nthe chosen topics if any (as in the feed).",
+        "description": "Full-text search of the items, best match first (ADR-0021: bounded ranking), within\nthe chosen topics and period if any (as in the feed).",
         "operationId": "search_api_workspaces__workspace_id__search_get",
         "parameters": [
           {
@@ -2091,6 +2265,40 @@
               "default": false,
               "title": "All Topics",
               "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Since"
+            }
+          },
+          {
+            "in": "query",
+            "name": "until",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Until"
             }
           }
         ],

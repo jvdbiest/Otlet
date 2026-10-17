@@ -239,6 +239,13 @@ def build_router(
             raise _not_found("item")
         return ItemView.of(item)
 
+    @router.delete("/items/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
+    def remove_item(item_id: UUID, context: Context) -> None:
+        """Removes an item from the watch of the whole workspace, with its text. An item of a
+        feed leaves its address behind, so that the collection does not bring it back."""
+        if not collection.remove_item(context, item_id):
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "item_not_found")
+
     @router.post("/items/manual-url", status_code=status.HTTP_201_CREATED)
     def add_manual_url(body: ManualUrl, context: Context) -> ItemView:
         try:

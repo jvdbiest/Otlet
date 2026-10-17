@@ -8,18 +8,18 @@ from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from otlet.entrypoints.api.auth import same_origin
 from otlet.entrypoints.api.collection import ItemView
 from otlet.entrypoints.api.workspaces import PREFIX
 from otlet.watch.application.triage import Change, Feed
-from otlet.watch.domain.triage import Decision, TopicFilter, TopicTag, Triage, View
+from otlet.watch.domain.triage import Decision, Period, TopicFilter, TopicTag, Triage, View
 from otlet.workspaces.domain.model import WorkspaceContext
 
 
 class TriageView(BaseModel):
-    decision: Literal["kept", "dismissed"] | None
+    decision: Literal["kept", "dismissed", "archived"] | None
     pinned: bool
     read_at: datetime | None
 
@@ -51,15 +51,43 @@ class FeedItemView(BaseModel):
 class TriageChange(BaseModel):
     """A field left out keeps its value; `decision: null` clears the decision."""
 
-    decision: Literal["kept", "dismissed"] | None = None
+    decision: Literal["kept", "dismissed", "archived"] | None = None
     pinned: bool | None = None
     read: bool | None = None
+
+
+class BulkTriage(BaseModel):
+    """One action of the feed for several items: keep, dismiss, archive, pin, or back to sort."""
+
+    item_ids: list[UUID] = Field(min_length=1, max_length=200)
+    action: Literal["keep", "dismiss", "archive", "pin", "to_sort"]
+
+
+class BulkResult(BaseModel):
+    changed: int
+
+
+BULK_CHANGES = {
+    "keep": Change(decision=Decision.KEPT),
+    "dismiss": Change(decision=Decision.DISMISSED),
+    "archive": Change(decision=Decision.ARCHIVED),
+    "pin": Change(pinned=True),
+    "to_sort": Change(clear_decision=True),
+}
 
 
 class ProgressView(BaseModel):
     sources: int
     topics: int
     decisions: int
+
+
+def period_of(since: datetime | None, until: datetime | None) -> Period:
+    """The period of a request, refused when it ends before it starts."""
+    period = Period(since, until)
+    if not period.valid:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "invalid_period")
+    return period
 
 
 def build_router(feed: Feed, workspace_context: Callable[..., WorkspaceContext]) -> APIRouter:
@@ -76,10 +104,13 @@ def build_router(feed: Feed, workspace_context: Callable[..., WorkspaceContext])
         limit: Annotated[int, Query(ge=1, le=200)] = 50,
         topic_id: Annotated[list[UUID], Query(max_length=100)] = [],  # noqa: B006 (FastAPI copies it)
         all_topics: bool = False,
+        since: datetime | None = None,
+        until: datetime | None = None,
     ) -> list[FeedItemView]:
-        """The feed of the user: pinned items first, then the most recent; `before` (the id of
-        the last item of the previous page) pages back. `topic_id`, repeated, keeps the items of
-        at least one of these topics, or of all of them with `all_topics`."""
+        """The feed of the user: pinned items first, then the most recent (in date order only
+        for `all`); `before` (the id of the last item of the previous page) pages back.
+        `topic_id`, repeated, keeps the items of at least one of these topics, or of all of
+        them with `all_topics`; `since` and `until` keep the items dated in between."""
         items = feed.feed(
             context,
             view=view,
@@ -88,6 +119,7 @@ def build_router(feed: Feed, workspace_context: Callable[..., WorkspaceContext])
             before=before,
             limit=limit,
             topics=TopicFilter(tuple(topic_id), all_topics),
+            period=period_of(since, until),
         )
         return [
             FeedItemView(
@@ -97,6 +129,12 @@ def build_router(feed: Feed, workspace_context: Callable[..., WorkspaceContext])
             )
             for f in items
         ]
+
+    @router.post("/items/triage")
+    def change_many(body: BulkTriage, context: Context) -> BulkResult:
+        return BulkResult(
+            changed=feed.change_many(context, body.item_ids, BULK_CHANGES[body.action])
+        )
 
     @router.get("/items/{item_id}/triage")
     def get_triage(item_id: UUID, context: Context) -> TriageView:

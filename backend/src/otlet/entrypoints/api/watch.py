@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 
 from otlet.entrypoints.api.auth import same_origin
 from otlet.entrypoints.api.collection import ItemView
-from otlet.entrypoints.api.triage import TopicTagView, TriageView
+from otlet.entrypoints.api.triage import TopicTagView, TriageView, period_of
 from otlet.entrypoints.api.workspaces import PREFIX
 from otlet.watch.application.watch import Watch
 from otlet.watch.domain import model
@@ -229,11 +229,16 @@ def build_router(watch: Watch, workspace_context: Callable[..., WorkspaceContext
         limit: Annotated[int, Query(ge=1, le=100)] = 50,
         topic_id: Annotated[list[UUID], Query(max_length=100)] = [],  # noqa: B006 (FastAPI copies it)
         all_topics: bool = False,
+        since: datetime | None = None,
+        until: datetime | None = None,
     ) -> list[FoundItemView]:
         """Full-text search of the items, best match first (ADR-0021: bounded ranking), within
-        the chosen topics if any (as in the feed)."""
+        the chosen topics and period if any (as in the feed)."""
+        period = period_of(since, until)
         try:
-            found = watch.search(context, q, limit, TopicFilter(tuple(topic_id), all_topics))
+            found = watch.search(
+                context, q, limit, TopicFilter(tuple(topic_id), all_topics), period
+            )
         except WatchError as error:
             raise _refused(error) from error
         return [

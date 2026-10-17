@@ -4,7 +4,8 @@ import { useTranslation } from "react-i18next";
 import { useChangeTriage, type TriageView } from "../../triage.ts";
 import { styles } from "./styles.ts";
 
-/** Keep, dismiss, pin an item (X02, F-VEI-05); each decision can be undone. */
+/** Keep, dismiss, archive, pin an item (X02, F-VEI-05); each decision can be undone. The flow
+ * of an item: to sort, kept, (drafting, from I2), archived. */
 export function TriageActions({
   workspaceId,
   itemId,
@@ -28,6 +29,7 @@ export function TriageActions({
     <div className={styles.row} role="group" aria-label={t("triage.actions", { title })}>
       {triage.decision === "kept" && <span className={styles.good}>{t("triage.kept")}</span>}
       {triage.decision === "dismissed" && <span className={styles.neutral}>{t("triage.dismissed")}</span>}
+      {triage.decision === "archived" && <span className={styles.neutral}>{t("triage.archived")}</span>}
       {triage.pinned && <span className={styles.limited}>{t("triage.pinned")}</span>}
       {triage.decision === null ? (
         <>
@@ -51,15 +53,28 @@ export function TriageActions({
           </Button>
         </>
       ) : (
-        <Button
-          className={styles.button}
-          isDisabled={busy}
-          onPress={() => {
-            send({ decision: null });
-          }}
-        >
-          {t("triage.undo")}
-        </Button>
+        <>
+          {triage.decision === "kept" && (
+            <Button
+              className={styles.button}
+              isDisabled={busy}
+              onPress={() => {
+                send({ decision: "archived" });
+              }}
+            >
+              {t("triage.archive")}
+            </Button>
+          )}
+          <Button
+            className={styles.button}
+            isDisabled={busy}
+            onPress={() => {
+              send({ decision: null });
+            }}
+          >
+            {t("triage.undo")}
+          </Button>
+        </>
       )}
       <Button
         className={styles.button}

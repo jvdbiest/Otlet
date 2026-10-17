@@ -10,14 +10,16 @@ from uuid import UUID
 class Decision(StrEnum):
     KEPT = "kept"  # retained: the briefs of I2 start from these
     DISMISSED = "dismissed"
+    ARCHIVED = "archived"  # done with: out of the current views, still searchable
 
 
 class View(StrEnum):
     """The parts of the feed a user looks at."""
 
-    TO_SORT = "to_sort"  # neither kept nor dismissed: the default
+    TO_SORT = "to_sort"  # no decision yet: the default
     KEPT = "kept"
     DISMISSED = "dismissed"
+    ARCHIVED = "archived"
     PINNED = "pinned"
     ALL = "all"
 
@@ -60,3 +62,19 @@ class TopicTag:
     id: UUID
     name: str
     score: int
+
+
+@dataclass(frozen=True, slots=True)
+class Period:
+    """Items dated from `since` (included) to `until` (excluded); None leaves that side open.
+    The interface computes the bounds (today, this week, this month) in the user's time zone."""
+
+    since: datetime | None = None
+    until: datetime | None = None
+
+    @property
+    def valid(self) -> bool:
+        return self.since is None or self.until is None or self.since < self.until
+
+
+ANY_TIME = Period()

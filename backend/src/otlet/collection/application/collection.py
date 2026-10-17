@@ -235,6 +235,11 @@ class Collection:
     def get_item(self, context: WorkspaceContext, item_id: UUID) -> Item | None:
         return self._store.get_item(context.workspace_id, item_id)
 
+    def remove_item(self, context: WorkspaceContext, item_id: UUID) -> bool:
+        """Removes an item from the watch of the whole workspace, for good: an exceptional
+        action of its page (dismissing and archiving are the usual ones)."""
+        return self._store.remove_item(context.workspace_id, item_id)
+
     def add_manual_url(self, context: WorkspaceContext, url: str) -> Item:
         """An article the user points to: its page is read under the same rules as a feed's."""
         return self._store.add_manual_url(context.workspace_id, model.check_url(url), self._clock())

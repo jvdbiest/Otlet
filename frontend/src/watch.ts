@@ -2,6 +2,7 @@
 // Topics, their scored items, the search and the same story elsewhere (U02).
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, apiError, type components } from "./api/client.ts";
+import { ANY_TIME, type Period } from "./triage.ts";
 
 export type TopicView = components["schemas"]["TopicView"];
 export type ScoredItemView = components["schemas"]["ScoredItemView"];
@@ -79,14 +80,32 @@ export const itemWatchQuery = (workspaceId: string, itemId: string) =>
     },
   });
 
-export const searchQuery = (workspaceId: string, q: string, topicIds: string[] = [], allTopics = false) =>
+/** The filters a search shares with the feed. */
+export interface SearchFilter {
+  topicIds: string[];
+  allTopics: boolean;
+  period: Period;
+}
+
+export const searchQuery = (
+  workspaceId: string,
+  q: string,
+  filter: SearchFilter = { topicIds: [], allTopics: false, period: ANY_TIME },
+) =>
   queryOptions({
-    queryKey: ["workspaces", workspaceId, "search", q, topicIds, allTopics],
+    queryKey: ["workspaces", workspaceId, "search", q, filter],
     queryFn: async (): Promise<FoundItemView[]> => {
       const { data, error, response } = await api.GET("/api/workspaces/{workspace_id}/search", {
         params: {
           path: { workspace_id: workspaceId },
-          query: { q, limit: 50, topic_id: topicIds, all_topics: allTopics },
+          query: {
+            q,
+            limit: 50,
+            topic_id: filter.topicIds,
+            all_topics: filter.allTopics,
+            ...(filter.period.since ? { since: filter.period.since } : {}),
+            ...(filter.period.until ? { until: filter.period.until } : {}),
+          },
         },
       });
       if (data === undefined) {

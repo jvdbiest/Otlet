@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
-import { Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { ApiError } from "../../api/client.ts";
-import { itemQuery } from "../../collection.ts";
+import { itemQuery, useRemoveItem } from "../../collection.ts";
 import { itemTriageQuery, useChangeTriage } from "../../triage.ts";
 import { itemWatchQuery } from "../../watch.ts";
 import { useWorkspaceId } from "../../session.ts";
@@ -89,6 +89,7 @@ function Item({ workspaceId, itemId }: { workspaceId: string; itemId: string }) 
           <p className={styles.text}>{data.text}</p>
         )}
       </section>
+      <RemoveItem workspaceId={workspaceId} itemId={itemId} />
     </article>
   );
 }
@@ -154,5 +155,64 @@ function ItemTriage({ workspaceId, itemId, title }: { workspaceId: string; itemI
   }
   return (
     <TriageActions workspaceId={workspaceId} itemId={itemId} title={title} triage={triage.data} showUnread />
+  );
+}
+
+/** Removing an item for good: exceptional, so it lives here and asks first (decision of
+ * Joël, 2026-10-17); the usual ways out of the feed are « Écarter » and « Archiver ». */
+function RemoveItem({ workspaceId, itemId }: { workspaceId: string; itemId: string }) {
+  const { t } = useTranslation();
+  const remove = useRemoveItem(workspaceId);
+  const navigate = useNavigate();
+  const [confirming, setConfirming] = useState(false);
+  return (
+    <section className={styles.dangerZone} aria-labelledby="remove-item">
+      <h3 id="remove-item">{t("item.remove.title")}</h3>
+      <p className={styles.help}>{t("item.remove.help")}</p>
+      {confirming ? (
+        <div className={styles.row} role="alertdialog" aria-label={t("item.remove.title")}>
+          <span>{t("item.remove.confirm")}</span>
+          <button
+            type="button"
+            className={styles.danger}
+            disabled={remove.isPending}
+            onClick={() => {
+              // Once removed, the page has nothing left to show: back to the feed, even if the
+              // refreshed item has already unmounted this section.
+              remove
+                .mutateAsync(itemId)
+                .then(() => navigate({ to: "/veille" }))
+                .catch(() => undefined);
+            }}
+          >
+            {t("item.remove.yes")}
+          </button>
+          <button
+            type="button"
+            className={styles.button}
+            onClick={() => {
+              setConfirming(false);
+            }}
+          >
+            {t("item.remove.no")}
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          className={styles.danger}
+          onClick={() => {
+            setConfirming(true);
+          }}
+        >
+          {t("item.remove.button")}
+        </button>
+      )}
+      {remove.error !== null && (
+        <p role="alert" className={styles.error}>
+          {t("errors.generic")}
+        </p>
+      )}
+    </section>
   );
 }

@@ -196,3 +196,20 @@ export function useAddManualText(workspaceId: string) {
     onSuccess: refresh,
   });
 }
+
+
+/** Removes an item from the watch of the whole workspace, for good, with its text. */
+export function useRemoveItem(workspaceId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (itemId: string) => {
+      const { error, response } = await api.DELETE("/api/workspaces/{workspace_id}/items/{item_id}", {
+        params: { path: { workspace_id: workspaceId, item_id: itemId } },
+      });
+      if (!response.ok) {
+        throw apiError(response, error);
+      }
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
+  });
+}

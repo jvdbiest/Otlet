@@ -16,6 +16,7 @@ from otlet.workspaces.domain.model import WorkspaceContext
 from otlet.writing.domain.article import Article, Generation
 from otlet.writing.domain.brief import Brief, Mode, ModelChoice
 from otlet.writing.domain.draft import (
+    PROMPT_VERSION,
     WORDS,
     SourceText,
     check_answer,
@@ -106,7 +107,12 @@ class ArticleStore(Protocol):
         error: str | None,
         attempts: Sequence[dict[str, Any]],
         article: tuple[UUID, int] | None,
+        details: dict[str, Any],
     ) -> None: ...
+
+    def clear_details(self, workspace_id: UUID, brief_id: UUID) -> int:
+        """Empties the details and attempts of the generations of the brief; how many."""
+        ...
 
     def article_of(self, workspace_id: UUID, brief_id: UUID) -> Article | None: ...
 
@@ -142,6 +148,12 @@ class Drafts:
     def article(self, context: WorkspaceContext, brief_id: UUID) -> Article | None:
         return self._articles.article_of(context.workspace_id, brief_id)
 
+    def clear_details(self, context: WorkspaceContext, brief_id: UUID) -> int | None:
+        """Empties the details of the drafts of a brief; None when the brief does not exist."""
+        if self._briefs.get_brief(context.workspace_id, brief_id) is None:
+            return None
+        return self._articles.clear_details(context.workspace_id, brief_id)
+
     def run(self, workspace_id: UUID, user_id: UUID, generation_id: UUID) -> None:
         """The job: writes the draft, or records why it could not."""
         writer = self._writer
@@ -153,14 +165,16 @@ class Drafts:
         brief = self._briefs.get_brief(workspace_id, generation.brief_id)
         texts = self._articles.sources(workspace_id, generation.brief_id)
         if brief is None or not texts:
-            self._articles.finish(workspace_id, generation_id, "no_sources", (), None)
+            self._articles.finish(workspace_id, generation_id, "no_sources", (), None, {})
             return
         fields = brief.fields
         window, local = writer.room(user_id, fields.model)
         output = OUTPUT_TOKENS[fields.length]
-        sources = prompt_sources(texts, source_budget(window, output))
+        budget = source_budget(window, output)
+        sources = prompt_sources(texts, budget)
         keys = [source.key for source in sources]
         checks = 0
+        refusals: list[list[str]] = []
 
         def validate(raw: str) -> list[str]:
             # The first answer must cite every source: if not, the gateway sends it back once
@@ -170,7 +184,9 @@ class Drafts:
             checks += 1
             first = checks == 1
             synthesis = fields.mode is Mode.SYNTHESIS
-            return check_answer(raw, keys, every_source=first, crossing=first and synthesis)
+            found = check_answer(raw, keys, every_source=first, crossing=first and synthesis)
+            refusals.append(found)
+            return found
 
         written = writer.write(
             user_id,
@@ -180,9 +196,44 @@ class Drafts:
             fields.model,
             max(output, LOCAL_OUTPUT_TOKENS if local else 0),
         )
+        details = {
+            "brief": {
+                "mode": fields.mode.value,
+                "length": fields.length.value,
+                "language": fields.language,
+                "model": "profile" if fields.model is None else fields.model.model,
+                "angle": fields.angle,
+                "instructions": fields.instructions,
+                "audience": fields.audience,
+                "tone": fields.tone,
+                "channel": fields.channel,
+            },
+            "prompt_version": PROMPT_VERSION,
+            "window_tokens": window,
+            "local": local,
+            "output_tokens": output,
+            "source_room_chars": budget,
+            "sources": [
+                {
+                    "key": s.key,
+                    "title": s.source.title,
+                    "chars": len(s.source.text),
+                    "sent": len(s.text),
+                    "cut": s.cut,
+                }
+                for s in sources
+            ],
+            "refusals": [errors for errors in refusals if errors],
+            "attempts": list(written.attempts),
+        }
         if written.text is None:
             self._articles.finish(
-                workspace_id, generation_id, written.error or "unavailable", written.attempts, None
+                workspace_id,
+                generation_id,
+                written.error or "unavailable",
+                written.attempts,
+                None,
+                details,
             )
             return
         title, document = to_document(written.text, sources, fields.language)
@@ -204,4 +255,5 @@ class Drafts:
             unused,
             overflow,
         )
-        self._articles.finish(workspace_id, generation_id, None, written.attempts, made)
+        details["context_overflow"] = overflow
+        self._articles.finish(workspace_id, generation_id, None, written.attempts, made, details)

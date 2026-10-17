@@ -736,6 +736,11 @@
             "title": "Created At",
             "type": "string"
           },
+          "details": {
+            "additionalProperties": true,
+            "title": "Details",
+            "type": "object"
+          },
           "error": {
             "anyOf": [
               {
@@ -792,6 +797,7 @@
           "error",
           "version",
           "attempts",
+          "details",
           "created_at",
           "finished_at"
         ],
@@ -2340,6 +2346,11 @@
             "title": "Cut Sources",
             "type": "array"
           },
+          "details": {
+            "additionalProperties": true,
+            "title": "Details",
+            "type": "object"
+          },
           "document": {
             "additionalProperties": true,
             "title": "Document",
@@ -2413,6 +2424,7 @@
           "cut_sources",
           "unused_sources",
           "context_overflow",
+          "details",
           "created_at"
         ],
         "title": "VersionView",
@@ -2518,6 +2530,16 @@
       }
     },
     "/api/ai/calls": {
+      "delete": {
+        "description": "Empties the journal of the user's calls; the budget keeps its own account.",
+        "operationId": "clear_calls_api_ai_calls_delete",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Clear Calls"
+      },
       "get": {
         "description": "The last calls of the user: result, tokens, cost and duration, never the content.",
         "operationId": "recent_calls_api_ai_calls_get",
@@ -3515,6 +3537,50 @@
           }
         },
         "summary": "Update Brief"
+      }
+    },
+    "/api/workspaces/{workspace_id}/briefs/{brief_id}/details": {
+      "delete": {
+        "description": "Empties the details and attempts of the drafts of the brief (diagnostics only: the\nversions themselves stay).",
+        "operationId": "clear_details_api_workspaces__workspace_id__briefs__brief_id__details_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "brief_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Brief Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Clear Details"
       }
     },
     "/api/workspaces/{workspace_id}/briefs/{brief_id}/draft": {

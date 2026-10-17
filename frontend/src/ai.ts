@@ -272,3 +272,17 @@ export function useStartPull() {
     },
   });
 }
+
+/** Empties the journal of the user's AI calls; the budget keeps its own account. */
+export function useClearCalls() {
+  const refresh = useRefresh();
+  return useMutation({
+    mutationFn: async () => {
+      const { error, response } = await api.DELETE("/api/ai/calls");
+      if (!response.ok) {
+        throw apiError(response, error);
+      }
+    },
+    onSuccess: refresh,
+  });
+}

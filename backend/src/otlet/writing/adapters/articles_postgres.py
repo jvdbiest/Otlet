@@ -17,7 +17,7 @@ from otlet.writing.domain.article import Article, Generation, Version
 from otlet.writing.domain.draft import PROMPT_VERSION, SourceText
 
 GENERATION_COLUMNS = (
-    "id, brief_id, status, error, article_id, version, attempts, created_at, finished_at"
+    "id, brief_id, status, error, article_id, version, attempts, created_at, finished_at, details"
 )
 VERSION_COLUMNS = (
     "number, title, document, origin, provider_kind, model, prompt_version, cut_sources,"
@@ -36,6 +36,7 @@ def _generation(row: sa.Row[Any]) -> Generation:
         attempts=tuple(row.attempts),
         created_at=row.created_at,
         finished_at=row.finished_at,
+        details=row.details,
     )
 
 
@@ -52,6 +53,7 @@ def _version(row: sa.Row[Any]) -> Version:
         unused_sources=tuple(row.unused_sources),
         context_overflow=row.context_overflow,
         created_at=row.created_at,
+        details=row.details,
     )
 
 
@@ -188,13 +190,14 @@ class PostgresArticleStore:
         error: str | None,
         attempts: Sequence[dict[str, Any]],
         article: tuple[UUID, int] | None,
+        details: dict[str, Any],
     ) -> None:
         with workspace_transaction(self._engine, workspace_id) as connection:
             connection.execute(
                 sa.text(
                     "UPDATE article_generations SET status = :status, error = :error,"
                     " attempts = CAST(:attempts AS jsonb), article_id = :article,"
-                    " version = :version, finished_at = now()"
+                    " version = :version, details = CAST(:details AS jsonb), finished_at = now()"
                     f" WHERE id = :id AND {here()}"
                 ),
                 {
@@ -204,8 +207,20 @@ class PostgresArticleStore:
                     "attempts": json.dumps(list(attempts)),
                     "article": None if article is None else article[0],
                     "version": None if article is None else article[1],
+                    "details": json.dumps(details),
                 },
             )
+
+    def clear_details(self, workspace_id: UUID, brief_id: UUID) -> int:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            cleared = connection.execute(
+                sa.text(
+                    "UPDATE article_generations SET details = '{}', attempts = '[]'"
+                    f" WHERE brief_id = :brief AND {here()} AND status <> 'running'"
+                ),
+                {"brief": brief_id},
+            ).rowcount
+        return cleared
 
     def article_of(self, workspace_id: UUID, brief_id: UUID) -> Article | None:
         with workspace_transaction(self._engine, workspace_id) as connection:
@@ -220,7 +235,12 @@ class PostgresArticleStore:
                 return None
             versions = connection.execute(
                 sa.text(
-                    f"SELECT {VERSION_COLUMNS} FROM article_versions"
+                    f"SELECT {VERSION_COLUMNS}, coalesce(("
+                    "SELECT g.details FROM article_generations AS g"
+                    " WHERE g.article_id = article_versions.article_id"
+                    " AND g.version = article_versions.number"
+                    f" AND g.workspace_id = article_versions.workspace_id), '{{}}') AS details"
+                    " FROM article_versions"
                     f" WHERE article_id = :article AND {here()} ORDER BY number"
                 ),
                 {"article": row.id},

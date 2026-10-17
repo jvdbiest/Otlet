@@ -290,3 +290,16 @@ def test_a_draft_that_leaves_a_source_out_is_sent_back_then_says_so(world: World
     article = world.drafts.article(context, brief.id)
     assert article is not None
     assert article.versions[0].unused_sources == ("Article de agence",)
+    # The details say why the first answer was sent back, and what each source sent.
+    details = article.versions[0].details
+    assert any("sources not used: S2" in e for e in details["refusals"][0])
+    assert [s["key"] for s in details["sources"]] == ["S1", "S2"]
+    assert details["brief"]["mode"] == "synthesis" and details["window_tokens"] == 4_096
+    assert details["source_room_chars"] > 0 and details["local"] is True
+    # Clearing empties the details and attempts; the version stays.
+    assert world.drafts.clear_details(context, brief.id) == 1
+    article = world.drafts.article(context, brief.id)
+    assert article is not None and article.versions[0].details == {}
+    cleared = world.drafts.generation(context, generation.id)
+    assert cleared is not None and cleared.attempts == () and cleared.details == {}
+    assert world.drafts.clear_details(context, uuid.uuid4()) is None

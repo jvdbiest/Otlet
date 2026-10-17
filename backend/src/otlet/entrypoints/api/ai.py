@@ -40,6 +40,8 @@ PREFIX = "/api/ai"
 class CallJournalReader(Protocol):
     def recent(self, user_id: UUID, limit: int = 50) -> list[dict[str, Any]]: ...
 
+    def clear(self, user_id: UUID) -> int: ...
+
 
 class KindView(BaseModel):
     name: str
@@ -433,6 +435,11 @@ def build_router(
     def recent_calls(session: CurrentSession) -> list[CallView]:
         """The last calls of the user: result, tokens, cost and duration, never the content."""
         return [CallView(**call) for call in journal.recent(session.user_id)]
+
+    @router.delete("/calls", status_code=status.HTTP_204_NO_CONTENT)
+    def clear_calls(session: CurrentSession) -> None:
+        """Empties the journal of the user's calls; the budget keeps its own account."""
+        journal.clear(session.user_id)
 
     @router.get("/policy")
     def get_policy(session: CurrentSession) -> PolicyView:

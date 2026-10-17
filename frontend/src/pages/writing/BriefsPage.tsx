@@ -3,7 +3,7 @@ import { useQueries, useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { catalogueQuery, profileQuery, providersQuery } from "../../ai.ts";
+import { catalogueQuery, installedQuery, profileQuery, providersQuery } from "../../ai.ts";
 import { ApiError } from "../../api/client.ts";
 import { itemQuery } from "../../collection.ts";
 import { useWorkspaceId } from "../../session.ts";
@@ -419,18 +419,27 @@ function BriefItems({
   );
 }
 
-/** The model of the brief: the profile of Réglages > IA, or one model of one provider. */
+/** The model of the brief: the profile of Réglages > IA, or one model of one provider. The
+ * models offered are those of Mon profil: installed on a local engine, listed by the catalogue
+ * for the others. */
 function ModelSelect({ value, onChange }: { value: string; onChange: (value: string) => void }) {
   const { t } = useTranslation();
   const providers = useQuery(providersQuery);
   const profile = useQuery(profileQuery);
   const catalogue = useQuery(catalogueQuery);
+  const local = (providers.data ?? []).filter(
+    (provider) => catalogue.data?.kinds.find((kind) => kind.name === provider.kind)?.custom_models === true,
+  );
+  const installed = useQueries({ queries: local.map((provider) => installedQuery(provider.id)) });
   const options: { value: string; label: string }[] = [];
   for (const provider of providers.data ?? []) {
+    const engine = installed[local.findIndex((other) => other.id === provider.id)]?.data;
     const models = new Set(
-      (catalogue.data?.models ?? [])
-        .filter((model) => model.provider === provider.kind && model.status !== "blocked")
-        .map((model) => model.model),
+      engine !== undefined
+        ? engine.models.map((model) => model.name)
+        : (catalogue.data?.models ?? [])
+            .filter((model) => model.provider === provider.kind && model.status !== "blocked")
+            .map((model) => model.model),
     );
     for (const entry of profile.data?.entries ?? []) {
       if (entry.provider_id === provider.id) {

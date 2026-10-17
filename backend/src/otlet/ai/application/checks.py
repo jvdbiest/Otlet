@@ -99,4 +99,13 @@ def summary(outcome: Outcome) -> dict[str, Any]:
 
 
 def run_check(gateway: Gateway, store: CheckStore, user_id: UUID, check_id: UUID) -> None:
-    store.finish(user_id, check_id, summary(gateway.generate(user_id, REQUEST, validate)))
+    """Each model of the profile in turn, alone: a test says which models answer, where a
+    generation stops at the first that does. The first model gives the summary on top."""
+    entries = gateway.profile(user_id)
+    if not entries:
+        store.finish(user_id, check_id, summary(gateway.generate(user_id, REQUEST, validate)))
+        return
+    models = [summary(gateway.generate(user_id, REQUEST, validate, [entry])) for entry in entries]
+    store.finish(
+        user_id, check_id, {**models[0], "ok": all(m["ok"] for m in models), "models": models}
+    )

@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field
 
 from otlet.ai.application.budget import Budget
 from otlet.ai.application.checks import Check, CheckStore
+from otlet.ai.application.models import Installed, Models, Pull
 from otlet.ai.application.settings import AiSettings
 from otlet.ai.domain.budget import LIMIT_MAX
 from otlet.ai.domain.settings import (
@@ -115,6 +116,7 @@ class PolicyView(BaseModel):
     allowed_paid: list[str] = Field(default_factory=list, max_length=50)
     local_networks: list[str] = Field(default_factory=list, max_length=20)
     local_ports: list[int] = Field(default_factory=list, max_length=20)
+    allow_model_install: bool = False
 
     @classmethod
     def of(cls, policy: InstancePolicy) -> "PolicyView":
@@ -122,6 +124,56 @@ class PolicyView(BaseModel):
             allowed_paid=sorted(policy.allowed_paid),
             local_networks=list(policy.local_networks),
             local_ports=list(policy.local_ports),
+            allow_model_install=policy.allow_model_install,
+        )
+
+
+class InstalledModelView(BaseModel):
+    name: str
+    size: int  # bytes
+
+
+class InstalledView(BaseModel):
+    models: list[InstalledModelView]
+    can_install: bool  # the administrator allows installing models
+
+    @classmethod
+    def of(cls, installed: Installed) -> "InstalledView":
+        return cls(
+            models=[InstalledModelView(name=m.name, size=m.size) for m in installed.models],
+            can_install=installed.can_install,
+        )
+
+
+class PullBody(BaseModel):
+    model: str = Field(min_length=1, max_length=100)
+
+
+class PullView(BaseModel):
+    id: UUID
+    provider_id: UUID
+    model: str
+    status: Literal["running", "done", "failed"]
+    step: str
+    completed: int
+    total: int
+    error: str | None
+    created_at: datetime
+    finished_at: datetime | None
+
+    @classmethod
+    def of(cls, pull: Pull) -> "PullView":
+        return cls(
+            id=pull.id,
+            provider_id=pull.provider_id,
+            model=pull.model,
+            status=pull.status,
+            step=pull.step,
+            completed=pull.completed,
+            total=pull.total,
+            error=pull.error,
+            created_at=pull.created_at,
+            finished_at=pull.finished_at,
         )
 
 
@@ -168,7 +220,12 @@ class CallView(BaseModel):
 
 
 def _refused(error: SettingsError) -> HTTPException:
-    codes = {"name_taken": status.HTTP_409_CONFLICT, "admin_only": status.HTTP_403_FORBIDDEN}
+    codes = {
+        "name_taken": status.HTTP_409_CONFLICT,
+        "admin_only": status.HTTP_403_FORBIDDEN,
+        "install_not_allowed": status.HTTP_403_FORBIDDEN,
+        "engine_unreachable": status.HTTP_502_BAD_GATEWAY,
+    }
     return HTTPException(codes.get(error.code, status.HTTP_422_UNPROCESSABLE_CONTENT), error.code)
 
 
@@ -180,6 +237,7 @@ def build_router(
     settings: AiSettings,
     budget: Budget,
     checks: CheckStore,
+    models: Models,
     journal: CallJournalReader,
     auth: Authentication,
     current_session: Callable[..., Session],
@@ -258,6 +316,30 @@ def build_router(
             raise HTTPException(status.HTTP_404_NOT_FOUND, "provider_not_found")
         return ProviderView.of(provider)
 
+    @router.get("/providers/{provider_id}/models")
+    def installed_models(provider_id: UUID, session: CurrentSession) -> InstalledView:
+        """The models installed on the local engine of a provider (Ollama), read from the engine."""
+        try:
+            return InstalledView.of(models.installed(session.user_id, provider_id))
+        except SettingsError as error:
+            raise _refused(error) from error
+
+    @router.post("/providers/{provider_id}/pulls", status_code=status.HTTP_202_ACCEPTED)
+    def start_pull(provider_id: UUID, body: PullBody, session: CurrentSession) -> PullView:
+        """Has the local engine download a model, if the administrator allows it; follow it
+        with `/pulls/{pull_id}`."""
+        try:
+            return PullView.of(models.start_pull(session.user_id, provider_id, body.model))
+        except SettingsError as error:
+            raise _refused(error) from error
+
+    @router.get("/pulls/{pull_id}")
+    def get_pull(pull_id: UUID, session: CurrentSession) -> PullView:
+        pull = models.get_pull(session.user_id, pull_id)
+        if pull is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "pull_not_found")
+        return PullView.of(pull)
+
     @router.delete("/providers/{provider_id}", status_code=status.HTTP_204_NO_CONTENT)
     def delete_provider(provider_id: UUID, session: CurrentSession) -> None:
         if not settings.delete_provider(session.user_id, provider_id):
@@ -335,6 +417,7 @@ def build_router(
                 allowed_paid=body.allowed_paid,
                 networks=body.local_networks,
                 ports=body.local_ports,
+                allow_model_install=body.allow_model_install,
             )
         except SettingsError as error:
             raise _refused(error) from error

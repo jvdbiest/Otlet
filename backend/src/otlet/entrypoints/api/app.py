@@ -4,7 +4,7 @@
 import logging
 from collections.abc import Sequence
 from pathlib import PurePath
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import sqlalchemy as sa
 from fastapi import FastAPI
@@ -19,9 +19,12 @@ from otlet.ai.adapters.budget_postgres import PostgresBudget
 from otlet.ai.adapters.catalogue_file import PackagedCatalogue
 from otlet.ai.adapters.checks_postgres import PostgresChecks
 from otlet.ai.adapters.journal_postgres import PostgresCallJournal
+from otlet.ai.adapters.ollama import OllamaHost
 from otlet.ai.adapters.postgres import PostgresAiSettings
+from otlet.ai.adapters.pulls_postgres import PostgresPulls
 from otlet.ai.adapters.sealing import PublicKeySealer
 from otlet.ai.application.budget import Budget
+from otlet.ai.application.models import Models
 from otlet.ai.application.settings import AiSettings
 from otlet.ai.domain.settings import ProfileEntry, SettingsError
 from otlet.collection.adapters.parsing import FeedparserReader, ReadabilityReader
@@ -106,9 +109,11 @@ def create_app(settings: Settings) -> FastAPI:
         )
         feed = Feed(PostgresTriageStore(engine))
         triage_router = triage.build_router(feed, workspace_context)
+        ai_store = PostgresAiSettings(engine)
+        ai_catalogue = PackagedCatalogue().load()
         ai_settings = AiSettings(
-            PostgresAiSettings(engine),
-            PackagedCatalogue().load(),
+            ai_store,
+            ai_catalogue,
             PublicKeySealer(settings.secrets_public_key_file),
         )
 
@@ -128,6 +133,7 @@ def create_app(settings: Settings) -> FastAPI:
             ai_settings,
             Budget(PostgresBudget(engine)),
             PostgresChecks(engine, enqueue),
+            Models(ai_store, ai_catalogue, OllamaHost(), PostgresPulls(engine, enqueue), uuid4),
             PostgresCallJournal(engine),
             authentication,
             current_session,

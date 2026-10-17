@@ -168,6 +168,64 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/ai/providers/{provider_id}/models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Installed Models
+         * @description The models installed on the local engine of a provider (Ollama), read from the engine.
+         */
+        get: operations["installed_models_api_ai_providers__provider_id__models_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai/providers/{provider_id}/pulls": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Pull
+         * @description Has the local engine download a model, if the administrator allows it; follow it
+         *     with `/pulls/{pull_id}`.
+         */
+        post: operations["start_pull_api_ai_providers__provider_id__pulls_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/ai/pulls/{pull_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Pull */
+        get: operations["get_pull_api_ai_pulls__pull_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/login": {
         parameters: {
             query?: never;
@@ -1001,6 +1059,20 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /** InstalledModelView */
+        InstalledModelView: {
+            /** Name */
+            name: string;
+            /** Size */
+            size: number;
+        };
+        /** InstalledView */
+        InstalledView: {
+            /** Can Install */
+            can_install: boolean;
+            /** Models */
+            models: components["schemas"]["InstalledModelView"][];
+        };
         /** ItemTopicView */
         ItemTopicView: {
             /** Contributions */
@@ -1155,6 +1227,11 @@ export interface components {
         };
         /** PolicyView */
         PolicyView: {
+            /**
+             * Allow Model Install
+             * @default false
+             */
+            allow_model_install: boolean;
             /** Allowed Paid */
             allowed_paid?: string[];
             /** Local Networks */
@@ -1243,6 +1320,46 @@ export interface components {
             kind: string;
             /** Name */
             name: string;
+        };
+        /** PullBody */
+        PullBody: {
+            /** Model */
+            model: string;
+        };
+        /** PullView */
+        PullView: {
+            /** Completed */
+            completed: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Error */
+            error: string | null;
+            /** Finished At */
+            finished_at: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Model */
+            model: string;
+            /**
+             * Provider Id
+             * Format: uuid
+             */
+            provider_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "running" | "done" | "failed";
+            /** Step */
+            step: string;
+            /** Total */
+            total: number;
         };
         /** RefreshView */
         RefreshView: {
@@ -1810,6 +1927,103 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    installed_models_api_ai_providers__provider_id__models_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InstalledView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    start_pull_api_ai_providers__provider_id__pulls_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PullBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PullView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_pull_api_ai_pulls__pull_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pull_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PullView"];
+                };
             };
             /** @description Validation Error */
             422: {

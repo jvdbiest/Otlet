@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import {
   budgetQuery,
+  installedQuery,
+  pullQuery,
   callsQuery,
   catalogueQuery,
   checkQuery,
@@ -17,6 +19,7 @@ import {
   useSavePolicy,
   useSaveProfile,
   useStartCheck,
+  useStartPull,
   type CatalogueView,
   type ProviderView,
 } from "../../ai.ts";
@@ -52,6 +55,10 @@ const AI_ERRORS = [
   "address_not_allowed",
   "admin_only",
   "duplicate_model",
+  "engine_unreachable",
+  "install_not_allowed",
+  "invalid_model_name",
+  "not_a_local_engine",
   "invalid_endpoint",
   "invalid_key",
   "invalid_name",
@@ -259,21 +266,36 @@ function Profile({ catalogue }: { catalogue: CatalogueView }) {
                     </option>
                   ))}
                 </select>
-                <input
-                  aria-label={t("ai.profile.model", { position: index + 1 })}
-                  list={`ai-models-${String(index)}`}
-                  value={row.model}
-                  onChange={(event) => {
-                    const next = [...shown];
-                    next[index] = { ...row, model: event.target.value };
-                    update(next);
-                  }}
-                />
-                <datalist id={`ai-models-${String(index)}`}>
-                  {models.map((m) => (
-                    <option key={m.model} value={m.model} />
-                  ))}
-                </datalist>
+                {provider !== undefined && kind?.custom_models === true ? (
+                  <LocalModel
+                    providerId={provider.id}
+                    position={index + 1}
+                    value={row.model}
+                    onChange={(model) => {
+                      const next = [...shown];
+                      next[index] = { ...row, model };
+                      update(next);
+                    }}
+                  />
+                ) : (
+                  <>
+                    <input
+                      aria-label={t("ai.profile.model", { position: index + 1 })}
+                      list={`ai-models-${String(index)}`}
+                      value={row.model}
+                      onChange={(event) => {
+                        const next = [...shown];
+                        next[index] = { ...row, model: event.target.value };
+                        update(next);
+                      }}
+                    />
+                    <datalist id={`ai-models-${String(index)}`}>
+                      {models.map((m) => (
+                        <option key={m.model} value={m.model} />
+                      ))}
+                    </datalist>
+                  </>
+                )}
                 {status !== null && (
                   <span className={status === "tested" ? styles.good : status === "blocked" ? styles.danger : styles.limited}>
                     {t(`ai.status.${status}`)}
@@ -347,6 +369,159 @@ function Profile({ catalogue }: { catalogue: CatalogueView }) {
         </p>
       )}
     </section>
+  );
+}
+
+const INSTALL = "__install__";
+
+function size(bytes: number): string {
+  return bytes >= 1e9 ? `${(bytes / 1e9).toFixed(1)} Go` : `${String(Math.round(bytes / 1e6))} Mo`;
+}
+
+/** The model of a local engine (Ollama): chosen among the models it has installed, or installed
+ * from here when the administrator allows it (F05b). */
+function LocalModel({
+  providerId,
+  position,
+  value,
+  onChange,
+}: {
+  providerId: string;
+  position: number;
+  value: string;
+  onChange: (model: string) => void;
+}) {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const installed = useQuery(installedQuery(providerId));
+  const start = useStartPull();
+  const [installing, setInstalling] = useState(false);
+  const [wanted, setWanted] = useState("");
+  const [pullId, setPullId] = useState<string | null>(null);
+  const pull = useQuery({ ...pullQuery(pullId ?? ""), enabled: pullId !== null });
+  const label = t("ai.profile.model", { position });
+  if (installed.isError) {
+    // The engine does not answer: the name is typed, as for any provider.
+    return (
+      <span className={styles.row}>
+        <input
+          aria-label={label}
+          value={value}
+          onChange={(event) => {
+            onChange(event.target.value);
+          }}
+        />
+        <span className={styles.warning}>{t("ai.models.unreachable")}</span>
+      </span>
+    );
+  }
+  if (installed.data === undefined) {
+    return <span className={styles.meta}>{t("ai.models.loading")}</span>;
+  }
+  const names = installed.data.models.map((m) => m.name);
+  const current = pull.data;
+  const finished = current?.finished_at != null;
+  const percent =
+    current !== undefined && current.total > 0 ? Math.floor((100 * current.completed) / current.total) : null;
+  return (
+    <span className={styles.row}>
+      <select
+        aria-label={label}
+        value={installing ? INSTALL : value}
+        onChange={(event) => {
+          if (event.target.value === INSTALL) {
+            setInstalling(true);
+          } else {
+            setInstalling(false);
+            onChange(event.target.value);
+          }
+        }}
+      >
+        {value !== "" && !names.includes(value) && (
+          <option value={value}>{t("ai.models.notInstalled", { name: value })}</option>
+        )}
+        {value === "" && <option value="">{t("ai.models.choose")}</option>}
+        {installed.data.models.map((m) => (
+          <option key={m.name} value={m.name}>
+            {m.name} ({size(m.size)})
+          </option>
+        ))}
+        <option value={INSTALL}>{t("ai.models.install")}</option>
+      </select>
+      {installing &&
+        (installed.data.can_install ? (
+          <>
+            <input
+              aria-label={t("ai.models.name")}
+              placeholder="qwen3:8b"
+              maxLength={100}
+              value={wanted}
+              onChange={(event) => {
+                setWanted(event.target.value);
+              }}
+            />
+            <button
+              type="button"
+              className={styles.button}
+              disabled={wanted.trim() === "" || start.isPending || (pullId !== null && !finished)}
+              onClick={() => {
+                start.mutate(
+                  { providerId, model: wanted.trim() },
+                  {
+                    onSuccess: (created) => {
+                      setPullId(created.id);
+                    },
+                  },
+                );
+              }}
+            >
+              {t("ai.models.start")}
+            </button>
+            <a href="https://ollama.com/library" target="_blank" rel="noreferrer">
+              {t("ai.models.library")}
+            </a>
+          </>
+        ) : (
+          <span className={styles.notice}>{t("ai.models.notAllowed")}</span>
+        ))}
+      {start.error !== null && (
+        <span role="alert" className={styles.error}>
+          {errorOf(t, start.error)}
+        </span>
+      )}
+      {current !== undefined && (
+        <span role="status" className={current.status === "failed" ? styles.error : styles.meta}>
+          {current.status === "running" &&
+            (percent === null
+              ? t("ai.models.preparing", { name: current.model })
+              : t("ai.models.progress", {
+                  name: current.model,
+                  percent,
+                  done: size(current.completed),
+                  total: size(current.total),
+                }))}
+          {current.status === "done" && (
+            <>
+              {t("ai.models.done", { name: current.model })}{" "}
+              <button
+                type="button"
+                className={styles.button}
+                onClick={() => {
+                  setInstalling(false);
+                  setPullId(null);
+                  setWanted("");
+                  onChange(current.model);
+                  void queryClient.invalidateQueries({ queryKey: installedQuery(providerId).queryKey });
+                }}
+              >
+                {t("ai.models.use", { name: current.model })}
+              </button>
+            </>
+          )}
+          {current.status === "failed" && t("ai.models.failed", { name: current.model, error: current.error ?? "" })}
+        </span>
+      )}
+    </span>
   );
 }
 
@@ -476,6 +651,7 @@ function Policy({ catalogue }: { catalogue: CatalogueView }) {
   const [allowed, setAllowed] = useState<string[] | null>(null);
   const [networks, setNetworks] = useState<string | null>(null);
   const [ports, setPorts] = useState<string | null>(null);
+  const [install, setInstall] = useState<boolean | null>(null);
   if (policy.data === undefined) {
     return null;
   }
@@ -500,12 +676,14 @@ function Policy({ catalogue }: { catalogue: CatalogueView }) {
                 .split(/[\s,]+/)
                 .filter((p) => p !== "")
                 .map(Number),
+              allow_model_install: install ?? data.allow_model_install,
             },
             {
               onSuccess: () => {
                 setAllowed(null);
                 setNetworks(null);
                 setPorts(null);
+                setInstall(null);
               },
             },
           );
@@ -552,6 +730,17 @@ function Policy({ catalogue }: { catalogue: CatalogueView }) {
             }}
           />
         </div>
+        <label className={styles.check}>
+          <input
+            type="checkbox"
+            checked={install ?? data.allow_model_install}
+            onChange={(event) => {
+              setInstall(event.target.checked);
+            }}
+          />{" "}
+          {t("ai.policy.install")}
+        </label>
+        <span className={styles.help}>{t("ai.policy.installHelp")}</span>
         {save.error !== null && (
           <p role="alert" className={styles.error}>
             {errorOf(t, save.error)}

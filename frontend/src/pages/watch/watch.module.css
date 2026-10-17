@@ -116,6 +116,17 @@
   color: var(--accent-text);
 }
 
+/* A link that looks like a button: no underline, nor the colour of a link. */
+a.primary,
+a.button {
+  display: inline-block;
+  text-decoration: none;
+}
+
+a.primary {
+  color: var(--accent-text);
+}
+
 .button[data-disabled],
 .primary[data-disabled] {
   opacity: 0.6;

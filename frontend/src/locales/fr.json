@@ -425,7 +425,7 @@
       "kind": "Type",
       "name": "Nom",
       "endpoint": "Adresse",
-      "localHelp": "Pour un modèle local (Ollama…), l'adresse doit être sur un réseau et un port autorisés par l'administrateur.",
+      "localHelp": "Pour un modèle local (Ollama…), écrivez l'adresse de la machine où il tourne, par exemple http://192.168.1.20:11434/v1. « localhost » désigne Otlet lui-même, pas votre machine. L'administrateur de l'instance doit avoir autorisé ce réseau et ce port.",
       "apiKey": "Clé d'API",
       "keyHelp": "La clé est scellée dès réception : l'interface ne pourra plus jamais l'afficher, seul le traitement en arrière-plan l'ouvre.",
       "save": "Ajouter"
@@ -489,7 +489,9 @@
       "networks": "Réseaux locaux autorisés",
       "networksHelp": "Un réseau par ligne, par exemple 192.168.129.0/24.",
       "ports": "Ports autorisés",
-      "save": "Enregistrer la politique"
+      "save": "Enregistrer la politique",
+      "install": "Les utilisateurs peuvent installer des modèles sur les moteurs locaux (Ollama)",
+      "installHelp": "Le moteur télécharge alors le modèle sur sa propre machine : plusieurs gigaoctets. Ne cochez que si ce moteur est le vôtre ou si vous l'acceptez."
     },
     "errors": {
       "admin_only": "Réservé à l'administrateur de l'instance.",
@@ -506,7 +508,27 @@
       "unknown_kind": "Type de fournisseur inconnu.",
       "unknown_model": "Modèle inconnu pour ce fournisseur.",
       "unknown_provider": "Fournisseur inconnu.",
-      "address_not_allowed": "Cette adresse locale n'est pas autorisée : l'administrateur de l'instance doit autoriser son réseau et son port dans Réglages > IA."
+      "address_not_allowed": "Cette adresse locale n'est pas autorisée : l'administrateur de l'instance doit autoriser son réseau et son port dans Réglages > IA.",
+      "engine_unreachable": "Le moteur local ne répond pas.",
+      "install_not_allowed": "L'administrateur de l'instance n'autorise pas l'installation de modèles.",
+      "invalid_model_name": "Ce nom de modèle n'est pas valide (par exemple qwen3:8b).",
+      "not_a_local_engine": "Seul un moteur local liste ses modèles."
+    },
+    "models": {
+      "loading": "Lecture des modèles installés…",
+      "unreachable": "Le moteur ne répond pas : saisissez le nom du modèle, ou vérifiez qu'il tourne.",
+      "choose": "Choisir un modèle installé",
+      "notInstalled": "{name} (pas installé sur ce moteur)",
+      "install": "Installer un autre modèle…",
+      "name": "Nom du modèle à installer",
+      "start": "Installer",
+      "library": "Voir les modèles d'Ollama",
+      "notAllowed": "L'administrateur de l'instance n'autorise pas l'installation de modèles.",
+      "preparing": "Installation de {name} : préparation…",
+      "progress": "Installation de {name} : {percent} % ({done} sur {total})",
+      "done": "{name} est installé.",
+      "use": "Utiliser {name}",
+      "failed": "L'installation de {name} a échoué : {error}"
     }
   },
   "brief": {

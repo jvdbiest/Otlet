@@ -67,10 +67,13 @@ class AiSettings:
         allowed_paid: Sequence[str],
         networks: Sequence[str],
         ports: Sequence[int],
+        allow_model_install: bool = False,
     ) -> InstancePolicy:
         if not is_admin:
             raise SettingsError("admin_only", "only the administrator of the instance decides")
-        policy = InstancePolicy.checked(allowed_paid, networks, ports, self._catalogue)
+        policy = InstancePolicy.checked(
+            allowed_paid, networks, ports, self._catalogue, allow_model_install
+        )
         self._store.save_policy(policy)
         return policy
 

@@ -11,6 +11,7 @@ For a request, the gateway tries the models of the user's profile, in order:
   then the next model;
 - 5xx or timeout: one more try, then the next model;
 - 400 (refused): stop at once, no retry, no fallback;
+- 404 (no such model or address on that engine): the next model;
 - an output that fails validation: one repair, on the same model, with the errors.
 
 Every attempt is written to the call journal of the user.
@@ -37,7 +38,7 @@ from otlet.ai.domain.model import (
     estimate_cost,
     real_cost,
 )
-from otlet.ai.domain.settings import InstancePolicy, Profile, Provider
+from otlet.ai.domain.settings import InstancePolicy, Profile, Provider, api_endpoint
 
 RETRY_AFTER_MAX = 2.0
 QUOTA_RETRIES = 2
@@ -258,7 +259,7 @@ class Gateway:
         try:
             answer = adapter.complete(
                 Completion(
-                    endpoint=provider.endpoint,
+                    endpoint=api_endpoint(provider.endpoint, self._local(provider)),
                     api_key=key,
                     model=model,
                     messages=tuple(messages),
@@ -294,6 +295,10 @@ class Gateway:
             ),
         )
         return answer
+
+    def _local(self, provider: Provider) -> bool:
+        kind = self._catalogue.kind(provider.kind)
+        return kind is not None and kind.custom_models
 
     def _note(self, user_id: UUID, outcome: Outcome, attempt: Attempt) -> None:
         outcome.attempts.append(attempt)

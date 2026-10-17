@@ -229,6 +229,11 @@ def _refused(error: SettingsError) -> HTTPException:
     return HTTPException(codes.get(error.code, status.HTTP_422_UNPROCESSABLE_CONTENT), error.code)
 
 
+def _cents(amount: Decimal) -> Decimal:
+    """An amount as people read it: the reservations compute with more decimals."""
+    return amount.quantize(Decimal("0.01"))
+
+
 def _no_key() -> HTTPException:
     return HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "secrets_unavailable")
 
@@ -373,10 +378,10 @@ def build_router(
         return BudgetView(
             month=state.month,
             currency=settings.catalogue.currency,
-            limit=state.limit,
-            spent=state.spent,
-            reserved=state.reserved,
-            usable=state.usable,
+            limit=_cents(state.limit),
+            spent=_cents(state.spent),
+            reserved=_cents(state.reserved),
+            usable=_cents(state.usable),
         )
 
     @router.get("/budget")

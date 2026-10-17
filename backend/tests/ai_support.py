@@ -39,7 +39,7 @@ class Fake:
                 behaviour = fake.behaviours.popleft() if fake.behaviours else "ok"
                 if behaviour == "429":
                     self.reply(429, {"error": {"message": "slow"}}, {"Retry-After": "1.5"})
-                elif behaviour in ("500", "400"):
+                elif behaviour in ("500", "404", "400"):
                     self.reply(int(behaviour), {"error": {"message": behaviour}})
                 elif self.path.endswith("/chat/completions"):
                     self.reply(

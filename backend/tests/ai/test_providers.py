@@ -82,7 +82,8 @@ def test_a_structured_answer_comes_back_with_its_usage(fake: Fake, protocol: str
 
 @pytest.mark.parametrize("protocol", ["openai", "anthropic"])
 @pytest.mark.parametrize(
-    ("behaviour", "kind"), [("429", "quota"), ("500", "unavailable"), ("400", "refused")]
+    ("behaviour", "kind"),
+    [("429", "quota"), ("500", "unavailable"), ("404", "unavailable"), ("400", "refused")],
 )
 def test_errors_are_normalized_without_retry(
     fake: Fake, protocol: str, behaviour: str, kind: str

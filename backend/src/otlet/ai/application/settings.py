@@ -18,6 +18,7 @@ from otlet.ai.domain.settings import (
     ProfileEntry,
     Provider,
     SettingsError,
+    api_endpoint,
     check_endpoint,
     check_key,
     check_name,
@@ -89,7 +90,7 @@ class AiSettings:
         if found is None:
             raise SettingsError("unknown_kind", f"unknown provider kind {kind}")
         key = check_key(api_key, required=found.api_key)
-        address = self._reachable(endpoint or found.endpoint)
+        address = self._reachable(endpoint or found.endpoint, found.custom_models)
         provider_id = uuid.uuid4()
         return self._store.add_provider(
             user_id,
@@ -122,7 +123,7 @@ class AiSettings:
             return None
         kind = self._catalogue.kind(current.kind)
         key = check_key(api_key, required=replace_key and kind is not None and kind.api_key)
-        address = self._reachable(endpoint)
+        address = self._reachable(endpoint, kind is not None and kind.custom_models)
         return self._store.update_provider(
             user_id,
             provider_id,
@@ -135,8 +136,8 @@ class AiSettings:
             replace_key=replace_key,
         )
 
-    def _reachable(self, endpoint: str) -> str:
-        cleaned = check_endpoint(endpoint)
+    def _reachable(self, endpoint: str, local: bool) -> str:
+        cleaned = api_endpoint(check_endpoint(endpoint), local)
         if self._store.policy().refuses(cleaned):
             raise SettingsError(
                 "address_not_allowed",

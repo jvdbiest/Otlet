@@ -16,7 +16,7 @@ from otlet.ai.adapters.postgres import PostgresAiSettings
 from otlet.ai.adapters.sealing import PublicKeySealer
 from otlet.ai.application.settings import AiSettings, key_context
 from otlet.ai.domain.model import Status
-from otlet.ai.domain.settings import InstancePolicy, ProfileEntry, SettingsError
+from otlet.ai.domain.settings import InstancePolicy, ProfileEntry, SettingsError, api_endpoint
 from otlet.identity.adapters.argon2_hasher import Argon2Hasher
 from otlet.identity.adapters.postgres import PostgresIdentityStore
 from otlet.identity.application.authentication import Authentication
@@ -49,6 +49,17 @@ def test_an_internal_address_needs_the_network_and_the_port_allowed() -> None:
     # Public addresses, and host names (resolved and checked at each call), pass here.
     assert not InstancePolicy().refuses("https://api.groq.com/openai/v1")
     assert not InstancePolicy().refuses("https://8.8.8.8/v1")
+
+
+def test_a_local_engine_given_as_a_bare_server_gets_its_api_path() -> None:
+    assert (
+        api_endpoint("http://192.168.129.45:11434", local=True) == "http://192.168.129.45:11434/v1"
+    )
+    assert (
+        api_endpoint("http://192.168.129.45:11434/", local=True) == "http://192.168.129.45:11434/v1"
+    )
+    assert api_endpoint("http://h:11434/v1", local=True) == "http://h:11434/v1"
+    assert api_endpoint("https://api.anthropic.com", local=False) == "https://api.anthropic.com"
 
 
 def test_a_local_engine_may_run_a_model_the_catalogue_does_not_list() -> None:

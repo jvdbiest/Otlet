@@ -35,8 +35,10 @@ def _retry_after(headers: Mapping[str, str]) -> float | None:
 
 
 def _status_error(status: int, detail: str) -> AiError:
-    # 5xx: the provider may come back; 4xx: the request itself is wrong, no retry.
-    return AiError("unavailable" if status >= 500 else "refused", f"HTTP {status} {detail}"[:200])
+    # 5xx: the provider may come back; 404: no such model or address there, another model of
+    # the profile may answer; any other 4xx: the request itself is wrong, no retry.
+    kind = "unavailable" if status >= 500 or status == 404 else "refused"
+    return AiError(kind, f"HTTP {status} {detail}"[:200])
 
 
 class OpenAICompatible:

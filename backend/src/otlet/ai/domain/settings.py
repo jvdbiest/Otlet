@@ -127,6 +127,15 @@ def check_name(name: str) -> str:
     return cleaned
 
 
+def api_endpoint(endpoint: str, local: bool) -> str:
+    """The address of the OpenAI-compatible API. A local engine (Ollama) serves it under /v1:
+    an address given as the bare server (http://host:11434) gets it, as users often write it."""
+    parts = urlsplit(endpoint)
+    if local and parts.path in ("", "/"):
+        return endpoint.rstrip("/") + "/v1"
+    return endpoint
+
+
 def check_endpoint(endpoint: str) -> str:
     """HTTP or HTTPS, a host, no credentials. Whether the address may be reached is decided at
     each call, after resolution (SSRF)."""

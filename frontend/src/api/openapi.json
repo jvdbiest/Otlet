@@ -1,6 +1,45 @@
 {
   "components": {
     "schemas": {
+      "BudgetView": {
+        "properties": {
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "string"
+          },
+          "month": {
+            "format": "date",
+            "title": "Month",
+            "type": "string"
+          },
+          "reserved": {
+            "title": "Reserved",
+            "type": "string"
+          },
+          "spent": {
+            "title": "Spent",
+            "type": "string"
+          },
+          "usable": {
+            "title": "Usable",
+            "type": "string"
+          }
+        },
+        "required": [
+          "month",
+          "currency",
+          "limit",
+          "spent",
+          "reserved",
+          "usable"
+        ],
+        "title": "BudgetView",
+        "type": "object"
+      },
       "BulkResult": {
         "properties": {
           "changed": {
@@ -627,6 +666,28 @@
           "price_out"
         ],
         "title": "ModelView",
+        "type": "object"
+      },
+      "NewLimit": {
+        "properties": {
+          "monthly_limit": {
+            "anyOf": [
+              {
+                "maximum": 100000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Monthly Limit"
+          }
+        },
+        "required": [
+          "monthly_limit"
+        ],
+        "title": "NewLimit",
         "type": "object"
       },
       "NewPassword": {
@@ -1550,6 +1611,60 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/ai/budget": {
+      "get": {
+        "operationId": "get_budget_api_ai_budget_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BudgetView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Budget"
+      },
+      "put": {
+        "operationId": "set_budget_api_ai_budget_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLimit"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BudgetView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Budget"
+      }
+    },
     "/api/ai/catalogue": {
       "get": {
         "operationId": "catalogue_api_ai_catalogue_get",

@@ -5,7 +5,7 @@ profile of the signed-in user, and the policy of the instance, changed by its ad
 Keys go in, never out: a provider shows only the last characters of its key."""
 
 from collections.abc import Callable
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Annotated, Literal
 from uuid import UUID
@@ -13,7 +13,9 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
+from otlet.ai.application.budget import Budget
 from otlet.ai.application.settings import AiSettings
+from otlet.ai.domain.budget import LIMIT_MAX
 from otlet.ai.domain.settings import (
     ENDPOINT_MAX_LENGTH,
     KEY_MAX_LENGTH,
@@ -117,6 +119,19 @@ class PolicyView(BaseModel):
         )
 
 
+class BudgetView(BaseModel):
+    month: date
+    currency: str
+    limit: Decimal
+    spent: Decimal
+    reserved: Decimal
+    usable: Decimal
+
+
+class NewLimit(BaseModel):
+    monthly_limit: Decimal = Field(ge=0, le=LIMIT_MAX)
+
+
 def _refused(error: SettingsError) -> HTTPException:
     codes = {"name_taken": status.HTTP_409_CONFLICT, "admin_only": status.HTTP_403_FORBIDDEN}
     return HTTPException(codes.get(error.code, status.HTTP_422_UNPROCESSABLE_CONTENT), error.code)
@@ -127,7 +142,10 @@ def _no_key() -> HTTPException:
 
 
 def build_router(
-    settings: AiSettings, auth: Authentication, current_session: Callable[..., Session]
+    settings: AiSettings,
+    budget: Budget,
+    auth: Authentication,
+    current_session: Callable[..., Session],
 ) -> APIRouter:
     CurrentSession = Annotated[Session, Depends(current_session)]
     router = APIRouter(prefix=PREFIX, dependencies=[Depends(same_origin)])
@@ -230,6 +248,26 @@ def build_router(
                 ProfileEntryView(provider_id=e.provider_id, model=e.model) for e in profile.entries
             ]
         )
+
+    def budget_view(user_id: UUID) -> BudgetView:
+        state = budget.state(user_id)
+        return BudgetView(
+            month=state.month,
+            currency=settings.catalogue.currency,
+            limit=state.limit,
+            spent=state.spent,
+            reserved=state.reserved,
+            usable=state.usable,
+        )
+
+    @router.get("/budget")
+    def get_budget(session: CurrentSession) -> BudgetView:
+        return budget_view(session.user_id)
+
+    @router.put("/budget")
+    def set_budget(body: NewLimit, session: CurrentSession) -> BudgetView:
+        budget.set_limit(session.user_id, body.monthly_limit)
+        return budget_view(session.user_id)
 
     @router.get("/policy")
     def get_policy(session: CurrentSession) -> PolicyView:

@@ -227,8 +227,13 @@ def test_a_synthesis_crosses_the_sources_a_panorama_takes_them_in_turn() -> None
     assert check_answer(answer(), keys, crossing=True) == [
         "sections drawing on one source: sections[1] (S1 only); this is a synthesis, every"
         " section must draw on two sources or more: rebuild these sections around an idea the"
-        " sources share, or merge them with another section"
+        " sources share"
     ]
+    # The model is asked to keep the length: fixing, it would merge sections and cut.
+    assert check_answer(answer(), keys, crossing=True, words=1200)[0].endswith(
+        "share; keep as many sections and the whole length asked, about 1200 words: rewrite,"
+        " do not shorten"
+    )
     assert lone_sections(answer()) == ["Mon expérience"]
     # Two paragraphs of a section may each cite one source: the section still crosses them.
     crossed = json.loads(answer())

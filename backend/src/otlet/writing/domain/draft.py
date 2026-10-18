@@ -22,7 +22,7 @@ from typing import Any
 
 from otlet.writing.domain.brief import BriefFields, Length, Mode
 
-PROMPT_VERSION = "redaction-5"
+PROMPT_VERSION = "redaction-6"
 SCHEMA_NAME = "article_draft"
 SECTIONS = (2, 6)
 SOURCE_MIN_CHARS = 600
@@ -209,11 +209,17 @@ def _text(value: Any, minimum: int) -> bool:
 
 
 def check_answer(
-    raw: str, keys: list[str], every_source: bool = True, crossing: bool = False
+    raw: str,
+    keys: list[str],
+    every_source: bool = True,
+    crossing: bool = False,
+    words: int | None = None,
 ) -> list[str]:
     """The errors of an answer, in words a model can act on; empty when it is usable. With
     `every_source`, a source of the brief no paragraph cites is an error too; with `crossing`
-    (a synthesis of several sources), so is a section that draws on one source only."""
+    (a synthesis of several sources), so is a section that draws on one source only. With
+    `words`, these two errors ask to keep the length: a model asked to fix them otherwise
+    tends to merge and cut (Joël's v28 and v29, 2026-10-18)."""
     try:
         data = json.loads(raw)
     except json.JSONDecodeError as error:
@@ -261,17 +267,23 @@ def check_answer(
         errors.append(
             f"unknown source ids: {', '.join(sorted(unknown))}; allowed: {', '.join(keys)}"
         )
+    keep = (
+        f"; keep as many sections and the whole length asked, about {words} words: rewrite,"
+        " do not shorten"
+        if words
+        else ""
+    )
     missing = [key for key in keys if key not in cited]
     if every_source and sections and not unknown and missing:
         errors.append(
             f"sources not used: {', '.join(missing)}; every source of the brief must be cited"
-            " by at least one paragraph: connect them in the article"
+            " by at least one paragraph: connect them in the article" + keep
         )
     if crossing and len(keys) > 1 and sections and not unknown and lone:
         errors.append(
             f"sections drawing on one source: {', '.join(lone)}; this is a synthesis, every"
             " section must draw on two sources or more: rebuild these sections around an idea"
-            " the sources share, or merge them with another section"
+            " the sources share" + keep
         )
     return errors[:10]
 

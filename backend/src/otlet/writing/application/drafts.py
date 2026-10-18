@@ -185,7 +185,13 @@ class Drafts:
             checks += 1
             first = checks == 1
             synthesis = fields.mode is Mode.SYNTHESIS
-            found = check_answer(raw, keys, every_source=first, crossing=first and synthesis)
+            found = check_answer(
+                raw,
+                keys,
+                every_source=first,
+                crossing=first and synthesis,
+                words=WORDS[fields.length],
+            )
             refusals.append(found)
             return found
 

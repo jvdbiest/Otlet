@@ -229,7 +229,7 @@ def test_a_draft_becomes_a_version_of_the_article_of_the_brief(world: World) -> 
     version = article.versions[0]
     assert (version.origin, version.provider_kind, version.model) == ("ia", "ollama", "llama3.1")
     assert (
-        version.prompt_version == "redaction-5"
+        version.prompt_version == "redaction-6"
         and version.cut_sources == () == version.unused_sources
         and not version.context_overflow
     )
@@ -292,6 +292,7 @@ def test_a_draft_that_leaves_a_source_out_is_sent_back_then_says_so(world: World
     repair = world.fake.requests[-1]["body"]["messages"][-1]["content"]
     assert "sources not used: S2" in repair
     assert "sections drawing on one source: sections[0] (S1 only), sections[1]" in repair
+    assert "about 600 words: rewrite, do not shorten" in repair
     article = world.drafts.article(context, brief.id)
     assert article is not None
     assert article.versions[0].unused_sources == ("Article de agence",)

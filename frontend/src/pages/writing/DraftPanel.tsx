@@ -24,9 +24,10 @@ function failure(generation: GenerationView): (typeof FAILURES)[number] {
   return FAILURES.find((code) => code === generation.error) ?? "unavailable";
 }
 
-/** The sections of a synthesis that still draw on one source, from the details. */
-function lone(details: Record<string, unknown>): string[] {
-  const found = details.lone_sections;
+/** A list of the details: the sections of a synthesis still on one source, the paragraphs
+ * that repeat another. */
+function listed(details: Record<string, unknown>, key: "lone_sections" | "repeated_paragraphs"): string[] {
+  const found = details[key];
   return Array.isArray(found) ? found.filter((h): h is string => typeof h === "string") : [];
 }
 
@@ -136,12 +137,22 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
               </ul>
             </div>
           )}
-          {lone(shown.details).length > 0 && (
+          {listed(shown.details, "lone_sections").length > 0 && (
             <div role="note" className={styles.warning}>
-              <p>{t("draft.lone", { count: lone(shown.details).length })}</p>
+              <p>{t("draft.lone", { count: listed(shown.details, "lone_sections").length })}</p>
               <ul>
-                {lone(shown.details).map((heading) => (
+                {listed(shown.details, "lone_sections").map((heading) => (
                   <li key={heading}>{heading}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {listed(shown.details, "repeated_paragraphs").length > 0 && (
+            <div role="note" className={styles.warning}>
+              <p>{t("draft.repeated", { count: listed(shown.details, "repeated_paragraphs").length })}</p>
+              <ul>
+                {listed(shown.details, "repeated_paragraphs").map((start) => (
+                  <li key={start}>{start}</li>
                 ))}
               </ul>
             </div>

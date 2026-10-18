@@ -25,6 +25,7 @@ from otlet.writing.domain.draft import (
     messages,
     output_schema,
     prompt_sources,
+    repeated_paragraphs,
     source_budget,
     to_document,
 )
@@ -191,6 +192,7 @@ class Drafts:
                 every_source=first,
                 crossing=first and synthesis,
                 words=WORDS[fields.length],
+                repeats=first,
             )
             refusals.append(found)
             return found
@@ -267,4 +269,5 @@ class Drafts:
             # The repaired answer is kept even if some sections still draw on one source:
             # the version says which (a warning, not a failure).
             details["lone_sections"] = lone_sections(written.text)
+        details["repeated_paragraphs"] = repeated_paragraphs(written.text)
         self._articles.finish(workspace_id, generation_id, None, written.attempts, made, details)

@@ -640,6 +640,7 @@
     },
     "unused": "{count, plural, one {Ce brouillon n'utilise pas cet élément du brief, malgré une demande de correction au modèle :} other {Ce brouillon n'utilise pas ces # éléments du brief, malgré une demande de correction au modèle :}}",
     "lone": "{count, plural, one {Synthèse : cette section ne s'appuie que sur une source, malgré une demande de correction au modèle :} other {Synthèse : ces # sections ne s'appuient que sur une source, malgré une demande de correction au modèle :}}",
+    "repeated": "{count, plural, one {Ce paragraphe répète presque mot pour mot un paragraphe précédent, malgré une demande de correction au modèle :} other {Ces # paragraphes répètent presque mot pour mot un paragraphe précédent, malgré une demande de correction au modèle :}}",
     "overflow": "Ce brouillon a dépassé la fenêtre de contexte du modèle : un moteur local a pu effacer le début de la conversation, où se trouvent les règles d'Otlet. Relisez-le avec soin, et agrandissez la fenêtre du fournisseur.",
     "details": {
       "title": "Détails de génération",

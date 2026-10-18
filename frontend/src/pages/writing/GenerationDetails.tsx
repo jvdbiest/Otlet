@@ -27,6 +27,7 @@ interface Details {
   attempts?: { provider?: string; model?: string; result?: string; seconds?: number; tokens_in?: number; tokens_out?: number }[];
   context_overflow?: boolean;
   lone_sections?: string[];
+  repeated_paragraphs?: string[];
 }
 
 const NUMBER = new Intl.NumberFormat("fr-BE");
@@ -72,6 +73,9 @@ function detailsText(raw: Record<string, unknown>, heading: string): string {
   }
   if (details.lone_sections?.length) {
     lines.push(`Sections à une seule source : ${details.lone_sections.join(" ; ")}`);
+  }
+  if (details.repeated_paragraphs?.length) {
+    lines.push(`Paragraphes répétés : ${details.repeated_paragraphs.join(" ; ")}`);
   }
   if (details.context_overflow) {
     lines.push("La fenêtre de contexte a été dépassée.");

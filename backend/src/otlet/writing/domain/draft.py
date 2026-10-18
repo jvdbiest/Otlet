@@ -214,12 +214,14 @@ def check_answer(
     every_source: bool = True,
     crossing: bool = False,
     words: int | None = None,
+    repeats: bool = False,
 ) -> list[str]:
     """The errors of an answer, in words a model can act on; empty when it is usable. With
     `every_source`, a source of the brief no paragraph cites is an error too; with `crossing`
     (a synthesis of several sources), so is a section that draws on one source only. With
     `words`, these two errors ask to keep the length: a model asked to fix them otherwise
-    tends to merge and cut (Joël's v28 and v29, 2026-10-18)."""
+    tends to merge and cut (Joël's v28 and v29, 2026-10-18). With `repeats`, so is a
+    paragraph that repeats another: a model short of matter pads the length with copies."""
     try:
         data = json.loads(raw)
     except json.JSONDecodeError as error:
@@ -238,6 +240,8 @@ def check_answer(
     unknown: set[str] = set()
     cited: set[str] = set()
     lone: list[str] = []
+    seen: list[tuple[str, set[str]]] = []
+    repeated: list[str] = []
     for n, section in enumerate(sections):
         if not isinstance(section, dict):
             errors.append(f"sections[{n}]: an object with a heading and paragraphs is required")
@@ -254,6 +258,11 @@ def check_answer(
             if not isinstance(paragraph, dict) or not _text(paragraph.get("text"), 20):
                 errors.append(f"{where}.text: a paragraph of 20 characters at least is required")
                 continue
+            vocabulary = _vocabulary(paragraph["text"])
+            same = next((w for w, other in seen if _alike(vocabulary, other)), None)
+            if same is not None:
+                repeated.append(f"{where} repeats {same}")
+            seen.append((where, vocabulary))
             ids = paragraph.get("source_ids")
             if not isinstance(ids, list) or not ids:
                 errors.append(f"{where}.source_ids: the ids of its sources are required")
@@ -285,7 +294,35 @@ def check_answer(
             " section must draw on two sources or more: rebuild these sections around an idea"
             " the sources share" + keep
         )
+    if repeats and repeated:
+        errors.append(
+            f"paragraphs repeated: {', '.join(repeated)}; every paragraph must bring something"
+            " new from the sources: replace each copy" + keep
+        )
     return errors[:10]
+
+
+def _vocabulary(text: str) -> set[str]:
+    return {word for word in re.findall(r"\w+", text.lower()) if len(word) > 3}
+
+
+def _alike(one: set[str], other: set[str]) -> bool:
+    """Two paragraphs that share most of their words: one is a copy of the other."""
+    return bool(one and other) and len(one & other) / len(one | other) >= 0.6
+
+
+def repeated_paragraphs(raw: str) -> list[str]:
+    """The paragraphs of a checked answer that repeat an earlier one, by their first words."""
+    data = json.loads(raw)
+    seen: list[set[str]] = []
+    found = []
+    for section in data["sections"]:
+        for paragraph in section["paragraphs"]:
+            vocabulary = _vocabulary(paragraph["text"])
+            if any(_alike(vocabulary, other) for other in seen):
+                found.append(" ".join(paragraph["text"].split()[:8]) + "…")
+            seen.append(vocabulary)
+    return found
 
 
 def cited_keys(raw: str) -> set[str]:

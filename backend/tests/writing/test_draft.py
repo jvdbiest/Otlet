@@ -14,6 +14,7 @@ from otlet.writing.domain.draft import (
     messages,
     output_schema,
     prompt_sources,
+    repeated_paragraphs,
     source_budget,
     to_document,
 )
@@ -242,6 +243,24 @@ def test_a_synthesis_crosses_the_sources_a_panorama_takes_them_in_turn() -> None
     )
     assert check_answer(json.dumps(crossed), keys, crossing=True) == []
     assert lone_sections(json.dumps(crossed)) == []
+    # A paragraph that repeats another (Joël's brief, 2026-10-18: one bridging paragraph
+    # copied in three sections) is sent back on the first answer, and named after.
+    copied = json.loads(json.dumps(crossed))
+    copied["sections"][1]["paragraphs"].append(
+        {
+            "text": "Le constructeur annonce une autonomie revue nettement à la hausse.",
+            "source_ids": ["S2"],
+        }
+    )
+    assert check_answer(json.dumps(copied), keys, crossing=True) == []
+    assert check_answer(json.dumps(copied), keys, crossing=True, repeats=True) == [
+        "paragraphs repeated: sections[1].paragraphs[2] repeats sections[0].paragraphs[0];"
+        " every paragraph must bring something new from the sources: replace each copy"
+    ]
+    assert repeated_paragraphs(json.dumps(copied)) == [
+        "Le constructeur annonce une autonomie revue nettement à…"
+    ]
+    assert repeated_paragraphs(json.dumps(crossed)) == []
     # A short heading does not hide the sources its section cites.
     short = json.loads(json.dumps(crossed))
     short["sections"][0]["heading"] = "A"

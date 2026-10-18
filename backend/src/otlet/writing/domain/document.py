@@ -67,6 +67,8 @@ SOURCE_ID = re.compile(r"^S[0-9]{1,4}$")
 LINK = re.compile(r"^(https?://|mailto:)[^\s<>\"]+$", re.IGNORECASE)
 MAX_BYTES = 1_000_000
 ALT_MAX = 500
+# The width of an image, in % of the column (Joël, 2026-10-18): it follows the site's layout.
+WIDTHS = (10, 100)
 UUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
 MAX_DEPTH = 6
 
@@ -152,6 +154,9 @@ def _check_block(block: Any, where: str, source_ids: set[str], errors: list[str]
         alt = attrs.get("alt")
         if alt is not None and (not isinstance(alt, str) or len(alt) > ALT_MAX):
             errors.append(f"{where}.attrs.alt: a text of {ALT_MAX} characters at most")
+        width = attrs.get("width")
+        if width is not None and not (type(width) is int and WIDTHS[0] <= width <= WIDTHS[1]):
+            errors.append(f"{where}.attrs.width: {WIDTHS[0]} to {WIDTHS[1]} (% of the column)")
         if block.get("content"):
             errors.append(f"{where}: an image has no content")
     elif kind == "separateur" and block.get("content"):
@@ -430,7 +435,9 @@ def _block(
     if kind == "image":
         attrs = block["attrs"]
         src = escape(media_url(attrs["media"]))
-        return f'<figure><img src="{src}" alt="{escape(attrs.get("alt") or "")}"></figure>'
+        alt = escape(attrs.get("alt") or "")
+        width = f' style="width: {attrs["width"]}%"' if attrs.get("width") else ""
+        return f'<figure><img src="{src}" alt="{alt}"{width}></figure>'
     raise ValueError(f"unknown block type {kind!r}")
 
 

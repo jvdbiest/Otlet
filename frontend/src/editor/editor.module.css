@@ -228,3 +228,66 @@
   max-width: 100%;
   height: auto;
 }
+
+/* An image in the editor: once clicked, quick sizes over it and a handle at its corner. */
+.page :global(.otlet-image) {
+  position: relative;
+}
+
+.page :global(.otlet-image-tools),
+.page :global(.otlet-image-handle) {
+  display: none;
+}
+
+.page :global(.otlet-image-selected img) {
+  outline: 2px solid #2f5d8a;
+}
+
+.page :global(.otlet-image-selected .otlet-image-tools) {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 0.25rem;
+  background: rgb(255 255 255 / 92%);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 30%);
+  font: 0.8rem/1 system-ui, sans-serif;
+}
+
+.page :global(.otlet-image-tools button) {
+  padding: 0.3rem 0.45rem;
+  border: 1px solid transparent;
+  border-radius: 0.2rem;
+  background: transparent;
+  color: #1d1d1b;
+  font: inherit;
+  cursor: pointer;
+}
+
+.page :global(.otlet-image-tools button[aria-pressed="true"]) {
+  border-color: #2f5d8a;
+  background: #e3ecf5;
+}
+
+.page :global(.otlet-image-frame) {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: top;
+}
+
+.page :global(.otlet-image-selected .otlet-image-handle) {
+  position: absolute;
+  right: -7px;
+  bottom: -7px;
+  display: block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background: #2f5d8a;
+  cursor: ew-resize;
+  touch-action: none;
+}

@@ -4,7 +4,7 @@
 // otlet.writing.domain.document.render), which the concordance test checks
 // (tools/concordance.ts, tools/check_concordance.py). Kept free of React and of the browser's
 // globals at load time: Node runs it for the concordance test.
-import { Mark, Node, type AnyExtension } from "@tiptap/core";
+import { Mark, Node, type AnyExtension, type NodeViewRenderer } from "@tiptap/core";
 import { ALIGNS, FONT_KEYS, FONTS, HIGHLIGHTS, SIZES, COLORS, hexColor, styleOf, type TextStyle } from "./format.ts";
 
 export interface Source {
@@ -139,7 +139,20 @@ const ImageNode = Node.create<{ mediaUrl: (id: string) => string; mediaIdOf: (sr
   draggable: true,
   selectable: true,
   addOptions: () => ({ mediaUrl: (id: string) => id, mediaIdOf: () => null }),
-  addAttributes: () => ({ ...blockAttrs(), ...hidden("media"), ...hidden("alt", "") }),
+  addAttributes: () => ({
+    ...blockAttrs(),
+    ...hidden("media"),
+    ...hidden("alt", ""),
+    // In % of the column (Joël, 2026-10-18), from 10 to 100; none is the image's own width.
+    width: {
+      default: null,
+      rendered: false,
+      parseHTML: (element: HTMLElement) => {
+        const width = /^(\d+)%$/.exec(element.style.width);
+        return width ? Math.min(100, Math.max(10, Number(width[1]))) : null;
+      },
+    },
+  }),
   parseHTML() {
     return [
       {
@@ -152,7 +165,11 @@ const ImageNode = Node.create<{ mediaUrl: (id: string) => string; mediaIdOf: (sr
     ];
   },
   renderHTML({ node }) {
-    return ["figure", ["img", { src: this.options.mediaUrl(String(node.attrs.media)), alt: String(node.attrs.alt ?? "") }]];
+    const width = typeof node.attrs.width === "number" ? { style: `width: ${String(node.attrs.width)}%` } : {};
+    return [
+      "figure",
+      ["img", { src: this.options.mediaUrl(String(node.attrs.media)), alt: String(node.attrs.alt ?? ""), ...width }],
+    ];
   },
 });
 
@@ -298,6 +315,7 @@ const Bold = Mark.create({
 export interface Media {
   mediaUrl: (id: string) => string;
   mediaIdOf: (src: string) => string | null;
+  view?: NodeViewRenderer; // how the editor shows an image: with its handle (imageView.ts)
 }
 
 /** The extensions of the format; the editor adds its own (undo, paste cleaning). */
@@ -313,7 +331,11 @@ export function extensions(sources: Source[] = [], media?: Media): AnyExtension[
     Citation.configure({ sources }),
     Encadre,
     Separateur,
-    media === undefined ? ImageNode : ImageNode.configure(media),
+    media === undefined
+      ? ImageNode
+      : ImageNode.configure({ mediaUrl: media.mediaUrl, mediaIdOf: media.mediaIdOf }).extend({
+          addNodeView: () => media.view ?? null,
+        }),
     SourceRef,
     Link,
     TextStyleMark,

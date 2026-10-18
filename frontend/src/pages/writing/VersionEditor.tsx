@@ -9,6 +9,7 @@ import { ApiError } from "../../api/client.ts";
 import { toDocument } from "../../editor/document.ts";
 import { cleanPastedHtml } from "../../editor/paste.ts";
 import { extensions, type Source } from "../../editor/schema.ts";
+import { imageView } from "../../editor/imageView.ts";
 import { editorStyles } from "../../editor/styles.ts";
 import { IMAGE_TYPES, mediaIdOf, mediaUrl, uploadImage } from "../../media.ts";
 import { useDiscardVersion, useSaveVersion, type VersionView } from "../../writing.ts";
@@ -59,6 +60,11 @@ export function VersionEditor({
   const media = {
     mediaUrl: (id: string) => mediaUrl(workspaceId, id),
     mediaIdOf,
+    view: imageView((id) => mediaUrl(workspaceId, id), {
+      size: (width) => t("editor.imageWidth", { width }),
+      handle: t("editor.imageHandle"),
+      own: t("editor.imageOwn"),
+    }),
   };
   // Images sent one by one, each inserted where the cursor is once it is stored (X03b).
   const insertImages = (files: File[], insert: (media: string, alt: string) => void) => {

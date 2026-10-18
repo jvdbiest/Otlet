@@ -141,7 +141,15 @@ export function imageView(
     });
     wrap.addEventListener("click", () => {
       const wrapping = side() === null;
-      set(wrapping ? { wrap: true, width: clamp(shown() ?? WRAP_DEFAULT, WRAP_MAX) } : { wrap: false });
+      // An image neither at the left nor at the right goes to the left: the text flows to its
+      // right (Joël, 2026-10-18: the button is always there).
+      const align: unknown = current.attrs.align;
+      const placed = align === "left" || align === "right" ? align : "left";
+      set(
+        wrapping
+          ? { wrap: true, align: placed, width: clamp(shown() ?? WRAP_DEFAULT, WRAP_MAX) }
+          : { wrap: false },
+      );
     });
     tools.append(wrap);
 
@@ -152,8 +160,6 @@ export function imageView(
       show(width);
       const align: unknown = current.attrs.align;
       dom.style.textAlign = typeof align === "string" && side() === null ? align : "";
-      // Only an image at the left or the right can have the text flow around it.
-      wrap.hidden = align !== "left" && align !== "right";
       wrap.setAttribute("aria-pressed", String(side() !== null));
       handles[3]?.setAttribute("aria-valuenow", String(width ?? 100));
       for (const element of Array.from(tools.querySelectorAll<HTMLButtonElement>("button[data-width]"))) {

@@ -238,7 +238,7 @@ def test_a_draft_becomes_a_version_of_the_article_of_the_brief(world: World) -> 
     version = article.versions[0]
     assert (version.origin, version.provider_kind, version.model) == ("ia", "ollama", "llama3.1")
     assert (
-        version.prompt_version == "redaction-6"
+        version.prompt_version == "redaction-7"
         and version.cut_sources == () == version.unused_sources
         and not version.context_overflow
     )

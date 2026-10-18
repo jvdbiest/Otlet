@@ -115,7 +115,7 @@ def test_an_answer_is_checked_in_words_a_model_can_act_on() -> None:
         "title: a string of 5 characters at least is required"
     ]
     one = [{"heading": "Seule", "paragraphs": [{"text": "x" * 30, "source_ids": ["S1"]}]}]
-    assert check_answer(answer(sections=one), keys) == ["sections: 2 to 6 sections are required"]
+    assert check_answer(answer(sections=one), keys) == ["sections: 2 to 15 sections are required"]
     invented = json.loads(answer())
     invented["sections"][0]["paragraphs"][0]["source_ids"] = ["S9"]
     assert check_answer(json.dumps(invented), keys) == ["unknown source ids: S9; allowed: S1, S2"]

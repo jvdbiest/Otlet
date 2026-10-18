@@ -210,9 +210,11 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
                 <button
                   type="button"
                   className={styles.button}
-                  disabled={running || copy.isPending}
+                  disabled={copy.isPending}
                   onClick={() => {
                     if (shown.origin !== "ia" || article === null) {
+                      // Pinned: a draft generated meanwhile must not replace the text being edited.
+                      setChosen(shown.number);
                       setEditing(true);
                       return;
                     }
@@ -241,6 +243,11 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
                   {t("draft.edit")}
                 </button>
               </p>
+              {copy.error !== null && (
+                <p role="alert" className={styles.error}>
+                  {errorText(t, copy.error)}
+                </p>
+              )}
               <DocumentView
                 document={shown.document as unknown as PlatformDocument}
                 title={shown.title}

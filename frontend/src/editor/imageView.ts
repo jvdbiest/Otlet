@@ -18,6 +18,9 @@ export function imageView(
     const dom = document.createElement("figure");
     dom.className = "otlet-image";
     const img = document.createElement("img");
+    // The editor moves the whole image (its figure) when it is dragged, not the browser's copy
+    // of the picture, which would duplicate it.
+    img.draggable = false;
     const tools = document.createElement("span");
     tools.className = "otlet-image-tools";
     tools.contentEditable = "false";

@@ -64,6 +64,7 @@ export function VersionEditor({
       size: (width) => t("editor.imageWidth", { width }),
       handle: t("editor.imageHandle"),
       own: t("editor.imageOwn"),
+      wrap: t("editor.imageWrap"),
     }),
   };
   // Images sent one by one, each inserted where the cursor is once it is stored (X03b).

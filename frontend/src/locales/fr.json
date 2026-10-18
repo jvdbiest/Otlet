@@ -721,6 +721,7 @@
     "uploading": "{count, plural, one {Envoi d'une image…} other {Envoi de # images…}}",
     "imageWidth": "{width} %",
     "imageHandle": "Largeur de l'image : tirez la poignée, ou utilisez les flèches",
-    "imageOwn": "Taille d'origine"
+    "imageOwn": "Taille d'origine",
+    "imageWrap": "Habiller le texte"
   }
 }

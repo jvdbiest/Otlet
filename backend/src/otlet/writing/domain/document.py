@@ -70,6 +70,10 @@ ALT_MAX = 500
 # The width of an image, in % of the column (Joël, 2026-10-18): it follows the site's layout.
 WIDTHS = (10, 100)
 IMAGE_ALIGNS = ("left", "center", "right")  # an image is placed, never justified
+# An image the text flows around (Joël, 2026-10-18): at the left or the right, never wider
+# than this, so the text keeps room; 50 % when no width is given.
+WRAP_MAX = 60
+WRAP_DEFAULT = 50
 UUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
 MAX_DEPTH = 6
 
@@ -160,6 +164,15 @@ def _check_block(block: Any, where: str, source_ids: set[str], errors: list[str]
         width = attrs.get("width")
         if width is not None and not (type(width) is int and WIDTHS[0] <= width <= WIDTHS[1]):
             errors.append(f"{where}.attrs.width: {WIDTHS[0]} to {WIDTHS[1]} (% of the column)")
+        wrap = attrs.get("wrap")
+        if wrap not in (None, True, False):
+            errors.append(f"{where}.attrs.wrap: true or false")
+        elif wrap and attrs.get("align") not in ("left", "right"):
+            errors.append(
+                f"{where}.attrs.wrap: the text flows around an image at the left or right"
+            )
+        elif wrap and type(width) is int and width > WRAP_MAX:
+            errors.append(f"{where}.attrs.width: {WRAP_MAX} at most when the text flows around")
         if block.get("content"):
             errors.append(f"{where}: an image has no content")
     elif kind == "separateur" and block.get("content"):
@@ -439,6 +452,14 @@ def _block(
         attrs = block["attrs"]
         src = escape(media_url(attrs["media"]))
         alt = escape(attrs.get("alt") or "")
+        if attrs.get("wrap") and attrs.get("align") in ("left", "right"):
+            side = attrs["align"]
+            margin = "0px 1em 1em 0px" if side == "left" else "0px 0px 1em 1em"
+            share = attrs.get("width") or WRAP_DEFAULT
+            return (
+                f'<figure style="float: {side}; width: {share}%; margin: {margin}">'
+                f'<img src="{src}" alt="{alt}" style="width: 100%"></figure>'
+            )
         width = f' style="width: {attrs["width"]}%"' if attrs.get("width") else ""
         return f'<figure{_align(block)}><img src="{src}" alt="{alt}"{width}></figure>'
     raise ValueError(f"unknown block type {kind!r}")

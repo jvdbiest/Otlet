@@ -58,6 +58,21 @@ def test_the_formatting_of_the_ribbon_is_part_of_the_format() -> None:
     # An image that is not one of the workspace is refused.
     assert check(styled, {"S1"}) == ["content[5].attrs.media: an image of the workspace"]
     assert media_of(styled) == {IMAGE}
+    # The text flows around an image at the left or the right, 60 % wide at most.
+    attrs: dict[str, Any] = {"media": IMAGE, "align": "left", "wrap": True}
+    wrapped = {"type": "image", "attrs": attrs}
+    assert render(doc(wrapped), extras=False) == (
+        f'<figure style="float: left; width: 50%; margin: 0px 1em 1em 0px">'
+        f'<img src="{IMAGE}" alt="" style="width: 100%"></figure>'
+    )
+    attrs.update(align="center")
+    assert check(doc(wrapped), set(), {IMAGE}) == [
+        "content[0].attrs.wrap: the text flows around an image at the left or right"
+    ]
+    attrs.update(align="right", width=80)
+    assert check(doc(wrapped), set(), {IMAGE}) == [
+        "content[0].attrs.width: 60 at most when the text flows around"
+    ]
     assert render(styled, extras=False, media_url=lambda m: f"/m/{m}").endswith(
         f'<figure style="text-align: right"><img src="/m/{IMAGE}" alt="Une moto"'
         ' style="width: 50%"></figure>'

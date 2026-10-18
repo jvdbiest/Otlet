@@ -131,6 +131,10 @@ const Encadre = Node.create({
   renderHTML: () => ["aside", { class: "otlet-encadre" }, 0],
 });
 
+/** An image the text flows around: 60 % of the column at most, 50 % unless set. */
+export const WRAP_MAX = 60;
+export const WRAP_DEFAULT = 50;
+
 // An image of the workspace (X03b): the document keeps its id; its address comes from the page.
 const ImageNode = Node.create<{ mediaUrl: (id: string) => string; mediaIdOf: (src: string) => string | null }>({
   name: "image",
@@ -144,6 +148,15 @@ const ImageNode = Node.create<{ mediaUrl: (id: string) => string; mediaIdOf: (sr
     ...hidden("media"),
     ...hidden("alt", ""),
     ...align(),
+    // The text flows around it, at the left or the right (Joël, 2026-10-18).
+    wrap: {
+      default: false,
+      rendered: false,
+      parseHTML: (element: HTMLElement) => {
+        const figure = element.closest("figure");
+        return figure !== null && (figure.style.float === "left" || figure.style.float === "right");
+      },
+    },
     // In % of the column (Joël, 2026-10-18), from 10 to 100; none is the image's own width.
     width: {
       default: null,
@@ -160,12 +173,32 @@ const ImageNode = Node.create<{ mediaUrl: (id: string) => string; mediaIdOf: (sr
         tag: "img[src]",
         getAttrs: (element: HTMLElement) => {
           const media = this.options.mediaIdOf(element.getAttribute("src") ?? "");
-          return media === null ? false : { media, alt: element.getAttribute("alt") ?? "" };
+          if (media === null) {
+            return false;
+          }
+          const figure = element.closest("figure");
+          const float = figure?.style.float;
+          const share = /^(\d+)%$/.exec(figure?.style.width ?? "");
+          return float === "left" || float === "right"
+            ? { media, alt: element.getAttribute("alt") ?? "", align: float, wrap: true, width: share ? Number(share[1]) : null }
+            : { media, alt: element.getAttribute("alt") ?? "" };
         },
       },
     ];
   },
   renderHTML({ node }) {
+    const src = this.options.mediaUrl(String(node.attrs.media));
+    const alt = String(node.attrs.alt ?? "");
+    const side: unknown = node.attrs.align;
+    if (node.attrs.wrap === true && (side === "left" || side === "right")) {
+      const share = typeof node.attrs.width === "number" ? node.attrs.width : WRAP_DEFAULT;
+      const margin = side === "left" ? "0px 1em 1em 0px" : "0px 0px 1em 1em";
+      return [
+        "figure",
+        { style: `float: ${side}; width: ${String(share)}%; margin: ${margin}` },
+        ["img", { src, alt, style: "width: 100%" }],
+      ];
+    }
     const width = typeof node.attrs.width === "number" ? { style: `width: ${String(node.attrs.width)}%` } : {};
     return [
       "figure",

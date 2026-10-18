@@ -313,3 +313,20 @@
   bottom: -7px;
   cursor: nwse-resize;
 }
+
+/* Text that flows around an image stops at the next heading, as on a site. */
+.page h2,
+.page h3,
+.page h4,
+.paper h2,
+.paper h3,
+.paper h4 {
+  clear: both;
+}
+
+.paper::after,
+.page::after {
+  content: "";
+  display: block;
+  clear: both;
+}

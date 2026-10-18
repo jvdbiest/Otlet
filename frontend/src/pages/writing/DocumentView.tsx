@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { styles } from "../watch/styles.ts";
 import { blockAnchor } from "./blocks.ts";
 import { FONTS, type TextStyle } from "../../editor/format.ts";
+import { WRAP_DEFAULT } from "../../editor/schema.ts";
 import { editorStyles } from "../../editor/styles.ts";
 
 const DAY = new Intl.DateTimeFormat("fr-BE", { dateStyle: "medium" });
@@ -18,7 +19,7 @@ interface Node {
   type: string;
   text?: string;
   marks?: Mark[];
-  attrs?: { id?: string; origine?: string; level?: number; source?: string; alt?: string; align?: string; media?: string; width?: number };
+  attrs?: { id?: string; origine?: string; level?: number; source?: string; alt?: string; align?: string; media?: string; width?: number; wrap?: boolean };
   content?: Node[];
 }
 interface Source {
@@ -90,6 +91,18 @@ function aligned(node: Node): CSSProperties | undefined {
 
 type MediaUrl = (id: string) => string;
 
+function figureStyle(node: Node): CSSProperties | undefined {
+  const side = node.attrs?.align;
+  if (node.attrs?.wrap && (side === "left" || side === "right")) {
+    return {
+      float: side,
+      width: `${String(node.attrs.width ?? WRAP_DEFAULT)}%`,
+      margin: side === "left" ? "0px 1em 1em 0px" : "0px 0px 1em 1em",
+    };
+  }
+  return aligned(node);
+}
+
 function block(
   node: Node,
   numbers: Map<string, number>,
@@ -132,11 +145,13 @@ function block(
       return <hr key={key} />;
     case "image":
       return (
-        <figure key={key} id={id} style={aligned(node)}>
+        <figure key={key} id={id} style={figureStyle(node)}>
           <img
             src={mediaUrl(node.attrs?.media ?? "")}
             alt={node.attrs?.alt ?? ""}
-            style={node.attrs?.width ? { width: `${String(node.attrs.width)}%` } : undefined}
+            style={
+              node.attrs?.wrap ? { width: "100%" } : node.attrs?.width ? { width: `${String(node.attrs.width)}%` } : undefined
+            }
           />
         </figure>
       );

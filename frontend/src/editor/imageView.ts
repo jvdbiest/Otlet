@@ -3,14 +3,15 @@
 // sizes set its width, in % of the column, as the document keeps it; the alignment buttons of
 // the ribbon place it. Plain DOM: no React inside the text.
 import type { NodeViewRenderer } from "@tiptap/core";
+import { WRAP_DEFAULT, WRAP_MAX } from "./schema.ts";
 
 const PRESETS = [25, 50, 75, 100] as const;
 const CORNERS = ["nw", "ne", "sw", "se"] as const;
-const clamp = (width: number) => Math.min(100, Math.max(10, Math.round(width)));
+const clamp = (width: number, most = 100) => Math.min(most, Math.max(10, Math.round(width)));
 
 export function imageView(
   mediaUrl: (id: string) => string,
-  labels: { size: (width: number) => string; handle: string; own: string },
+  labels: { size: (width: number) => string; handle: string; own: string; wrap: string },
 ): NodeViewRenderer {
   return ({ node, editor, getPos }) => {
     let current = node;
@@ -35,7 +36,26 @@ export function imageView(
       view.dispatch(view.state.tr.setNodeMarkup(pos, undefined, { ...current.attrs, ...attrs }));
     };
     const shown = () => (typeof current.attrs.width === "number" ? current.attrs.width : null);
+    // The text flows around it: the figure floats at its side, at its width.
+    const side = (): "left" | "right" | null => {
+      const align: unknown = current.attrs.align;
+      return current.attrs.wrap === true && (align === "left" || align === "right") ? align : null;
+    };
+    const most = () => (side() === null ? 100 : WRAP_MAX);
     const show = (width: number | null) => {
+      const floating = side();
+      if (floating !== null) {
+        const share = width ?? WRAP_DEFAULT;
+        dom.style.float = floating;
+        dom.style.width = `${String(share)}%`;
+        dom.style.margin = floating === "left" ? "0px 1em 1em 0px" : "0px 0px 1em 1em";
+        frame.style.width = "100%";
+        img.style.width = "100%";
+        return;
+      }
+      dom.style.float = "";
+      dom.style.width = "";
+      dom.style.margin = "";
       frame.style.width = width === null ? "" : `${String(width)}%`;
       img.style.width = width === null ? "" : "100%";
     };
@@ -60,7 +80,7 @@ export function imageView(
                 : 0;
           if (step !== 0) {
             event.preventDefault();
-            set({ width: clamp((shown() ?? 100) + step) });
+            set({ width: clamp((shown() ?? 100) + step, most()) });
           }
         });
       } else {
@@ -70,15 +90,15 @@ export function imageView(
         event.preventDefault();
         const start = event.clientX;
         const startWidth = img.getBoundingClientRect().width;
-        const column = dom.getBoundingClientRect().width || 1;
+        const column = (dom.parentElement ?? dom).getBoundingClientRect().width || 1;
         // A corner on the left grows the image when pulled left; a centred image grows on both
         // sides, so the pointer moves half as far.
         const side = corner.endsWith("w") ? -1 : 1;
         const factor = current.attrs.align === "center" ? 2 : 1;
-        let last = shown() ?? clamp((startWidth / column) * 100);
+        let last = shown() ?? clamp((startWidth / column) * 100, most());
         handle.setPointerCapture(event.pointerId);
         const move = (moved: PointerEvent) => {
-          last = clamp(((startWidth + side * factor * (moved.clientX - start)) / column) * 100);
+          last = clamp(((startWidth + side * factor * (moved.clientX - start)) / column) * 100, most());
           show(last);
         };
         const up = () => {
@@ -102,7 +122,7 @@ export function imageView(
         event.preventDefault();
       });
       element.addEventListener("click", () => {
-        set({ width });
+        set({ width: width === null ? null : clamp(width, most()) });
       });
       tools.append(element);
     };
@@ -110,6 +130,17 @@ export function imageView(
       button(labels.size(width), width);
     });
     button(labels.own, null);
+    const wrap = document.createElement("button");
+    wrap.type = "button";
+    wrap.textContent = labels.wrap;
+    wrap.addEventListener("mousedown", (event) => {
+      event.preventDefault();
+    });
+    wrap.addEventListener("click", () => {
+      const wrapping = side() === null;
+      set(wrapping ? { wrap: true, width: clamp(shown() ?? WRAP_DEFAULT, WRAP_MAX) } : { wrap: false });
+    });
+    tools.append(wrap);
 
     const paint = () => {
       img.src = mediaUrl(String(current.attrs.media));
@@ -117,9 +148,12 @@ export function imageView(
       const width = shown();
       show(width);
       const align: unknown = current.attrs.align;
-      dom.style.textAlign = typeof align === "string" ? align : "";
+      dom.style.textAlign = typeof align === "string" && side() === null ? align : "";
+      // Only an image at the left or the right can have the text flow around it.
+      wrap.hidden = align !== "left" && align !== "right";
+      wrap.setAttribute("aria-pressed", String(side() !== null));
       handles[3]?.setAttribute("aria-valuenow", String(width ?? 100));
-      for (const element of Array.from(tools.querySelectorAll("button"))) {
+      for (const element of Array.from(tools.querySelectorAll<HTMLButtonElement>("button[data-width]"))) {
         element.setAttribute("aria-pressed", String(element.dataset.width === String(width)));
       }
     };

@@ -406,11 +406,18 @@ export function Ribbon({
             align,
             ICONS[align],
             () => {
-              const value = align === "left" ? null : align;
               if (state.image) {
-                editor.chain().focus().updateAttributes("image", { align: value }).run();
+                // An image keeps « left », which it needs for the text to flow around it;
+                // centred, it no longer can.
+                const keep = align === "left" || align === "right";
+                editor
+                  .chain()
+                  .focus()
+                  .updateAttributes("image", keep ? { align } : { align, wrap: false })
+                  .run();
                 return;
               }
+              const value = align === "left" ? null : align;
               editor.chain().focus().updateAttributes("paragraph", { align: value }).updateAttributes("heading", { align: value }).run();
             },
             state.align === align,

@@ -67,3 +67,5 @@ Mis à jour le 2026-10-17. Une page : ce qu'il faut savoir pour reprendre le tra
 - Remesurer les seuils de similarité sur un corpus réel à la tranche verticale d'É1 (ADR-0024).
 - **Piste pour É1** (demande de Joël, sans changer la roadmap) : évaluer un agent local consultatif pour enrichir la veille, chercher des sources complémentaires, proposer des sujets et aider à la rédaction. Il ne publie jamais et ne contourne aucune validation humaine.
 - Plus tard : redirection du port 443 vers la VM pour un certificat Let's Encrypt. Joël aura besoin d'aide pour la marche à suivre.
+- **Idée de Joël pour plus tard (2026-10-18)** : dans la Bibliothèque d'images, convertir une image qui contient du texte en texte exploitable (OCR), depuis Otlet.
+- **Idée de Joël pour plus tard (2026-10-18)** : un espace « Assistant éditorial » en forme de conversation, où l'on demande à l'IA un article ou une synthèse ; le résultat part en rédaction, en Bibliothèque ou en brief. Proche de l'agent local consultatif ci-dessus : à évaluer ensemble, avec les mêmes limites (aucune publication, validation humaine).

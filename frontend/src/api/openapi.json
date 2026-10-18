@@ -3896,6 +3896,57 @@
         "summary": "Generate"
       }
     },
+    "/api/workspaces/{workspace_id}/briefs/{brief_id}/generations/running": {
+      "delete": {
+        "description": "Cancels the draft being written for the brief: no version is made from it.",
+        "operationId": "cancel_generation_api_workspaces__workspace_id__briefs__brief_id__generations_running_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "brief_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Brief Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerationView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Cancel Generation"
+      }
+    },
     "/api/workspaces/{workspace_id}/feed": {
       "get": {
         "description": "The feed of the user: pinned items first (except for `all`), then in the order of\n`sort`; `before` (the id of the last item of the previous page) pages back.\n`topic_id`, repeated, keeps the items of at least one of these topics, or of all of\nthem with `all_topics`; `since` and `until` keep the items dated in between;\n`group_by` with `group` keeps one group of `/feed/groups` (no `group`: the items\nwithout topic, or the manual entries).",

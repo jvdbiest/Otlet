@@ -116,6 +116,10 @@ class ArticleStore(Protocol):
         """Empties the details and attempts of the generations of the brief; how many."""
         ...
 
+    def cancel(self, workspace_id: UUID, brief_id: UUID) -> Generation | None:
+        """Ends the running generation of the brief as cancelled; None when none runs."""
+        ...
+
     def article_of(self, workspace_id: UUID, brief_id: UUID) -> Article | None: ...
 
 
@@ -149,6 +153,11 @@ class Drafts:
 
     def article(self, context: WorkspaceContext, brief_id: UUID) -> Article | None:
         return self._articles.article_of(context.workspace_id, brief_id)
+
+    def cancel(self, context: WorkspaceContext, brief_id: UUID) -> Generation | None:
+        """Cancels the running draft of a brief (Joël, 2026-10-18): nothing of it is kept, even
+        when the model answers afterwards. The call to a local model runs to its end."""
+        return self._articles.cancel(context.workspace_id, brief_id)
 
     def clear_details(self, context: WorkspaceContext, brief_id: UUID) -> int | None:
         """Empties the details of the drafts of a brief; None when the brief does not exist."""
@@ -253,6 +262,9 @@ class Drafts:
         # conversation, where the rules are (Ollama does so without a word).
         last = written.attempts[-1] if written.attempts else {}
         overflow = int(last.get("tokens_in", 0)) + int(last.get("tokens_out", 0)) > window
+        still = self._articles.generation(workspace_id, generation_id)
+        if still is None or still.status != "running":
+            return  # cancelled while the model wrote: nothing is kept
         made = self._articles.add_version(
             workspace_id,
             user_id,

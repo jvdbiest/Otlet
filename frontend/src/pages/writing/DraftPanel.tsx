@@ -6,6 +6,7 @@ import { toDocument } from "../../editor/document.ts";
 import { mediaUrl } from "../../media.ts";
 import {
   draftQuery,
+  useCancelGeneration,
   useClearDetails,
   useGenerateDraft,
   useSaveVersion,
@@ -29,6 +30,7 @@ const FAILURES = [
   "quota",
   "unavailable",
   "blocked",
+  "cancelled",
 ] as const;
 
 function failure(generation: GenerationView): (typeof FAILURES)[number] {
@@ -47,6 +49,7 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
   const { t } = useTranslation();
   const draft = useQuery(draftQuery(workspaceId, briefId));
   const generate = useGenerateDraft(workspaceId, briefId);
+  const cancel = useCancelGeneration(workspaceId, briefId);
   const clear = useClearDetails(workspaceId, briefId);
   const [confirming, setConfirming] = useState(false);
   const [chosen, setChosen] = useState<number | null>(null);
@@ -94,6 +97,18 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
           <span role="status" className={styles.meta}>
             {t("draft.running", { since: formatDate(generation.created_at) })}
           </span>
+        )}
+        {running && (
+          <button
+            type="button"
+            className={styles.button}
+            disabled={cancel.isPending}
+            onClick={() => {
+              cancel.mutate();
+            }}
+          >
+            {t("draft.cancel")}
+          </button>
         )}
       </p>
       {generate.error !== null && (

@@ -321,6 +321,22 @@ def test_a_draft_that_leaves_a_source_out_is_sent_back_then_says_so(world: World
     assert world.drafts.clear_details(context, uuid.uuid4()) is None
 
 
+def test_a_cancelled_draft_keeps_nothing(world: World) -> None:
+    context = world.context
+    agence, journal = items(world)
+    brief = world.briefs.create(context, BriefFields(title="Annulé", item_ids=(journal, agence)))
+    generation = world.drafts.start(context, brief.id)
+    assert generation is not None
+    cancelled = world.drafts.cancel(context, brief.id)
+    assert cancelled is not None and (cancelled.status, cancelled.error) == ("failed", "cancelled")
+    # The worker runs the job anyway (the model may already be writing): nothing is kept.
+    world.drafts.run(context.workspace_id, context.user_id, generation.id)
+    assert world.drafts.article(context, brief.id) is None
+    after = world.drafts.generation(context, generation.id)
+    assert after is not None and after.error == "cancelled"
+    assert world.drafts.cancel(context, brief.id) is None
+
+
 def stamp(version: Version) -> datetime:
     """When the version was last saved, as the editor sends it back."""
     return version.updated_at or version.created_at

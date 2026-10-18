@@ -210,7 +210,8 @@ class PostgresArticleStore:
                     "UPDATE article_generations SET status = :status, error = :error,"
                     " attempts = CAST(:attempts AS jsonb), article_id = :article,"
                     " version = :version, details = CAST(:details AS jsonb), finished_at = now()"
-                    f" WHERE id = :id AND {here()}"
+                    # A generation cancelled meanwhile stays cancelled.
+                    f" WHERE id = :id AND status = 'running' AND {here()}"
                 ),
                 {
                     "id": generation_id,
@@ -222,6 +223,19 @@ class PostgresArticleStore:
                     "details": json.dumps(details),
                 },
             )
+
+    def cancel(self, workspace_id: UUID, brief_id: UUID) -> Generation | None:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            row = connection.execute(
+                sa.text(
+                    "UPDATE article_generations SET status = 'failed', error = 'cancelled',"
+                    " finished_at = now()"
+                    f" WHERE brief_id = :brief AND status = 'running' AND {here()}"
+                    f" RETURNING {GENERATION_COLUMNS}"
+                ),
+                {"brief": brief_id},
+            ).first()
+        return None if row is None else _generation(row)
 
     def clear_details(self, workspace_id: UUID, brief_id: UUID) -> int:
         with workspace_transaction(self._engine, workspace_id) as connection:

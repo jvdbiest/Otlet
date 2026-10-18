@@ -641,7 +641,8 @@
       "quota": "Quota atteint chez les fournisseurs du profil.",
       "unavailable": "Aucun modèle n'a répondu.",
       "blocked": "Ce modèle est bloqué sur cette instance.",
-      "out_of_room": "Le modèle a manqué de place : sa réponse a été coupée avant la fin. Agrandissez la fenêtre de contexte du fournisseur (Réglages > IA), ou raccourcissez le brief."
+      "out_of_room": "Le modèle a manqué de place : sa réponse a été coupée avant la fin. Agrandissez la fenêtre de contexte du fournisseur (Réglages > IA), ou raccourcissez le brief.",
+      "cancelled": "Génération annulée : rien n'a été enregistré."
     },
     "unused": "{count, plural, one {Ce brouillon n'utilise pas cet élément du brief, malgré une demande de correction au modèle :} other {Ce brouillon n'utilise pas ces # éléments du brief, malgré une demande de correction au modèle :}}",
     "lone": "{count, plural, one {Synthèse : cette section ne s'appuie que sur une source, malgré une demande de correction au modèle :} other {Synthèse : ces # sections ne s'appuient que sur une source, malgré une demande de correction au modèle :}}",
@@ -663,7 +664,8 @@
     "who": {
       "ia": "IA",
       "humain": "vous"
-    }
+    },
+    "cancel": "Annuler la génération"
   },
   "editor": {
     "ribbon": "Mise en forme",

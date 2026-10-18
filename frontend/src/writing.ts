@@ -118,6 +118,23 @@ export function useGenerateDraft(workspaceId: string, briefId: string) {
   });
 }
 
+/** Cancels the draft being written: nothing of it is kept. */
+export function useCancelGeneration(workspaceId: string, briefId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { error, response } = await api.DELETE(
+        "/api/workspaces/{workspace_id}/briefs/{brief_id}/generations/running",
+        { params: { path: { workspace_id: workspaceId, brief_id: briefId } } },
+      );
+      if (!response.ok && response.status !== 404) {
+        throw apiError(response, error);
+      }
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: draftQuery(workspaceId, briefId).queryKey }),
+  });
+}
+
 /** Empties the details and attempts of the drafts of a brief; the versions stay. */
 export function useClearDetails(workspaceId: string, briefId: string) {
   const queryClient = useQueryClient();

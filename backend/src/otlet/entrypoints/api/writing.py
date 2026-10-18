@@ -291,6 +291,14 @@ def build_router(
             raise HTTPException(status.HTTP_404_NOT_FOUND, "brief_not_found")
         return GenerationView.of(generation)
 
+    @router.delete("/briefs/{brief_id}/generations/running")
+    def cancel_generation(brief_id: UUID, context: Context) -> GenerationView:
+        """Cancels the draft being written for the brief: no version is made from it."""
+        cancelled = drafts.cancel(context, brief_id)
+        if cancelled is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "no_running_generation")
+        return GenerationView.of(cancelled)
+
     @router.get("/generations/{generation_id}")
     def get_generation(generation_id: UUID, context: Context) -> GenerationView:
         generation = drafts.generation(context, generation_id)

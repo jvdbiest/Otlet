@@ -44,3 +44,4 @@ La numérotation continue celle de l'architecture.
 | [0034](0034-recherche-requete-fusionnee.md) | Recherche plein texte : une seule requête pour toutes les langues | Accepté (P01c) |
 | [0035](0035-recherche-seuil-e1.md) | Recherche plein texte : clore L2 pour É1, ou poursuivre | Proposé (P01d) |
 | [0036](0036-editeur-versions-et-mise-en-forme.md) | Éditeur : enregistrer une version, mise en forme libre, images et exports | Accepté (X03) |
+| [0037](0037-bibliotheque.md) | Bibliothèque : l'article au centre, le brief comme atelier | Accepté (X04) |

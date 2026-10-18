@@ -17,22 +17,24 @@ function text(node: Block): string {
   return (node.content ?? []).map((child) => child.text ?? text(child)).join("");
 }
 
-/** The id of the first block of `type` whose text starts with `start` (a « … » ends it when
- * it was shortened): the warnings name blocks by their text, not by their id. */
-export function findBlock(document: PlatformDocument, type: string, start: string): string | undefined {
+/** The id of a block of `type` whose text starts with `start` (a « … » ends it when it was
+ * shortened): the warnings name blocks by their text, not by their id. A repeated paragraph
+ * often starts as the one it repeats: `skip` passes over the first matches, as long as some
+ * are left. */
+export function findBlock(document: PlatformDocument, type: string, start: string, skip = 0): string | undefined {
   const flat = (value: string) => value.replace(/\s+/g, " ").trim();
   const wanted = flat(start.replace(/…$/, ""));
-  const walk = (nodes: Block[]): string | undefined => {
+  const found: string[] = [];
+  const walk = (nodes: Block[]) => {
     for (const node of nodes) {
       if (node.type === type && node.attrs?.id && flat(text(node)).startsWith(wanted)) {
-        return node.attrs.id;
+        found.push(node.attrs.id);
       }
-      const inner = walk(node.content ?? []);
-      if (inner !== undefined) {
-        return inner;
-      }
+      walk(node.content ?? []);
     }
-    return undefined;
   };
-  return wanted ? walk(document.content) : undefined;
+  if (wanted) {
+    walk(document.content);
+  }
+  return found.at(Math.min(skip, found.length - 1));
 }

@@ -44,8 +44,8 @@ function Warning({ text, items }: { text: string; items?: { label: string; ancho
       <p>{text}</p>
       {items !== undefined && (
         <ul>
-          {items.map((item) => (
-            <li key={item.label}>{item.anchor ? <a href={`#${item.anchor}`}>{item.label}</a> : item.label}</li>
+          {items.map((item, index) => (
+            <li key={index}>{item.anchor ? <a href={`#${item.anchor}`}>{item.label}</a> : item.label}</li>
           ))}
         </ul>
       )}
@@ -71,11 +71,11 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
   const prefix = shown === undefined ? "" : `v${String(shown.number)}`;
   const lone = shown === undefined ? [] : listed(shown.details, "lone_sections");
   const repeated = shown === undefined ? [] : listed(shown.details, "repeated_paragraphs");
-  const anchor = (type: string, start: string): string | undefined => {
+  const anchor = (type: string, start: string, skip = 0): string | undefined => {
     if (shown === undefined) {
       return undefined;
     }
-    const id = findBlock(shown.document as unknown as PlatformDocument, type, start);
+    const id = findBlock(shown.document as unknown as PlatformDocument, type, start, skip);
     return id === undefined ? undefined : blockAnchor(prefix, id);
   };
   return (
@@ -170,7 +170,11 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
           {repeated.length > 0 && (
             <Warning
               text={t("draft.repeated", { count: repeated.length })}
-              items={repeated.map((start) => ({ label: start, anchor: anchor("paragraph", start) }))}
+              items={repeated.map((start, index) => ({
+                label: start,
+                // The copy, not the paragraph it repeats: skip that one and the earlier copies.
+                anchor: anchor("paragraph", start, 1 + repeated.slice(0, index).filter((s) => s === start).length),
+              }))}
             />
           )}
           {shown.cut_sources.length > 0 && (

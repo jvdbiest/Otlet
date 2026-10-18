@@ -2,6 +2,7 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { styles } from "../watch/styles.ts";
+import { blockAnchor } from "./blocks.ts";
 
 const DAY = new Intl.DateTimeFormat("fr-BE", { dateStyle: "medium" });
 
@@ -59,15 +60,24 @@ function inline(nodes: Node[] | undefined, numbers: Map<string, number>, prefix:
 
 function block(node: Node, numbers: Map<string, number>, prefix: string, key: number): ReactNode {
   const content = node.content;
+  const id = node.attrs?.id ? blockAnchor(prefix, node.attrs.id) : undefined;
   switch (node.type) {
     case "heading":
       return node.attrs?.level === 3 ? (
-        <h4 key={key}>{inline(content, numbers, prefix)}</h4>
+        <h4 key={key} id={id}>
+          {inline(content, numbers, prefix)}
+        </h4>
       ) : (
-        <h3 key={key}>{inline(content, numbers, prefix)}</h3>
+        <h3 key={key} id={id}>
+          {inline(content, numbers, prefix)}
+        </h3>
       );
     case "paragraph":
-      return <p key={key}>{inline(content, numbers, prefix)}</p>;
+      return (
+        <p key={key} id={id}>
+          {inline(content, numbers, prefix)}
+        </p>
+      );
     case "bullet_list":
     case "ordered_list": {
       const items = (content ?? []).map((item, n) => (

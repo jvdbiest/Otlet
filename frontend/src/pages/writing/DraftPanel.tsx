@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { draftQuery, useClearDetails, useGenerateDraft, type GenerationView } from "../../writing.ts";
 import { errorText, formatDate } from "../watch/labels.ts";
 import { styles } from "../watch/styles.ts";
+import { blockAnchor, findBlock } from "./blocks.ts";
 import { DocumentView, type PlatformDocument } from "./DocumentView.tsx";
 import { GenerationDetails } from "./GenerationDetails.tsx";
 
@@ -31,6 +32,27 @@ function listed(details: Record<string, unknown>, key: "lone_sections" | "repeat
   return Array.isArray(found) ? found.filter((h): h is string => typeof h === "string") : [];
 }
 
+/** An « Avertissement » about the version shown, with what it names: a link to the block
+ * when the text can find it. */
+function Warning({ text, items }: { text: string; items?: { label: string; anchor?: string | undefined }[] }) {
+  const { t } = useTranslation();
+  return (
+    <div role="note" className={styles.warning}>
+      <p>
+        <strong>{t("draft.warning")}</strong>
+      </p>
+      <p>{text}</p>
+      {items !== undefined && (
+        <ul>
+          {items.map((item) => (
+            <li key={item.label}>{item.anchor ? <a href={`#${item.anchor}`}>{item.label}</a> : item.label}</li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 /** The draft of a brief (U04): generate it, follow the generation, read its versions. */
 export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; briefId: string }) {
   const { t } = useTranslation();
@@ -46,6 +68,16 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
   const running = generation?.status === "running";
   const versions = article?.versions ?? [];
   const shown = versions.find((v) => v.number === chosen) ?? versions.at(-1);
+  const prefix = shown === undefined ? "" : `v${String(shown.number)}`;
+  const lone = shown === undefined ? [] : listed(shown.details, "lone_sections");
+  const repeated = shown === undefined ? [] : listed(shown.details, "repeated_paragraphs");
+  const anchor = (type: string, start: string): string | undefined => {
+    if (shown === undefined) {
+      return undefined;
+    }
+    const id = findBlock(shown.document as unknown as PlatformDocument, type, start);
+    return id === undefined ? undefined : blockAnchor(prefix, id);
+  };
   return (
     <section className={styles.panel} aria-labelledby="draft-title">
       <h2 id="draft-title">{t("draft.title")}</h2>
@@ -122,40 +154,24 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
                 : t("draft.byPerson", { number: shown.number, date: formatDate(shown.created_at) })}
             </span>
           </div>
-          {shown.context_overflow && (
-            <p role="note" className={styles.warning}>
-              {t("draft.overflow")}
-            </p>
-          )}
+          {shown.context_overflow && <Warning text={t("draft.overflow")} />}
           {shown.unused_sources.length > 0 && (
-            <div role="note" className={styles.warning}>
-              <p>{t("draft.unused", { count: shown.unused_sources.length })}</p>
-              <ul>
-                {shown.unused_sources.map((title) => (
-                  <li key={title}>{title}</li>
-                ))}
-              </ul>
-            </div>
+            <Warning
+              text={t("draft.unused", { count: shown.unused_sources.length })}
+              items={shown.unused_sources.map((title) => ({ label: title }))}
+            />
           )}
-          {listed(shown.details, "lone_sections").length > 0 && (
-            <div role="note" className={styles.warning}>
-              <p>{t("draft.lone", { count: listed(shown.details, "lone_sections").length })}</p>
-              <ul>
-                {listed(shown.details, "lone_sections").map((heading) => (
-                  <li key={heading}>{heading}</li>
-                ))}
-              </ul>
-            </div>
+          {lone.length > 0 && (
+            <Warning
+              text={t("draft.lone", { count: lone.length })}
+              items={lone.map((heading) => ({ label: heading, anchor: anchor("heading", heading) }))}
+            />
           )}
-          {listed(shown.details, "repeated_paragraphs").length > 0 && (
-            <div role="note" className={styles.warning}>
-              <p>{t("draft.repeated", { count: listed(shown.details, "repeated_paragraphs").length })}</p>
-              <ul>
-                {listed(shown.details, "repeated_paragraphs").map((start) => (
-                  <li key={start}>{start}</li>
-                ))}
-              </ul>
-            </div>
+          {repeated.length > 0 && (
+            <Warning
+              text={t("draft.repeated", { count: repeated.length })}
+              items={repeated.map((start) => ({ label: start, anchor: anchor("paragraph", start) }))}
+            />
           )}
           {shown.cut_sources.length > 0 && (
             <p className={styles.notice}>{t("draft.cut", { sources: shown.cut_sources.join(", ") })}</p>
@@ -167,7 +183,7 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
           <DocumentView
             document={shown.document as unknown as PlatformDocument}
             title={shown.title}
-            prefix={`v${String(shown.number)}`}
+            prefix={prefix}
           />
         </>
       )}

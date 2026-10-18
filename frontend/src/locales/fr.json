@@ -652,6 +652,7 @@
       "clearAll": "Effacer les détails de génération de ce brief",
       "confirmClear": "Effacer les détails et les tentatives de toutes les générations de ce brief ? Les versions restent.",
       "clear": "Oui, effacer"
-    }
+    },
+    "warning": "Avertissement"
   }
 }

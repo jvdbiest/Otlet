@@ -16,7 +16,10 @@ export interface Source {
 }
 
 const hidden = (name: string, fallback: unknown = null) => ({ [name]: { default: fallback, rendered: false } });
-const blockAttrs = () => ({ ...hidden("id"), ...hidden("origine") });
+// A block split in two keeps its id and origin in the first part only: the second is new, and the
+// server gives it its id and origin (ADR-0036 §2).
+const own = (name: string) => ({ [name]: { default: null, rendered: false, keepOnSplit: false } });
+const blockAttrs = () => ({ ...own("id"), ...own("origine") });
 
 const Doc = Node.create({
   name: "doc",

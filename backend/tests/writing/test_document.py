@@ -82,6 +82,8 @@ def test_a_block_keeps_its_origin_until_it_changes() -> None:
         paragraph(text("Suite de deux"), id="b2"),  # split: the editor copies the id
         paragraph(text("Trois"), id=None),
     )
+    # The editor merges neighbouring texts with the same marks: the block has not changed.
+    previous["content"][0]["content"] = [text("U"), text("n")]
     saved = with_origins(edited, previous, SOURCES)
     blocks = saved["content"]
     assert [b["attrs"]["origine"] for b in blocks] == ["ia", "ia_modifie", "ia_modifie", "humain"]

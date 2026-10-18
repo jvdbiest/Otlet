@@ -247,9 +247,35 @@ def with_origins(document: Node, previous: Node, sources: list[Node]) -> Node:
 
 
 def _body(block: Node) -> str:
-    return json.dumps(
-        {k: v for k, v in block.items() if k != "attrs"}, sort_keys=True, ensure_ascii=False
-    )
+    """A block without its attributes, written one way: the editor merges neighbouring texts
+    with the same marks, which the model's document keeps apart."""
+    return json.dumps(_normal({k: v for k, v in block.items() if k != "attrs"}), sort_keys=True)
+
+
+def _normal(node: Node) -> Node:
+    out: Node = {"type": node.get("type")}
+    if node.get("type") == "text":
+        out["text"] = node.get("text", "")
+        marks = [
+            {"type": m.get("type"), "attrs": {k: v for k, v in (m.get("attrs") or {}).items() if v}}
+            for m in node.get("marks") or []
+        ]
+        out["marks"] = sorted(marks, key=lambda m: str(m["type"]))
+        return out
+    children: list[Node] = []
+    for child in node.get("content") or []:
+        normal = _normal(child)
+        last = children[-1] if children else None
+        if (
+            last is not None
+            and normal["type"] == "text" == last["type"]
+            and normal["marks"] == last["marks"]
+        ):
+            last["text"] += normal["text"]
+        else:
+            children.append(normal)
+    out["content"] = children
+    return out
 
 
 def _base36(number: int) -> str:

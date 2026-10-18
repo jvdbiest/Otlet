@@ -44,7 +44,7 @@ L'ADR-0023 a fixé le format (« Document plateforme v1 »), le moteur de rendu 
 - F-RED-04 garde son sens : chaque version voulue est conservée et comparable ; seules les versions de la personne s'enregistrent sur elles-mêmes.
 - Chaque nouvelle marque existe en trois endroits (schéma, moteur, extension de l'éditeur), tenus ensemble par le test de concordance, qui couvre aussi ces marques.
 - Le moteur a deux rendus : complet (Otlet, exports) et de publication (sans `text_style`).
-- X03b ajoute un stockage de fichiers, compris dans la sauvegarde (F08).
+- X03b ajoute le stockage de fichiers de l'architecture (§5, §17) : chaque image réencodée est rangée sous son empreinte SHA-256 dans un volume (`files_data`, monté dans l'API), sa description dans la table `media` sous RLS. La sauvegarde F08 doit couvrir ce volume en plus de la base ; d'ici F08, seule la base est copiée à chaque démarrage.
 
 ## Options écartées
 

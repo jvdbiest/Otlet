@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { Gapcursor, UndoRedo } from "@tiptap/extensions";
+import type { EditorView } from "@tiptap/pm/view";
 import { EditorContent, useEditor } from "@tiptap/react";
 import { useBlocker } from "@tanstack/react-router";
 import { useRef, useState } from "react";
@@ -9,6 +10,7 @@ import { toDocument } from "../../editor/document.ts";
 import { cleanPastedHtml } from "../../editor/paste.ts";
 import { extensions, type Source } from "../../editor/schema.ts";
 import { editorStyles } from "../../editor/styles.ts";
+import { IMAGE_TYPES, mediaIdOf, mediaUrl, uploadImage } from "../../media.ts";
 import { useDiscardVersion, useSaveVersion, type VersionView } from "../../writing.ts";
 import { errorText } from "../watch/labels.ts";
 import { styles } from "../watch/styles.ts";
@@ -52,11 +54,60 @@ export function VersionEditor({
   };
   const attrs = version.document.attrs as Record<string, unknown>;
   const sources = (attrs.sources ?? []) as Source[];
+  const [uploading, setUploading] = useState(0);
+  const [uploadError, setUploadError] = useState<Error | null>(null);
+  const media = {
+    mediaUrl: (id: string) => mediaUrl(workspaceId, id),
+    mediaIdOf,
+  };
+  // Images sent one by one, each inserted where the cursor is once it is stored (X03b).
+  const insertImages = (files: File[], insert: (media: string, alt: string) => void) => {
+    const images = files.filter((file) => (IMAGE_TYPES as readonly string[]).includes(file.type));
+    if (images.length === 0) {
+      return false;
+    }
+    setUploadError(null);
+    for (const file of images) {
+      setUploading((n) => n + 1);
+      uploadImage(workspaceId, file)
+        .then((made) => {
+          insert(made.id, window.prompt(t("editor.altPrompt"), "") ?? "");
+        })
+        .catch((error: unknown) => {
+          setUploadError(error instanceof Error ? error : new Error(String(error)));
+        })
+        .finally(() => {
+          setUploading((n) => n - 1);
+        });
+    }
+    return true;
+  };
+  // An image node put where the selection is, from the view the paste or drop happened in.
+  const inView = (view: EditorView) => (media: string, alt: string) => {
+    const node = view.state.schema.nodes.image?.create({ media, alt });
+    if (node !== undefined) {
+      view.dispatch(view.state.tr.replaceSelectionWith(node));
+    }
+  };
   const editor = useEditor({
-    extensions: [...extensions(sources), UndoRedo, Gapcursor],
+    extensions: [...extensions(sources, media), UndoRedo, Gapcursor],
     content: version.document,
     editorProps: {
       transformPastedHTML: (html) => cleanPastedHtml(html, sources),
+      // An image copied from another application, or dropped on the page.
+      handlePaste: (view, event) => insertImages(Array.from(event.clipboardData?.files ?? []), inView(view)),
+      handleDrop: (view, event) => insertImages(Array.from(event.dataTransfer?.files ?? []), inView(view)),
+      // Its text for those who cannot see it, changed by a double click.
+      handleDoubleClickOn: (view, pos, node) => {
+        if (node.type.name !== "image") {
+          return false;
+        }
+        const alt = window.prompt(t("editor.altPrompt"), String(node.attrs.alt ?? ""));
+        if (alt !== null) {
+          view.dispatch(view.state.tr.setNodeMarkup(pos, undefined, { ...node.attrs, alt }));
+        }
+        return true;
+      },
       attributes: { class: editorStyles.page, "aria-label": t("editor.page") },
     },
     onUpdate: () => {
@@ -154,6 +205,11 @@ export function VersionEditor({
         <Ribbon
           editor={editor}
           disabled={inTitle}
+          onImages={(files) => {
+            insertImages(files, (media, alt) => {
+              editor.chain().focus().insertContent({ type: "image", attrs: { media, alt } }).run();
+            });
+          }}
           onClipboardRefused={() => {
             setClipboardRefused(true);
           }}
@@ -190,6 +246,16 @@ export function VersionEditor({
       </p>
       <EditorContent editor={editor} />
       <div className={editorStyles.bar}>{actions}</div>
+      {uploading > 0 && (
+        <p role="status" className={styles.meta}>
+          {t("editor.uploading", { count: uploading })}
+        </p>
+      )}
+      {uploadError !== null && (
+        <p role="alert" className={styles.error}>
+          {errorText(t, uploadError)}
+        </p>
+      )}
       {clipboardRefused && (
         <p role="note" className={styles.notice}>
           {t("editor.clipboardRefused")}

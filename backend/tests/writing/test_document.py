@@ -4,8 +4,9 @@ origin worked out, rendered to the HTML the editor reproduces."""
 
 from typing import Any
 
-from otlet.writing.domain.document import check, render, with_origins
+from otlet.writing.domain.document import check, media_of, render, with_origins
 
+IMAGE = "0b0e6f5e-3c4e-4c33-9a54-6f1f3c1b2a10"
 SOURCES = [{"id": "S1", "titre": "Le journal", "url": "https://journal.example.org/1"}]
 
 
@@ -48,8 +49,15 @@ def test_the_formatting_of_the_ribbon_is_part_of_the_format() -> None:
         },
         {"type": "citation", "attrs": {"id": "b4", "source": "S1"}, "content": [paragraph()]},
         {"type": "separateur", "attrs": {"id": "b5"}},
+        {"type": "image", "attrs": {"id": "b6", "media": IMAGE, "alt": "Une moto"}},
     )
-    assert check(styled, {"S1"}) == []
+    assert check(styled, {"S1"}, {IMAGE}) == []
+    # An image that is not one of the workspace is refused.
+    assert check(styled, {"S1"}) == ["content[5].attrs.media: an image of the workspace"]
+    assert media_of(styled) == {IMAGE}
+    assert render(styled, extras=False, media_url=lambda m: f"/m/{m}").endswith(
+        f'<figure><img src="/m/{IMAGE}" alt="Une moto"></figure>'
+    )
 
 
 def test_a_document_outside_the_format_is_refused_with_its_reasons() -> None:

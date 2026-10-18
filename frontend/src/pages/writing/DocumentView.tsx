@@ -18,7 +18,7 @@ interface Node {
   type: string;
   text?: string;
   marks?: Mark[];
-  attrs?: { id?: string; origine?: string; level?: number; source?: string; alt?: string; align?: string };
+  attrs?: { id?: string; origine?: string; level?: number; source?: string; alt?: string; align?: string; media?: string };
   content?: Node[];
 }
 interface Source {
@@ -88,7 +88,15 @@ function aligned(node: Node): CSSProperties | undefined {
     : undefined;
 }
 
-function block(node: Node, numbers: Map<string, number>, prefix: string, key: number): ReactNode {
+type MediaUrl = (id: string) => string;
+
+function block(
+  node: Node,
+  numbers: Map<string, number>,
+  prefix: string,
+  key: number,
+  mediaUrl: MediaUrl,
+): ReactNode {
   const content = node.content;
   const id = node.attrs?.id ? blockAnchor(prefix, node.attrs.id) : undefined;
   switch (node.type) {
@@ -111,30 +119,46 @@ function block(node: Node, numbers: Map<string, number>, prefix: string, key: nu
     case "bullet_list":
     case "ordered_list": {
       const items = (content ?? []).map((item, n) => (
-        <li key={n}>{(item.content ?? []).map((child, m) => block(child, numbers, prefix, m))}</li>
+        <li key={n}>{(item.content ?? []).map((child, m) => block(child, numbers, prefix, m, mediaUrl))}</li>
       ));
       return node.type === "bullet_list" ? <ul key={key}>{items}</ul> : <ol key={key}>{items}</ol>;
     }
     case "citation":
     case "encadre":
       return (
-        <blockquote key={key}>{(content ?? []).map((child, m) => block(child, numbers, prefix, m))}</blockquote>
+        <blockquote key={key}>{(content ?? []).map((child, m) => block(child, numbers, prefix, m, mediaUrl))}</blockquote>
       );
     case "separateur":
       return <hr key={key} />;
+    case "image":
+      return (
+        <figure key={key} id={id}>
+          <img src={mediaUrl(node.attrs?.media ?? "")} alt={node.attrs?.alt ?? ""} />
+        </figure>
+      );
     default:
       return null;
   }
 }
 
 /** A version of an article: its blocks, then its sources, numbered as the references cite them. */
-export function DocumentView({ document, title, prefix }: { document: PlatformDocument; title: string; prefix: string }) {
+export function DocumentView({
+  document,
+  title,
+  prefix,
+  mediaUrl,
+}: {
+  document: PlatformDocument;
+  title: string;
+  prefix: string;
+  mediaUrl: MediaUrl;
+}) {
   const { t } = useTranslation();
   const numbers = new Map(document.attrs.sources.map((source, index) => [source.id, index + 1]));
   return (
     <article className={`${styles.text} ${editorStyles.paper}`} lang={document.attrs.langue}>
       <h2>{title}</h2>
-      {document.content.map((node, index) => block(node, numbers, prefix, index))}
+      {document.content.map((node, index) => block(node, numbers, prefix, index, mediaUrl))}
       {document.attrs.sources.length > 0 && (
         <>
           <h3>{t("draft.sources")}</h3>

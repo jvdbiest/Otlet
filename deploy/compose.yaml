@@ -57,6 +57,9 @@ services:
   api:
     <<: [*app, *long-running]
     command: ["api"]
+    # The file storage: images of the articles (X03b); the root file system stays read-only.
+    volumes:
+      - files_data:/var/lib/otlet/files
     # The API seals secrets with the public key; it never receives the private key (DR6).
     environment:
       <<: *app-environment
@@ -172,6 +175,7 @@ secrets:
     file: ${OTLET_KEYS_DIR:-./keys}/secrets-private.pem
 
 volumes:
+  files_data:
   caddy_data:
   caddy_config:
   db_data:

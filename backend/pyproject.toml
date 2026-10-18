@@ -15,6 +15,7 @@ dependencies = [
     "httpx2>=2.13.1",
     "nh3>=0.3.7",
     "openai>=1.50",
+    "pillow>=12.3,<13",
     "procrastinate~=3.10.0",
     "protego>=0.7.0",
     "psycopg[binary]>=3.3.6",
@@ -87,7 +88,7 @@ id = "domain-independence"
 name = "Le domaine ne dépend d'aucun cadre ni d'aucune bibliothèque d'infrastructure"
 type = "forbidden"
 source_modules = ["otlet.**.domain"]
-forbidden_modules = ["fastapi", "starlette", "sqlalchemy", "alembic", "psycopg", "procrastinate", "httpx", "httpx2", "httpcore2", "feedparser", "lxml", "nh3", "readability", "openai", "anthropic"]
+forbidden_modules = ["fastapi", "starlette", "sqlalchemy", "alembic", "psycopg", "procrastinate", "httpx", "httpx2", "httpcore2", "feedparser", "lxml", "nh3", "readability", "openai", "anthropic", "PIL"]
 
 [[tool.importlinter.contracts]]
 id = "module-layers"

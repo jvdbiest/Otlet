@@ -131,6 +131,31 @@ const Encadre = Node.create({
   renderHTML: () => ["aside", { class: "otlet-encadre" }, 0],
 });
 
+// An image of the workspace (X03b): the document keeps its id; its address comes from the page.
+const ImageNode = Node.create<{ mediaUrl: (id: string) => string; mediaIdOf: (src: string) => string | null }>({
+  name: "image",
+  group: "block",
+  atom: true,
+  draggable: true,
+  selectable: true,
+  addOptions: () => ({ mediaUrl: (id: string) => id, mediaIdOf: () => null }),
+  addAttributes: () => ({ ...blockAttrs(), ...hidden("media"), ...hidden("alt", "") }),
+  parseHTML() {
+    return [
+      {
+        tag: "img[src]",
+        getAttrs: (element: HTMLElement) => {
+          const media = this.options.mediaIdOf(element.getAttribute("src") ?? "");
+          return media === null ? false : { media, alt: element.getAttribute("alt") ?? "" };
+        },
+      },
+    ];
+  },
+  renderHTML({ node }) {
+    return ["figure", ["img", { src: this.options.mediaUrl(String(node.attrs.media)), alt: String(node.attrs.alt ?? "") }]];
+  },
+});
+
 const Separateur = Node.create({
   name: "separateur",
   group: "block",
@@ -268,8 +293,15 @@ const Bold = Mark.create({
   },
 });
 
+/** How the editor finds the images of the workspace: by default (the concordance test), an image
+ * is shown at its id. */
+export interface Media {
+  mediaUrl: (id: string) => string;
+  mediaIdOf: (src: string) => string | null;
+}
+
 /** The extensions of the format; the editor adds its own (undo, paste cleaning). */
-export function extensions(sources: Source[] = []): AnyExtension[] {
+export function extensions(sources: Source[] = [], media?: Media): AnyExtension[] {
   return [
     Doc,
     Text,
@@ -281,6 +313,7 @@ export function extensions(sources: Source[] = []): AnyExtension[] {
     Citation.configure({ sources }),
     Encadre,
     Separateur,
+    media === undefined ? ImageNode : ImageNode.configure(media),
     SourceRef,
     Link,
     TextStyleMark,

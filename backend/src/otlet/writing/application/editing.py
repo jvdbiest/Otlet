@@ -3,6 +3,7 @@
 « Enregistrer comme nouvelle version » adds one. A version written by a model never changes:
 saving it adds the person's version, once."""
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Protocol
@@ -10,7 +11,7 @@ from uuid import UUID
 
 from otlet.workspaces.domain.model import WorkspaceContext
 from otlet.writing.domain.article import Version
-from otlet.writing.domain.document import check, with_origins
+from otlet.writing.domain.document import check, media_of, with_origins
 
 TITLE_MAX = 300
 
@@ -56,9 +57,14 @@ class Saved:
     errors: tuple[str, ...] = ()
 
 
+# Those of the images a document shows that belong to the workspace (the media module answers).
+MediaCheck = Callable[[UUID, set[str]], set[str]]
+
+
 class Editing:
-    def __init__(self, versions: VersionStore) -> None:
+    def __init__(self, versions: VersionStore, media: MediaCheck | None = None) -> None:
         self._versions = versions
+        self._media = media or (lambda workspace_id, ids: set())
 
     def save(
         self,
@@ -75,7 +81,8 @@ class Editing:
             return Saved(refusal="not_found")
         title = " ".join(title.split())
         sources = list(edited.document["attrs"]["sources"])
-        errors = check(document, {s["id"] for s in sources})
+        images = self._media(context.workspace_id, media_of(document))
+        errors = check(document, {s["id"] for s in sources}, images)
         if not title or len(title) > TITLE_MAX:
             errors.insert(0, f"title: 1 to {TITLE_MAX} characters")
         if errors:

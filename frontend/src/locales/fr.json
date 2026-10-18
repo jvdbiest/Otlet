@@ -223,7 +223,9 @@
     "generic": "L'opération a échoué. Réessayez dans un instant.",
     "version_changed": "Cette version a été enregistrée ailleurs entre-temps.",
     "version_not_found": "Cette version n'existe plus.",
-    "invalid_document": "Otlet n'a pas pu enregistrer ce texte : une mise en forme n'est pas reconnue."
+    "invalid_document": "Otlet n'a pas pu enregistrer ce texte : une mise en forme n'est pas reconnue.",
+    "too_large": "Cette image dépasse 15 Mo.",
+    "not_an_image": "Ce fichier n'est pas une image JPEG, PNG, WebP ou GIF lisible."
   },
   "manual": {
     "title": "Ajouter à la main",
@@ -691,7 +693,8 @@
       "left": "Aligner à gauche",
       "center": "Centrer",
       "right": "Aligner à droite",
-      "justify": "Justifier"
+      "justify": "Justifier",
+      "image": "Insérer une image (ou la coller, ou la glisser dans le texte)"
     },
     "blocks": {
       "p": "Paragraphe",
@@ -714,6 +717,8 @@
     "conflict": "Cette version a été enregistrée ailleurs (un autre onglet ?) depuis son ouverture. Enregistrez comme nouvelle version pour ne rien perdre, ou fermez l'éditeur pour recharger.",
     "clipboardRefused": "Le navigateur n'a pas autorisé l'accès au presse-papiers depuis le bouton. Les raccourcis Ctrl+C, Ctrl+X et Ctrl+V fonctionnent toujours.",
     "copied": "Nouvelle version créée : vous travaillez désormais sur une copie du document généré par l'IA. La version {number} est votre copie ; la version {from}, écrite par le modèle, reste intacte. Si vous fermez l'éditeur sans rien modifier, cette copie est supprimée.",
-    "titleHelp": "Le titre reste en texte simple : votre site et les réseaux l'affichent tel quel, sans mise en forme."
+    "titleHelp": "Le titre reste en texte simple : votre site et les réseaux l'affichent tel quel, sans mise en forme.",
+    "altPrompt": "Texte alternatif : décrivez l'image pour les personnes qui ne la voient pas (facultatif).",
+    "uploading": "{count, plural, one {Envoi d'une image…} other {Envoi de # images…}}"
   }
 }

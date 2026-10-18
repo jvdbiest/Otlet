@@ -38,7 +38,8 @@ LABEL org.opencontainers.image.title="Otlet" \
       org.opencontainers.image.licenses="AGPL-3.0-or-later" \
       org.opencontainers.image.source="https://github.com/jvdbiest/Otlet"
 RUN groupadd --system --gid 10001 otlet \
-    && useradd --system --uid 10001 --gid otlet --no-create-home --shell /usr/sbin/nologin otlet
+    && useradd --system --uid 10001 --gid otlet --no-create-home --shell /usr/sbin/nologin otlet \
+    && install -d -o otlet -g otlet -m 0750 /var/lib/otlet/files
 COPY --from=backend /opt/otlet/venv /opt/otlet/venv
 COPY --from=frontend /src/dist /opt/otlet/ui
 COPY backend/migrations /opt/otlet/migrations
@@ -47,7 +48,8 @@ ENV PATH=/opt/otlet/venv/bin:$PATH \
     PYTHONUNBUFFERED=1 \
     OTLET_UI_DIR=/opt/otlet/ui \
     OTLET_MIGRATIONS_DIR=/opt/otlet/migrations \
-    OTLET_RUN_DIR=/tmp/otlet
+    OTLET_RUN_DIR=/tmp/otlet \
+    OTLET_FILES_DIR=/var/lib/otlet/files
 USER otlet:otlet
 EXPOSE 8000
 ENTRYPOINT ["otlet"]

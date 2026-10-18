@@ -30,11 +30,15 @@ from otlet.ai.domain.settings import ProfileEntry, SettingsError
 from otlet.collection.adapters.parsing import FeedparserReader, ReadabilityReader
 from otlet.collection.adapters.postgres import PostgresCollectionStore
 from otlet.collection.application.collection import Collection
-from otlet.entrypoints.api import ai, auth, collection, triage, watch, workspaces, writing
+from otlet.entrypoints.api import ai, auth, collection, media, triage, watch, workspaces, writing
 from otlet.identity.adapters.argon2_hasher import Argon2Hasher
 from otlet.identity.adapters.postgres import PostgresIdentityStore
 from otlet.identity.application.authentication import Authentication
 from otlet.jobs.adapters import procrastinate_queue
+from otlet.media.adapters.files_disk import DiskFiles
+from otlet.media.adapters.images_pillow import PillowImages
+from otlet.media.adapters.postgres import PostgresMediaStore
+from otlet.media.application.library import MediaLibrary
 from otlet.platform import database
 from otlet.platform.config import Settings
 from otlet.platform.http import SafeClient
@@ -131,13 +135,20 @@ def create_app(settings: Settings) -> FastAPI:
 
         brief_store = PostgresBriefStore(engine)
         article_store = PostgresArticleStore(engine, enqueue)
+        files_dir = settings.files_dir or settings.run_dir / "files"
+        library = MediaLibrary(PostgresMediaStore(engine), DiskFiles(files_dir), PillowImages())
+
+        def media_check(workspace_id: UUID, ids: set[str]) -> set[str]:
+            return {str(found) for found in library.existing(workspace_id, map(UUID, ids))}
+
         writing_router = writing.build_router(
             Briefs(brief_store, mark_writing, check_model),
             # The API only records a generation: the worker alone calls the models (DR6).
             Drafts(brief_store, article_store),
-            Editing(article_store),
+            Editing(article_store, media_check),
             workspace_context,
         )
+        media_router = media.build_router(library, workspace_context)
         ai_router = ai.build_router(
             ai_settings,
             Budget(PostgresBudget(engine)),
@@ -155,6 +166,7 @@ def create_app(settings: Settings) -> FastAPI:
             triage_router,
             ai_router,
             writing_router,
+            media_router,
         ]
         for router in routers:
             app.include_router(router)

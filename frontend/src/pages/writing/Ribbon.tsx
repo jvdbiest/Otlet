@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { Editor } from "@tiptap/core";
 import { useEditorState } from "@tiptap/react";
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { ALIGNS, COLORS, FONT_KEYS, FONTS, HIGHLIGHTS, SIZES, type Align, type TextStyle } from "../../editor/format.ts";
 import { editorStyles } from "../../editor/styles.ts";
+import { IMAGE_TYPES } from "../../media.ts";
 
 const SAFE_LINK = /^(https?:\/\/|mailto:)[^\s<>"]+$/i;
 const PRESENTATION = ["bold", "italic", "strike", "subscript", "superscript", "highlight", "text_style"] as const;
@@ -198,12 +199,15 @@ export function Ribbon({
   editor,
   disabled,
   onClipboardRefused,
+  onImages,
 }: {
   editor: Editor;
   disabled: boolean;
   onClipboardRefused: () => void;
+  onImages: (files: File[]) => void;
 }) {
   const { t } = useTranslation();
+  const picker = useRef<HTMLInputElement>(null);
   const state = useEditorState({
     editor,
     selector: ({ editor: e }) => {
@@ -430,6 +434,32 @@ export function Ribbon({
           },
           state.link,
         )}
+        <button
+          type="button"
+          className={editorStyles.tool}
+          title={t("editor.tools.image")}
+          aria-label={t("editor.tools.image")}
+          disabled={disabled}
+          onMouseDown={(event) => {
+            event.preventDefault();
+          }}
+          onClick={() => {
+            picker.current?.click();
+          }}
+        >
+          🖼
+        </button>
+        <input
+          ref={picker}
+          type="file"
+          accept={IMAGE_TYPES.join(",")}
+          multiple
+          hidden
+          onChange={(event) => {
+            onImages(Array.from(event.target.files ?? []));
+            event.target.value = "";
+          }}
+        />
         {tool("separator", "―", () => editor.chain().focus().insertContent({ type: "separateur" }).run())}
         {tool("clear", "⌫", () => {
           const chain = editor.chain().focus();

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Callable
 from html import escape
 from typing import Any
 
@@ -42,7 +43,7 @@ COLORS = (
 HIGHLIGHTS = ("#fff59d", "#c8e6c9", "#b3e5fc", "#f8bbd0", "#ffe0b2", "#e0e0e0")
 
 BLOCKS = {"heading", "paragraph", "bullet_list", "ordered_list", "citation", "encadre"}
-BLOCKS.add("separateur")
+BLOCKS |= {"separateur", "image"}
 MARKS = {"bold", "italic", "strike", "subscript", "superscript", "highlight", "text_style"}
 MARKS |= {"link", "source_ref"}
 # Nesting of the marks in the HTML, innermost first; the editor declares them in the reverse
@@ -65,6 +66,8 @@ BLOCK_ID = re.compile(r"^b[0-9a-z]{1,12}$")
 SOURCE_ID = re.compile(r"^S[0-9]{1,4}$")
 LINK = re.compile(r"^(https?://|mailto:)[^\s<>\"]+$", re.IGNORECASE)
 MAX_BYTES = 1_000_000
+ALT_MAX = 500
+UUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
 MAX_DEPTH = 6
 
 MENTION_IA = (
@@ -82,9 +85,10 @@ class DocumentError(ValueError):
         self.errors = errors
 
 
-def check(document: Any, source_ids: set[str]) -> list[str]:
+def check(document: Any, source_ids: set[str], media_ids: set[str] | None = None) -> list[str]:
     """The errors of a document sent by the editor; empty when it is valid. `source_ids` are the
-    sources of the article: a reference or a quotation may cite them, and nothing else."""
+    sources of the article: a reference or a quotation may cite them, and nothing else;
+    `media_ids` the images of the workspace an image block may show (X03b)."""
     if len(json.dumps(document, ensure_ascii=False).encode()) > MAX_BYTES:
         return ["document: too large"]
     if not isinstance(document, dict) or document.get("type") != "doc":
@@ -98,7 +102,25 @@ def check(document: Any, source_ids: set[str]) -> list[str]:
         return [*errors, "document.content: one block at least is required"]
     for n, block in enumerate(content):
         _check_block(block, f"content[{n}]", source_ids, errors)
+        if isinstance(block, dict) and block.get("type") == "image":
+            media = (block.get("attrs") or {}).get("media")
+            if media not in (media_ids or set()):
+                errors.append(f"content[{n}].attrs.media: an image of the workspace")
     return errors[:20]
+
+
+def media_of(document: Any) -> set[str]:
+    """The images a document shows, by their id, as sent (checked by `check`)."""
+    content = document.get("content") if isinstance(document, dict) else None
+    return {
+        str(block["attrs"]["media"])
+        for block in content or []
+        if isinstance(block, dict)
+        and block.get("type") == "image"
+        and isinstance(block.get("attrs"), dict)
+        and isinstance(block["attrs"].get("media"), str)
+        and UUID.match(block["attrs"]["media"])
+    }
 
 
 def _check_block(block: Any, where: str, source_ids: set[str], errors: list[str]) -> None:
@@ -126,6 +148,12 @@ def _check_block(block: Any, where: str, source_ids: set[str], errors: list[str]
         if kind == "citation" and attrs.get("source") not in source_ids:
             errors.append(f"{where}.attrs.source: one of the sources of the article")
         _check_paragraphs(block.get("content"), where, source_ids, errors)
+    elif kind == "image":
+        alt = attrs.get("alt")
+        if alt is not None and (not isinstance(alt, str) or len(alt) > ALT_MAX):
+            errors.append(f"{where}.attrs.alt: a text of {ALT_MAX} characters at most")
+        if block.get("content"):
+            errors.append(f"{where}: an image has no content")
     elif kind == "separateur" and block.get("content"):
         errors.append(f"{where}: a separator has no content")
 
@@ -329,12 +357,17 @@ def plain_text(node: Node) -> str:
 
 
 def render(
-    document: Node, mention: str = MENTION_IA, extras: bool = True, publication: bool = False
+    document: Node,
+    mention: str = MENTION_IA,
+    extras: bool = True,
+    publication: bool = False,
+    media_url: Callable[[str], str] = lambda media: media,
 ) -> str:
     """The HTML of a document. `extras=False` gives the body only, what the editor renders too;
-    `publication=True` leaves out font, size and colour, which a site's theme decides."""
+    `publication=True` leaves out font, size and colour, which a site's theme decides;
+    `media_url` gives the address of an image from its id."""
     sources = {s["id"]: s for s in document["attrs"]["sources"]}
-    parts = [_block(block, sources, publication) for block in document["content"]]
+    parts = [_block(block, sources, publication, media_url) for block in document["content"]]
     if not extras:
         return "\n".join(parts)
     if ai_share(document) > 0:
@@ -368,7 +401,9 @@ def _paragraphs(block: Node, publication: bool) -> str:
     return "".join(_p(p, publication) for p in block["content"])
 
 
-def _block(block: Node, sources: dict[str, Node], publication: bool) -> str:
+def _block(
+    block: Node, sources: dict[str, Node], publication: bool, media_url: Callable[[str], str]
+) -> str:
     kind = block["type"]
     if kind == "heading":
         level = block["attrs"]["level"]
@@ -392,6 +427,10 @@ def _block(block: Node, sources: dict[str, Node], publication: bool) -> str:
         return f'<aside class="otlet-encadre">{_paragraphs(block, publication)}</aside>'
     if kind == "separateur":
         return "<hr>"
+    if kind == "image":
+        attrs = block["attrs"]
+        src = escape(media_url(attrs["media"]))
+        return f'<figure><img src="{src}" alt="{escape(attrs.get("alt") or "")}"></figure>'
     raise ValueError(f"unknown block type {kind!r}")
 
 

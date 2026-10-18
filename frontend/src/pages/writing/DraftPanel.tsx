@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toDocument } from "../../editor/document.ts";
+import { mediaUrl } from "../../media.ts";
 import {
   draftQuery,
   useClearDetails,
@@ -244,6 +245,7 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
                 document={shown.document as unknown as PlatformDocument}
                 title={shown.title}
                 prefix={prefix}
+                mediaUrl={(id) => mediaUrl(workspaceId, id)}
               />
             </>
           )}

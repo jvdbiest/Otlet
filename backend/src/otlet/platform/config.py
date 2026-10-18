@@ -20,6 +20,8 @@ class Settings:
     # Public key: API and worker. Private key: worker only (DR6).
     secrets_public_key_file: Path | None = None
     secrets_private_key_file: Path | None = None
+    # The file storage (ARCHITECTURE §5): images of the articles; a volume in the image.
+    files_dir: Path | None = None
 
     @classmethod
     def from_env(cls, environ: Mapping[str, str] | None = None) -> "Settings":
@@ -37,6 +39,7 @@ class Settings:
             migrations_dir=path("OTLET_MIGRATIONS_DIR") or SOURCE_MIGRATIONS_DIR,
             secrets_public_key_file=path("OTLET_SECRETS_PUBLIC_KEY_FILE"),
             secrets_private_key_file=path("OTLET_SECRETS_PRIVATE_KEY_FILE"),
+            files_dir=path("OTLET_FILES_DIR") or Path(run_dir) / "files",
         )
 
     def require_database_url(self) -> str:

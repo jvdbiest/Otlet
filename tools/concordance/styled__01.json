@@ -892,6 +892,24 @@
     "id": "b16",
     "origine": "humain"
    }
+  },
+  {
+   "type": "image",
+   "attrs": {
+    "id": "b17",
+    "origine": "humain",
+    "media": "0b0e6f5e-3c4e-4c33-9a54-6f1f3c1b2a10",
+    "alt": "Une \"moto\" & <route>"
+   }
+  },
+  {
+   "type": "image",
+   "attrs": {
+    "id": "b18",
+    "origine": "humain",
+    "media": "0b0e6f5e-3c4e-4c33-9a54-6f1f3c1b2a10",
+    "alt": ""
+   }
   }
  ]
 }

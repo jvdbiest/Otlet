@@ -217,3 +217,14 @@
   color: #5c5c57;
   font-size: 0.85rem;
 }
+
+.page figure,
+.paper figure {
+  margin: var(--space-4) 0;
+}
+
+.page img,
+.paper img {
+  max-width: 100%;
+  height: auto;
+}

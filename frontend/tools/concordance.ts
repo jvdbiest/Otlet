@@ -6,7 +6,7 @@
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { generateHTML } from "@tiptap/html";
-import { COLORS, FONTS, HIGHLIGHTS, SIZES } from "../src/editor/format.ts";
+import { ALIGNS, COLORS, FONTS, HIGHLIGHTS, SIZES } from "../src/editor/format.ts";
 import { extensions, type Source } from "../src/editor/schema.ts";
 
 const corpus = new URL("../../tools/concordance/", import.meta.url);
@@ -30,6 +30,7 @@ writeFileSync(
     sizes: SIZES,
     colors: COLORS.map(([value]) => value),
     highlights: HIGHLIGHTS.map(([value]) => value),
+    aligns: ALIGNS,
   }),
 );
 console.log(`rendered ${String(names.length)} documents with the editor's extensions`);

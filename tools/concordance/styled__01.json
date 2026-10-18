@@ -789,6 +789,109 @@
     "id": "b12",
     "origine": "humain"
    }
+  },
+  {
+   "type": "paragraph",
+   "attrs": {
+    "align": "center",
+    "id": "b13",
+    "origine": "humain"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "H"
+    },
+    {
+     "type": "text",
+     "text": "2",
+     "marks": [
+      {
+       "type": "subscript"
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "O et m"
+    },
+    {
+     "type": "text",
+     "text": "2",
+     "marks": [
+      {
+       "type": "superscript"
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": " gras",
+     "marks": [
+      {
+       "type": "superscript"
+      },
+      {
+       "type": "bold"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "attrs": {
+    "level": 2,
+    "align": "right",
+    "id": "b14",
+    "origine": "humain"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Titre à droite"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "attrs": {
+    "align": "justify",
+    "id": "b15",
+    "origine": "humain"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Justifié"
+    }
+   ]
+  },
+  {
+   "type": "bullet_list",
+   "content": [
+    {
+     "type": "list_item",
+     "content": [
+      {
+       "type": "paragraph",
+       "attrs": {
+        "align": "center"
+       },
+       "content": [
+        {
+         "type": "text",
+         "text": "item centré"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "attrs": {
+    "id": "b16",
+    "origine": "humain"
+   }
   }
  ]
 }

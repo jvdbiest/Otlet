@@ -34,11 +34,13 @@ def test_the_formatting_of_the_ribbon_is_part_of_the_format() -> None:
     styled = doc(
         paragraph(
             text("barré", {"type": "strike"}),
+            text("2", {"type": "subscript"}),
+            text("e", {"type": "superscript"}),
             text("surligné", {"type": "highlight", "attrs": {"color": "#fff59d"}}),
             text("stylé", {"type": "text_style", "attrs": {"font": "georgia", "size": 14}}),
             text(" [1]", {"type": "source_ref", "attrs": {"source": "S1"}}),
         ),
-        {"type": "heading", "attrs": {"id": "b2", "level": 2}, "content": [text("Titre")]},
+        {"type": "heading", "attrs": {"id": "b2", "level": 2, "align": "center"}, "content": []},
         {
             "type": "bullet_list",
             "attrs": {"id": "b3"},
@@ -63,6 +65,12 @@ def test_a_document_outside_the_format_is_refused_with_its_reasons() -> None:
     assert errors({"type": "highlight", "attrs": {"color": "#123456"}})
     assert errors({"type": "text_style", "attrs": {"font": "Comic Sans"}})
     assert errors({"type": "text_style", "attrs": {"size": 13}})
+    assert errors({"type": "subscript"}, {"type": "superscript"}) == [
+        "content[0].content[0]: subscript or superscript, not both"
+    ]
+    assert check(doc({"type": "paragraph", "attrs": {"align": "middle"}}), set()) == [
+        "content[0].attrs.align: left, center, right or justify"
+    ]
     assert errors({"type": "text_style", "attrs": {"size": 12.0}})  # 12.0pt would not match
     assert errors({"type": "text_style", "attrs": {"color": "red", "style": "x"}})
     assert errors({"type": "underline"}) == [

@@ -42,6 +42,10 @@ export const HIGHLIGHTS = [
   ["#e0e0e0", "Gris"],
 ] as const;
 
+/** Alignments of a paragraph or a heading; none is the site's own. */
+export const ALIGNS = ["left", "center", "right", "justify"] as const;
+export type Align = (typeof ALIGNS)[number];
+
 export interface TextStyle {
   font?: FontKey | null;
   size?: number | null;

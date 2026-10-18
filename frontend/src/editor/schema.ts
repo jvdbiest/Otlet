@@ -5,7 +5,7 @@
 // (tools/concordance.ts, tools/check_concordance.py). Kept free of React and of the browser's
 // globals at load time: Node runs it for the concordance test.
 import { Mark, Node, type AnyExtension } from "@tiptap/core";
-import { FONT_KEYS, FONTS, HIGHLIGHTS, SIZES, COLORS, hexColor, styleOf, type TextStyle } from "./format.ts";
+import { ALIGNS, FONT_KEYS, FONTS, HIGHLIGHTS, SIZES, COLORS, hexColor, styleOf, type TextStyle } from "./format.ts";
 
 export interface Source {
   id: string;
@@ -20,6 +20,16 @@ const hidden = (name: string, fallback: unknown = null) => ({ [name]: { default:
 // server gives it its id and origin (ADR-0036 §2).
 const own = (name: string) => ({ [name]: { default: null, rendered: false, keepOnSplit: false } });
 const blockAttrs = () => ({ ...own("id"), ...own("origine") });
+// The alignment of a paragraph or a heading, kept when it is split (Joël, 2026-10-18).
+const align = () => ({
+  align: {
+    default: null,
+    rendered: false,
+    parseHTML: (element: HTMLElement) =>
+      (ALIGNS as readonly string[]).includes(element.style.textAlign) ? element.style.textAlign : null,
+  },
+});
+const aligned = (align: unknown) => (typeof align === "string" && align ? { style: `text-align: ${align}` } : {});
 
 const Doc = Node.create({
   name: "doc",
@@ -35,9 +45,9 @@ const Paragraph = Node.create({
   group: "block",
   content: "inline*",
   priority: 1000,
-  addAttributes: blockAttrs,
+  addAttributes: () => ({ ...blockAttrs(), ...align() }),
   parseHTML: () => [{ tag: "p" }],
-  renderHTML: () => ["p", 0],
+  renderHTML: ({ node }) => ["p", aligned(node.attrs.align), 0],
 });
 
 const Heading = Node.create({
@@ -45,10 +55,10 @@ const Heading = Node.create({
   group: "block",
   content: "inline*",
   defining: true,
-  addAttributes: () => ({ ...blockAttrs(), ...hidden("level", 2) }),
+  addAttributes: () => ({ ...blockAttrs(), ...hidden("level", 2), ...align() }),
   parseHTML: () =>
     [1, 2, 3, 4, 5, 6].map((level) => ({ tag: `h${String(level)}`, attrs: { level: Math.min(Math.max(level, 2), 4) } })),
-  renderHTML: ({ node }) => [`h${String(node.attrs.level)}`, 0],
+  renderHTML: ({ node }) => [`h${String(node.attrs.level)}`, aligned(node.attrs.align), 0],
 });
 
 const ListItem = Node.create({
@@ -208,6 +218,26 @@ const Highlight = Mark.create({
   },
 });
 
+const Superscript = Mark.create({
+  name: "superscript",
+  excludes: "subscript",
+  parseHTML: () => [{ tag: "sup" }, { style: "vertical-align=super" }],
+  renderHTML: () => ["sup", 0],
+  addKeyboardShortcuts() {
+    return { "Mod-.": () => this.editor.commands.toggleMark(this.name) };
+  },
+});
+
+const Subscript = Mark.create({
+  name: "subscript",
+  excludes: "superscript",
+  parseHTML: () => [{ tag: "sub" }, { style: "vertical-align=sub" }],
+  renderHTML: () => ["sub", 0],
+  addKeyboardShortcuts() {
+    return { "Mod-,": () => this.editor.commands.toggleMark(this.name) };
+  },
+});
+
 const Strike = Mark.create({
   name: "strike",
   parseHTML: () => [{ tag: "s" }, { tag: "del" }, { tag: "strike" }, { style: "text-decoration=line-through" }],
@@ -255,6 +285,8 @@ export function extensions(sources: Source[] = []): AnyExtension[] {
     Link,
     TextStyleMark,
     Highlight,
+    Superscript,
+    Subscript,
     Strike,
     Italic,
     Bold,

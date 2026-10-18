@@ -31,6 +31,8 @@ L'ADR-0023 a fixé le format (« Document plateforme v1 »), le moteur de rendu 
 2. **Origine des blocs**, recalculée par le serveur à chaque enregistrement, jamais reçue du navigateur : un bloc « ia » dont le texte change devient « ia_modifie » ; un bloc nouveau est « humain ». La part d'IA (D8) reste donc juste après retouche.
 3. **Mise en forme ajoutée au format**, sans changer `version_schema` (les ajouts sont facultatifs, un document v1 existant reste valide) :
    - `strike` (barré) et `highlight` (surlignage, couleur prise dans une palette) passent partout, sites compris ;
+   - `subscript` et `superscript` (indice, exposant, l'un ou l'autre) et l'alignement d'un paragraphe ou d'un titre (`align` : gauche, centré, droite, justifié) passent partout aussi ;
+   - le titre de l'article reste en texte simple : les sites et les réseaux l'affichent tel quel ;
    - `text_style` (police, taille, couleur du texte) prend ses valeurs dans des listes fermées. Ce sont des choix de présentation : gardés dans Otlet et dans les exports, ils sont retirés du rendu de publication vers un site ou un réseau, où le thème du site décide et où les réseaux n'acceptent aucune mise en forme.
 4. **Validation du document par le serveur** à chaque enregistrement : types de nœuds et de marques connus, valeurs prises dans les listes fermées, liens en `http` ou `https`, références vers des sources de l'article, taille bornée. Aucun HTML reçu n'est gardé.
 5. **Presse-papiers.** Copier et Couper passent par le navigateur. Le bouton Coller demande l'autorisation du navigateur ; Ctrl+V marche toujours et passe par le nettoyeur de collage (ADR-0023 §5).

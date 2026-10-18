@@ -680,12 +680,18 @@
       "italic": "Italique (Ctrl+I)",
       "strike": "Barré (Ctrl+Maj+X)",
       "color": "Couleur du texte",
-      "highlight": "Surlignage",
+      "highlight": "Couleur de surlignage",
       "bullet": "Liste à puces",
       "ordered": "Liste numérotée",
       "link": "Lien",
       "separator": "Séparateur",
-      "clear": "Effacer la mise en forme"
+      "clear": "Effacer la mise en forme",
+      "subscript": "Indice (Ctrl+,)",
+      "superscript": "Exposant (Ctrl+.)",
+      "left": "Aligner à gauche",
+      "center": "Centrer",
+      "right": "Aligner à droite",
+      "justify": "Justifier"
     },
     "blocks": {
       "p": "Paragraphe",
@@ -693,10 +699,8 @@
       "h3": "Titre 3",
       "h4": "Titre 4"
     },
-    "defaultFont": "Police par défaut",
-    "defaultSize": "Taille",
-    "defaultColor": "Couleur par défaut",
-    "noHighlight": "Sans surlignage",
+    "defaultColor": "Automatique",
+    "noHighlight": "Aucun surlignage",
     "linkPrompt": "Adresse du lien (laisser vide pour retirer le lien) :",
     "linkInvalid": "Un lien commence par http://, https:// ou mailto:.",
     "save": "Enregistrer",
@@ -709,6 +713,7 @@
     "leave": "Des modifications ne sont pas enregistrées. Les abandonner ?",
     "conflict": "Cette version a été enregistrée ailleurs (un autre onglet ?) depuis son ouverture. Enregistrez comme nouvelle version pour ne rien perdre, ou fermez l'éditeur pour recharger.",
     "clipboardRefused": "Le navigateur n'a pas autorisé l'accès au presse-papiers depuis le bouton. Les raccourcis Ctrl+C, Ctrl+X et Ctrl+V fonctionnent toujours.",
-    "copied": "Nouvelle version créée : vous travaillez désormais sur une copie du document généré par l'IA. La version {number} est votre copie ; la version {from}, écrite par le modèle, reste intacte. Si vous fermez l'éditeur sans rien modifier, cette copie est supprimée."
+    "copied": "Nouvelle version créée : vous travaillez désormais sur une copie du document généré par l'IA. La version {number} est votre copie ; la version {from}, écrite par le modèle, reste intacte. Si vous fermez l'éditeur sans rien modifier, cette copie est supprimée.",
+    "titleHelp": "Le titre reste en texte simple : votre site et les réseaux l'affichent tel quel, sans mise en forme."
   }
 }

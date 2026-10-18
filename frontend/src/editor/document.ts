@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // From the editor's JSON to the « Document plateforme v1 » the server checks: Tiptap gives every
-// node and mark all their attributes, null when unset; the format keeps attributes on top-level
-// blocks only, and no null in a mark. The server recomputes ids and origins (ADR-0036 §2).
+// node and mark all their attributes, null when unset; the format keeps ids and origins on
+// top-level blocks only, and no null elsewhere. The server recomputes ids and origins (ADR-0036 §2).
 import type { JSONContent } from "@tiptap/core";
 
 type Attrs = Record<string, unknown>;
@@ -20,6 +20,12 @@ function nested(node: JSONContent): JSONContent {
   }
   if (node.text !== undefined) {
     out.text = node.text;
+  }
+  const keptAttrs = Object.entries(node.attrs ?? {}).filter(
+    ([key, value]) => value !== null && key !== "id" && key !== "origine",
+  );
+  if (keptAttrs.length > 0) {
+    out.attrs = Object.fromEntries(keptAttrs);
   }
   const kept = marks(node.marks);
   if (kept !== undefined && kept.length > 0) {

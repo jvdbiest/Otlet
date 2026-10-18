@@ -79,7 +79,7 @@
   padding: var(--space-4) var(--space-6) var(--space-8);
   background: #ffffff;
   color: #1d1d1b;
-  font: 1.05rem/1.6 Georgia, serif;
+  font: 12pt/1.6 Georgia, serif;
   outline: none;
   border-radius: 0 0 var(--radius) var(--radius);
 }
@@ -135,4 +135,70 @@
 
 .paper a {
   color: #2f5d8a;
+}
+
+.size {
+  height: 2rem;
+  width: 4.5rem;
+  font: inherit;
+}
+
+.picker {
+  position: relative;
+  display: inline-flex;
+}
+
+.letter {
+  display: inline-block;
+  min-width: 1.1rem;
+  padding: 0 0.15rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.swatches {
+  position: absolute;
+  top: 2.25rem;
+  left: 0;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(5, 1.6rem);
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 20%);
+}
+
+.swatch {
+  width: 1.6rem;
+  height: 1.6rem;
+  border: 1px solid #8a8a84;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.swatch[aria-pressed="true"] {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.noColor {
+  grid-column: 1 / -1;
+  padding: var(--space-1);
+  border: 1px solid var(--border);
+  border-radius: 0.25rem;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.titleHelp {
+  margin: 0;
+  padding: var(--space-1) var(--space-4) 0;
+  background: #ffffff;
+  color: #5c5c57;
+  font-size: 0.85rem;
 }

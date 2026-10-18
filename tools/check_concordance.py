@@ -91,6 +91,7 @@ def main(folder: Path) -> int:
         "sizes": list(document.SIZES),
         "colors": list(document.COLORS),
         "highlights": list(document.HIGHLIGHTS),
+        "aligns": list(document.ALIGNS),
     }
     for key, value in expected.items():
         if lists[key] != value:

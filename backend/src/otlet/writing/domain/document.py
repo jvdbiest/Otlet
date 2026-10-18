@@ -43,10 +43,23 @@ HIGHLIGHTS = ("#fff59d", "#c8e6c9", "#b3e5fc", "#f8bbd0", "#ffe0b2", "#e0e0e0")
 
 BLOCKS = {"heading", "paragraph", "bullet_list", "ordered_list", "citation", "encadre"}
 BLOCKS.add("separateur")
-MARKS = {"bold", "italic", "strike", "highlight", "text_style", "link", "source_ref"}
+MARKS = {"bold", "italic", "strike", "subscript", "superscript", "highlight", "text_style"}
+MARKS |= {"link", "source_ref"}
 # Nesting of the marks in the HTML, innermost first; the editor declares them in the reverse
 # order (ProseMirror nests the first declared outermost).
-MARK_ORDER = ("bold", "italic", "strike", "highlight", "text_style", "link", "source_ref")
+MARK_ORDER = (
+    "bold",
+    "italic",
+    "strike",
+    "subscript",
+    "superscript",
+    "highlight",
+    "text_style",
+    "link",
+    "source_ref",
+)
+# The alignment of a paragraph or a heading (Joël, 2026-10-18); none is the site's own.
+ALIGNS = ("left", "center", "right", "justify")
 ORIGINS = ("ia", "ia_modifie", "humain")
 BLOCK_ID = re.compile(r"^b[0-9a-z]{1,12}$")
 SOURCE_ID = re.compile(r"^S[0-9]{1,4}$")
@@ -104,9 +117,9 @@ def _check_block(block: Any, where: str, source_ids: set[str], errors: list[str]
     if kind == "heading":
         if attrs.get("level") not in (2, 3, 4):
             errors.append(f"{where}.attrs.level: 2, 3 or 4")
-        _check_inline(block.get("content"), where, source_ids, errors)
+        _check_text(block, where, source_ids, errors)
     elif kind == "paragraph":
-        _check_inline(block.get("content"), where, source_ids, errors)
+        _check_text(block, where, source_ids, errors)
     elif kind in ("bullet_list", "ordered_list"):
         _check_list(block, where, source_ids, errors, 1)
     elif kind in ("citation", "encadre"):
@@ -125,7 +138,7 @@ def _check_paragraphs(content: Any, where: str, source_ids: set[str], errors: li
         if not isinstance(paragraph, dict) or paragraph.get("type") != "paragraph":
             errors.append(f"{where}.content[{m}]: a paragraph is required")
         else:
-            _check_inline(paragraph.get("content"), f"{where}.content[{m}]", source_ids, errors)
+            _check_text(paragraph, f"{where}.content[{m}]", source_ids, errors)
 
 
 def _check_list(
@@ -154,11 +167,19 @@ def _check_list(
         for k, child in enumerate(children):
             kind = child.get("type") if isinstance(child, dict) else None
             if kind == "paragraph":
-                _check_inline(child.get("content"), f"{at}.content[{k}]", source_ids, errors)
+                _check_text(child, f"{at}.content[{k}]", source_ids, errors)
             elif kind in ("bullet_list", "ordered_list"):
                 _check_list(child, f"{at}.content[{k}]", source_ids, errors, depth + 1)
             else:
                 errors.append(f"{at}.content[{k}]: a paragraph or a list is required")
+
+
+def _check_text(node: Node, where: str, source_ids: set[str], errors: list[str]) -> None:
+    """A paragraph or a heading: its alignment, then its text."""
+    attrs = node.get("attrs") or {}
+    if not isinstance(attrs, dict) or attrs.get("align") not in (None, *ALIGNS):
+        errors.append(f"{where}.attrs.align: left, center, right or justify")
+    _check_inline(node.get("content"), where, source_ids, errors)
 
 
 def _check_inline(content: Any, where: str, source_ids: set[str], errors: list[str]) -> None:
@@ -194,6 +215,8 @@ def _check_inline(content: Any, where: str, source_ids: set[str], errors: list[s
                 errors.append(f"{at}: highlight colour not in the palette")
             elif kind == "text_style" and not _style_ok(mark_attrs):
                 errors.append(f"{at}: font, size or colour not in the lists")
+        if {"subscript", "superscript"} <= seen:
+            errors.append(f"{at}: subscript or superscript, not both")
 
 
 def _style_ok(attrs: Node) -> bool:
@@ -332,17 +355,27 @@ def _source(source: Node) -> str:
     return f"{link}, {details}" if details else link
 
 
+def _align(node: Node) -> str:
+    align = (node.get("attrs") or {}).get("align")
+    return f' style="text-align: {align}"' if align else ""
+
+
+def _p(node: Node, publication: bool) -> str:
+    return f"<p{_align(node)}>{_inline(node.get('content', []), publication)}</p>"
+
+
 def _paragraphs(block: Node, publication: bool) -> str:
-    return "".join(f"<p>{_inline(p.get('content', []), publication)}</p>" for p in block["content"])
+    return "".join(_p(p, publication) for p in block["content"])
 
 
 def _block(block: Node, sources: dict[str, Node], publication: bool) -> str:
     kind = block["type"]
     if kind == "heading":
         level = block["attrs"]["level"]
-        return f"<h{level}>{_inline(block.get('content', []), publication)}</h{level}>"
+        inline = _inline(block.get("content", []), publication)
+        return f"<h{level}{_align(block)}>{inline}</h{level}>"
     if kind == "paragraph":
-        return f"<p>{_inline(block.get('content', []), publication)}</p>"
+        return _p(block, publication)
     if kind in ("bullet_list", "ordered_list"):
         return _list(block, publication)
     if kind == "citation":
@@ -369,7 +402,7 @@ def _list(node: Node, publication: bool) -> str:
         inner = []
         for child in item["content"]:
             if child["type"] == "paragraph":
-                inner.append(f"<p>{_inline(child.get('content', []), publication)}</p>")
+                inner.append(_p(child, publication))
             else:
                 inner.append(_list(child, publication))
         items.append(f"<li>{''.join(inner)}</li>")
@@ -416,6 +449,8 @@ TAGS = {
     "bold": "strong",
     "italic": "em",
     "strike": "s",
+    "subscript": "sub",
+    "superscript": "sup",
     "highlight": "mark",
     "text_style": "span",
     "link": "a",

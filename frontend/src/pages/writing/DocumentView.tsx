@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { styles } from "../watch/styles.ts";
 import { blockAnchor } from "./blocks.ts";
@@ -18,7 +18,7 @@ interface Node {
   type: string;
   text?: string;
   marks?: Mark[];
-  attrs?: { id?: string; origine?: string; level?: number; source?: string; alt?: string };
+  attrs?: { id?: string; origine?: string; level?: number; source?: string; alt?: string; align?: string };
   content?: Node[];
 }
 interface Source {
@@ -43,6 +43,10 @@ function inline(nodes: Node[] | undefined, numbers: Map<string, number>, prefix:
         out = <em>{out}</em>;
       } else if (mark.type === "strike") {
         out = <s>{out}</s>;
+      } else if (mark.type === "subscript") {
+        out = <sub>{out}</sub>;
+      } else if (mark.type === "superscript") {
+        out = <sup>{out}</sup>;
       } else if (mark.type === "highlight" && mark.attrs?.color) {
         out = <mark style={{ backgroundColor: mark.attrs.color }}>{out}</mark>;
       } else if (mark.type === "text_style" && mark.attrs) {
@@ -77,23 +81,30 @@ function inline(nodes: Node[] | undefined, numbers: Map<string, number>, prefix:
   });
 }
 
+function aligned(node: Node): CSSProperties | undefined {
+  const align = node.attrs?.align;
+  return align === "center" || align === "right" || align === "justify" || align === "left"
+    ? { textAlign: align }
+    : undefined;
+}
+
 function block(node: Node, numbers: Map<string, number>, prefix: string, key: number): ReactNode {
   const content = node.content;
   const id = node.attrs?.id ? blockAnchor(prefix, node.attrs.id) : undefined;
   switch (node.type) {
     case "heading":
       return node.attrs?.level === 3 ? (
-        <h4 key={key} id={id}>
+        <h4 key={key} id={id} style={aligned(node)}>
           {inline(content, numbers, prefix)}
         </h4>
       ) : (
-        <h3 key={key} id={id}>
+        <h3 key={key} id={id} style={aligned(node)}>
           {inline(content, numbers, prefix)}
         </h3>
       );
     case "paragraph":
       return (
-        <p key={key} id={id}>
+        <p key={key} id={id} style={aligned(node)}>
           {inline(content, numbers, prefix)}
         </p>
       );

@@ -1,0 +1,245 @@
+{
+ "type": "doc",
+ "attrs": {
+  "version_schema": 1,
+  "langue": "fr",
+  "sources": [
+   {
+    "id": "S1",
+    "titre": "Dossier 27, document 1",
+    "editeur": "Bulletin communal",
+    "date": "2026-03-02",
+    "url": "https://exemple.org/dossiers/27/document-1"
+   },
+   {
+    "id": "S2",
+    "titre": "Dossier 27, document 2",
+    "editeur": "Revue des territoires",
+    "date": "2026-09-10",
+    "url": "https://exemple.org/dossiers/27/document-2"
+   },
+   {
+    "id": "S3",
+    "titre": "Dossier 27, document 3",
+    "editeur": "Revue des territoires",
+    "date": "2026-03-10",
+    "url": "https://exemple.org/dossiers/27/document-3"
+   }
+  ]
+ },
+ "content": [
+  {
+   "type": "paragraph",
+   "attrs": {
+    "id": "b1",
+    "origine": "humain"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Le rapport publié cette semaine éclaire la création d’un jardin partagé sous un jour nouveau."
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "attrs": {
+    "id": "b2",
+    "origine": "humain",
+    "level": 2
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Ce que prévoit le projet sur environnement"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "attrs": {
+    "id": "b3",
+    "origine": "humain"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Selon les documents consultés, le coût total reste à confirmer. Les montants annoncés restent provisoires tant que les subsides régionaux ne sont pas confirmés."
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "attrs": {
+    "id": "b4",
+    "origine": "humain"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "La "
+    },
+    {
+     "type": "text",
+     "text": "fiche détaillée",
+     "marks": [
+      {
+       "type": "link",
+       "attrs": {
+        "href": "https://exemple.org/environnement/fiche-27"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": " est disponible en ligne, et "
+    },
+    {
+     "type": "text",
+     "text": "plusieurs points restent ouverts",
+     "marks": [
+      {
+       "type": "bold"
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "."
+    }
+   ]
+  },
+  {
+   "type": "citation",
+   "attrs": {
+    "id": "b5",
+    "origine": "humain",
+    "source": "S2"
+   },
+   "content": [
+    {
+     "type": "paragraph",
+     "content": [
+      {
+       "type": "text",
+       "text": "Nous voulons des résultats mesurables, pas seulement des annonces.",
+       "marks": [
+        {
+         "type": "italic"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "attrs": {
+    "id": "b6",
+    "origine": "humain",
+    "level": 3
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Les prochaines étapes"
+    }
+   ]
+  },
+  {
+   "type": "bullet_list",
+   "attrs": {
+    "id": "b7",
+    "origine": "humain"
+   },
+   "content": [
+    {
+     "type": "list_item",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "un rapport annuel public"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "list_item",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "un budget de fonctionnement distinct"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "list_item",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "un appel à projets ouvert aux associations"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "attrs": {
+    "id": "b8",
+    "origine": "humain"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Plusieurs associations demandent que les données de suivi soient rendues publiques.",
+     "marks": [
+      {
+       "type": "italic"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "type": "citation",
+   "attrs": {
+    "id": "b9",
+    "origine": "humain",
+    "source": "S1"
+   },
+   "content": [
+    {
+     "type": "paragraph",
+     "content": [
+      {
+       "type": "text",
+       "text": "Nous voulons des résultats mesurables, pas seulement des annonces.",
+       "marks": [
+        {
+         "type": "italic"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

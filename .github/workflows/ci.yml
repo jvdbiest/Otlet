@@ -186,6 +186,8 @@ jobs:
         run: npm run typecheck
       - name: Construction (vite build)
         run: npm run build
+      - name: Concordance de l'éditeur avec le moteur de rendu (ADR-0023)
+        run: npm run concordance
 
   image:
     name: Image OCI

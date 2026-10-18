@@ -1,0 +1,147 @@
+{
+ "type": "doc",
+ "attrs": {
+  "version_schema": 1,
+  "langue": "fr",
+  "sources": [
+   {
+    "id": "S1",
+    "titre": "Dossier 04, document 1",
+    "editeur": "Agence régionale",
+    "date": "2026-07-26",
+    "url": "https://exemple.org/dossiers/04/document-1"
+   },
+   {
+    "id": "S2",
+    "titre": "Dossier 04, document 2",
+    "editeur": "Revue des territoires",
+    "date": "2026-07-17",
+    "url": "https://exemple.org/dossiers/04/document-2"
+   },
+   {
+    "id": "S3",
+    "titre": "Dossier 04, document 3",
+    "editeur": "Agence régionale",
+    "date": "2026-09-19",
+    "url": "https://exemple.org/dossiers/04/document-3"
+   },
+   {
+    "id": "S4",
+    "titre": "Dossier 04, document 4",
+    "editeur": "Le Courrier local",
+    "date": "2026-04-17",
+    "url": "https://exemple.org/dossiers/04/document-4"
+   }
+  ]
+ },
+ "content": [
+  {
+   "type": "heading",
+   "attrs": {
+    "id": "b1",
+    "origine": "humain",
+    "level": 2
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Ce que prévoit le projet sur santé"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "attrs": {
+    "id": "b2",
+    "origine": "ia_modifie"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Selon les documents consultés, "
+    },
+    {
+     "type": "text",
+     "text": "le coût total reste à confirmer",
+     "marks": [
+      {
+       "type": "source_ref",
+       "attrs": {
+        "source": "S1"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": ". "
+    },
+    {
+     "type": "text",
+     "text": "Le calendrier prévoit une première phase dès le printemps, puis une évaluation à l’automne."
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "attrs": {
+    "id": "b3",
+    "origine": "humain"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "La "
+    },
+    {
+     "type": "text",
+     "text": "fiche détaillée",
+     "marks": [
+      {
+       "type": "link",
+       "attrs": {
+        "href": "https://exemple.org/santé/fiche-04"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": " est disponible en ligne, et "
+    },
+    {
+     "type": "text",
+     "text": "plusieurs points restent ouverts",
+     "marks": [
+      {
+       "type": "bold"
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "."
+    }
+   ]
+  },
+  {
+   "type": "citation",
+   "attrs": {
+    "id": "b4",
+    "origine": "ia_modifie",
+    "source": "S2"
+   },
+   "content": [
+    {
+     "type": "paragraph",
+     "content": [
+      {
+       "type": "text",
+       "text": "Nous voulons des résultats mesurables, pas seulement des annonces."
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

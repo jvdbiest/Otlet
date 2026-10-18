@@ -1,0 +1,136 @@
+{
+ "type": "doc",
+ "attrs": {
+  "version_schema": 1,
+  "langue": "fr",
+  "sources": [
+   {
+    "id": "S1",
+    "titre": "Dossier 14, document 1",
+    "editeur": "Agence régionale",
+    "date": "2026-03-10",
+    "url": "https://exemple.org/dossiers/14/document-1"
+   },
+   {
+    "id": "S2",
+    "titre": "Dossier 14, document 2",
+    "editeur": "Agence régionale",
+    "date": "2026-08-11",
+    "url": "https://exemple.org/dossiers/14/document-2"
+   },
+   {
+    "id": "S3",
+    "titre": "Dossier 14, document 3",
+    "editeur": "Revue des territoires",
+    "date": "2026-02-04",
+    "url": "https://exemple.org/dossiers/14/document-3"
+   }
+  ]
+ },
+ "content": [
+  {
+   "type": "heading",
+   "attrs": {
+    "id": "b1",
+    "origine": "ia",
+    "level": 2
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Ce que prévoit le projet sur santé"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "attrs": {
+    "id": "b2",
+    "origine": "ia"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Selon les documents consultés, "
+    },
+    {
+     "type": "text",
+     "text": "le coût total reste à confirmer",
+     "marks": [
+      {
+       "type": "source_ref",
+       "attrs": {
+        "source": "S1"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": ". Les montants annoncés restent provisoires tant que les subsides régionaux ne sont pas confirmés."
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "attrs": {
+    "id": "b3",
+    "origine": "ia"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "La "
+    },
+    {
+     "type": "text",
+     "text": "fiche détaillée",
+     "marks": [
+      {
+       "type": "link",
+       "attrs": {
+        "href": "https://exemple.org/santé/fiche-14"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": " est disponible en ligne, et "
+    },
+    {
+     "type": "text",
+     "text": "plusieurs points restent ouverts",
+     "marks": [
+      {
+       "type": "bold"
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "."
+    }
+   ]
+  },
+  {
+   "type": "citation",
+   "attrs": {
+    "id": "b4",
+    "origine": "ia",
+    "source": "S2"
+   },
+   "content": [
+    {
+     "type": "paragraph",
+     "content": [
+      {
+       "type": "text",
+       "text": "Nous voulons des résultats mesurables, pas seulement des annonces."
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

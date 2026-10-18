@@ -133,3 +133,24 @@ export function useClearDetails(workspaceId: string, briefId: string) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: draftQuery(workspaceId, briefId).queryKey }),
   });
 }
+
+export type SaveBody = components["schemas"]["SaveBody"];
+
+/** « Enregistrer » a version retouched in the editor, or « Enregistrer comme nouvelle version »
+ * (ADR-0036): the version saved comes back, a new one when the version edited was the model's. */
+export function useSaveVersion(workspaceId: string, briefId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ articleId, number, body }: { articleId: string; number: number; body: SaveBody }) => {
+      const { data, error, response } = await api.PUT(
+        "/api/workspaces/{workspace_id}/articles/{article_id}/versions/{number}",
+        { params: { path: { workspace_id: workspaceId, article_id: articleId, number } }, body },
+      );
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: draftQuery(workspaceId, briefId).queryKey }),
+  });
+}

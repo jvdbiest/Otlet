@@ -8,6 +8,7 @@ import { styles } from "../watch/styles.ts";
 import { blockAnchor, findBlock } from "./blocks.ts";
 import { DocumentView, type PlatformDocument } from "./DocumentView.tsx";
 import { GenerationDetails } from "./GenerationDetails.tsx";
+import { VersionEditor } from "./VersionEditor.tsx";
 
 const FAILURES = [
   "no_profile",
@@ -61,6 +62,7 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
   const clear = useClearDetails(workspaceId, briefId);
   const [confirming, setConfirming] = useState(false);
   const [chosen, setChosen] = useState<number | null>(null);
+  const [editing, setEditing] = useState(false);
   if (draft.data === undefined) {
     return null;
   }
@@ -131,6 +133,7 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
             {versions.length > 1 && (
               <select
                 aria-label={t("draft.version")}
+                disabled={editing}
                 value={shown.number}
                 onChange={(event) => {
                   setChosen(Number(event.target.value));
@@ -184,11 +187,41 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
             details={shown.details}
             heading={t("draft.details.heading", { number: shown.number, date: formatDate(shown.created_at) })}
           />
-          <DocumentView
-            document={shown.document as unknown as PlatformDocument}
-            title={shown.title}
-            prefix={prefix}
-          />
+          {editing && article !== null ? (
+            <VersionEditor
+              key={`${article.id}-${String(shown.number)}`}
+              workspaceId={workspaceId}
+              briefId={briefId}
+              articleId={article.id}
+              version={shown}
+              onSaved={(number) => {
+                setChosen(number);
+              }}
+              onClose={() => {
+                setEditing(false);
+              }}
+            />
+          ) : (
+            <>
+              <p className={styles.row}>
+                <button
+                  type="button"
+                  className={styles.button}
+                  disabled={running}
+                  onClick={() => {
+                    setEditing(true);
+                  }}
+                >
+                  {t("draft.edit")}
+                </button>
+              </p>
+              <DocumentView
+                document={shown.document as unknown as PlatformDocument}
+                title={shown.title}
+                prefix={prefix}
+              />
+            </>
+          )}
         </>
       )}
       {(versions.length > 0 || generation !== null) && (

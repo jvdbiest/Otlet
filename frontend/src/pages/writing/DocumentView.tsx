@@ -3,6 +3,8 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { styles } from "../watch/styles.ts";
 import { blockAnchor } from "./blocks.ts";
+import { FONTS, type TextStyle } from "../../editor/format.ts";
+import { editorStyles } from "../../editor/styles.ts";
 
 const DAY = new Intl.DateTimeFormat("fr-BE", { dateStyle: "medium" });
 
@@ -10,7 +12,7 @@ const DAY = new Intl.DateTimeFormat("fr-BE", { dateStyle: "medium" });
 // Tiptap in X03. The Python renderer remains the reference for what is published.
 interface Mark {
   type: string;
-  attrs?: { href?: string; source?: string };
+  attrs?: { href?: string; source?: string; color?: string } & TextStyle;
 }
 interface Node {
   type: string;
@@ -39,6 +41,23 @@ function inline(nodes: Node[] | undefined, numbers: Map<string, number>, prefix:
         out = <strong>{out}</strong>;
       } else if (mark.type === "italic") {
         out = <em>{out}</em>;
+      } else if (mark.type === "strike") {
+        out = <s>{out}</s>;
+      } else if (mark.type === "highlight" && mark.attrs?.color) {
+        out = <mark style={{ backgroundColor: mark.attrs.color }}>{out}</mark>;
+      } else if (mark.type === "text_style" && mark.attrs) {
+        const { font, size, color } = mark.attrs;
+        out = (
+          <span
+            style={{
+              ...(font ? { fontFamily: FONTS[font].css } : {}),
+              ...(size ? { fontSize: `${String(size)}pt` } : {}),
+              ...(color ? { color } : {}),
+            }}
+          >
+            {out}
+          </span>
+        );
       } else if (mark.type === "link" && mark.attrs?.href) {
         out = (
           <a href={mark.attrs.href} target="_blank" rel="noreferrer">
@@ -102,7 +121,7 @@ export function DocumentView({ document, title, prefix }: { document: PlatformDo
   const { t } = useTranslation();
   const numbers = new Map(document.attrs.sources.map((source, index) => [source.id, index + 1]));
   return (
-    <article className={styles.text} lang={document.attrs.langue}>
+    <article className={`${styles.text} ${editorStyles.paper}`} lang={document.attrs.langue}>
       <h2>{title}</h2>
       {document.content.map((node, index) => block(node, numbers, prefix, index))}
       {document.attrs.sources.length > 0 && (

@@ -220,7 +220,10 @@
     "name_taken": "Un sujet porte déjà ce nom.",
     "unknown_source": "Une des sources choisies n'existe plus.",
     "invalid_query": "Saisissez entre 1 et 200 caractères.",
-    "generic": "L'opération a échoué. Réessayez dans un instant."
+    "generic": "L'opération a échoué. Réessayez dans un instant.",
+    "version_changed": "Cette version a été enregistrée ailleurs entre-temps.",
+    "version_not_found": "Cette version n'existe plus.",
+    "invalid_document": "Otlet n'a pas pu enregistrer ce texte : une mise en forme n'est pas reconnue."
   },
   "manual": {
     "title": "Ajouter à la main",
@@ -653,6 +656,54 @@
       "confirmClear": "Effacer les détails et les tentatives de toutes les générations de ce brief ? Les versions restent.",
       "clear": "Oui, effacer"
     },
-    "warning": "Avertissement"
+    "warning": "Avertissement",
+    "edit": "Modifier cette version"
+  },
+  "editor": {
+    "ribbon": "Mise en forme",
+    "page": "Texte de l'article",
+    "title": "Titre de l'article",
+    "tools": {
+      "undo": "Annuler (Ctrl+Z)",
+      "redo": "Rétablir (Ctrl+Y)",
+      "cut": "Couper (Ctrl+X)",
+      "copy": "Copier (Ctrl+C)",
+      "paste": "Coller (Ctrl+V)",
+      "block": "Style de paragraphe",
+      "font": "Police",
+      "size": "Taille",
+      "bold": "Gras (Ctrl+B)",
+      "italic": "Italique (Ctrl+I)",
+      "strike": "Barré (Ctrl+Maj+X)",
+      "color": "Couleur du texte",
+      "highlight": "Surlignage",
+      "bullet": "Liste à puces",
+      "ordered": "Liste numérotée",
+      "link": "Lien",
+      "separator": "Séparateur",
+      "clear": "Effacer la mise en forme"
+    },
+    "blocks": {
+      "p": "Paragraphe",
+      "h2": "Titre 2",
+      "h3": "Titre 3",
+      "h4": "Titre 4"
+    },
+    "defaultFont": "Police par défaut",
+    "defaultSize": "Taille",
+    "defaultColor": "Couleur par défaut",
+    "noHighlight": "Sans surlignage",
+    "linkPrompt": "Adresse du lien (laisser vide pour retirer le lien) :",
+    "linkInvalid": "Un lien commence par http://, https:// ou mailto:.",
+    "save": "Enregistrer",
+    "saveAsNew": "Enregistrer comme nouvelle version",
+    "close": "Fermer l'éditeur",
+    "saving": "Enregistrement…",
+    "unsaved": "Modifications non enregistrées.",
+    "saved": "Enregistré dans la version {number}.",
+    "modelVersion": "Version {number}, écrite par le modèle : « Enregistrer » créera votre version, sans toucher à celle-ci.",
+    "leave": "Des modifications ne sont pas enregistrées. Les abandonner ?",
+    "conflict": "Cette version a été enregistrée ailleurs (un autre onglet ?) depuis son ouverture. Enregistrez comme nouvelle version pour ne rien perdre, ou fermez l'éditeur pour recharger.",
+    "clipboardRefused": "Le navigateur n'a pas autorisé l'accès au presse-papiers depuis le bouton. Les raccourcis Ctrl+C, Ctrl+X et Ctrl+V fonctionnent toujours."
   }
 }

@@ -52,6 +52,9 @@ const ERRORS = [
   "invalid_query",
   "too_many_terms",
   "term_too_long",
+  "version_changed",
+  "version_not_found",
+  "invalid_document",
 ] as const;
 
 export const INTERVALS = ["15", "30", "60", "180", "360", "720", "1440", "10080"] as const;

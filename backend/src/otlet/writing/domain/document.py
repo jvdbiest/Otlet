@@ -44,8 +44,8 @@ HIGHLIGHTS = ("#fff59d", "#c8e6c9", "#b3e5fc", "#f8bbd0", "#ffe0b2", "#e0e0e0")
 BLOCKS = {"heading", "paragraph", "bullet_list", "ordered_list", "citation", "encadre"}
 BLOCKS.add("separateur")
 MARKS = {"bold", "italic", "strike", "highlight", "text_style", "link", "source_ref"}
-# Nesting of the marks in the HTML, innermost first; the editor declares them in this order,
-# reversed (Tiptap nests the first declared outermost).
+# Nesting of the marks in the HTML, innermost first; the editor declares them in the reverse
+# order (ProseMirror nests the first declared outermost).
 MARK_ORDER = ("bold", "italic", "strike", "highlight", "text_style", "link", "source_ref")
 ORIGINS = ("ia", "ia_modifie", "humain")
 BLOCK_ID = re.compile(r"^b[0-9a-z]{1,12}$")
@@ -363,28 +363,51 @@ def style(attrs: Node) -> str:
 
 
 def _inline(content: list[Node], publication: bool) -> str:
-    out = []
+    """The text of a block with its marks. A mark is kept open over the next text that has it
+    too, as ProseMirror's serializer does: « <strong>a<em>b</em></strong> », not
+    « <strong>a</strong><strong><em>b</em></strong> »."""
+    out: list[str] = []
+    opened: list[tuple[str, Node]] = []
     for node in content:
-        text = escape(node["text"], quote=False)
         marks = {m["type"]: m.get("attrs") or {} for m in node.get("marks", [])}
-        for kind in MARK_ORDER:
-            if kind not in marks:
-                continue
-            attrs = marks[kind]
-            if kind == "bold":
-                text = f"<strong>{text}</strong>"
-            elif kind == "italic":
-                text = f"<em>{text}</em>"
-            elif kind == "strike":
-                text = f"<s>{text}</s>"
-            elif kind == "highlight":
-                text = f'<mark style="background-color: {attrs["color"]}">{text}</mark>'
-            elif kind == "text_style" and not publication:
-                text = f'<span style="{escape(style(attrs))}">{text}</span>'
-            elif kind == "link":
-                text = f'<a href="{escape(attrs["href"])}">{text}</a>'
-            elif kind == "source_ref":
-                source = escape(attrs["source"])
-                text = f'<span class="otlet-source-ref" data-source="{source}">{text}</span>'
-        out.append(text)
+        wanted = [
+            (kind, marks[kind])
+            for kind in reversed(MARK_ORDER)
+            if kind in marks and not (publication and kind == "text_style")
+        ]
+        keep = 0
+        while keep < min(len(opened), len(wanted)) and opened[keep] == wanted[keep]:
+            keep += 1
+        out.extend(_close(kind) for kind, _ in reversed(opened[keep:]))
+        out.extend(_open(kind, attrs) for kind, attrs in wanted[keep:])
+        opened = wanted
+        out.append(escape(node["text"], quote=False))
+    out.extend(_close(kind) for kind, _ in reversed(opened))
     return "".join(out)
+
+
+TAGS = {
+    "bold": "strong",
+    "italic": "em",
+    "strike": "s",
+    "highlight": "mark",
+    "text_style": "span",
+    "link": "a",
+    "source_ref": "span",
+}
+
+
+def _open(kind: str, attrs: Node) -> str:
+    if kind == "highlight":
+        return f'<mark style="background-color: {escape(attrs["color"])}">'
+    if kind == "text_style":
+        return f'<span style="{escape(style(attrs))}">'
+    if kind == "link":
+        return f'<a href="{escape(attrs["href"])}">'
+    if kind == "source_ref":
+        return f'<span class="otlet-source-ref" data-source="{escape(attrs["source"])}">'
+    return f"<{TAGS[kind]}>"
+
+
+def _close(kind: str) -> str:
+    return f"</{TAGS[kind]}>"

@@ -40,6 +40,7 @@ L'ADR-0023 a fixé le format (« Document plateforme v1 »), le moteur de rendu 
 
 ## Conséquences
 
+- **Un seul éditeur dans Otlet** (Joël, 2026-10-18) : le composant de X03 (éditeur, ruban, enregistrement) est le seul composant d'édition. La Bibliothèque (X04) et toute autre page qui modifie un article l'emploient tel quel, sans copie de ses fonctions ni de ses comportements.
 - F-RED-04 garde son sens : chaque version voulue est conservée et comparable ; seules les versions de la personne s'enregistrent sur elles-mêmes.
 - Chaque nouvelle marque existe en trois endroits (schéma, moteur, extension de l'éditeur), tenus ensemble par le test de concordance, qui couvre aussi ces marques.
 - Le moteur a deux rendus : complet (Otlet, exports) et de publication (sans `text_style`).

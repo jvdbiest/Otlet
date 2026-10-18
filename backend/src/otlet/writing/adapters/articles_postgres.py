@@ -14,7 +14,8 @@ from otlet.jobs.application.registry import Enqueue
 from otlet.platform.database import workspace_transaction
 from otlet.platform.rls import here
 from otlet.writing.application.drafts import GENERATE_DRAFT, Written
-from otlet.writing.domain.article import Article, Generation, Version
+from otlet.writing.domain.article import Article, Generation, LibraryEntry, Version
+from otlet.writing.domain.document import body_text
 from otlet.writing.domain.draft import PROMPT_VERSION, SourceText
 
 GENERATION_COLUMNS = (
@@ -172,10 +173,10 @@ class PostgresArticleStore:
                 sa.text(
                     "INSERT INTO article_versions (workspace_id, article_id, number, title,"
                     " document, origin, provider_kind, model, prompt_version, cut_sources,"
-                    " unused_sources, context_overflow, created_by)"
+                    " unused_sources, context_overflow, created_by, body_text)"
                     " SELECT :workspace, :article, coalesce(max(number), 0) + 1, :title,"
                     " CAST(:document AS jsonb), 'ia', :provider, :model, :prompt,"
-                    " CAST(:cut AS jsonb), CAST(:unused AS jsonb), :overflow, :user"
+                    " CAST(:cut AS jsonb), CAST(:unused AS jsonb), :overflow, :user, :body"
                     f" FROM article_versions WHERE article_id = :article AND {here()}"
                     " RETURNING number"
                 ),
@@ -191,6 +192,7 @@ class PostgresArticleStore:
                     "unused": json.dumps(list(unused_sources)),
                     "overflow": context_overflow,
                     "user": user_id,
+                    "body": body_text(document),
                 },
             ).scalar_one()
         return article_id, number
@@ -249,13 +251,20 @@ class PostgresArticleStore:
         return cleared
 
     def article_of(self, workspace_id: UUID, brief_id: UUID) -> Article | None:
+        return self._article(workspace_id, "brief_id = :key", brief_id)
+
+    def article(self, workspace_id: UUID, article_id: UUID) -> Article | None:
+        return self._article(workspace_id, "id = :key", article_id)
+
+    def _article(self, workspace_id: UUID, where: str, key: UUID) -> Article | None:
         with workspace_transaction(self._engine, workspace_id) as connection:
             row = connection.execute(
                 sa.text(
-                    "SELECT id, brief_id, title, created_at, updated_at FROM articles"
-                    f" WHERE brief_id = :brief AND {here()}"
+                    "SELECT id, brief_id, title, created_at, updated_at, status,"
+                    " validated_version, sent_at, tags FROM articles"
+                    f" WHERE {where} AND {here()}"
                 ),
-                {"brief": brief_id},
+                {"key": key},
             ).one_or_none()
             if row is None:
                 return None
@@ -273,7 +282,104 @@ class PostgresArticleStore:
             created_at=row.created_at,
             updated_at=row.updated_at,
             versions=tuple(_version(v) for v in versions),
+            status=row.status,
+            validated_version=row.validated_version,
+            sent_at=row.sent_at,
+            tags=tuple(row.tags),
         )
+
+    def send(self, workspace_id: UUID, article_id: UUID, number: int) -> bool:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            sent = connection.execute(
+                sa.text(
+                    "UPDATE articles SET status = 'valide', validated_version = :number,"
+                    " sent_at = coalesce(sent_at, now()), updated_at = now()"
+                    f" WHERE id = :article AND {here()} AND EXISTS (SELECT 1 FROM article_versions"
+                    " AS v WHERE v.article_id = articles.id AND v.number = :number"
+                    " AND v.workspace_id = articles.workspace_id)"
+                ),
+                {"article": article_id, "number": number},
+            ).rowcount
+        return sent == 1
+
+    def archive(self, workspace_id: UUID, article_id: UUID, archived: bool) -> bool:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            changed = connection.execute(
+                sa.text(
+                    "UPDATE articles SET status = CASE WHEN :archived THEN 'archive'"
+                    " WHEN validated_version IS NULL THEN 'brouillon' ELSE 'valide' END,"
+                    f" updated_at = now() WHERE id = :article AND {here()}"
+                ),
+                {"article": article_id, "archived": archived},
+            ).rowcount
+        return changed == 1
+
+    def set_tags(self, workspace_id: UUID, article_id: UUID, tags: Sequence[str]) -> bool:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            changed = connection.execute(
+                sa.text(f"UPDATE articles SET tags = :tags WHERE id = :article AND {here()}"),
+                {"article": article_id, "tags": list(tags)},
+            ).rowcount
+        return changed == 1
+
+    def library(
+        self, workspace_id: UUID, query: str, status: str | None, tag: str | None
+    ) -> list[LibraryEntry]:
+        """The articles sent to the Library, the latest changed first; the archived ones only
+        when asked for. `query` searches the title and the text of the latest version."""
+        conditions = ["a.sent_at IS NOT NULL", here("a")]
+        values: dict[str, Any] = {"query": query, "tag": tag}
+        if status is None:
+            conditions.append("a.status <> 'archive'")
+        else:
+            conditions.append("a.status = :status")
+            values["status"] = status
+        if tag:
+            conditions.append(":tag = ANY(a.tags)")
+        search = "websearch_to_tsquery('french', :query)"
+        if query.strip():
+            conditions.append(f"to_tsvector('french', a.title || ' ' || v.body_text) @@ {search}")
+            excerpt = (
+                f"ts_headline('french', v.body_text, {search},"
+                " 'MaxWords=28, MinWords=12, StartSel=«, StopSel=», MaxFragments=1')"
+            )
+        else:
+            excerpt = "left(v.body_text, 220)"
+        rows_sql = (
+            "SELECT a.id, a.brief_id, a.title, a.status, a.validated_version, a.tags,"
+            f" a.sent_at, a.updated_at, v.number AS current_version, {excerpt} AS excerpt"
+            " FROM articles AS a JOIN LATERAL (SELECT number, body_text FROM article_versions"
+            " WHERE article_id = a.id AND workspace_id = a.workspace_id ORDER BY number DESC"
+            f" LIMIT 1) AS v ON true WHERE {' AND '.join(conditions)}"
+            " ORDER BY a.updated_at DESC LIMIT 1000"
+        )
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            rows = connection.execute(sa.text(rows_sql), values).all()
+        return [
+            LibraryEntry(
+                id=r.id,
+                brief_id=r.brief_id,
+                title=r.title,
+                status=r.status,
+                validated_version=r.validated_version,
+                current_version=r.current_version,
+                tags=tuple(r.tags),
+                sent_at=r.sent_at,
+                updated_at=r.updated_at,
+                excerpt=" ".join(r.excerpt.split()),
+            )
+            for r in rows
+        ]
+
+    def tags(self, workspace_id: UUID) -> list[str]:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            found = connection.execute(
+                sa.text(
+                    "SELECT DISTINCT unnest(tags) AS tag FROM articles"
+                    f" WHERE {here()} AND sent_at IS NOT NULL ORDER BY tag"
+                )
+            ).scalars()
+            return list(found)
 
     def version(self, workspace_id: UUID, article_id: UUID, number: int) -> Version | None:
         with workspace_transaction(self._engine, workspace_id) as connection:
@@ -299,7 +405,7 @@ class PostgresArticleStore:
             row = connection.execute(
                 sa.text(
                     "UPDATE article_versions SET title = :title,"
-                    " document = CAST(:document AS jsonb), updated_at = now()"
+                    " document = CAST(:document AS jsonb), body_text = :body, updated_at = now()"
                     " WHERE article_id = :article AND number = :number AND origin = 'humain'"
                     f" AND updated_at = :updated_at AND {here()}"
                     f" RETURNING {VERSION_COLUMNS}, {DETAILS}"
@@ -309,6 +415,7 @@ class PostgresArticleStore:
                     "number": number,
                     "title": title,
                     "document": json.dumps(document),
+                    "body": body_text(document),
                     "updated_at": updated_at,
                 },
             ).one_or_none()
@@ -329,9 +436,9 @@ class PostgresArticleStore:
             row = connection.execute(
                 sa.text(
                     "INSERT INTO article_versions (workspace_id, article_id, number, title,"
-                    " document, origin, based_on, created_by)"
+                    " document, origin, based_on, created_by, body_text)"
                     " SELECT :workspace, :article, coalesce(max(number), 0) + 1, :title,"
-                    " CAST(:document AS jsonb), 'humain', :based_on, :user"
+                    " CAST(:document AS jsonb), 'humain', :based_on, :user, :body"
                     f" FROM article_versions WHERE article_id = :article AND {here()}"
                     f" RETURNING {VERSION_COLUMNS}, {DETAILS}"
                 ),
@@ -342,6 +449,7 @@ class PostgresArticleStore:
                     "document": json.dumps(document),
                     "based_on": based_on,
                     "user": user_id,
+                    "body": body_text(document),
                 },
             ).one()
             _touch(connection, article_id, title)

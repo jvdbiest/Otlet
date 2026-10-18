@@ -371,6 +371,11 @@ def ai_share(document: Node) -> float:
     return generated / total if total else 0.0
 
 
+def body_text(document: Node) -> str:
+    """The text of a document, block by block, as the search of the Library reads it."""
+    return "\n".join(plain_text(block) for block in document.get("content", []))
+
+
 def plain_text(node: Node) -> str:
     if node["type"] == "text":
         return str(node["text"])

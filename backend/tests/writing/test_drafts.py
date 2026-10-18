@@ -44,6 +44,7 @@ from otlet.writing.adapters.postgres import PostgresBriefStore
 from otlet.writing.application.briefs import Briefs
 from otlet.writing.application.drafts import GENERATE_DRAFT, Drafts
 from otlet.writing.application.editing import Editing
+from otlet.writing.application.library import Library, TagError, clean_tags
 from otlet.writing.domain.article import Version
 from otlet.writing.domain.brief import BriefFields, Length
 
@@ -411,3 +412,42 @@ def test_a_person_saves_a_draft_without_a_version_for_each_change(world: World) 
     # A version saved since, or the model's, stays.
     assert not editing.discard(context, article.id, 2)
     assert not editing.discard(context, article.id, 1)
+
+
+def test_the_library_holds_the_articles_sent_to_it(world: World) -> None:
+    """X04, ADR-0037: the brief is the workshop; « Envoyer en Bibliothèque » validates a version."""
+    context = world.context
+    agence, journal = items(world)
+    brief = world.briefs.create(context, BriefFields(title="Biblio", item_ids=(journal, agence)))
+    generation = world.drafts.start(context, brief.id)
+    assert generation is not None
+    world.drafts.run(context.workspace_id, context.user_id, generation.id)
+    article = world.drafts.article(context, brief.id)
+    assert article is not None and article.status == "brouillon" and article.sent_at is None
+    library = Library(world.articles)
+    assert library.entries(context) == []  # still in the workshop
+    assert library.send(context, article.id, 9) is None
+    sent = library.send(context, article.id, 1)
+    assert sent is not None and (sent.status, sent.validated_version) == ("valide", 1)
+    assert sent.sent_at is not None
+    entries = library.entries(context)
+    assert [(e.id, e.current_version, e.validated_version) for e in entries] == [(article.id, 1, 1)]
+    # The search reads the title and the text of the latest version.
+    word = "outils"  # in the first paragraph of the answer
+    assert [e.id for e in library.entries(context, word)] == [article.id]
+    assert "«" in library.entries(context, word)[0].excerpt
+    assert library.entries(context, "zzzintrouvable") == []
+    # Tags: cleaned, filtered on; archived articles hidden unless asked for.
+    tagged = library.set_tags(context, article.id, [" Formule 1 ", "formule 1", "Pilotes", ""])
+    assert tagged is not None and tagged.tags == ("Formule 1", "Pilotes")
+    assert library.tags(context) == ["Formule 1", "Pilotes"]
+    assert len(library.entries(context, tag="Pilotes")) == 1
+    assert library.entries(context, tag="Autre") == []
+    archived = library.archive(context, article.id, True)
+    assert archived is not None and archived.status == "archive"
+    assert library.entries(context) == []
+    assert len(library.entries(context, status="archive")) == 1
+    restored = library.archive(context, article.id, False)
+    assert restored is not None and restored.status == "valide"
+    with pytest.raises(TagError):
+        clean_tags(["x" * 41])

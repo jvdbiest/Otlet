@@ -34,6 +34,28 @@ class Article:
     created_at: datetime
     updated_at: datetime
     versions: tuple[Version, ...] = field(default=())  # the latest last
+    # The Library (X04, ADR-0037): « Envoyer en Bibliothèque » validates a version and sends the
+    # article; brouillon until then, archive when put aside.
+    status: str = "brouillon"
+    validated_version: int | None = None
+    sent_at: datetime | None = None
+    tags: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class LibraryEntry:
+    """An article as the list of the Library shows it."""
+
+    id: UUID
+    brief_id: UUID | None
+    title: str
+    status: str
+    validated_version: int | None
+    current_version: int
+    tags: tuple[str, ...]
+    sent_at: datetime
+    updated_at: datetime
+    excerpt: str  # where the words searched for appear; the start of the text otherwise
 
 
 @dataclass(frozen=True, slots=True)

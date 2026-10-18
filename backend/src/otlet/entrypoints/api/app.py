@@ -58,6 +58,7 @@ from otlet.writing.application.briefs import Briefs
 from otlet.writing.application.drafts import Drafts
 from otlet.writing.application.editing import Editing
 from otlet.writing.application.exports import Exports
+from otlet.writing.application.library import Library
 from otlet.writing.domain.brief import BriefError, ModelChoice
 
 logger = logging.getLogger(__name__)
@@ -160,6 +161,7 @@ def create_app(settings: Settings) -> FastAPI:
             Drafts(brief_store, article_store),
             Editing(article_store, media_check),
             Exports(article_store, read_image, docx, pdf),
+            Library(article_store),
             workspace_context,
         )
         media_router = media.build_router(library, workspace_context)

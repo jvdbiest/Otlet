@@ -16,7 +16,8 @@ from otlet.writing.application.briefs import Briefs
 from otlet.writing.application.drafts import Drafts
 from otlet.writing.application.editing import Editing
 from otlet.writing.application.exports import Exports
-from otlet.writing.domain.article import Article, Generation, Version
+from otlet.writing.application.library import Library, TagError
+from otlet.writing.domain.article import Article, Generation, LibraryEntry, Version
 from otlet.writing.domain.brief import (
     ITEMS_MAX,
     Brief,
@@ -188,16 +189,66 @@ class VersionView(BaseModel):
 
 class ArticleView(BaseModel):
     id: UUID
+    brief_id: UUID | None
     title: str
     versions: list[VersionView]  # the latest last
+    status: Literal["brouillon", "valide", "archive"]
+    validated_version: int | None  # the one exports and publications take
+    sent_at: datetime | None  # when it entered the Library; None while it is in the workshop
+    tags: list[str]
 
     @classmethod
     def of(cls, article: Article) -> "ArticleView":
         return cls(
             id=article.id,
+            brief_id=article.brief_id,
             title=article.title,
             versions=[VersionView.of(v) for v in article.versions],
+            status=article.status,
+            validated_version=article.validated_version,
+            sent_at=article.sent_at,
+            tags=list(article.tags),
         )
+
+
+class LibraryEntryView(BaseModel):
+    id: UUID
+    brief_id: UUID | None
+    title: str
+    status: Literal["brouillon", "valide", "archive"]
+    validated_version: int | None
+    current_version: int
+    tags: list[str]
+    sent_at: datetime
+    updated_at: datetime
+    excerpt: str  # « words » searched for are between « and »
+
+    @classmethod
+    def of(cls, entry: LibraryEntry) -> "LibraryEntryView":
+        return cls(
+            id=entry.id,
+            brief_id=entry.brief_id,
+            title=entry.title,
+            status=entry.status,
+            validated_version=entry.validated_version,
+            current_version=entry.current_version,
+            tags=list(entry.tags),
+            sent_at=entry.sent_at,
+            updated_at=entry.updated_at,
+            excerpt=entry.excerpt,
+        )
+
+
+class SendBody(BaseModel):
+    number: int  # the version validated
+
+
+class ArchiveBody(BaseModel):
+    archived: bool
+
+
+class TagsBody(BaseModel):
+    tags: list[str] = Field(max_length=50)
 
 
 class DraftView(BaseModel):
@@ -228,6 +279,7 @@ def build_router(
     drafts: Drafts,
     editing: Editing,
     exports: Exports,
+    library: Library,
     workspace_context: Callable[..., WorkspaceContext],
 ) -> APIRouter:
     Context = Annotated[WorkspaceContext, Depends(workspace_context)]
@@ -326,6 +378,54 @@ def build_router(
                 "Cache-Control": "no-store",
             },
         )
+
+    @router.get("/library")
+    def list_library(
+        context: Context,
+        q: str = "",
+        status: Literal["brouillon", "valide", "archive"] | None = None,
+        tag: str | None = None,
+    ) -> list[LibraryEntryView]:
+        """The Library (X04): the articles sent to it, the latest changed first; `q` searches the
+        title and the text of the latest version; archived articles only with status=archive."""
+        return [LibraryEntryView.of(e) for e in library.entries(context, q, status, tag)]
+
+    @router.get("/library/tags")
+    def list_tags(context: Context) -> list[str]:
+        return library.tags(context)
+
+    @router.get("/articles/{article_id}")
+    def get_article(article_id: UUID, context: Context) -> ArticleView:
+        article = library.article(context, article_id)
+        if article is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "article_not_found")
+        return ArticleView.of(article)
+
+    @router.post("/articles/{article_id}/send")
+    def send_article(article_id: UUID, body: SendBody, context: Context) -> ArticleView:
+        """« Envoyer en Bibliothèque », then « Valider » a later version: the version given is the
+        one exports and publications take."""
+        article = library.send(context, article_id, body.number)
+        if article is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "version_not_found")
+        return ArticleView.of(article)
+
+    @router.post("/articles/{article_id}/archive")
+    def archive_article(article_id: UUID, body: ArchiveBody, context: Context) -> ArticleView:
+        article = library.archive(context, article_id, body.archived)
+        if article is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "article_not_found")
+        return ArticleView.of(article)
+
+    @router.put("/articles/{article_id}/tags")
+    def set_tags(article_id: UUID, body: TagsBody, context: Context) -> ArticleView:
+        try:
+            article = library.set_tags(context, article_id, body.tags)
+        except TagError as error:
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "invalid_tags") from error
+        if article is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "article_not_found")
+        return ArticleView.of(article)
 
     @router.get("/generations/{generation_id}")
     def get_generation(generation_id: UUID, context: Context) -> GenerationView:

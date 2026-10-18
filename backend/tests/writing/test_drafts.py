@@ -449,5 +449,20 @@ def test_the_library_holds_the_articles_sent_to_it(world: World) -> None:
     assert len(library.entries(context, status="archive")) == 1
     restored = library.archive(context, article.id, False)
     assert restored is not None and restored.status == "valide"
+    # The validated version never changes: saving it adds a version, which goes once validated.
+    model = restored.versions[0]
+    edited = Editing(world.articles).save(
+        context, article.id, 1, model.title, model.document, stamp(model), False
+    )
+    assert edited.version is not None and edited.version.number == 2
+    again = Editing(world.articles).save(
+        context, article.id, 2, model.title, model.document, stamp(edited.version), False
+    )
+    assert again.version is not None and again.version.number == 2  # not validated: in place
+    assert library.send(context, article.id, 2) is not None
+    third = Editing(world.articles).save(
+        context, article.id, 2, model.title, model.document, stamp(again.version), False
+    )
+    assert third.version is not None and third.version.number == 3
     with pytest.raises(TagError):
         clean_tags(["x" * 41])

@@ -19,6 +19,10 @@ TITLE_MAX = 300
 class VersionStore(Protocol):
     def version(self, workspace_id: UUID, article_id: UUID, number: int) -> Version | None: ...
 
+    def validated_version(self, workspace_id: UUID, article_id: UUID) -> int | None:
+        """The version the article's exports and publications take (X04), if one is."""
+        ...
+
     def update_version(
         self,
         workspace_id: UUID,
@@ -88,7 +92,10 @@ class Editing:
         if errors:
             return Saved(refusal="invalid", errors=tuple(errors))
         saved = with_origins(document, edited.document, sources)
-        if as_new or edited.origin == "ia":
+        # The model's version, and the validated one (it is what goes out, ADR-0037), never
+        # change: saving them adds the person's version.
+        validated = self._versions.validated_version(context.workspace_id, article_id)
+        if as_new or edited.origin == "ia" or number == validated:
             made = self._versions.add_person_version(
                 context.workspace_id, context.user_id, article_id, number, title, saved
             )

@@ -25,6 +25,7 @@ export function VersionEditor({
   articleId,
   version,
   copiedFrom,
+  validated,
   onSaved,
   onClose,
 }: {
@@ -32,6 +33,7 @@ export function VersionEditor({
   articleId: string;
   version: VersionView;
   copiedFrom: number | null; // the model's version this one was copied from on opening
+  validated: number | null; // the article's validated version: saving it adds a version
   onSaved: (number: number) => void;
   onClose: () => void;
 }) {
@@ -193,6 +195,8 @@ export function VersionEditor({
                   ? t("editor.unsaved")
                   : current.origin === "ia"
                     ? t("editor.modelVersion", { number: current.number })
+                    : current.number === validated
+                      ? t("editor.validatedVersion", { number: current.number })
                     : t("editor.saved", { number: current.number })}
             </span>
         </div>

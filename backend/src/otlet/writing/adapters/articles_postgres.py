@@ -288,6 +288,14 @@ class PostgresArticleStore:
             tags=tuple(row.tags),
         )
 
+    def validated_version(self, workspace_id: UUID, article_id: UUID) -> int | None:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            found: int | None = connection.execute(
+                sa.text(f"SELECT validated_version FROM articles WHERE id = :id AND {here()}"),
+                {"id": article_id},
+            ).scalar()
+        return found
+
     def send(self, workspace_id: UUID, article_id: UUID, number: int) -> bool:
         with workspace_transaction(self._engine, workspace_id) as connection:
             sent = connection.execute(

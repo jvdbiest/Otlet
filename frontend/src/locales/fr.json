@@ -736,7 +736,8 @@
     "imageWidth": "{width} %",
     "imageHandle": "Largeur de l'image : tirez la poignée, ou utilisez les flèches",
     "imageOwn": "Taille d'origine",
-    "imageWrap": "Habiller le texte"
+    "imageWrap": "Habiller le texte",
+    "validatedVersion": "Version {number}, validée : « Enregistrer » créera une nouvelle version, sans toucher à celle qui part en export et en publication."
   },
   "library": {
     "title": "Bibliothèque",
@@ -764,7 +765,7 @@
     "back": "← Bibliothèque",
     "validated": "Version validée : V{number} ({date})",
     "current": "Version courante : V{number}, brouillon",
-    "aheadWarning": "Les versions V{from} à V{to} ne partent ni en export ni en publication : c'est la version validée V{validated} qui part, tant qu'une autre n'est pas validée.",
+    "aheadWarning": "{count, plural, one {La version V{to} ne part ni en export ni en publication} other {Les versions V{from} à V{to} ne partent ni en export ni en publication}} : c'est la version validée V{validated} qui part, tant qu'une autre n'est pas validée.",
     "validateThis": "Valider la version {number}",
     "isValidated": "Version validée",
     "validatedMark": " · validée",

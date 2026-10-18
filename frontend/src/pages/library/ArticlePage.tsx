@@ -81,6 +81,7 @@ export function ArticlePage({ articleId }: { articleId: string }) {
         <div>
           <Warning
             text={t("library.aheadWarning", {
+              count: current.number - validated.number,
               from: validated.number + 1,
               to: current.number,
               validated: validated.number,

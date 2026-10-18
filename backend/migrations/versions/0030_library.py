@@ -41,7 +41,8 @@ def upgrade() -> None:
     # The text of the versions already written: every « text » of their documents, in order.
     op.execute(
         "UPDATE article_versions SET body_text = coalesce((SELECT string_agg(t #>> '{}', ' ')"
-        " FROM jsonb_path_query(document, 'strict $.**.text') AS t), '')"
+        " FROM jsonb_path_query(document,"
+        " 'strict $.** ? (@.type() == \"object\" && exists(@.text)).text') AS t), '')"
     )
 
 

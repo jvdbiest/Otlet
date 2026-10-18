@@ -134,6 +134,7 @@ export function ArticleVersions({
             onChoose(number);
           }}
           copiedFrom={copiedFrom}
+          validated={article.validated_version}
           onClose={() => {
             setEditing(false);
             setCopiedFrom(null);

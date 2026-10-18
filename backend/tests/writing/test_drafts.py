@@ -43,6 +43,8 @@ from otlet.writing.adapters.articles_postgres import PostgresArticleStore
 from otlet.writing.adapters.postgres import PostgresBriefStore
 from otlet.writing.application.briefs import Briefs
 from otlet.writing.application.drafts import GENERATE_DRAFT, Drafts
+from otlet.writing.application.editing import Editing
+from otlet.writing.domain.article import Version
 from otlet.writing.domain.brief import BriefFields, Length
 
 pytestmark = requires_database
@@ -101,6 +103,7 @@ class World:
     drafts: Drafts
     fake: Fake
     jobs: list[tuple[str, dict[str, str]]]
+    articles: PostgresArticleStore
 
 
 @pytest.fixture
@@ -175,12 +178,17 @@ def world(migrated: TestDatabase, tmp_path: Path) -> Iterator[World]:
         PostgresCallJournal(engine),
     )
     brief_store = PostgresBriefStore(engine)
-    drafts = Drafts(
-        brief_store, PostgresArticleStore(engine, enqueue), GatewayWriter(gateway, store, catalogue)
-    )
+    articles = PostgresArticleStore(engine, enqueue)
+    drafts = Drafts(brief_store, articles, GatewayWriter(gateway, store, catalogue))
     try:
         yield World(
-            engine, context, Briefs(brief_store, mark, lambda u, c: None), drafts, fake, jobs
+            engine,
+            context,
+            Briefs(brief_store, mark, lambda u, c: None),
+            drafts,
+            fake,
+            jobs,
+            articles,
         )
     finally:
         fake.server.shutdown()
@@ -311,3 +319,70 @@ def test_a_draft_that_leaves_a_source_out_is_sent_back_then_says_so(world: World
     cleared = world.drafts.generation(context, generation.id)
     assert cleared is not None and cleared.attempts == () and cleared.details == {}
     assert world.drafts.clear_details(context, uuid.uuid4()) is None
+
+
+def stamp(version: Version) -> datetime:
+    """When the version was last saved, as the editor sends it back."""
+    return version.updated_at or version.created_at
+
+
+def test_a_person_saves_a_draft_without_a_version_for_each_change(world: World) -> None:
+    """ADR-0036: the model's version never changes; the first « Enregistrer » adds the person's
+    version, the next ones update it; « Enregistrer comme nouvelle version » adds one."""
+    context = world.context
+    agence, journal = items(world)
+    brief = world.briefs.create(
+        context, BriefFields(title="Deux sources", item_ids=(journal, agence))
+    )
+    generation = world.drafts.start(context, brief.id)
+    assert generation is not None
+    world.drafts.run(context.workspace_id, context.user_id, generation.id)
+    article = world.drafts.article(context, brief.id)
+    assert article is not None
+    model = article.versions[0]
+    editing = Editing(world.articles)
+    edited = json.loads(json.dumps(model.document))
+    edited["content"][1]["content"][0]["text"] = "Un intertitre retouché"
+    edited["content"][1]["content"][0]["marks"] = [
+        {"type": "text_style", "attrs": {"font": "georgia", "size": 14, "color": "#c00000"}}
+    ]
+    edited["content"].append(
+        {
+            "type": "paragraph",
+            "attrs": {"id": None},
+            "content": [{"type": "text", "text": "Ajout."}],
+        }
+    )
+    edited["attrs"]["sources"] = []  # never taken from the editor
+    first = editing.save(context, article.id, 1, "Mon titre", edited, stamp(model), False)
+    mine = first.version
+    assert mine is not None and (mine.number, mine.origin, mine.based_on) == (2, "humain", 1)
+    origins = [b["attrs"]["origine"] for b in mine.document["content"]]
+    assert origins[0] == "ia" and origins[1] == "ia_modifie" and origins[-1] == "humain"
+    assert len({b["attrs"]["id"] for b in mine.document["content"]}) == len(origins)
+    assert mine.document["attrs"]["sources"] == model.document["attrs"]["sources"]
+    # The model's version is as it was.
+    kept = world.articles.version(context.workspace_id, article.id, 1)
+    assert kept is not None and kept.document == model.document
+    # « Enregistrer » again: the same version, updated.
+    again = json.loads(json.dumps(mine.document))
+    again["content"][0]["content"][0]["text"] = "Un chapeau à moi."
+    second = editing.save(context, article.id, 2, "Mon titre", again, stamp(mine), False)
+    assert second.version is not None and second.version.number == 2
+    assert second.version.document["content"][0]["attrs"]["origine"] == "ia_modifie"
+    assert second.version.document["content"][1]["attrs"]["origine"] == "ia_modifie"
+    # Saved meanwhile from another tab: refused rather than saved over.
+    stale = editing.save(context, article.id, 2, "Mon titre", again, stamp(mine), False)
+    assert stale.refusal == "conflict"
+    # « Enregistrer comme nouvelle version ».
+    third = editing.save(context, article.id, 2, "Mon titre", again, stamp(second.version), True)
+    assert third.version is not None and (third.version.number, third.version.based_on) == (3, 2)
+    whole = world.drafts.article(context, brief.id)
+    assert whole is not None and [v.number for v in whole.versions] == [1, 2, 3]
+    assert whole.title == "Mon titre"
+    # A document outside the format is refused, a version that does not exist is not found.
+    bad = json.loads(json.dumps(again))
+    bad["content"][0]["content"][0]["marks"] = [{"type": "link", "attrs": {"href": "javascript:x"}}]
+    refused = editing.save(context, article.id, 3, "Mon titre", bad, NOW, False)
+    assert refused.refusal == "invalid" and "http, https or mailto" in refused.errors[0]
+    assert editing.save(context, article.id, 9, "T", again, NOW, False).refusal == "not_found"

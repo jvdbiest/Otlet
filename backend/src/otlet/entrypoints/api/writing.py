@@ -14,6 +14,7 @@ from otlet.entrypoints.api.workspaces import PREFIX
 from otlet.workspaces.domain.model import WorkspaceContext
 from otlet.writing.application.briefs import Briefs
 from otlet.writing.application.drafts import Drafts
+from otlet.writing.application.editing import Editing
 from otlet.writing.domain.article import Article, Generation, Version
 from otlet.writing.domain.brief import (
     ITEMS_MAX,
@@ -161,6 +162,8 @@ class VersionView(BaseModel):
     context_overflow: bool  # the call went past the window: the start may have been dropped
     details: dict[str, Any]  # of the generation that made it; {} once cleared
     created_at: datetime
+    updated_at: datetime  # sent back by « Enregistrer »: a version changed since is not saved over
+    based_on: int | None  # the version a person's version was made from
 
     @classmethod
     def of(cls, version: Version) -> "VersionView":
@@ -177,6 +180,8 @@ class VersionView(BaseModel):
             context_overflow=version.context_overflow,
             details=version.details,
             created_at=version.created_at,
+            updated_at=version.updated_at or version.created_at,
+            based_on=version.based_on,
         )
 
 
@@ -201,12 +206,24 @@ class DraftView(BaseModel):
     generation: GenerationView | None
 
 
+class SaveBody(BaseModel):
+    """A version retouched in the editor (X03, ADR-0036)."""
+
+    title: str = Field(max_length=1000)
+    document: dict[str, Any]  # « Document plateforme v1 », checked by the server
+    updated_at: datetime  # of the version as the editor loaded it
+    as_new: bool = False  # « Enregistrer comme nouvelle version »
+
+
 def _refused(error: BriefError) -> HTTPException:
     return HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, error.code)
 
 
 def build_router(
-    briefs: Briefs, drafts: Drafts, workspace_context: Callable[..., WorkspaceContext]
+    briefs: Briefs,
+    drafts: Drafts,
+    editing: Editing,
+    workspace_context: Callable[..., WorkspaceContext],
 ) -> APIRouter:
     Context = Annotated[WorkspaceContext, Depends(workspace_context)]
     router = APIRouter(prefix=PREFIX + "/{workspace_id}", dependencies=[Depends(same_origin)])
@@ -280,5 +297,24 @@ def build_router(
         if generation is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "generation_not_found")
         return GenerationView.of(generation)
+
+    @router.put("/articles/{article_id}/versions/{number}")
+    def save_version(
+        article_id: UUID, number: int, body: SaveBody, context: Context
+    ) -> VersionView:
+        """« Enregistrer » a version retouched in the editor: a person's version is updated, a
+        version of the model is kept and the person's version is added. With `as_new`, a new
+        version is added whatever the version edited. 409 when the version changed since the
+        editor loaded it."""
+        saved = editing.save(
+            context, article_id, number, body.title, body.document, body.updated_at, body.as_new
+        )
+        if saved.refusal == "not_found":
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "version_not_found")
+        if saved.refusal == "conflict":
+            raise HTTPException(status.HTTP_409_CONFLICT, "version_changed")
+        if saved.version is None:
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "invalid_document")
+        return VersionView.of(saved.version)
 
     return router

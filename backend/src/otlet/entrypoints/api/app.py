@@ -50,6 +50,7 @@ from otlet.writing.adapters.articles_postgres import PostgresArticleStore
 from otlet.writing.adapters.postgres import PostgresBriefStore
 from otlet.writing.application.briefs import Briefs
 from otlet.writing.application.drafts import Drafts
+from otlet.writing.application.editing import Editing
 from otlet.writing.domain.brief import BriefError, ModelChoice
 
 logger = logging.getLogger(__name__)
@@ -129,10 +130,12 @@ def create_app(settings: Settings) -> FastAPI:
                 raise BriefError(error.code, str(error)) from error
 
         brief_store = PostgresBriefStore(engine)
+        article_store = PostgresArticleStore(engine, enqueue)
         writing_router = writing.build_router(
             Briefs(brief_store, mark_writing, check_model),
             # The API only records a generation: the worker alone calls the models (DR6).
-            Drafts(brief_store, PostgresArticleStore(engine, enqueue)),
+            Drafts(brief_store, article_store),
+            Editing(article_store),
             workspace_context,
         )
         ai_router = ai.build_router(

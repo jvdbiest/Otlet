@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-"""Articles and their versions (U04, F-RED-04): a version is never changed, a new one is made."""
+"""Articles and their versions (U04, F-RED-04). A version written by a model never changes; a
+person's version is saved over by « Enregistrer » (ADR-0036)."""
 
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -21,6 +22,8 @@ class Version:
     context_overflow: bool  # more tokens than the window: the start may have been dropped
     created_at: datetime
     details: dict[str, Any] = field(default_factory=dict)  # of the generation that made it
+    updated_at: datetime | None = None  # last « Enregistrer » of a person's version (ADR-0036)
+    based_on: int | None = None  # the version a person's version was made from
 
 
 @dataclass(frozen=True, slots=True)

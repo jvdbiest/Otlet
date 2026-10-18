@@ -3,6 +3,7 @@
 
 import json
 from collections.abc import Sequence
+from datetime import datetime
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -21,7 +22,7 @@ GENERATION_COLUMNS = (
 )
 VERSION_COLUMNS = (
     "number, title, document, origin, provider_kind, model, prompt_version, cut_sources,"
-    " unused_sources, context_overflow, created_at"
+    " unused_sources, context_overflow, created_at, updated_at, based_on"
 )
 
 
@@ -54,7 +55,18 @@ def _version(row: sa.Row[Any]) -> Version:
         context_overflow=row.context_overflow,
         created_at=row.created_at,
         details=row.details,
+        updated_at=row.updated_at,
+        based_on=row.based_on,
     )
+
+
+# The details of the generation that made a version, if any.
+DETAILS = (
+    "coalesce((SELECT g.details FROM article_generations AS g"
+    " WHERE g.article_id = article_versions.article_id"
+    " AND g.version = article_versions.number"
+    " AND g.workspace_id = article_versions.workspace_id), '{}') AS details"
+)
 
 
 class PostgresArticleStore:
@@ -235,12 +247,7 @@ class PostgresArticleStore:
                 return None
             versions = connection.execute(
                 sa.text(
-                    f"SELECT {VERSION_COLUMNS}, coalesce(("
-                    "SELECT g.details FROM article_generations AS g"
-                    " WHERE g.article_id = article_versions.article_id"
-                    " AND g.version = article_versions.number"
-                    f" AND g.workspace_id = article_versions.workspace_id), '{{}}') AS details"
-                    " FROM article_versions"
+                    f"SELECT {VERSION_COLUMNS}, {DETAILS} FROM article_versions"
                     f" WHERE article_id = :article AND {here()} ORDER BY number"
                 ),
                 {"article": row.id},
@@ -253,3 +260,84 @@ class PostgresArticleStore:
             updated_at=row.updated_at,
             versions=tuple(_version(v) for v in versions),
         )
+
+    def version(self, workspace_id: UUID, article_id: UUID, number: int) -> Version | None:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            row = connection.execute(
+                sa.text(
+                    f"SELECT {VERSION_COLUMNS}, {DETAILS} FROM article_versions"
+                    f" WHERE article_id = :article AND number = :number AND {here()}"
+                ),
+                {"article": article_id, "number": number},
+            ).one_or_none()
+        return None if row is None else _version(row)
+
+    def update_version(
+        self,
+        workspace_id: UUID,
+        article_id: UUID,
+        number: int,
+        title: str,
+        document: dict[str, Any],
+        updated_at: datetime,
+    ) -> Version | None:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            row = connection.execute(
+                sa.text(
+                    "UPDATE article_versions SET title = :title,"
+                    " document = CAST(:document AS jsonb), updated_at = now()"
+                    " WHERE article_id = :article AND number = :number AND origin = 'humain'"
+                    f" AND updated_at = :updated_at AND {here()}"
+                    f" RETURNING {VERSION_COLUMNS}, {DETAILS}"
+                ),
+                {
+                    "article": article_id,
+                    "number": number,
+                    "title": title,
+                    "document": json.dumps(document),
+                    "updated_at": updated_at,
+                },
+            ).one_or_none()
+            if row is not None:
+                _touch(connection, article_id, title)
+        return None if row is None else _version(row)
+
+    def add_person_version(
+        self,
+        workspace_id: UUID,
+        user_id: UUID,
+        article_id: UUID,
+        based_on: int,
+        title: str,
+        document: dict[str, Any],
+    ) -> Version:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            row = connection.execute(
+                sa.text(
+                    "INSERT INTO article_versions (workspace_id, article_id, number, title,"
+                    " document, origin, based_on, created_by)"
+                    " SELECT :workspace, :article, coalesce(max(number), 0) + 1, :title,"
+                    " CAST(:document AS jsonb), 'humain', :based_on, :user"
+                    f" FROM article_versions WHERE article_id = :article AND {here()}"
+                    f" RETURNING {VERSION_COLUMNS}, {DETAILS}"
+                ),
+                {
+                    "workspace": workspace_id,
+                    "article": article_id,
+                    "title": title,
+                    "document": json.dumps(document),
+                    "based_on": based_on,
+                    "user": user_id,
+                },
+            ).one()
+            _touch(connection, article_id, title)
+        return _version(row)
+
+
+def _touch(connection: sa.Connection, article_id: UUID, title: str) -> None:
+    connection.execute(
+        sa.text(
+            f"UPDATE articles SET title = :title, updated_at = now() WHERE id = :id AND {here()}"
+        ),
+        {"id": article_id, "title": title},
+    )

@@ -625,9 +625,9 @@
     "again": "Générer une nouvelle version",
     "running": "Génération en cours depuis {since}… Un modèle local peut prendre plusieurs minutes.",
     "version": "Version affichée",
-    "versionLabel": "Version {number} ({date})",
+    "versionLabel": "Version {number} · {who} ({date})",
     "byModel": "Version {number}, écrite par {model} ({provider}) le {date}",
-    "byPerson": "Version {number}, modifiée par vous le {date}",
+    "byPerson": "Version {number}, la vôtre, d'après la version {based}, enregistrée le {date}",
     "cut": "Le texte de ces sources a été raccourci pour tenir dans le modèle : {sources}.",
     "sources": "Sources",
     "failed": {
@@ -657,7 +657,11 @@
       "clear": "Oui, effacer"
     },
     "warning": "Avertissement",
-    "edit": "Modifier cette version"
+    "edit": "Modifier cette version",
+    "who": {
+      "ia": "IA",
+      "humain": "vous"
+    }
   },
   "editor": {
     "ribbon": "Mise en forme",

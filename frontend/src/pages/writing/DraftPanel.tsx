@@ -141,7 +141,11 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
               >
                 {versions.map((v) => (
                   <option key={v.number} value={v.number}>
-                    {t("draft.versionLabel", { number: v.number, date: formatDate(v.created_at) })}
+                    {t("draft.versionLabel", {
+                      number: v.number,
+                      who: t(`draft.who.${v.origin}`),
+                      date: formatDate(v.updated_at),
+                    })}
                   </option>
                 ))}
               </select>
@@ -154,7 +158,11 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
                     provider: shown.provider_kind ?? "",
                     date: formatDate(shown.created_at),
                   })
-                : t("draft.byPerson", { number: shown.number, date: formatDate(shown.created_at) })}
+                : t("draft.byPerson", {
+                    number: shown.number,
+                    based: shown.based_on ?? "?",
+                    date: formatDate(shown.updated_at),
+                  })}
             </span>
           </div>
           {shown.context_overflow && <Warning text={t("draft.overflow")} />}
@@ -183,10 +191,12 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
           {shown.cut_sources.length > 0 && (
             <p className={styles.notice}>{t("draft.cut", { sources: shown.cut_sources.join(", ") })}</p>
           )}
-          <GenerationDetails
-            details={shown.details}
-            heading={t("draft.details.heading", { number: shown.number, date: formatDate(shown.created_at) })}
-          />
+          {shown.origin === "ia" && (
+            <GenerationDetails
+              details={shown.details}
+              heading={t("draft.details.heading", { number: shown.number, date: formatDate(shown.created_at) })}
+            />
+          )}
           {editing && article !== null ? (
             <VersionEditor
               key={`${article.id}-${String(shown.number)}`}

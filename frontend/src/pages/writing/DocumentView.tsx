@@ -18,7 +18,7 @@ interface Node {
   type: string;
   text?: string;
   marks?: Mark[];
-  attrs?: { id?: string; origine?: string; level?: number; source?: string; alt?: string; align?: string; media?: string };
+  attrs?: { id?: string; origine?: string; level?: number; source?: string; alt?: string; align?: string; media?: string; width?: number };
   content?: Node[];
 }
 interface Source {
@@ -133,7 +133,11 @@ function block(
     case "image":
       return (
         <figure key={key} id={id}>
-          <img src={mediaUrl(node.attrs?.media ?? "")} alt={node.attrs?.alt ?? ""} />
+          <img
+            src={mediaUrl(node.attrs?.media ?? "")}
+            alt={node.attrs?.alt ?? ""}
+            style={node.attrs?.width ? { width: `${String(node.attrs.width)}%` } : undefined}
+          />
         </figure>
       );
     default:

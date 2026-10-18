@@ -96,16 +96,79 @@ export function VersionEditor({
     );
   };
   const conflict = save.error instanceof ApiError && save.error.status === 409;
+  // The actions at the top as well as under the text (Joël, 2026-10-18): saving needs no
+  // scrolling down.
+  const actions = (
+    <>
+      <button
+        type="button"
+        className={styles.primary}
+        disabled={save.isPending || title.trim() === ""}
+        onClick={() => {
+          submit(false);
+        }}
+      >
+        {t("editor.save")}
+      </button>
+      <button
+        type="button"
+        className={styles.button}
+        disabled={save.isPending || title.trim() === ""}
+        onClick={() => {
+          submit(true);
+        }}
+      >
+        {t("editor.saveAsNew")}
+      </button>
+      <button
+        type="button"
+        className={styles.button}
+        onClick={() => {
+          if (!dirty || window.confirm(t("editor.leave"))) {
+            setDirty(false);
+            discardCopy();
+            onClose();
+          }
+        }}
+      >
+        {t("editor.close")}
+      </button>
+    </>
+  );
   return (
     <div className={editorStyles.editor}>
       {copiedFrom !== null && <Warning text={t("editor.copied", { from: copiedFrom, number: version.number })} />}
-      <Ribbon
-        editor={editor}
-        disabled={inTitle}
-        onClipboardRefused={() => {
-          setClipboardRefused(true);
-        }}
-      />
+      <div className={editorStyles.top}>
+        <div className={editorStyles.actions}>
+          {actions}
+          <span role="status" className={styles.meta}>
+              {save.isPending
+                ? t("editor.saving")
+                : dirty
+                  ? t("editor.unsaved")
+                  : current.origin === "ia"
+                    ? t("editor.modelVersion", { number: current.number })
+                    : t("editor.saved", { number: current.number })}
+            </span>
+        </div>
+        <Ribbon
+          editor={editor}
+          disabled={inTitle}
+          onClipboardRefused={() => {
+            setClipboardRefused(true);
+          }}
+        />
+      </div>
+      {conflict && (
+        <p role="alert" className={styles.error}>
+          {t("editor.conflict")}
+        </p>
+      )}
+      {save.error !== null && !conflict && (
+        <p role="alert" className={styles.error}>
+          {errorText(t, save.error)}
+        </p>
+      )}
       <input
         className={editorStyles.title}
         aria-label={t("editor.title")}
@@ -126,60 +189,7 @@ export function VersionEditor({
         {t("editor.titleHelp")}
       </p>
       <EditorContent editor={editor} />
-      <div className={editorStyles.bar}>
-        <button
-          type="button"
-          className={styles.primary}
-          disabled={save.isPending || title.trim() === ""}
-          onClick={() => {
-            submit(false);
-          }}
-        >
-          {t("editor.save")}
-        </button>
-        <button
-          type="button"
-          className={styles.button}
-          disabled={save.isPending || title.trim() === ""}
-          onClick={() => {
-            submit(true);
-          }}
-        >
-          {t("editor.saveAsNew")}
-        </button>
-        <button
-          type="button"
-          className={styles.button}
-          onClick={() => {
-            if (!dirty || window.confirm(t("editor.leave"))) {
-              setDirty(false);
-              discardCopy();
-              onClose();
-            }
-          }}
-        >
-          {t("editor.close")}
-        </button>
-        <span role="status" className={styles.meta}>
-          {save.isPending
-            ? t("editor.saving")
-            : dirty
-              ? t("editor.unsaved")
-              : current.origin === "ia"
-                ? t("editor.modelVersion", { number: current.number })
-                : t("editor.saved", { number: current.number })}
-        </span>
-      </div>
-      {conflict && (
-        <p role="alert" className={styles.error}>
-          {t("editor.conflict")}
-        </p>
-      )}
-      {save.error !== null && !conflict && (
-        <p role="alert" className={styles.error}>
-          {errorText(t, save.error)}
-        </p>
-      )}
+      <div className={editorStyles.bar}>{actions}</div>
       {clipboardRefused && (
         <p role="note" className={styles.notice}>
           {t("editor.clipboardRefused")}

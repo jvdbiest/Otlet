@@ -3,6 +3,7 @@
 import css from "./editor.module.css";
 
 export const editorStyles = css as Record<
+  | "actions"
   | "bar"
   | "editor"
   | "group"
@@ -18,6 +19,7 @@ export const editorStyles = css as Record<
   | "swatches"
   | "title"
   | "titleHelp"
+  | "top"
   | "tool",
   string
 >;

@@ -247,6 +247,7 @@
   position: absolute;
   top: var(--space-2);
   left: var(--space-2);
+  white-space: nowrap;
   display: flex;
   gap: 2px;
   padding: 2px;
@@ -280,14 +281,35 @@
 
 .page :global(.otlet-image-selected .otlet-image-handle) {
   position: absolute;
-  right: -7px;
-  bottom: -7px;
   display: block;
   width: 14px;
   height: 14px;
   border: 2px solid #ffffff;
   border-radius: 50%;
   background: #2f5d8a;
-  cursor: ew-resize;
   touch-action: none;
+}
+
+.page :global(.otlet-image-handle-nw) {
+  top: -7px;
+  left: -7px;
+  cursor: nwse-resize;
+}
+
+.page :global(.otlet-image-handle-ne) {
+  top: -7px;
+  right: -7px;
+  cursor: nesw-resize;
+}
+
+.page :global(.otlet-image-handle-sw) {
+  bottom: -7px;
+  left: -7px;
+  cursor: nesw-resize;
+}
+
+.page :global(.otlet-image-handle-se) {
+  right: -7px;
+  bottom: -7px;
+  cursor: nwse-resize;
 }

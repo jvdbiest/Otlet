@@ -49,14 +49,18 @@ def test_the_formatting_of_the_ribbon_is_part_of_the_format() -> None:
         },
         {"type": "citation", "attrs": {"id": "b4", "source": "S1"}, "content": [paragraph()]},
         {"type": "separateur", "attrs": {"id": "b5"}},
-        {"type": "image", "attrs": {"id": "b6", "media": IMAGE, "alt": "Une moto", "width": 50}},
+        {
+            "type": "image",
+            "attrs": {"id": "b6", "media": IMAGE, "alt": "Une moto", "width": 50, "align": "right"},
+        },
     )
     assert check(styled, {"S1"}, {IMAGE}) == []
     # An image that is not one of the workspace is refused.
     assert check(styled, {"S1"}) == ["content[5].attrs.media: an image of the workspace"]
     assert media_of(styled) == {IMAGE}
     assert render(styled, extras=False, media_url=lambda m: f"/m/{m}").endswith(
-        f'<figure><img src="/m/{IMAGE}" alt="Une moto" style="width: 50%"></figure>'
+        f'<figure style="text-align: right"><img src="/m/{IMAGE}" alt="Une moto"'
+        ' style="width: 50%"></figure>'
     )
 
 

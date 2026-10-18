@@ -213,7 +213,8 @@ export function Ribbon({
     selector: ({ editor: e }) => {
       const style = e.getAttributes("text_style") as TextStyle;
       const level = e.getAttributes("heading").level as number | undefined;
-      const block = e.isActive("heading") ? "heading" : "paragraph";
+      const image = e.isActive("image");
+      const block = image ? "image" : e.isActive("heading") ? "heading" : "paragraph";
       const view = shown(e);
       return {
         canUndo: e.can().undo(),
@@ -229,6 +230,7 @@ export function Ribbon({
         ordered: e.isActive("ordered_list"),
         block: e.isActive("heading") ? `h${String(level ?? 2)}` : "p",
         align: (e.getAttributes(block).align as Align | null) ?? "left",
+        image,
         font: view.font,
         size: view.size,
         color: style.color ?? "",
@@ -405,9 +407,14 @@ export function Ribbon({
             ICONS[align],
             () => {
               const value = align === "left" ? null : align;
+              if (state.image) {
+                editor.chain().focus().updateAttributes("image", { align: value }).run();
+                return;
+              }
               editor.chain().focus().updateAttributes("paragraph", { align: value }).updateAttributes("heading", { align: value }).run();
             },
             state.align === align,
+            state.image && align === "justify",
           ),
         )}
       </div>

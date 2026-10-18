@@ -77,7 +77,7 @@ export function VersionEditor({
       setUploading((n) => n + 1);
       uploadImage(workspaceId, file)
         .then((made) => {
-          insert(made.id, window.prompt(t("editor.altPrompt"), "") ?? "");
+          insert(made.id, "");
         })
         .catch((error: unknown) => {
           setUploadError(error instanceof Error ? error : new Error(String(error)));
@@ -103,17 +103,6 @@ export function VersionEditor({
       // An image copied from another application, or dropped on the page.
       handlePaste: (view, event) => insertImages(Array.from(event.clipboardData?.files ?? []), inView(view)),
       handleDrop: (view, event) => insertImages(Array.from(event.dataTransfer?.files ?? []), inView(view)),
-      // Its text for those who cannot see it, changed by a double click.
-      handleDoubleClickOn: (view, pos, node) => {
-        if (node.type.name !== "image") {
-          return false;
-        }
-        const alt = window.prompt(t("editor.altPrompt"), String(node.attrs.alt ?? ""));
-        if (alt !== null) {
-          view.dispatch(view.state.tr.setNodeMarkup(pos, undefined, { ...node.attrs, alt }));
-        }
-        return true;
-      },
       attributes: { class: editorStyles.page, "aria-label": t("editor.page") },
     },
     onUpdate: () => {

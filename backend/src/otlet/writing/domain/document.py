@@ -69,6 +69,7 @@ MAX_BYTES = 1_000_000
 ALT_MAX = 500
 # The width of an image, in % of the column (Joël, 2026-10-18): it follows the site's layout.
 WIDTHS = (10, 100)
+IMAGE_ALIGNS = ("left", "center", "right")  # an image is placed, never justified
 UUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
 MAX_DEPTH = 6
 
@@ -154,6 +155,8 @@ def _check_block(block: Any, where: str, source_ids: set[str], errors: list[str]
         alt = attrs.get("alt")
         if alt is not None and (not isinstance(alt, str) or len(alt) > ALT_MAX):
             errors.append(f"{where}.attrs.alt: a text of {ALT_MAX} characters at most")
+        if attrs.get("align") not in (None, *IMAGE_ALIGNS):
+            errors.append(f"{where}.attrs.align: left, center or right")
         width = attrs.get("width")
         if width is not None and not (type(width) is int and WIDTHS[0] <= width <= WIDTHS[1]):
             errors.append(f"{where}.attrs.width: {WIDTHS[0]} to {WIDTHS[1]} (% of the column)")
@@ -437,7 +440,7 @@ def _block(
         src = escape(media_url(attrs["media"]))
         alt = escape(attrs.get("alt") or "")
         width = f' style="width: {attrs["width"]}%"' if attrs.get("width") else ""
-        return f'<figure><img src="{src}" alt="{alt}"{width}></figure>'
+        return f'<figure{_align(block)}><img src="{src}" alt="{alt}"{width}></figure>'
     raise ValueError(f"unknown block type {kind!r}")
 
 

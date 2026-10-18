@@ -694,7 +694,7 @@
       "center": "Centrer",
       "right": "Aligner à droite",
       "justify": "Justifier",
-      "image": "Insérer une image (ou la coller, ou la glisser dans le texte ; cliquez-la ensuite pour la redimensionner)"
+      "image": "Insérer une image (ou la coller, ou la glisser dans le texte ; cliquez-la ensuite pour la redimensionner ou l'aligner)"
     },
     "blocks": {
       "p": "Paragraphe",
@@ -718,7 +718,6 @@
     "clipboardRefused": "Le navigateur n'a pas autorisé l'accès au presse-papiers depuis le bouton. Les raccourcis Ctrl+C, Ctrl+X et Ctrl+V fonctionnent toujours.",
     "copied": "Nouvelle version créée : vous travaillez désormais sur une copie du document généré par l'IA. La version {number} est votre copie ; la version {from}, écrite par le modèle, reste intacte. Si vous fermez l'éditeur sans rien modifier, cette copie est supprimée.",
     "titleHelp": "Le titre reste en texte simple : votre site et les réseaux l'affichent tel quel, sans mise en forme.",
-    "altPrompt": "Texte alternatif : décrivez l'image pour les personnes qui ne la voient pas (facultatif).",
     "uploading": "{count, plural, one {Envoi d'une image…} other {Envoi de # images…}}",
     "imageWidth": "{width} %",
     "imageHandle": "Largeur de l'image : tirez la poignée, ou utilisez les flèches",

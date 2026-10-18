@@ -900,7 +900,8 @@
     "origine": "humain",
     "media": "0b0e6f5e-3c4e-4c33-9a54-6f1f3c1b2a10",
     "alt": "Une \"moto\" & <route>",
-    "width": 50
+    "width": 50,
+    "align": "center"
    }
   },
   {
@@ -909,7 +910,9 @@
     "id": "b18",
     "origine": "humain",
     "media": "0b0e6f5e-3c4e-4c33-9a54-6f1f3c1b2a10",
-    "alt": ""
+    "alt": "",
+    "align": "right",
+    "width": 25
    }
   }
  ]

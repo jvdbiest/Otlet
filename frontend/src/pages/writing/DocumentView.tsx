@@ -132,7 +132,7 @@ function block(
       return <hr key={key} />;
     case "image":
       return (
-        <figure key={key} id={id}>
+        <figure key={key} id={id} style={aligned(node)}>
           <img
             src={mediaUrl(node.attrs?.media ?? "")}
             alt={node.attrs?.alt ?? ""}

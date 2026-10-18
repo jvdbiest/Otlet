@@ -143,6 +143,7 @@ const ImageNode = Node.create<{ mediaUrl: (id: string) => string; mediaIdOf: (sr
     ...blockAttrs(),
     ...hidden("media"),
     ...hidden("alt", ""),
+    ...align(),
     // In % of the column (Joël, 2026-10-18), from 10 to 100; none is the image's own width.
     width: {
       default: null,
@@ -168,6 +169,7 @@ const ImageNode = Node.create<{ mediaUrl: (id: string) => string; mediaIdOf: (sr
     const width = typeof node.attrs.width === "number" ? { style: `width: ${String(node.attrs.width)}%` } : {};
     return [
       "figure",
+      aligned(node.attrs.align),
       ["img", { src: this.options.mediaUrl(String(node.attrs.media)), alt: String(node.attrs.alt ?? ""), ...width }],
     ];
   },

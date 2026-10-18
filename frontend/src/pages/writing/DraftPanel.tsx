@@ -18,6 +18,7 @@ import { blockAnchor, findBlock } from "./blocks.ts";
 import { DocumentView, type PlatformDocument } from "./DocumentView.tsx";
 import { GenerationDetails } from "./GenerationDetails.tsx";
 import { VersionEditor } from "./VersionEditor.tsx";
+import { ExportTools } from "./ExportTools.tsx";
 import { Warning } from "./Warning.tsx";
 
 const FAILURES = [
@@ -257,6 +258,9 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
                 >
                   {t("draft.edit")}
                 </button>
+                {article !== null && (
+                  <ExportTools workspaceId={workspaceId} articleId={article.id} number={shown.number} />
+                )}
               </p>
               {copy.error !== null && (
                 <p role="alert" className={styles.error}>

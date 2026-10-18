@@ -3507,6 +3507,79 @@
         "summary": "Save Version"
       }
     },
+    "/api/workspaces/{workspace_id}/articles/{article_id}/versions/{number}/export/{kind}": {
+      "get": {
+        "description": "A version as a file (X03c): pdf, docx, html, md (a ZIP when it has images), txt or json,\nwith its Sources block and AI mention. Made on demand, never stored.",
+        "operationId": "export_version_api_workspaces__workspace_id__articles__article_id__versions__number__export__kind__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Article Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "number",
+            "required": true,
+            "schema": {
+              "title": "Number",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "kind",
+            "required": true,
+            "schema": {
+              "enum": [
+                "pdf",
+                "docx",
+                "html",
+                "md",
+                "txt",
+                "json"
+              ],
+              "title": "Kind",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {}
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Export Version"
+      }
+    },
     "/api/workspaces/{workspace_id}/briefs": {
       "get": {
         "description": "The briefs of the workspace, the most recently changed first.",

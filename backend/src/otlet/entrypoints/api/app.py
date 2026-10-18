@@ -51,10 +51,13 @@ from otlet.workspaces.adapters.postgres import PostgresWorkspaceStore
 from otlet.workspaces.application.workspaces import Workspaces
 from otlet.workspaces.domain.model import WorkspaceContext
 from otlet.writing.adapters.articles_postgres import PostgresArticleStore
+from otlet.writing.adapters.export_docx import docx
+from otlet.writing.adapters.export_pdf import pdf
 from otlet.writing.adapters.postgres import PostgresBriefStore
 from otlet.writing.application.briefs import Briefs
 from otlet.writing.application.drafts import Drafts
 from otlet.writing.application.editing import Editing
+from otlet.writing.application.exports import Exports
 from otlet.writing.domain.brief import BriefError, ModelChoice
 
 logger = logging.getLogger(__name__)
@@ -141,11 +144,22 @@ def create_app(settings: Settings) -> FastAPI:
         def media_check(workspace_id: UUID, ids: set[str]) -> set[str]:
             return {str(found) for found in library.existing(workspace_id, map(UUID, ids))}
 
+        def read_image(
+            context: WorkspaceContext, media_id: str
+        ) -> tuple[bytes, str, int, int] | None:
+            found = library.read(context, UUID(media_id))
+            return (
+                None
+                if found is None
+                else (found[1], found[0].mime, found[0].width, found[0].height)
+            )
+
         writing_router = writing.build_router(
             Briefs(brief_store, mark_writing, check_model),
             # The API only records a generation: the worker alone calls the models (DR6).
             Drafts(brief_store, article_store),
             Editing(article_store, media_check),
+            Exports(article_store, read_image, docx, pdf),
             workspace_context,
         )
         media_router = media.build_router(library, workspace_context)

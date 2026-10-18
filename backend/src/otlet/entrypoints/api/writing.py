@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Annotated, Any, Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel, Field
 
 from otlet.entrypoints.api.auth import same_origin
@@ -15,6 +15,7 @@ from otlet.workspaces.domain.model import WorkspaceContext
 from otlet.writing.application.briefs import Briefs
 from otlet.writing.application.drafts import Drafts
 from otlet.writing.application.editing import Editing
+from otlet.writing.application.exports import Exports
 from otlet.writing.domain.article import Article, Generation, Version
 from otlet.writing.domain.brief import (
     ITEMS_MAX,
@@ -206,6 +207,9 @@ class DraftView(BaseModel):
     generation: GenerationView | None
 
 
+ExportKind = Literal["pdf", "docx", "html", "md", "txt", "json"]
+
+
 class SaveBody(BaseModel):
     """A version retouched in the editor (X03, ADR-0036)."""
 
@@ -223,6 +227,7 @@ def build_router(
     briefs: Briefs,
     drafts: Drafts,
     editing: Editing,
+    exports: Exports,
     workspace_context: Callable[..., WorkspaceContext],
 ) -> APIRouter:
     Context = Annotated[WorkspaceContext, Depends(workspace_context)]
@@ -298,6 +303,29 @@ def build_router(
         if cancelled is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "no_running_generation")
         return GenerationView.of(cancelled)
+
+    @router.get(
+        "/articles/{article_id}/versions/{number}/export/{kind}",
+        response_class=Response,
+        responses={200: {"content": {"application/octet-stream": {}}}},
+    )
+    def export_version(
+        article_id: UUID, number: int, kind: ExportKind, context: Context
+    ) -> Response:
+        """A version as a file (X03c): pdf, docx, html, md (a ZIP when it has images), txt or json,
+        with its Sources block and AI mention. Made on demand, never stored."""
+        exported = exports.export(context, article_id, number, kind)
+        if exported is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "version_not_found")
+        return Response(
+            exported.data,
+            media_type=exported.mime,
+            headers={
+                "Content-Disposition": f'attachment; filename="{exported.filename}"',
+                "X-Content-Type-Options": "nosniff",
+                "Cache-Control": "no-store",
+            },
+        )
 
     @router.get("/generations/{generation_id}")
     def get_generation(generation_id: UUID, context: Context) -> GenerationView:

@@ -665,7 +665,17 @@
       "ia": "IA",
       "humain": "vous"
     },
-    "cancel": "Annuler la génération"
+    "cancel": "Annuler la génération",
+    "print": "Imprimer",
+    "export": "Exporter…",
+    "printFailed": "Impossible de préparer l'impression.",
+    "formats": {
+      "pdf": "PDF",
+      "docx": "Word (DOCX)",
+      "html": "Page web (HTML)",
+      "md": "Markdown",
+      "txt": "Texte brut (TXT)"
+    }
   },
   "editor": {
     "ribbon": "Mise en forme",

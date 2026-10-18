@@ -37,6 +37,13 @@ FROM ${PYTHON_IMAGE} AS runtime
 LABEL org.opencontainers.image.title="Otlet" \
       org.opencontainers.image.licenses="AGPL-3.0-or-later" \
       org.opencontainers.image.source="https://github.com/jvdbiest/Otlet"
+# Pango and fonts for the PDF exports (WeasyPrint, X03c): metric-compatible stand-ins for Arial,
+# Times New Roman, Courier New (Liberation), Calibri (Carlito) and Cambria (Caladea).
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0 \
+        fonts-dejavu-core fonts-liberation2 fonts-crosextra-carlito fonts-crosextra-caladea \
+    && rm -rf /var/lib/apt/lists/*
 RUN groupadd --system --gid 10001 otlet \
     && useradd --system --uid 10001 --gid otlet --no-create-home --shell /usr/sbin/nologin otlet \
     && install -d -o otlet -g otlet -m 0750 /var/lib/otlet/files
@@ -50,6 +57,8 @@ ENV PATH=/opt/otlet/venv/bin:$PATH \
     OTLET_MIGRATIONS_DIR=/opt/otlet/migrations \
     OTLET_RUN_DIR=/tmp/otlet \
     OTLET_FILES_DIR=/var/lib/otlet/files
+# The image fails to build if WeasyPrint cannot find Pango.
+RUN python -c "import weasyprint"
 USER otlet:otlet
 EXPOSE 8000
 ENTRYPOINT ["otlet"]

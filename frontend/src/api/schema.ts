@@ -399,6 +399,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/articles/{article_id}/versions/{number}/export/{kind}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export Version
+         * @description A version as a file (X03c): pdf, docx, html, md (a ZIP when it has images), txt or json,
+         *     with its Sources block and AI mention. Made on demand, never stored.
+         */
+        get: operations["export_version_api_workspaces__workspace_id__articles__article_id__versions__number__export__kind__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/briefs": {
         parameters: {
             query?: never;
@@ -2728,6 +2749,40 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_version_api_workspaces__workspace_id__articles__article_id__versions__number__export__kind__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: string;
+                number: number;
+                kind: "pdf" | "docx" | "html" | "md" | "txt" | "json";
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": unknown;
+                };
             };
             /** @description Validation Error */
             422: {

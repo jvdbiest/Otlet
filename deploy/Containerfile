@@ -56,7 +56,8 @@ ENV PATH=/opt/otlet/venv/bin:$PATH \
     OTLET_UI_DIR=/opt/otlet/ui \
     OTLET_MIGRATIONS_DIR=/opt/otlet/migrations \
     OTLET_RUN_DIR=/tmp/otlet \
-    OTLET_FILES_DIR=/var/lib/otlet/files
+    OTLET_FILES_DIR=/var/lib/otlet/files \
+    XDG_CACHE_HOME=/tmp/cache
 # The image fails to build if WeasyPrint cannot find Pango.
 RUN python -c "import weasyprint"
 USER otlet:otlet

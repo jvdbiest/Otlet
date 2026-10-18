@@ -34,7 +34,7 @@ export function VersionEditor({
   version: VersionView;
   copiedFrom: number | null; // the model's version this one was copied from on opening
   validated: number | null; // the article's validated version: saving it adds a version
-  onSaved: (number: number) => void;
+  onSaved: (number: number, from: number) => void; // the version saved, the one edited
   onClose: () => void;
 }) {
   const { t } = useTranslation();
@@ -137,7 +137,7 @@ export function VersionEditor({
           untouched.current = false;
           setCurrent(saved);
           setDirty(false);
-          onSaved(saved.number);
+          onSaved(saved.number, current.number);
         },
       },
     );

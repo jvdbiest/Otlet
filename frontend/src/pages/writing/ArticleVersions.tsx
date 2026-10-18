@@ -3,7 +3,7 @@ import { useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { toDocument } from "../../editor/document.ts";
 import { mediaUrl } from "../../media.ts";
-import { useSaveVersion, type ArticleView, type VersionView } from "../../writing.ts";
+import { useSaveVersion, useSendArticle, type ArticleView, type VersionView } from "../../writing.ts";
 import { errorText, formatDate } from "../watch/labels.ts";
 import { styles } from "../watch/styles.ts";
 import { blockAnchor, findBlock } from "./blocks.ts";
@@ -41,6 +41,8 @@ export function ArticleVersions({
   // « Modifier » on a model's version first makes the person's copy (Joël, 2026-10-18).
   const [copiedFrom, setCopiedFrom] = useState<number | null>(null);
   const copy = useSaveVersion(workspaceId);
+  const send = useSendArticle(workspaceId);
+  const [forked, setForked] = useState<{ from: number; to: number } | null>(null);
   const versions = article.versions;
   const shown = versions.find((v) => v.number === chosen) ?? versions.at(-1);
   if (shown === undefined) {
@@ -124,13 +126,50 @@ export function ArticleVersions({
           heading={t("draft.details.heading", { number: shown.number, date: formatDate(shown.created_at) })}
         />
       )}
+      {forked !== null && article.validated_version === forked.from && (
+        <div role="note" className={styles.warning}>
+          <p>{t("library.forked", { from: forked.from, to: forked.to })}</p>
+          <p className={styles.row}>
+            <button
+              type="button"
+              className={styles.primary}
+              disabled={send.isPending}
+              onClick={() => {
+                send.mutate(
+                  { articleId: article.id, number: forked.to },
+                  {
+                    onSuccess: () => {
+                      setForked(null);
+                    },
+                  },
+                );
+              }}
+            >
+              {t("library.validateThis", { number: forked.to })}
+            </button>
+            <button
+              type="button"
+              className={styles.button}
+              onClick={() => {
+                setForked(null);
+              }}
+            >
+              {t("library.keepValidated", { number: forked.from })}
+            </button>
+          </p>
+        </div>
+      )}
       {editing ? (
         <VersionEditor
           key={`${article.id}-${String(shown.number)}`}
           workspaceId={workspaceId}
           articleId={article.id}
           version={shown}
-          onSaved={(number) => {
+          onSaved={(number, from) => {
+            // A retouch of the validated version made a new one (Joël, 2026-10-18): ask once.
+            if (from === article.validated_version && number !== from) {
+              setForked({ from, to: number });
+            }
             onChoose(number);
           }}
           copiedFrom={copiedFrom}

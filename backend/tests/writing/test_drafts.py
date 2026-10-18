@@ -386,3 +386,12 @@ def test_a_person_saves_a_draft_without_a_version_for_each_change(world: World) 
     refused = editing.save(context, article.id, 3, "Mon titre", bad, NOW, False)
     assert refused.refusal == "invalid" and "http, https or mailto" in refused.errors[0]
     assert editing.save(context, article.id, 9, "T", again, NOW, False).refusal == "not_found"
+    # « Modifier » on the model's version makes a copy at once; closed without a change, it goes.
+    copy = editing.save(context, article.id, 1, model.title, model.document, stamp(model), True)
+    assert copy.version is not None and copy.version.number == 4
+    assert all(b["attrs"]["origine"] == "ia" for b in copy.version.document["content"])
+    assert editing.discard(context, article.id, 4)
+    assert world.articles.version(context.workspace_id, article.id, 4) is None
+    # A version saved since, or the model's, stays.
+    assert not editing.discard(context, article.id, 2)
+    assert not editing.discard(context, article.id, 1)

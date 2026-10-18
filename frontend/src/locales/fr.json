@@ -708,6 +708,7 @@
     "modelVersion": "Version {number}, écrite par le modèle : « Enregistrer » créera votre version, sans toucher à celle-ci.",
     "leave": "Des modifications ne sont pas enregistrées. Les abandonner ?",
     "conflict": "Cette version a été enregistrée ailleurs (un autre onglet ?) depuis son ouverture. Enregistrez comme nouvelle version pour ne rien perdre, ou fermez l'éditeur pour recharger.",
-    "clipboardRefused": "Le navigateur n'a pas autorisé l'accès au presse-papiers depuis le bouton. Les raccourcis Ctrl+C, Ctrl+X et Ctrl+V fonctionnent toujours."
+    "clipboardRefused": "Le navigateur n'a pas autorisé l'accès au presse-papiers depuis le bouton. Les raccourcis Ctrl+C, Ctrl+X et Ctrl+V fonctionnent toujours.",
+    "copied": "Nouvelle version créée : vous travaillez désormais sur une copie du document généré par l'IA. La version {number} est votre copie ; la version {from}, écrite par le modèle, reste intacte. Si vous fermez l'éditeur sans rien modifier, cette copie est supprimée."
   }
 }

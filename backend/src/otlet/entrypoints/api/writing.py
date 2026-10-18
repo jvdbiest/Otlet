@@ -317,4 +317,13 @@ def build_router(
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "invalid_document")
         return VersionView.of(saved.version)
 
+    @router.delete(
+        "/articles/{article_id}/versions/{number}", status_code=status.HTTP_204_NO_CONTENT
+    )
+    def discard_version(article_id: UUID, number: int, context: Context) -> None:
+        """Removes the copy « Modifier » made of a model's version when the editor is closed
+        without a change. 409 for any version saved since, or written by the model."""
+        if not editing.discard(context, article_id, number):
+            raise HTTPException(status.HTTP_409_CONFLICT, "version_kept")
+
     return router

@@ -3,7 +3,7 @@ import type { Editor } from "@tiptap/core";
 import { Gapcursor, UndoRedo } from "@tiptap/extensions";
 import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
 import { useBlocker } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ApiError } from "../../api/client.ts";
 import { toDocument } from "../../editor/document.ts";
@@ -11,9 +11,10 @@ import { COLORS, FONT_KEYS, FONTS, HIGHLIGHTS, SIZES, type TextStyle } from "../
 import { cleanPastedHtml } from "../../editor/paste.ts";
 import { extensions, type Source } from "../../editor/schema.ts";
 import { editorStyles } from "../../editor/styles.ts";
-import { useSaveVersion, type VersionView } from "../../writing.ts";
+import { useDiscardVersion, useSaveVersion, type VersionView } from "../../writing.ts";
 import { errorText } from "../watch/labels.ts";
 import { styles } from "../watch/styles.ts";
+import { Warning } from "./Warning.tsx";
 
 const SAFE_LINK = /^(https?:\/\/|mailto:)[^\s<>"]+$/i;
 const PRESENTATION = ["bold", "italic", "strike", "highlight", "text_style"] as const;
@@ -282,6 +283,7 @@ export function VersionEditor({
   briefId,
   articleId,
   version,
+  copiedFrom,
   onSaved,
   onClose,
 }: {
@@ -289,6 +291,7 @@ export function VersionEditor({
   briefId: string;
   articleId: string;
   version: VersionView;
+  copiedFrom: number | null; // the model's version this one was copied from on opening
   onSaved: (number: number) => void;
   onClose: () => void;
 }) {
@@ -298,6 +301,15 @@ export function VersionEditor({
   const [dirty, setDirty] = useState(false);
   const [clipboardRefused, setClipboardRefused] = useState(false);
   const save = useSaveVersion(workspaceId, briefId);
+  const discard = useDiscardVersion(workspaceId, briefId);
+  // A copy made on opening and never saved: closed or left, it goes.
+  const untouched = useRef(copiedFrom !== null);
+  const discardCopy = () => {
+    if (untouched.current) {
+      untouched.current = false;
+      discard.mutate({ articleId, number: version.number });
+    }
+  };
   const attrs = version.document.attrs as Record<string, unknown>;
   const sources = (attrs.sources ?? []) as Source[];
   const editor = useEditor({
@@ -312,7 +324,13 @@ export function VersionEditor({
     },
   });
   useBlocker({
-    shouldBlockFn: () => dirty && !window.confirm(t("editor.leave")),
+    shouldBlockFn: () => {
+      if (dirty && !window.confirm(t("editor.leave"))) {
+        return true;
+      }
+      discardCopy();
+      return false;
+    },
     enableBeforeUnload: () => dirty,
   });
   const submit = (asNew: boolean) => {
@@ -329,6 +347,7 @@ export function VersionEditor({
       },
       {
         onSuccess: (saved) => {
+          untouched.current = false;
           setCurrent(saved);
           setDirty(false);
           onSaved(saved.number);
@@ -339,6 +358,7 @@ export function VersionEditor({
   const conflict = save.error instanceof ApiError && save.error.status === 409;
   return (
     <div className={editorStyles.editor}>
+      {copiedFrom !== null && <Warning text={t("editor.copied", { from: copiedFrom, number: version.number })} />}
       <Ribbon
         editor={editor}
         onClipboardRefused={() => {
@@ -382,6 +402,7 @@ export function VersionEditor({
           onClick={() => {
             if (!dirty || window.confirm(t("editor.leave"))) {
               setDirty(false);
+              discardCopy();
               onClose();
             }
           }}

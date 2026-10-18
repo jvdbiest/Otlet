@@ -333,6 +333,18 @@ class PostgresArticleStore:
             _touch(connection, article_id, title)
         return _version(row)
 
+    def discard_untouched(self, workspace_id: UUID, article_id: UUID, number: int) -> bool:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            removed = connection.execute(
+                sa.text(
+                    "DELETE FROM article_versions WHERE article_id = :article"
+                    " AND number = :number AND origin = 'humain' AND updated_at = created_at"
+                    f" AND {here()}"
+                ),
+                {"article": article_id, "number": number},
+            ).rowcount
+        return removed == 1
+
 
 def _touch(connection: sa.Connection, article_id: UUID, title: str) -> None:
     connection.execute(

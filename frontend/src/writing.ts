@@ -136,6 +136,23 @@ export function useClearDetails(workspaceId: string, briefId: string) {
 
 export type SaveBody = components["schemas"]["SaveBody"];
 
+/** Removes the copy « Modifier » made of a model's version, closed without a change. */
+export function useDiscardVersion(workspaceId: string, briefId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ articleId, number }: { articleId: string; number: number }) => {
+      const { error, response } = await api.DELETE(
+        "/api/workspaces/{workspace_id}/articles/{article_id}/versions/{number}",
+        { params: { path: { workspace_id: workspaceId, article_id: articleId, number } } },
+      );
+      if (!response.ok) {
+        throw apiError(response, error);
+      }
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: draftQuery(workspaceId, briefId).queryKey }),
+  });
+}
+
 /** « Enregistrer » a version retouched in the editor, or « Enregistrer comme nouvelle version »
  * (ADR-0036): the version saved comes back, a new one when the version edited was the model's. */
 export function useSaveVersion(workspaceId: string, briefId: string) {

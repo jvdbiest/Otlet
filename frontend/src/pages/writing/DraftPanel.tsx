@@ -2,13 +2,21 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { draftQuery, useClearDetails, useGenerateDraft, type GenerationView } from "../../writing.ts";
+import { toDocument } from "../../editor/document.ts";
+import {
+  draftQuery,
+  useClearDetails,
+  useGenerateDraft,
+  useSaveVersion,
+  type GenerationView,
+} from "../../writing.ts";
 import { errorText, formatDate } from "../watch/labels.ts";
 import { styles } from "../watch/styles.ts";
 import { blockAnchor, findBlock } from "./blocks.ts";
 import { DocumentView, type PlatformDocument } from "./DocumentView.tsx";
 import { GenerationDetails } from "./GenerationDetails.tsx";
 import { VersionEditor } from "./VersionEditor.tsx";
+import { Warning } from "./Warning.tsx";
 
 const FAILURES = [
   "no_profile",
@@ -33,27 +41,6 @@ function listed(details: Record<string, unknown>, key: "lone_sections" | "repeat
   return Array.isArray(found) ? found.filter((h): h is string => typeof h === "string") : [];
 }
 
-/** An « Avertissement » about the version shown, with what it names: a link to the block
- * when the text can find it. */
-function Warning({ text, items }: { text: string; items?: { label: string; anchor?: string | undefined }[] }) {
-  const { t } = useTranslation();
-  return (
-    <div role="note" className={styles.warning}>
-      <p>
-        <strong>{t("draft.warning")}</strong>
-      </p>
-      <p>{text}</p>
-      {items !== undefined && (
-        <ul>
-          {items.map((item, index) => (
-            <li key={index}>{item.anchor ? <a href={`#${item.anchor}`}>{item.label}</a> : item.label}</li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
-
 /** The draft of a brief (U04): generate it, follow the generation, read its versions. */
 export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; briefId: string }) {
   const { t } = useTranslation();
@@ -63,6 +50,9 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
   const [confirming, setConfirming] = useState(false);
   const [chosen, setChosen] = useState<number | null>(null);
   const [editing, setEditing] = useState(false);
+  // « Modifier » on a model's version first makes the person's copy (Joël, 2026-10-18).
+  const [copiedFrom, setCopiedFrom] = useState<number | null>(null);
+  const copy = useSaveVersion(workspaceId, briefId);
   if (draft.data === undefined) {
     return null;
   }
@@ -207,8 +197,10 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
               onSaved={(number) => {
                 setChosen(number);
               }}
+              copiedFrom={copiedFrom}
               onClose={() => {
                 setEditing(false);
+                setCopiedFrom(null);
               }}
             />
           ) : (
@@ -217,9 +209,32 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
                 <button
                   type="button"
                   className={styles.button}
-                  disabled={running}
+                  disabled={running || copy.isPending}
                   onClick={() => {
-                    setEditing(true);
+                    if (shown.origin !== "ia" || article === null) {
+                      setEditing(true);
+                      return;
+                    }
+                    const attrs = shown.document.attrs as Record<string, unknown>;
+                    copy.mutate(
+                      {
+                        articleId: article.id,
+                        number: shown.number,
+                        body: {
+                          title: shown.title,
+                          document: toDocument(shown.document, attrs),
+                          updated_at: shown.updated_at,
+                          as_new: true,
+                        },
+                      },
+                      {
+                        onSuccess: (made) => {
+                          setCopiedFrom(shown.number);
+                          setChosen(made.number);
+                          setEditing(true);
+                        },
+                      },
+                    );
                   }}
                 >
                   {t("draft.edit")}

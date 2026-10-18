@@ -41,6 +41,10 @@ class VersionStore(Protocol):
         document: dict[str, Any],
     ) -> Version: ...
 
+    def discard_untouched(self, workspace_id: UUID, article_id: UUID, number: int) -> bool:
+        """Removes a person's version never saved since it was made; False for any other."""
+        ...
+
 
 @dataclass(frozen=True, slots=True)
 class Saved:
@@ -88,3 +92,9 @@ class Editing:
             context.workspace_id, article_id, number, title, saved, updated_at
         )
         return Saved(version=updated) if updated is not None else Saved(refusal="conflict")
+
+    def discard(self, context: WorkspaceContext, article_id: UUID, number: int) -> bool:
+        """The copy of a model's version that « Modifier » made, closed without a change (Joël,
+        2026-10-18): it goes, so that opening the editor leaves no version behind. Only a
+        person's version never saved since it was made can go."""
+        return self._versions.discard_untouched(context.workspace_id, article_id, number)

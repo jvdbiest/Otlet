@@ -3347,6 +3347,57 @@
       }
     },
     "/api/workspaces/{workspace_id}/articles/{article_id}/versions/{number}": {
+      "delete": {
+        "description": "Removes the copy « Modifier » made of a model's version when the editor is closed\nwithout a change. 409 for any version saved since, or written by the model.",
+        "operationId": "discard_version_api_workspaces__workspace_id__articles__article_id__versions__number__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Article Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "number",
+            "required": true,
+            "schema": {
+              "title": "Number",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Discard Version"
+      },
       "put": {
         "description": "« Enregistrer » a version retouched in the editor: a person's version is updated, a\nversion of the model is kept and the person's version is added. With `as_new`, a new\nversion is added whatever the version edited. 409 when the version changed since the\neditor loaded it.",
         "operationId": "save_version_api_workspaces__workspace_id__articles__article_id__versions__number__put",

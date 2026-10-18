@@ -388,7 +388,12 @@ export interface paths {
          */
         put: operations["save_version_api_workspaces__workspace_id__articles__article_id__versions__number__put"];
         post?: never;
-        delete?: never;
+        /**
+         * Discard Version
+         * @description Removes the copy « Modifier » made of a model's version when the editor is closed
+         *     without a change. 409 for any version saved since, or written by the model.
+         */
+        delete: operations["discard_version_api_workspaces__workspace_id__articles__article_id__versions__number__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2609,6 +2614,37 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["VersionView"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    discard_version_api_workspaces__workspace_id__articles__article_id__versions__number__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: string;
+                number: number;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

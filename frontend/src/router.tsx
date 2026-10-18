@@ -10,7 +10,8 @@ import {
   redirect,
 } from "@tanstack/react-router";
 import { AppLayout } from "./layout/AppLayout.tsx";
-import { EmptyPage, type Section } from "./pages/EmptyPage.tsx";
+import { ArticlePage } from "./pages/library/ArticlePage.tsx";
+import { LibraryPage } from "./pages/library/LibraryPage.tsx";
 import { LoginPage } from "./pages/LoginPage.tsx";
 import { NotFoundPage } from "./pages/NotFoundPage.tsx";
 import { ItemPage } from "./pages/watch/ItemPage.tsx";
@@ -74,14 +75,6 @@ const indexRoute = createRoute({
   },
 });
 
-function sectionRoute<Path extends string>(path: Path, section: Section) {
-  return createRoute({
-    getParentRoute: () => appRoute,
-    path,
-    component: () => <EmptyPage section={section} />,
-  });
-}
-
 // Writing (U03): the briefs, a new brief on items chosen in the watch, one brief.
 const briefsRoute = createRoute({ getParentRoute: () => appRoute, path: "/redaction", component: BriefsPage });
 const newBriefRoute = createRoute({
@@ -99,6 +92,16 @@ const briefRoute = createRoute({
   path: "/redaction/briefs/$briefId",
   component: function Brief() {
     return <BriefPage briefId={briefRoute.useParams().briefId} />;
+  },
+});
+
+// The Library (X04): the validated articles, and one article.
+const libraryRoute = createRoute({ getParentRoute: () => appRoute, path: "/bibliotheque", component: LibraryPage });
+const articleRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/bibliotheque/articles/$articleId",
+  component: function Article() {
+    return <ArticlePage articleId={articleRoute.useParams().articleId} />;
   },
 });
 
@@ -139,7 +142,8 @@ const routeTree = rootRoute.addChildren([
     briefsRoute,
     newBriefRoute,
     briefRoute,
-    sectionRoute("/bibliotheque", "library"),
+    libraryRoute,
+    articleRoute,
     settingsRoute,
   ]),
 ]);

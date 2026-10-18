@@ -154,7 +154,7 @@ export function useClearDetails(workspaceId: string, briefId: string) {
 export type SaveBody = components["schemas"]["SaveBody"];
 
 /** Removes the copy « Modifier » made of a model's version, closed without a change. */
-export function useDiscardVersion(workspaceId: string, briefId: string) {
+export function useDiscardVersion(workspaceId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ articleId, number }: { articleId: string; number: number }) => {
@@ -166,13 +166,13 @@ export function useDiscardVersion(workspaceId: string, briefId: string) {
         throw apiError(response, error);
       }
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: draftQuery(workspaceId, briefId).queryKey }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
   });
 }
 
 /** « Enregistrer » a version retouched in the editor, or « Enregistrer comme nouvelle version »
  * (ADR-0036): the version saved comes back, a new one when the version edited was the model's. */
-export function useSaveVersion(workspaceId: string, briefId: string) {
+export function useSaveVersion(workspaceId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ articleId, number, body }: { articleId: string; number: number; body: SaveBody }) => {
@@ -185,6 +185,108 @@ export function useSaveVersion(workspaceId: string, briefId: string) {
       }
       return data;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: draftQuery(workspaceId, briefId).queryKey }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
+  });
+}
+
+export type ArticleView = components["schemas"]["ArticleView"];
+export type LibraryEntryView = components["schemas"]["LibraryEntryView"];
+export type ArticleStatus = ArticleView["status"];
+
+/** The Library (X04): the articles sent to it, searched and filtered. */
+export const libraryQuery = (workspaceId: string, q: string, archived: boolean, tag: string) =>
+  queryOptions({
+    queryKey: ["workspaces", workspaceId, "library", q, archived, tag],
+    queryFn: async (): Promise<LibraryEntryView[]> => {
+      const { data, error, response } = await api.GET("/api/workspaces/{workspace_id}/library", {
+        params: {
+          path: { workspace_id: workspaceId },
+          query: { q, ...(archived ? { status: "archive" as const } : {}), ...(tag ? { tag } : {}) },
+        },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+  });
+
+export const libraryTagsQuery = (workspaceId: string) =>
+  queryOptions({
+    queryKey: ["workspaces", workspaceId, "library-tags"],
+    queryFn: async (): Promise<string[]> => {
+      const { data, error, response } = await api.GET("/api/workspaces/{workspace_id}/library/tags", {
+        params: { path: { workspace_id: workspaceId } },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+  });
+
+export const articleQuery = (workspaceId: string, articleId: string) =>
+  queryOptions({
+    queryKey: ["workspaces", workspaceId, "articles", articleId],
+    queryFn: async (): Promise<ArticleView> => {
+      const { data, error, response } = await api.GET("/api/workspaces/{workspace_id}/articles/{article_id}", {
+        params: { path: { workspace_id: workspaceId, article_id: articleId } },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+  });
+
+/** « Envoyer en Bibliothèque », or « Valider » a later version. */
+export function useSendArticle(workspaceId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ articleId, number }: { articleId: string; number: number }) => {
+      const { data, error, response } = await api.POST("/api/workspaces/{workspace_id}/articles/{article_id}/send", {
+        params: { path: { workspace_id: workspaceId, article_id: articleId } },
+        body: { number },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
+  });
+}
+
+export function useArchiveArticle(workspaceId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ articleId, archived }: { articleId: string; archived: boolean }) => {
+      const { data, error, response } = await api.POST(
+        "/api/workspaces/{workspace_id}/articles/{article_id}/archive",
+        { params: { path: { workspace_id: workspaceId, article_id: articleId } }, body: { archived } },
+      );
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
+  });
+}
+
+export function useSetTags(workspaceId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ articleId, tags }: { articleId: string; tags: string[] }) => {
+      const { data, error, response } = await api.PUT("/api/workspaces/{workspace_id}/articles/{article_id}/tags", {
+        params: { path: { workspace_id: workspaceId, article_id: articleId } },
+        body: { tags },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
   });
 }

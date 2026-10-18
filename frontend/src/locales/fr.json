@@ -225,7 +225,9 @@
     "version_not_found": "Cette version n'existe plus.",
     "invalid_document": "Otlet n'a pas pu enregistrer ce texte : une mise en forme n'est pas reconnue.",
     "too_large": "Cette image dépasse 15 Mo.",
-    "not_an_image": "Ce fichier n'est pas une image JPEG, PNG, WebP ou GIF lisible."
+    "not_an_image": "Ce fichier n'est pas une image JPEG, PNG, WebP ou GIF lisible.",
+    "invalid_tags": "Une étiquette a 40 caractères au plus, et un article 20 étiquettes au plus.",
+    "article_not_found": "Cet article n'existe plus."
   },
   "manual": {
     "title": "Ajouter à la main",
@@ -735,5 +737,45 @@
     "imageHandle": "Largeur de l'image : tirez la poignée, ou utilisez les flèches",
     "imageOwn": "Taille d'origine",
     "imageWrap": "Habiller le texte"
+  },
+  "library": {
+    "title": "Bibliothèque",
+    "help": "Les articles validés : envoyés depuis leur brief par « Envoyer en Bibliothèque ». Le brief reste l'atelier ; la Bibliothèque montre le même article, sans copie.",
+    "search": "Chercher dans les titres et les textes",
+    "searchButton": "Chercher",
+    "tag": "Étiquette",
+    "allTags": "Toutes les étiquettes",
+    "groupBy": "Grouper par",
+    "groupDate": "Grouper par date",
+    "groupNone": "Sans regroupement",
+    "archived": "Articles archivés",
+    "empty": "La Bibliothèque est vide : envoyez-y un article depuis son brief, avec « Envoyer en Bibliothèque ».",
+    "noMatch": "Aucun article ne correspond.",
+    "today": "Aujourd'hui",
+    "thisWeek": "Cette semaine",
+    "thisMonth": "Ce mois-ci",
+    "status": {
+      "brouillon": "Brouillon",
+      "valide": "Validé",
+      "archive": "Archivé"
+    },
+    "ahead": "Version courante V{current} non validée",
+    "entryMeta": "Version validée V{validated} · modifié le {date}",
+    "back": "← Bibliothèque",
+    "validated": "Version validée : V{number} ({date})",
+    "current": "Version courante : V{number}, brouillon",
+    "aheadWarning": "Les versions V{from} à V{to} ne partent ni en export ni en publication : c'est la version validée V{validated} qui part, tant qu'une autre n'est pas validée.",
+    "validateThis": "Valider la version {number}",
+    "isValidated": "Version validée",
+    "validatedMark": " · validée",
+    "send": "Envoyer en Bibliothèque",
+    "inLibrary": "Dans la Bibliothèque · version validée V{number}",
+    "openBrief": "Rouvrir le brief",
+    "archive": "Archiver",
+    "unarchive": "Sortir des archives",
+    "tags": "Étiquettes",
+    "tagsPlaceholder": "séparées par des virgules",
+    "saveTags": "Enregistrer les étiquettes",
+    "versions": "Versions"
   }
 }

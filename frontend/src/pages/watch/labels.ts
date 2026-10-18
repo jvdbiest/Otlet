@@ -57,6 +57,8 @@ const ERRORS = [
   "invalid_document",
   "too_large",
   "not_an_image",
+  "invalid_tags",
+  "article_not_found",
 ] as const;
 
 export const INTERVALS = ["15", "30", "60", "180", "360", "720", "1440", "10080"] as const;

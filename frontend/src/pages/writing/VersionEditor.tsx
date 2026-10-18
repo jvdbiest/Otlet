@@ -22,7 +22,6 @@ import { Warning } from "./Warning.tsx";
  * it when the version is the model's; « Enregistrer comme nouvelle version » always adds one. */
 export function VersionEditor({
   workspaceId,
-  briefId,
   articleId,
   version,
   copiedFrom,
@@ -30,7 +29,6 @@ export function VersionEditor({
   onClose,
 }: {
   workspaceId: string;
-  briefId: string;
   articleId: string;
   version: VersionView;
   copiedFrom: number | null; // the model's version this one was copied from on opening
@@ -43,8 +41,8 @@ export function VersionEditor({
   const [dirty, setDirty] = useState(false);
   const [clipboardRefused, setClipboardRefused] = useState(false);
   const [inTitle, setInTitle] = useState(false);
-  const save = useSaveVersion(workspaceId, briefId);
-  const discard = useDiscardVersion(workspaceId, briefId);
+  const save = useSaveVersion(workspaceId);
+  const discard = useDiscardVersion(workspaceId);
   // A copy made on opening and never saved: closed or left, it goes.
   const untouched = useRef(copiedFrom !== null);
   const discardCopy = () => {

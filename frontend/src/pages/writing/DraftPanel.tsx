@@ -9,6 +9,7 @@ import {
   useGenerateDraft,
   type GenerationView,
 } from "../../writing.ts";
+import { ApiError } from "../../api/client.ts";
 import { errorText, formatDate } from "../watch/labels.ts";
 import { styles } from "../watch/styles.ts";
 import { ArticleVersions } from "./ArticleVersions.tsx";
@@ -57,7 +58,7 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
           className={styles.primary}
           disabled={running || generate.isPending}
           onClick={() => {
-            generate.mutate(undefined, {
+            generate.mutate(false, {
               onSuccess: () => {
                 setChosen(null);
               },
@@ -84,10 +85,32 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
           </button>
         )}
       </p>
-      {generate.error !== null && (
-        <p role="alert" className={styles.error}>
-          {errorText(t, generate.error)}
-        </p>
+      {generate.error instanceof ApiError && generate.error.detail === "insufficient_matter" ? (
+        <div role="alert" className={styles.warning}>
+          <p>{t("draft.insufficient")}</p>
+          <p>
+            <button
+              type="button"
+              className={styles.button}
+              disabled={generate.isPending}
+              onClick={() => {
+                generate.mutate(true, {
+                  onSuccess: () => {
+                    setChosen(null);
+                  },
+                });
+              }}
+            >
+              {t("draft.generateAnyway")}
+            </button>
+          </p>
+        </div>
+      ) : (
+        generate.error !== null && (
+          <p role="alert" className={styles.error}>
+            {errorText(t, generate.error)}
+          </p>
+        )
       )}
       {generation?.status === "failed" && (
         <div role="alert" className={styles.warning}>

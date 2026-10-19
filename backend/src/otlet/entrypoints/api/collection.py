@@ -95,6 +95,9 @@ class ItemView(BaseModel):
     declared_origin: str | None
     usage_right: str | None
     duplicates: int
+    # The words a draft may use of it (Joël, 2026-10-19): its text if Otlet may use it, else
+    # its summary, as the drafts count them.
+    words: int
 
     @classmethod
     def of(cls, item: Item, *, with_text: bool = True) -> "ItemView":
@@ -115,6 +118,7 @@ class ItemView(BaseModel):
             declared_origin=item.declared_origin,
             usage_right=item.usage_right,
             duplicates=item.duplicates,
+            words=len((item.text or item.summary or item.title).split()),
         )
 
 

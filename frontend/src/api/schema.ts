@@ -633,7 +633,8 @@ export interface paths {
         /**
          * Generate
          * @description Asks the worker for a draft of the brief, a new version of its article; while one
-         *     runs, the same is answered.
+         *     runs, the same is answered. Sources too thin: 409 `insufficient_matter`, unless the
+         *     author confirms (« Générer quand même »).
          */
         post: operations["generate_api_workspaces__workspace_id__briefs__brief_id__generations_post"];
         delete?: never;
@@ -1309,6 +1310,11 @@ export interface components {
             length: "short" | "medium" | "long";
             /** Length Max */
             length_max: ("short" | "medium" | "long") | null;
+            /**
+             * Matter Level
+             * @enum {string}
+             */
+            matter_level: "enough" | "limited" | "insufficient";
             /** Matter Words */
             matter_words: number;
             /**
@@ -1521,6 +1527,14 @@ export interface components {
             topics: components["schemas"]["TopicTagView"][];
             triage: components["schemas"]["TriageView"];
         };
+        /** GenerateBody */
+        GenerateBody: {
+            /**
+             * Force
+             * @default false
+             */
+            force: boolean;
+        };
         /** GenerationView */
         GenerationView: {
             /** Attempts */
@@ -1639,6 +1653,8 @@ export interface components {
             url: string | null;
             /** Usage Right */
             usage_right: string | null;
+            /** Words */
+            words: number;
         };
         /** ItemWatchView */
         ItemWatchView: {
@@ -2199,6 +2215,8 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+            /** Words */
+            words: number;
         };
         /**
          * View
@@ -2219,6 +2237,8 @@ export interface components {
             length_words: {
                 [key: string]: number;
             };
+            /** Matter Floor */
+            matter_floor: number;
             /** Matter Share */
             matter_share: number;
             /** Tone */
@@ -3560,7 +3580,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["GenerateBody"] | null;
+            };
+        };
         responses: {
             /** @description Successful Response */
             202: {

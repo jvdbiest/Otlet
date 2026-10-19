@@ -20,6 +20,12 @@ import { Warning } from "./Warning.tsx";
 
 /** The editor of a version (X03, ADR-0036): « Enregistrer » updates a person's version, or adds
  * it when the version is the model's; « Enregistrer comme nouvelle version » always adds one. */
+/** The words of the text being written, as the drafts count them (Joël, 2026-10-19). */
+function countWords(text: string): number {
+  const trimmed = text.trim();
+  return trimmed === "" ? 0 : trimmed.split(/\s+/).length;
+}
+
 export function VersionEditor({
   workspaceId,
   articleId,
@@ -43,6 +49,7 @@ export function VersionEditor({
   const [dirty, setDirty] = useState(false);
   const [clipboardRefused, setClipboardRefused] = useState(false);
   const [inTitle, setInTitle] = useState(false);
+  const [words, setWords] = useState(0);
   const save = useSaveVersion(workspaceId);
   const discard = useDiscardVersion(workspaceId);
   // A copy made on opening and never saved: closed or left, it goes.
@@ -106,8 +113,12 @@ export function VersionEditor({
       handleDrop: (view, event) => insertImages(Array.from(event.dataTransfer?.files ?? []), inView(view)),
       attributes: { class: editorStyles.page, "aria-label": t("editor.page") },
     },
-    onUpdate: () => {
+    onCreate: ({ editor: created }) => {
+      setWords(countWords(created.getText()));
+    },
+    onUpdate: ({ editor: changed }) => {
       setDirty(true);
+      setWords(countWords(changed.getText()));
     },
   });
   useBlocker({
@@ -198,6 +209,8 @@ export function VersionEditor({
                     : current.number === validated
                       ? t("editor.validatedVersion", { number: current.number })
                     : t("editor.saved", { number: current.number })}
+              {" · "}
+              {t("watch.words", { count: words })}
             </span>
         </div>
         <Ribbon

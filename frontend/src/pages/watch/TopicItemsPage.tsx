@@ -122,7 +122,8 @@ function ScoredCard({ workspaceId, entry }: { workspaceId: string; entry: Scored
       <h3>
         <Link to="/veille/elements/$itemId" params={{ itemId: item.id }}>
           {item.title}
-        </Link>
+        </Link>{" "}
+        <span className={styles.meta}>({t("watch.words", { count: item.words })})</span>
       </h3>
       <p className={styles.meta}>
         {item.source_name ?? t("watch.manualOrigin")} · {formatDate(item.published_at ?? item.collected_at)}{" "}

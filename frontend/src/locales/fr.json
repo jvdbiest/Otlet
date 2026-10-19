@@ -79,7 +79,8 @@
     "more": "Voir les éléments plus anciens",
     "addSource": "Ajouter une source",
     "loadFailed": "Impossible de charger la veille. Réessayez dans un instant.",
-    "end": "Il n'y a pas d'élément plus ancien."
+    "end": "Il n'y a pas d'élément plus ancien.",
+    "words": "{count, plural, one {# mot} other {# mots}}"
   },
   "item": {
     "back": "Revenir à la veille",
@@ -641,7 +642,8 @@
     "summaryOnly": "{count, plural, one {résumé seulement, # mot} other {résumé seulement, # mots}}",
     "matter": "{count, plural, one {Matière disponible : # mot de sources.} other {Matière disponible : # mots de sources.}}",
     "lengthMatter": "{count, plural, one {Avec # mot de sources, un article plus long serait du remplissage.} other {Avec # mots de sources, un article plus long serait du remplissage.}}",
-    "thinMatter": "{count, plural, one {# mot de sources seulement : trop peu pour un article, même court. Ajoutez des éléments au texte complet.} other {# mots de sources seulement : trop peu pour un article, même court. Ajoutez des éléments au texte complet.}}"
+    "matterLimited": "Matière limitée : le brouillon sera court. Relisez-le avec soin.",
+    "matterInsufficient": "Matière insuffisante : un résumé de quelques lignes ou moins de 150 mots de sources. Otlet demandera confirmation avant de générer."
   },
   "draft": {
     "title": "Brouillon",
@@ -650,7 +652,7 @@
     "again": "Générer une nouvelle version",
     "running": "Génération en cours depuis {since}… Un modèle local peut prendre plusieurs minutes.",
     "version": "Version affichée",
-    "versionLabel": "Version {number} · {who} ({date})",
+    "versionLabel": "Version {number} · {who} ({date}) ({words, plural, one {# mot} other {# mots}})",
     "byModel": "Version {number}, écrite par {model} ({provider}) le {date}",
     "byPerson": "Version {number}, la vôtre, d'après la version {based}, enregistrée le {date}",
     "cut": "Le texte de ces sources a été raccourci pour tenir dans le modèle : {sources}.",
@@ -699,7 +701,7 @@
       "md": "Markdown",
       "txt": "Texte brut (TXT)"
     },
-    "thin": "{count, plural, one {Ce brouillon s'appuie sur # mot de sources seulement : il a été rédigé court, et il risque de compléter avec des connaissances du modèle. Vérifiez chaque fait.} other {Ce brouillon s'appuie sur # mots de sources seulement : il a été rédigé court, et il risque de compléter avec des connaissances du modèle. Vérifiez chaque fait.}}",
+    "thin": "{count, plural, one {Ce brouillon a été demandé malgré une matière insuffisante (# mot de sources) : le modèle a sans doute complété avec ses propres connaissances. Vérifiez chaque fait.} other {Ce brouillon a été demandé malgré une matière insuffisante (# mots de sources) : le modèle a sans doute complété avec ses propres connaissances. Vérifiez chaque fait.}}",
     "unsupported": "{count, plural, one {Ce nom, cette date ou ce nombre n'apparaît dans aucune source du brief. Vérifiez-le : le modèle a pu l'ajouter de lui-même.} other {Ces # noms, dates ou nombres n'apparaissent dans aucune source du brief. Vérifiez-les : le modèle a pu les ajouter de lui-même.}}",
     "found": {
       "name": "Nom : {text}",
@@ -707,7 +709,10 @@
       "number": "Nombre : {text}"
     },
     "copied": "{count, plural, one {Ce passage reprend une source mot pour mot ({share} % du texte en suites de 8 mots reprises). Reformulez-le :} other {Ces # passages reprennent une source mot pour mot ({share} % du texte en suites de 8 mots reprises). Reformulez-les :}}",
-    "passage": "« {excerpt}… » ({words} mots repris)"
+    "passage": "« {excerpt}… » ({words} mots repris)",
+    "limited": "{count, plural, one {Matière limitée (# mot de sources) : brouillon court.} other {Matière limitée (# mots de sources) : brouillon court.}}",
+    "insufficient": "Les sources de ce brief sont trop minces pour un brouillon (un résumé de quelques lignes, ou moins de 150 mots) : le modèle inventerait l'essentiel. Ajoutez un élément au texte complet, ou générez quand même en connaissance de cause.",
+    "generateAnyway": "Générer quand même"
   },
   "editor": {
     "ribbon": "Mise en forme",

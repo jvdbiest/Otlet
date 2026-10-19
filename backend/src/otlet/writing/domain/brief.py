@@ -148,5 +148,10 @@ class Brief:
         return sum(item.words for item in self.items)
 
     @property
+    def full_text(self) -> bool:
+        """One item at least is a complete text, not a summary."""
+        return any(item.full_text for item in self.items)
+
+    @property
     def single_source(self) -> bool:
         return self.sources < SOURCES_ADVISED

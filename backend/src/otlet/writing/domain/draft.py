@@ -38,6 +38,23 @@ WORDS = {Length.SHORT: 300, Length.MEDIUM: 600, Length.LONG: 1200}
 MATTER_SHARE = 0.8
 
 
+# Below this many words, or with summaries only and too few words for a short draft, the
+# matter is insufficient: the model invents the rest (Nvidia, 40 words of summary: 136 to 686
+# words written, « Europe », « États-Unis », « 2024 » added). Complete texts of 300 to 350 words
+# gave faithful drafts (Honda, DeepSeek: 0 or 1 finding): their matter is only limited.
+MATTER_FLOOR = 150
+MATTER_LEVELS = ("enough", "limited", "insufficient")
+
+
+def matter_level(matter_words: int, full_text: bool) -> str:
+    """How much the sources hold for a draft (Joël, 2026-10-19): « enough », nothing said;
+    « limited », a short draft and a plain warning; « insufficient », generated only when the
+    author confirms. `full_text`: one source at least is a complete text, not a summary."""
+    if matter_words < MATTER_FLOOR or (not full_text and longest_for(matter_words) is None):
+        return "insufficient"
+    return "limited" if longest_for(matter_words) is None else "enough"
+
+
 def longest_for(matter_words: int) -> Length | None:
     """The longest article the words of the sources can carry; None when even a short one
     asks for more (the sources are thin: a summary, a few lines)."""

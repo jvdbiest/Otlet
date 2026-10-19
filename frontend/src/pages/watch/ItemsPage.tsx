@@ -505,7 +505,8 @@ function ItemCard({
       <h2 className={unread ? styles.unread : undefined}>
         <Link to="/veille/elements/$itemId" params={{ itemId: item.id }}>
           {item.title}
-        </Link>
+        </Link>{" "}
+        <span className={styles.meta}>({t("watch.words", { count: item.words })})</span>
       </h2>
       <p className={styles.meta}>
         {unread && <span className={styles.neutral}>{t("triage.unread")}</span>}{" "}

@@ -86,3 +86,4 @@ date,heures,domaine,etape,tache,note
 2026-10-19,4,fonction,E1,U03,listes Public, Ton et Canal du brief avec définitions envoyées au modèle, plafond de longueur par canal, place de la charte affichée ; estimation grossière (Claude)
 2026-10-19,3,fonction,E1,U04,audit qualité du moteur de génération : mesures sur 64 générations, 12 essais contrôlés, rapport ; estimation grossière (Claude)
 2026-10-19,4,fonction,E1,U05,lot 1 des garde-fous (absents des sources, recopie), longueur liée à la matière, synthèse sans croisement exigé, banc de rédaction, ADR-0038 ; estimation grossière (Claude)
+2026-10-19,2,fonction,E1,U05,matière en trois niveaux (Générer quand même), nombre de mots dans la Veille, les briefs, les sources, les versions et l'éditeur ; estimation grossière (Claude)

@@ -25,3 +25,13 @@ L'audit montre que les erreurs des brouillons viennent surtout du modèle, qui c
 - Prompt redaction-11. Le détail de chaque génération garde la matière, la longueur demandée et utilisée, les noms et nombres absents des sources, la recopie.
 - Les contrôles lexicaux donnent des faux positifs (un nom traduit d'une source anglaise : « Cisjordanie » pour « West Bank ») : ce sont des points à vérifier, pas des fautes.
 - Ce qui peut attendre (rédaction en deux passes, juge d'ancrage par un second modèle) se décidera sur les chiffres du banc.
+
+## Révision du 2026-10-19 (soir) : trois niveaux de matière
+
+Joël a testé des sources complètes de 300 à 350 mots (Honda, DeepSeek) : brouillons fidèles, 0 ou 1 signalement. Le volume seul ne suffit pas ; ce qui distingue Nvidia (40 mots, inventions certaines), c'est un résumé de quelques lignes. Trois niveaux, dans `draft.matter_level` :
+
+- **suffisante** : rien n'est dit (la longueur reste plafonnée à 80 % de la matière) ;
+- **limitée** (texte complet, moins de mots qu'il n'en faut pour un article court) : brouillon court et une simple mention ;
+- **insuffisante** (moins de 150 mots, ou seulement des résumés trop courts pour un article court) : la génération demande confirmation, « Générer quand même ».
+
+Le nombre de mots s'affiche partout où il aide à juger la matière : Veille, éléments du brief, sources d'un brouillon, versions, éditeur.

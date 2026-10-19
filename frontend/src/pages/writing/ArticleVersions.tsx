@@ -21,23 +21,48 @@ function listed(details: Record<string, unknown>, key: "lone_sections" | "repeat
 }
 
 interface Guardrails {
-  thin: boolean;
+  level: string;
   matter: number;
   unsupported: { kind: "name" | "date" | "number"; text: string; paragraph: string }[];
   share: number;
   passages: { paragraph: string; excerpt: string; words: number }[];
 }
 
+/** The model's version a version comes from: itself, or the one it was made from, and so on. */
+function origin(version: VersionView, versions: VersionView[]): VersionView {
+  let found = version;
+  const seen = new Set<number>();
+  while (found.origin !== "ia" && found.based_on !== null && !seen.has(found.number)) {
+    seen.add(found.number);
+    const parent = versions.find((v) => v.number === found.based_on);
+    if (parent === undefined) {
+      break;
+    }
+    found = parent;
+  }
+  return found;
+}
+
+/** The words of each source a model's draft was written from, by its key (S1…). */
+function sourceWords(details: Record<string, unknown>): Map<string, number> {
+  const sources = (details as { sources?: { key?: string; words?: number }[] }).sources ?? [];
+  return new Map(
+    sources.flatMap((s) => (s.key !== undefined && s.words !== undefined ? [[s.key, s.words] as const] : [])),
+  );
+}
+
 /** What the guardrails found in a model's draft (U05, first batch, Joël, 2026-10-19). */
 function guardrails(details: Record<string, unknown>): Guardrails {
   const found = details as {
     thin_matter?: boolean;
+    matter_level?: string;
     matter_words?: number;
     unsupported?: Guardrails["unsupported"];
     copying?: { share?: number; passages?: Guardrails["passages"] };
   };
   return {
-    thin: found.thin_matter === true,
+    // Drafts before the levels: thin meant what is now « limited » or worse.
+    level: found.matter_level ?? (found.thin_matter === true ? "limited" : "enough"),
     matter: found.matter_words ?? 0,
     unsupported: Array.isArray(found.unsupported) ? found.unsupported : [],
     share: found.copying?.share ?? 0,
@@ -99,6 +124,7 @@ export function ArticleVersions({
                   number: v.number,
                   who: t(`draft.who.${v.origin}`),
                   date: formatDate(v.updated_at),
+                  words: v.words,
                 })}
                 {v.number === article.validated_version ? t("library.validatedMark") : ""}
               </option>
@@ -127,7 +153,8 @@ export function ArticleVersions({
           items={shown.unused_sources.map((title) => ({ label: title }))}
         />
       )}
-      {guard.thin && <Warning text={t("draft.thin", { count: guard.matter })} />}
+      {guard.level === "insufficient" && <Warning text={t("draft.thin", { count: guard.matter })} />}
+      {guard.level === "limited" && <p className={styles.notice}>{t("draft.limited", { count: guard.matter })}</p>}
       {guard.unsupported.length > 0 && (
         <Warning
           text={t("draft.unsupported", { count: guard.unsupported.length })}
@@ -271,6 +298,7 @@ export function ArticleVersions({
             </p>
           )}
           <DocumentView
+            words={sourceWords(origin(shown, versions).details)}
             document={shown.document as unknown as PlatformDocument}
             title={shown.title}
             prefix={prefix}

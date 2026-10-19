@@ -336,6 +336,15 @@
             ],
             "title": "Length Max"
           },
+          "matter_level": {
+            "enum": [
+              "enough",
+              "limited",
+              "insufficient"
+            ],
+            "title": "Matter Level",
+            "type": "string"
+          },
           "matter_words": {
             "title": "Matter Words",
             "type": "integer"
@@ -410,6 +419,7 @@
           "sources",
           "single_source",
           "matter_words",
+          "matter_level",
           "length_max",
           "created_at",
           "updated_at"
@@ -943,6 +953,17 @@
         "title": "FoundItemView",
         "type": "object"
       },
+      "GenerateBody": {
+        "properties": {
+          "force": {
+            "default": false,
+            "title": "Force",
+            "type": "boolean"
+          }
+        },
+        "title": "GenerateBody",
+        "type": "object"
+      },
       "GenerationView": {
         "properties": {
           "attempts": {
@@ -1290,6 +1311,10 @@
               }
             ],
             "title": "Usage Right"
+          },
+          "words": {
+            "title": "Words",
+            "type": "integer"
           }
         },
         "required": [
@@ -1308,7 +1333,8 @@
           "text_reason",
           "declared_origin",
           "usage_right",
-          "duplicates"
+          "duplicates",
+          "words"
         ],
         "title": "ItemView",
         "type": "object"
@@ -2840,6 +2866,10 @@
             "format": "date-time",
             "title": "Updated At",
             "type": "string"
+          },
+          "words": {
+            "title": "Words",
+            "type": "integer"
           }
         },
         "required": [
@@ -2856,7 +2886,8 @@
           "details",
           "created_at",
           "updated_at",
-          "based_on"
+          "based_on",
+          "words"
         ],
         "title": "VersionView",
         "type": "object"
@@ -2899,6 +2930,10 @@
             "title": "Length Words",
             "type": "object"
           },
+          "matter_floor": {
+            "title": "Matter Floor",
+            "type": "integer"
+          },
           "matter_share": {
             "title": "Matter Share",
             "type": "number"
@@ -2921,7 +2956,8 @@
           "channel",
           "tone_default",
           "length_words",
-          "matter_share"
+          "matter_share",
+          "matter_floor"
         ],
         "title": "VocabularyView",
         "type": "object"
@@ -4656,7 +4692,7 @@
     },
     "/api/workspaces/{workspace_id}/briefs/{brief_id}/generations": {
       "post": {
-        "description": "Asks the worker for a draft of the brief, a new version of its article; while one\nruns, the same is answered.",
+        "description": "Asks the worker for a draft of the brief, a new version of its article; while one\nruns, the same is answered. Sources too thin: 409 `insufficient_matter`, unless the\nauthor confirms (« Générer quand même »).",
         "operationId": "generate_api_workspaces__workspace_id__briefs__brief_id__generations_post",
         "parameters": [
           {
@@ -4680,6 +4716,23 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/GenerateBody"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
         "responses": {
           "202": {
             "content": {

@@ -3,7 +3,7 @@
 
 from collections.abc import Callable
 from datetime import datetime
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, cast
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
@@ -13,7 +13,7 @@ from otlet.entrypoints.api.auth import same_origin
 from otlet.entrypoints.api.workspaces import PREFIX
 from otlet.workspaces.domain.model import WorkspaceContext
 from otlet.writing.application.briefs import Briefs
-from otlet.writing.application.drafts import Drafts
+from otlet.writing.application.drafts import Drafts, MatterError
 from otlet.writing.application.editing import Editing
 from otlet.writing.application.exports import Exports
 from otlet.writing.application.library import Library, TagError
@@ -28,7 +28,14 @@ from otlet.writing.domain.brief import (
     Mode,
     ModelChoice,
 )
-from otlet.writing.domain.draft import MATTER_SHARE, WORDS, longest_for
+from otlet.writing.domain.document import body_text
+from otlet.writing.domain.draft import (
+    MATTER_FLOOR,
+    MATTER_SHARE,
+    WORDS,
+    longest_for,
+    matter_level,
+)
 from otlet.writing.domain.vocabulary import TONE_DEFAULT, VOCABULARY
 
 
@@ -73,6 +80,7 @@ class BriefView(BaseModel):
     sources: int
     single_source: bool  # fewer than two sources: said, not refused
     matter_words: int  # the words of its sources a draft may use
+    matter_level: Literal["enough", "limited", "insufficient"]
     # The longest article they can carry (Joël, 2026-10-19); None: even a short one is thin.
     length_max: Literal["short", "medium", "long"] | None
     created_at: datetime
@@ -99,10 +107,18 @@ class BriefView(BaseModel):
             sources=brief.sources,
             single_source=brief.single_source,
             matter_words=brief.matter_words,
+            matter_level=cast(
+                Literal["enough", "limited", "insufficient"],
+                matter_level(brief.matter_words, brief.full_text),
+            ),
             length_max=None if longest is None else longest.value,
             created_at=brief.created_at,
             updated_at=brief.updated_at,
         )
+
+
+class GenerateBody(BaseModel):
+    force: bool = False  # « Générer quand même »: sources too thin, the author confirms
 
 
 class ChoiceView(BaseModel):
@@ -123,6 +139,7 @@ class VocabularyView(BaseModel):
     # sources of `length_words / matter_share` words at least.
     length_words: dict[str, int]
     matter_share: float
+    matter_floor: int  # below, the matter is insufficient (draft.py, matter_level)
 
 
 class BriefBody(BaseModel):
@@ -198,6 +215,7 @@ class VersionView(BaseModel):
     created_at: datetime
     updated_at: datetime  # sent back by « Enregistrer »: a version changed since is not saved over
     based_on: int | None  # the version a person's version was made from
+    words: int  # of its text (Joël, 2026-10-19: shown beside its number)
 
     @classmethod
     def of(cls, version: Version) -> "VersionView":
@@ -216,6 +234,7 @@ class VersionView(BaseModel):
             created_at=version.created_at,
             updated_at=version.updated_at or version.created_at,
             based_on=version.based_on,
+            words=len(body_text(version.document).split()),
         )
 
 
@@ -337,6 +356,7 @@ def build_router(
             tone_default=TONE_DEFAULT,
             length_words={length.value: words for length, words in WORDS.items()},
             matter_share=MATTER_SHARE,
+            matter_floor=MATTER_FLOOR,
         )
 
     @router.get("/briefs")
@@ -394,10 +414,16 @@ def build_router(
             raise HTTPException(status.HTTP_404_NOT_FOUND, "brief_not_found")
 
     @router.post("/briefs/{brief_id}/generations", status_code=status.HTTP_202_ACCEPTED)
-    def generate(brief_id: UUID, context: Context) -> GenerationView:
+    def generate(
+        brief_id: UUID, context: Context, body: GenerateBody | None = None
+    ) -> GenerationView:
         """Asks the worker for a draft of the brief, a new version of its article; while one
-        runs, the same is answered."""
-        generation = drafts.start(context, brief_id)
+        runs, the same is answered. Sources too thin: 409 `insufficient_matter`, unless the
+        author confirms (« Générer quand même »)."""
+        try:
+            generation = drafts.start(context, brief_id, force=body is not None and body.force)
+        except MatterError as error:
+            raise HTTPException(status.HTTP_409_CONFLICT, "insufficient_matter") from error
         if generation is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "brief_not_found")
         return GenerationView.of(generation)

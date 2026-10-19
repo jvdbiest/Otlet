@@ -123,10 +123,11 @@ export const draftQuery = (workspaceId: string, briefId: string) =>
 export function useGenerateDraft(workspaceId: string, briefId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async () => {
+    // `force`: « Générer quand même », the sources being too thin (Joël, 2026-10-19).
+    mutationFn: async (force: boolean) => {
       const { data, error, response } = await api.POST(
         "/api/workspaces/{workspace_id}/briefs/{brief_id}/generations",
-        { params: { path: { workspace_id: workspaceId, brief_id: briefId } } },
+        { params: { path: { workspace_id: workspaceId, brief_id: briefId } }, body: { force } },
       );
       if (data === undefined) {
         throw apiError(response, error);

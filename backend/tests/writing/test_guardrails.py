@@ -3,7 +3,7 @@
 already. Cases taken from the drafts of the quality audit (2026-10-19)."""
 
 from otlet.writing.domain.brief import Length
-from otlet.writing.domain.draft import longest_for
+from otlet.writing.domain.draft import longest_for, matter_level
 from otlet.writing.domain.guardrails import copying, unsupported
 
 SOURCE = (
@@ -64,3 +64,13 @@ def test_the_length_holds_to_the_matter_of_the_sources() -> None:
     assert longest_for(760) is Length.MEDIUM
     assert longest_for(2038) is Length.LONG
     assert longest_for(40) is None  # a summary: too thin even for a short article
+
+
+def test_the_matter_has_three_levels() -> None:
+    # Complete texts of 300 to 350 words gave faithful drafts (Honda, DeepSeek); 40 words of a
+    # summary gave inventions (Nvidia).
+    assert matter_level(760, full_text=True) == "enough"
+    assert matter_level(317, full_text=True) == "limited"
+    assert matter_level(352, full_text=False) == "insufficient"
+    assert matter_level(40, full_text=False) == "insufficient"
+    assert matter_level(120, full_text=True) == "insufficient"

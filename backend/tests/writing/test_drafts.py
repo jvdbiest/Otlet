@@ -44,7 +44,7 @@ from otlet.writing.adapters.charter_postgres import PostgresCharters
 from otlet.writing.adapters.postgres import PostgresBriefStore
 from otlet.writing.application.briefs import Briefs
 from otlet.writing.application.charter import Charter, CharterError, Charters
-from otlet.writing.application.drafts import GENERATE_DRAFT, Drafts
+from otlet.writing.application.drafts import GENERATE_DRAFT, Drafts, MatterError
 from otlet.writing.application.editing import Editing
 from otlet.writing.application.library import Library, TagError, clean_tags
 from otlet.writing.domain.article import Version
@@ -228,7 +228,7 @@ def test_a_draft_becomes_a_version_of_the_article_of_the_brief(world: World) -> 
             length=Length.SHORT,
         ),
     )
-    generation = world.drafts.start(context, brief.id)
+    generation = world.drafts.start(context, brief.id, force=True)
     assert generation is not None and generation.status == "running"
     assert world.jobs == [
         (
@@ -241,7 +241,7 @@ def test_a_draft_becomes_a_version_of_the_article_of_the_brief(world: World) -> 
         )
     ]
     # While it runs, asking again answers the same generation.
-    again = world.drafts.start(context, brief.id)
+    again = world.drafts.start(context, brief.id, force=True)
     assert again is not None and again.id == generation.id
     world.drafts.run(context.workspace_id, context.user_id, generation.id)
     done = world.drafts.generation(context, generation.id)
@@ -270,7 +270,7 @@ def test_a_draft_becomes_a_version_of_the_article_of_the_brief(world: World) -> 
     schema = sent["body"]["response_format"]["json_schema"]["schema"]
     assert schema["properties"]["sources_used"]["items"]["enum"] == ["S1", "S2"]
     # A second generation is a second version; the first one is kept as it was.
-    second = world.drafts.start(context, brief.id)
+    second = world.drafts.start(context, brief.id, force=True)
     assert second is not None and second.id != generation.id
     world.drafts.run(context.workspace_id, context.user_id, second.id)
     article = world.drafts.article(context, brief.id)
@@ -283,7 +283,7 @@ def test_each_draft_follows_the_charter_of_its_author(world: World) -> None:
     brief = world.briefs.create(context, BriefFields(title="T", item_ids=(journal, agence)))
 
     def system_sent() -> str:
-        generation = world.drafts.start(context, brief.id)
+        generation = world.drafts.start(context, brief.id, force=True)
         assert generation is not None
         world.drafts.run(context.workspace_id, context.user_id, generation.id)
         content: str = world.fake.requests[-1]["body"]["messages"][0]["content"]
@@ -311,12 +311,24 @@ def test_each_draft_follows_the_charter_of_its_author(world: World) -> None:
         assert connection.execute(sa.text("SELECT count(*) FROM writing_charters")).scalar() == 0
 
 
+def test_sources_too_thin_are_generated_only_on_confirmation(world: World) -> None:
+    context = world.context
+    agence, journal = items(world)
+    brief = world.briefs.create(context, BriefFields(title="T", item_ids=(journal, agence)))
+    # Two summaries of a dozen words (Joël, 2026-10-19): « Générer quand même » only.
+    with pytest.raises(MatterError):
+        world.drafts.start(context, brief.id)
+    assert world.jobs == []
+    generation = world.drafts.start(context, brief.id, force=True)
+    assert generation is not None and generation.status == "running"
+
+
 def test_a_failed_draft_says_why_and_makes_no_version(world: World) -> None:
     context = world.context
     agence, _ = items(world)
     brief = world.briefs.create(context, BriefFields(title="Une source", item_ids=(agence,)))
     world.fake.answer = json.dumps({**ANSWER, "sections": []})  # wrong, and wrong again
-    generation = world.drafts.start(context, brief.id)
+    generation = world.drafts.start(context, brief.id, force=True)
     assert generation is not None
     world.drafts.run(context.workspace_id, context.user_id, generation.id)
     failed = world.drafts.generation(context, generation.id)
@@ -341,7 +353,7 @@ def test_a_draft_that_leaves_a_source_out_is_sent_back_then_says_so(world: World
     for section in only_first["sections"]:
         section["paragraphs"][0]["source_ids"] = ["S1"]
     world.fake.answer = json.dumps(only_first)  # the same answer, before and after the repair
-    generation = world.drafts.start(context, brief.id)
+    generation = world.drafts.start(context, brief.id, force=True)
     assert generation is not None
     world.drafts.run(context.workspace_id, context.user_id, generation.id)
     done = world.drafts.generation(context, generation.id)
@@ -382,7 +394,7 @@ def test_a_cancelled_draft_keeps_nothing(world: World) -> None:
     context = world.context
     agence, journal = items(world)
     brief = world.briefs.create(context, BriefFields(title="Annulé", item_ids=(journal, agence)))
-    generation = world.drafts.start(context, brief.id)
+    generation = world.drafts.start(context, brief.id, force=True)
     assert generation is not None
     cancelled = world.drafts.cancel(context, brief.id)
     assert cancelled is not None and (cancelled.status, cancelled.error) == ("failed", "cancelled")
@@ -407,7 +419,7 @@ def test_a_person_saves_a_draft_without_a_version_for_each_change(world: World) 
     brief = world.briefs.create(
         context, BriefFields(title="Deux sources", item_ids=(journal, agence))
     )
-    generation = world.drafts.start(context, brief.id)
+    generation = world.drafts.start(context, brief.id, force=True)
     assert generation is not None
     world.drafts.run(context.workspace_id, context.user_id, generation.id)
     article = world.drafts.article(context, brief.id)
@@ -475,7 +487,7 @@ def test_the_library_holds_the_articles_sent_to_it(world: World) -> None:
     context = world.context
     agence, journal = items(world)
     brief = world.briefs.create(context, BriefFields(title="Biblio", item_ids=(journal, agence)))
-    generation = world.drafts.start(context, brief.id)
+    generation = world.drafts.start(context, brief.id, force=True)
     assert generation is not None
     world.drafts.run(context.workspace_id, context.user_id, generation.id)
     article = world.drafts.article(context, brief.id)

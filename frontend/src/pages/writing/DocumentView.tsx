@@ -166,11 +166,13 @@ export function DocumentView({
   title,
   prefix,
   mediaUrl,
+  words,
 }: {
   document: PlatformDocument;
   title: string;
   prefix: string;
   mediaUrl: MediaUrl;
+  words?: Map<string, number>; // of each source, by its id (Joël, 2026-10-19)
 }) {
   const { t } = useTranslation();
   const numbers = new Map(document.attrs.sources.map((source, index) => [source.id, index + 1]));
@@ -193,6 +195,9 @@ export function DocumentView({
                 )}
                 {source.editeur && <span className={styles.meta}> · {source.editeur}</span>}
                 {source.date && <span className={styles.meta}> · {DAY.format(new Date(source.date))}</span>}
+                {words?.has(source.id) === true && (
+                  <span className={styles.meta}> · {t("watch.words", { count: words.get(source.id) ?? 0 })}</span>
+                )}
               </li>
             ))}
           </ol>

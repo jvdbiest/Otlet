@@ -285,7 +285,7 @@ function BriefForm({
               ))}
             </select>
             {matterMax === null ? (
-              <span className={styles.help}>{t("brief.thinMatter", { count: matter })}</span>
+              <span className={styles.help}>{t("brief.lengthMatter", { count: matter })}</span>
             ) : (
               lengthMax !== "long" && (
                 <span className={styles.help}>
@@ -412,6 +412,22 @@ function useBriefItems(workspaceId: string, brief: BriefView | null, itemIds: st
   return known;
 }
 
+/** How much the sources hold (draft.py, matter_level): nothing said, a notice, or a warning. */
+function matterLevel(
+  matter: number,
+  fullText: boolean,
+  vocabulary: VocabularyView | undefined,
+): "enough" | "limited" | "insufficient" {
+  if (vocabulary === undefined) {
+    return "enough";
+  }
+  const longest = longestFor(matter, vocabulary);
+  if (matter < vocabulary.matter_floor || (!fullText && longest === null)) {
+    return "insufficient";
+  }
+  return longest === null ? "limited" : "enough";
+}
+
 /** The longest article the words of the sources can carry (draft.py, longest_for); null: thin. */
 function longestFor(matter: number, vocabulary: VocabularyView | undefined): BriefLength | null {
   if (vocabulary === undefined) {
@@ -435,6 +451,12 @@ function BriefItems({
   const { t } = useTranslation();
   const known = useBriefItems(workspaceId, brief, itemIds);
   const matter = itemIds.reduce((sum, id) => sum + (known.get(id)?.words ?? 0), 0);
+  const vocabulary = useQuery(vocabularyQuery(workspaceId));
+  const level = matterLevel(
+    matter,
+    itemIds.some((id) => known.get(id)?.full_text === true),
+    vocabulary.data,
+  );
   const kept = useQuery(
     feedQuery(
       workspaceId,
@@ -489,6 +511,8 @@ function BriefItems({
       </ol>
       {itemIds.length > 0 && sources.size < 2 && <p className={styles.notice}>{t("brief.singleSource")}</p>}
       {itemIds.length > 0 && <p className={styles.meta}>{t("brief.matter", { count: matter })}</p>}
+      {itemIds.length > 0 && level === "limited" && <p className={styles.notice}>{t("brief.matterLimited")}</p>}
+      {itemIds.length > 0 && level === "insufficient" && <p className={styles.warning}>{t("brief.matterInsufficient")}</p>}
       {addable.length > 0 && (
         <details>
           <summary>{t("brief.addKept", { count: addable.length })}</summary>
@@ -507,7 +531,9 @@ function BriefItems({
                 </button>
                 <span>
                   {entry.item.title}{" "}
-                  <span className={styles.meta}>{entry.item.source_name ?? t("watch.manualOrigin")}</span>
+                  <span className={styles.meta}>
+                    {entry.item.source_name ?? t("watch.manualOrigin")} · {t("watch.words", { count: entry.item.words })}
+                  </span>
                 </span>
               </li>
             ))}

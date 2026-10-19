@@ -25,6 +25,7 @@ from otlet.writing.domain.draft import (
     cited_keys,
     lone_sections,
     longest_for,
+    matter_level,
     messages,
     output_schema,
     prompt_sources,
@@ -36,6 +37,16 @@ from otlet.writing.domain.guardrails import copying, unsupported
 from otlet.writing.domain.vocabulary import choice
 
 GENERATE_DRAFT = "writing.generate_draft"
+
+
+class MatterError(Exception):
+    """The sources of the brief hold too little for a draft: generated only on confirmation."""
+
+    def __init__(self, words: int) -> None:
+        super().__init__(f"{words} words of sources: too few for a draft")
+        self.words = words
+
+
 # Room for the answer: about three tokens a word, plus the JSON around the text and what a
 # « thinking » model (qwen3) writes before answering. A short draft cut at 1,200 tokens was
 # seen (Joël's case, 2026-10-17).
@@ -147,10 +158,16 @@ class Drafts:
         self._writer = writer
         self._charter = charter or (lambda user_id: "")
 
-    def start(self, context: WorkspaceContext, brief_id: UUID) -> Generation | None:
-        """None when the brief does not exist; a generation already running is returned as is."""
-        if self._briefs.get_brief(context.workspace_id, brief_id) is None:
+    def start(
+        self, context: WorkspaceContext, brief_id: UUID, *, force: bool = False
+    ) -> Generation | None:
+        """None when the brief does not exist; a generation already running is returned as is.
+        Sources too thin for a draft are refused unless the author confirms (`force`)."""
+        brief = self._briefs.get_brief(context.workspace_id, brief_id)
+        if brief is None:
             return None
+        if not force and matter_level(brief.matter_words, brief.full_text) == "insufficient":
+            raise MatterError(brief.matter_words)
         running = self._articles.latest_generation(context.workspace_id, brief_id)
         if running is not None and running.status == "running":
             return running
@@ -193,6 +210,7 @@ class Drafts:
         # asked, never more than their words hold; thin sources get a short draft and a warning.
         matter = sum(len(text.text.split()) for text in texts)
         longest = longest_for(matter)
+        level = matter_level(matter, any(item.full_text for item in brief.items))
         asked = brief.fields.length
         used = Length.SHORT if longest is None else min(asked, longest, key=WORDS.__getitem__)
         fields = replace(brief.fields, length=used)
@@ -260,6 +278,7 @@ class Drafts:
             "output_tokens": output,
             "charter_tokens": -(-len(charter) // CHARS_PER_TOKEN),
             "matter_words": matter,
+            "matter_level": level,
             "thin_matter": longest is None,
             "source_room_chars": budget,
             "sources": [
@@ -267,6 +286,7 @@ class Drafts:
                     "key": s.key,
                     "title": s.source.title,
                     "chars": len(s.source.text),
+                    "words": len(s.source.text.split()),
                     "sent": len(s.text),
                     "cut": s.cut,
                 }

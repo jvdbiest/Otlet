@@ -72,10 +72,13 @@ export function BriefsPage() {
               {t("brief.summary", { items: brief.items.length, sources: brief.sources })} ·{" "}
               {t("brief.changed", { date: formatDate(brief.updated_at) })}
             </p>
+            {/* Information, not an alarm (Joël, 2026-10-19): a faithful summary is a brief too. */}
             {brief.angle === "" ? (
-              <p className={styles.warning}>{t("brief.noAngle")}</p>
+              <p className={styles.meta}>{t("brief.angleUnset")}</p>
             ) : (
-              <p className={styles.meta}>{brief.angle.slice(0, 280)}</p>
+              <p className={styles.meta}>
+                {t("brief.angleSet")} : {brief.angle.slice(0, 280)}
+              </p>
             )}
           </li>
         ))}
@@ -205,7 +208,7 @@ function BriefForm({
             }}
           />
           <span className={styles.help}>{t("brief.angleHelp")}</span>
-          {angle.trim() === "" && <span className={styles.warning}>{t("brief.noAngle")}</span>}
+          <span className={styles.meta}>{angle.trim() === "" ? t("brief.angleUnset") : t("brief.angleSet")}</span>
         </div>
         <div className={styles.field}>
           <label htmlFor="brief-instructions">{t("brief.instructions")}</label>

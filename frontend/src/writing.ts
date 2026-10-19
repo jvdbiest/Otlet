@@ -8,6 +8,22 @@ export type BriefBody = components["schemas"]["BriefBody"];
 export type BriefLength = BriefView["length"];
 export type BriefMode = BriefView["mode"];
 export type BriefItemView = BriefView["items"][number];
+export type SourceTextView = components["schemas"]["SourceTextView"];
+
+/** The texts of a brief's sources as the drafts receive them: the reference of « Comparer ». */
+export const briefSourcesQuery = (workspaceId: string, briefId: string) =>
+  queryOptions({
+    queryKey: ["workspaces", workspaceId, "briefs", briefId, "sources"],
+    queryFn: async (): Promise<SourceTextView[]> => {
+      const { data, error, response } = await api.GET("/api/workspaces/{workspace_id}/briefs/{brief_id}/sources", {
+        params: { path: { workspace_id: workspaceId, brief_id: briefId } },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+  });
 export type VocabularyView = components["schemas"]["VocabularyView"];
 export type ChoiceView = components["schemas"]["ChoiceView"];
 

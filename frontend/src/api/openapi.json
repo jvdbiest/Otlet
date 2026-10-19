@@ -2286,6 +2286,72 @@
         "title": "SourceChanges",
         "type": "object"
       },
+      "SourceTextView": {
+        "description": "A source of the brief as the drafts receive it: its text Otlet may use, else its summary.",
+        "properties": {
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
+          "publisher": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publisher"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "words": {
+            "title": "Words",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "key",
+          "title",
+          "url",
+          "publisher",
+          "published_at",
+          "words",
+          "text"
+        ],
+        "title": "SourceTextView",
+        "type": "object"
+      },
       "SourceView": {
         "properties": {
           "active": {
@@ -4807,6 +4873,61 @@
           }
         },
         "summary": "Cancel Generation"
+      }
+    },
+    "/api/workspaces/{workspace_id}/briefs/{brief_id}/sources": {
+      "get": {
+        "description": "The texts of the brief's sources, for the reference panel of « Comparer ».",
+        "operationId": "brief_sources_api_workspaces__workspace_id__briefs__brief_id__sources_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "brief_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Brief Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SourceTextView"
+                  },
+                  "title": "Response Brief Sources Api Workspaces  Workspace Id  Briefs  Brief Id  Sources Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Brief Sources"
       }
     },
     "/api/workspaces/{workspace_id}/feed": {

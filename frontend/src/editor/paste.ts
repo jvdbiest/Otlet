@@ -6,6 +6,7 @@
 // (spikes/s3-document/otlet_doc/paste.py). A quotation is a paragraph styled as a quote (Word:
 // MsoQuote; Google Docs: a left margin of 30 pt or more) followed by an attribution starting
 // with « — » whose link is one of the article's sources; otherwise its text stays as paragraphs.
+import { mediaIdOf } from "../media.ts";
 import type { Source } from "./schema.ts";
 
 type Mark = "strong" | "em" | "s" | { href: string };
@@ -16,7 +17,8 @@ interface Run {
 }
 
 interface Block {
-  kind: "heading" | "paragraph" | "quote" | "item";
+  kind: "heading" | "paragraph" | "quote" | "item" | "image";
+  src?: string; // an image of Otlet (« Comparer », Joël, 2026-10-20)
   level: number;
   ordered: boolean | null;
   runs: Run[];
@@ -80,6 +82,12 @@ function collect(body: HTMLElement): Block[] {
     }
     const element = node as HTMLElement;
     const tag = element.tagName.toLowerCase();
+    if (tag === "img" && mediaIdOf(element.getAttribute("src") ?? "") !== null) {
+      // An image of Otlet, copied from a version: it stays (images from elsewhere do not).
+      blocks.push({ kind: "image", level: 1, ordered: null, runs: [], src: element.getAttribute("src") ?? "" });
+      current = null;
+      return;
+    }
     if (["style", "script", "title", "head", "meta", "img", "svg"].includes(tag)) {
       return;
     }
@@ -147,7 +155,7 @@ function collect(body: HTMLElement): Block[] {
   Array.from(body.childNodes).forEach((child) => {
     walk(child, []);
   });
-  return blocks.filter((block) => plain(block) !== "");
+  return blocks.filter((block) => block.kind === "image" || plain(block) !== "");
 }
 
 function sameMarks(a: Mark[], b: Mark[]): boolean {
@@ -245,6 +253,9 @@ export function cleanPastedHtml(html: string, sources: Source[]): string {
           .map((q) => `<p>${inline(q.runs)}</p>`)
           .join("")}</blockquote></div>`,
       );
+    } else if (block.kind === "image") {
+      out.push(`<img src="${escapeHtml(block.src ?? "")}" alt="">`);
+      index += 1;
     } else if (block.kind === "item") {
       const items: Block[] = [];
       for (let next = raw[index]; next?.kind === "item"; next = raw[index]) {

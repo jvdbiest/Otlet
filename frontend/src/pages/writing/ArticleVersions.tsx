@@ -7,6 +7,7 @@ import { useSaveVersion, useSendArticle, type ArticleView, type VersionView } fr
 import { errorText, formatDate } from "../watch/labels.ts";
 import { styles } from "../watch/styles.ts";
 import { blockAnchor, findBlock } from "./blocks.ts";
+import { CompareLayout, ReferencePanel } from "./Compare.tsx";
 import { DocumentView, type PlatformDocument } from "./DocumentView.tsx";
 import { ExportTools } from "./ExportTools.tsx";
 import { GenerationDetails } from "./GenerationDetails.tsx";
@@ -93,6 +94,8 @@ export function ArticleVersions({
   const copy = useSaveVersion(workspaceId);
   const send = useSendArticle(workspaceId);
   const [forked, setForked] = useState<{ from: number; to: number } | null>(null);
+  // « Comparer » (Joël, 2026-10-20): a reference read only beside the draft or the editor.
+  const [comparing, setComparing] = useState(false);
   const versions = article.versions;
   const shown = versions.find((v) => v.number === chosen) ?? versions.at(-1);
   if (shown === undefined) {
@@ -112,6 +115,7 @@ export function ArticleVersions({
         {versions.length > 1 && (
           <select
             aria-label={t("draft.version")}
+            style={{ maxWidth: "100%" }}
             disabled={editing}
             value={shown.number}
             onChange={(event) => {
@@ -131,6 +135,16 @@ export function ArticleVersions({
             ))}
           </select>
         )}
+        <button
+          type="button"
+          className={comparing ? styles.primary : styles.button}
+          aria-pressed={comparing}
+          onClick={() => {
+            setComparing(!comparing);
+          }}
+        >
+          {t("compare.button")}
+        </button>
         <span className={styles.meta}>
           {shown.origin === "ia"
             ? t("draft.byModel", {
@@ -231,6 +245,19 @@ export function ArticleVersions({
           </p>
         </div>
       )}
+      <CompareLayout
+        comparing={comparing}
+        reference={
+          <ReferencePanel
+            workspaceId={workspaceId}
+            briefId={article.brief_id}
+            versions={versions}
+            current={shown.number}
+            documentSources={(shown.document as unknown as PlatformDocument).attrs.sources}
+            copied={guardrails(origin(shown, versions).details).passages.map((p) => p.excerpt)}
+          />
+        }
+      >
       {editing ? (
         <VersionEditor
           key={`${article.id}-${String(shown.number)}`}
@@ -306,6 +333,7 @@ export function ArticleVersions({
           />
         </>
       )}
+      </CompareLayout>
     </>
   );
 }

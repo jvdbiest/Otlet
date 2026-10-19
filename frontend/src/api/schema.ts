@@ -663,6 +663,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/briefs/{brief_id}/sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Brief Sources
+         * @description The texts of the brief's sources, for the reference panel of « Comparer ».
+         */
+        get: operations["brief_sources_api_workspaces__workspace_id__briefs__brief_id__sources_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/feed": {
         parameters: {
             query?: never;
@@ -2018,6 +2038,26 @@ export interface components {
             interval_minutes?: number | null;
             /** Name */
             name?: string | null;
+        };
+        /**
+         * SourceTextView
+         * @description A source of the brief as the drafts receive it: its text Otlet may use, else its summary.
+         */
+        SourceTextView: {
+            /** Key */
+            key: string;
+            /** Published At */
+            published_at: string | null;
+            /** Publisher */
+            publisher: string | null;
+            /** Text */
+            text: string;
+            /** Title */
+            title: string;
+            /** Url */
+            url: string | null;
+            /** Words */
+            words: number;
         };
         /** SourceView */
         SourceView: {
@@ -3625,6 +3665,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GenerationView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    brief_sources_api_workspaces__workspace_id__briefs__brief_id__sources_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                brief_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceTextView"][];
                 };
             };
             /** @description Validation Error */

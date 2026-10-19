@@ -117,6 +117,18 @@ class BriefView(BaseModel):
         )
 
 
+class SourceTextView(BaseModel):
+    """A source of the brief as the drafts receive it: its text Otlet may use, else its summary."""
+
+    key: str  # S1, S2… in the order of the brief
+    title: str
+    url: str | None
+    publisher: str | None
+    published_at: datetime | None
+    words: int
+    text: str
+
+
 class GenerateBody(BaseModel):
     force: bool = False  # « Générer quand même »: sources too thin, the author confirms
 
@@ -393,6 +405,25 @@ def build_router(
     def delete_brief(brief_id: UUID, context: Context) -> None:
         if not briefs.delete(context, brief_id):
             raise HTTPException(status.HTTP_404_NOT_FOUND, "brief_not_found")
+
+    @router.get("/briefs/{brief_id}/sources")
+    def brief_sources(brief_id: UUID, context: Context) -> list[SourceTextView]:
+        """The texts of the brief's sources, for the reference panel of « Comparer »."""
+        texts = drafts.sources(context, brief_id)
+        if texts is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "brief_not_found")
+        return [
+            SourceTextView(
+                key=f"S{number}",
+                title=text.title,
+                url=text.url,
+                publisher=text.publisher,
+                published_at=text.published_at,
+                words=len(text.text.split()),
+                text=text.text,
+            )
+            for number, text in enumerate(texts, start=1)
+        ]
 
     @router.get("/briefs/{brief_id}/draft")
     def get_draft(brief_id: UUID, context: Context) -> DraftView:

@@ -182,6 +182,13 @@ class Drafts:
     def article(self, context: WorkspaceContext, brief_id: UUID) -> Article | None:
         return self._articles.article_of(context.workspace_id, brief_id)
 
+    def sources(self, context: WorkspaceContext, brief_id: UUID) -> list[SourceText] | None:
+        """The texts of the brief's items as a draft receives them, in its order: the reference
+        of « Comparer » (Joël, 2026-10-20). None when the brief does not exist."""
+        if self._briefs.get_brief(context.workspace_id, brief_id) is None:
+            return None
+        return self._articles.sources(context.workspace_id, brief_id)
+
     def cancel(self, context: WorkspaceContext, brief_id: UUID) -> Generation | None:
         """Cancels the running draft of a brief (Joël, 2026-10-18): nothing of it is kept, even
         when the model answers afterwards. The call to a local model runs to its end."""

@@ -817,5 +817,23 @@
     "versions": "Versions",
     "forked": "Vous avez retouché la version validée V{from} : vos modifications sont dans la nouvelle version V{to}. Laquelle doit partir en export et en publication ? L'autre reste dans l'historique.",
     "keepValidated": "Garder V{number} validée"
+  },
+  "compare": {
+    "button": "Comparer",
+    "show": "Afficher",
+    "combined": "Sources combinées ({count})",
+    "source": "Source {number} : {title}",
+    "version": "Version {number} ({words, plural, one {# mot} other {# mots}})",
+    "current": " · celle-ci",
+    "notCited": "non citée par ce brouillon",
+    "reference": "Référence",
+    "bound": "Défilement lié",
+    "free": "Défilement libre",
+    "bind": "Lier le défilement des deux panneaux",
+    "unbind": "Faire défiler les panneaux séparément",
+    "tabs": {
+      "draft": "Brouillon",
+      "reference": "Référence"
+    }
   }
 }

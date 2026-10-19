@@ -534,3 +534,15 @@ def test_the_library_holds_the_articles_sent_to_it(world: World) -> None:
     assert third.version is not None and third.version.number == 3
     with pytest.raises(TagError):
         clean_tags(["x" * 41])
+
+
+def test_the_sources_of_a_brief_are_its_reference(world: World) -> None:
+    context = world.context
+    agence, journal = items(world)
+    brief = world.briefs.create(context, BriefFields(title="T", item_ids=(journal, agence)))
+    # The texts a draft receives, in the order of the brief (« Comparer », Joël, 2026-10-20).
+    texts = world.drafts.sources(context, brief.id)
+    assert texts is not None
+    assert [t.title for t in texts] == ["Article de journal", "Article de agence"]
+    assert texts[0].text.startswith("Résumé de journal")
+    assert world.drafts.sources(context, uuid.uuid4()) is None

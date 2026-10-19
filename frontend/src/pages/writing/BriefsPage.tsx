@@ -149,12 +149,16 @@ function BriefForm({
   const [model, setModel] = useState(brief?.provider_id ? `${brief.provider_id}|${brief.model ?? ""}` : "");
   const [itemIds, setItemIds] = useState<string[]>(brief?.items.map((item) => item.id) ?? initialItems);
   const [confirming, setConfirming] = useState(false);
+  const [autoTitle, setAutoTitle] = useState<string | null>(null);
   const channels = vocabulary.data?.channel ?? [];
   const channelMax = channels.find((choice) => choice.key === channel)?.length_max ?? "long";
   const known = useBriefItems(workspaceId, brief, itemIds);
   const matter = itemIds.reduce((sum, id) => sum + (known.get(id)?.words ?? 0), 0);
   // The length the sources can carry (Joël, 2026-10-19): the drafts hold to it as well.
   const matterMax = longestFor(matter, vocabulary.data);
+  // A new brief opened from the Veille with its items: its working title is the first one's.
+  const firstTitle = itemIds[0] === undefined ? undefined : known.get(itemIds[0])?.title;
+  const shownTitle = brief === null && title === "" && autoTitle === null ? (firstTitle ?? "") : title;
   const lengthMax = [channelMax, matterMax ?? "short"].reduce((a, b) => (LENGTHS.indexOf(a) <= LENGTHS.indexOf(b) ? a : b));
   return (
     <section aria-labelledby="page-title">
@@ -171,7 +175,7 @@ function BriefForm({
             {
               briefId: brief?.id ?? null,
               body: {
-                title,
+                title: shownTitle,
                 angle,
                 instructions,
                 audience,
@@ -195,6 +199,35 @@ function BriefForm({
           );
         }}
       >
+        {/* The items first, then the title, the angle and the instructions (Joël, 2026-10-19):
+            an article starts from the articles it rests on. */}
+        <BriefItems
+          workspaceId={workspaceId}
+          brief={brief}
+          itemIds={itemIds}
+          onChange={(ids, first) => {
+            setItemIds(ids);
+            // The working title follows the first item until the author writes their own.
+            const following = shownTitle.trim() === "" || shownTitle === autoTitle;
+            if (first !== undefined && (following || (brief === null && autoTitle === null))) {
+              setTitle(first);
+              setAutoTitle(first);
+            }
+          }}
+        />
+        <div className={styles.field}>
+          <label htmlFor="brief-title">{t("brief.title")}</label>
+          <input
+            id="brief-title"
+            required
+            maxLength={200}
+            value={shownTitle}
+            onChange={(event) => {
+              setTitle(event.target.value);
+              setAutoTitle((before) => before ?? shownTitle);
+            }}
+          />
+        </div>
         <div className={styles.field}>
           <label htmlFor="brief-angle">{t("brief.angle")}</label>
           <textarea
@@ -224,19 +257,6 @@ function BriefForm({
           />
           <span className={styles.help}>{t("brief.instructionsHelp")}</span>
         </div>
-        <div className={styles.field}>
-          <label htmlFor="brief-title">{t("brief.title")}</label>
-          <input
-            id="brief-title"
-            required
-            maxLength={200}
-            value={title}
-            onChange={(event) => {
-              setTitle(event.target.value);
-            }}
-          />
-        </div>
-        <BriefItems workspaceId={workspaceId} brief={brief} itemIds={itemIds} onChange={setItemIds} />
         <ChoiceField
           id="brief-audience"
           label={t("brief.audience")}
@@ -440,6 +460,9 @@ function longestFor(matter: number, vocabulary: VocabularyView | undefined): Bri
   return fitting.at(-1) ?? null;
 }
 
+// One line of the items: its list takes the room left by its words and its buttons.
+const LINE = { display: "flex", gap: "0.5rem", alignItems: "center", width: "100%" } as const;
+
 function BriefItems({
   workspaceId,
   brief,
@@ -449,7 +472,8 @@ function BriefItems({
   workspaceId: string;
   brief: BriefView | null;
   itemIds: string[];
-  onChange: (ids: string[]) => void;
+  // `firstTitle`: the title of the first item, when it changed (the working title follows it).
+  onChange: (ids: string[], firstTitle?: string) => void;
 }) {
   const { t } = useTranslation();
   const known = useBriefItems(workspaceId, brief, itemIds);
@@ -460,6 +484,7 @@ function BriefItems({
     itemIds.some((id) => known.get(id)?.full_text === true),
     vocabulary.data,
   );
+  // The kept items, the most recent first (by date of publication).
   const kept = useQuery(
     feedQuery(
       workspaceId,
@@ -476,73 +501,100 @@ function BriefItems({
       null,
     ),
   );
+  // An empty line waiting for its item: « + » adds one (Joël, 2026-10-19).
+  const [empty, setEmpty] = useState(itemIds.length === 0);
+  const rows = empty ? [...itemIds, ""] : itemIds;
   const sources = new Set(itemIds.map((id) => known.get(id)?.source_id ?? id));
-  const addable = (kept.data ?? []).filter((entry) => !itemIds.includes(entry.item.id));
+  const label = (title: string, source: string | null, words: number): string =>
+    `${title.length > 90 ? `${title.slice(0, 89)}…` : title} · ${source ?? t("watch.manualOrigin")} · ${t("watch.words", { count: words })}`;
+  const choose = (index: number, id: string) => {
+    const next = [...rows];
+    next[index] = id;
+    const ids = next.filter((other) => other !== "");
+    setEmpty(false);
+    const firstChanged = ids[0] !== undefined && ids[0] !== itemIds[0];
+    const first = ids[0] === undefined ? undefined : (kept.data?.find((e) => e.item.id === ids[0])?.item.title ?? known.get(ids[0])?.title);
+    onChange(ids, firstChanged ? first : undefined);
+  };
   return (
-    <fieldset className={styles.choices}>
+    // A fieldset grows to its widest content by default: a long title would widen the page.
+    <fieldset className={styles.choices} style={{ minWidth: 0 }}>
       <legend>{t("brief.items", { count: itemIds.length })}</legend>
-      {itemIds.length === 0 && <p className={styles.meta}>{t("brief.noItems")}</p>}
-      <ol className={styles.list}>
-        {itemIds.map((id) => {
-          const item = known.get(id);
-          return (
-            <li key={id} className={styles.pick}>
-              <span>
-                <Link to="/veille/elements/$itemId" params={{ itemId: id }}>
-                  {item?.title ?? t("app.loading")}
-                </Link>{" "}
-                <span className={styles.meta}>{item?.source_name ?? t("watch.manualOrigin")}</span>{" "}
-                {item !== undefined && (
-                  <span className={styles.meta}>
-                    {item.full_text ? t("brief.words", { count: item.words }) : t("brief.summaryOnly", { count: item.words })}
-                  </span>
-                )}
-              </span>
+      {rows.map((id, index) => {
+        const item = id === "" ? undefined : known.get(id);
+        // Its own item, then the kept items no other line holds.
+        const offered = (kept.data ?? []).filter((entry) => entry.item.id === id || !itemIds.includes(entry.item.id));
+        const listed = id !== "" && !offered.some((entry) => entry.item.id === id);
+        return (
+          <div key={`${String(index)}-${id}`} style={LINE}>
+            <select
+              style={{ flex: "1 1 0", minWidth: 0 }}
+              aria-label={t("brief.itemLine", { number: index + 1 })}
+              value={id}
+              onChange={(event) => {
+                choose(index, event.target.value);
+              }}
+            >
+              <option value="">{t("brief.pickItem")}</option>
+              {listed && item !== undefined && (
+                <option value={id}>{label(item.title, item.source_name, item.words)}</option>
+              )}
+              {offered.map((entry) => (
+                <option key={entry.item.id} value={entry.item.id}>
+                  {label(entry.item.title, entry.item.source_name, entry.item.words)}
+                </option>
+              ))}
+            </select>
+            {item !== undefined && (
+              <Link
+                to="/veille/elements/$itemId"
+                params={{ itemId: id }}
+                className={styles.meta}
+                style={{ whiteSpace: "nowrap" }}
+              >
+                {item.full_text ? t("brief.words", { count: item.words }) : t("brief.summaryOnly", { count: item.words })}
+              </Link>
+            )}
+            {(id !== "" || rows.length > 1) && (
               <button
                 type="button"
                 className={styles.button}
                 aria-label={t("brief.removeItem", { title: item?.title ?? "" })}
                 onClick={() => {
-                  onChange(itemIds.filter((other) => other !== id));
+                  if (id === "") {
+                    setEmpty(false);
+                    return;
+                  }
+                  const ids = itemIds.filter((other) => other !== id);
+                  const first = ids[0] === undefined ? undefined : known.get(ids[0])?.title;
+                  onChange(ids, ids[0] !== itemIds[0] ? first : undefined);
                 }}
               >
                 ×
               </button>
-            </li>
-          );
-        })}
-      </ol>
+            )}
+            {index === rows.length - 1 && id !== "" && (
+              <button
+                type="button"
+                className={styles.button}
+                aria-label={t("brief.addLine")}
+                onClick={() => {
+                  setEmpty(true);
+                }}
+              >
+                +
+              </button>
+            )}
+          </div>
+        );
+      })}
+      <div style={{ width: "100%" }}>
+      {itemIds.length === 0 && (kept.data ?? []).length === 0 && <p className={styles.meta}>{t("brief.noKept")}</p>}
       {itemIds.length > 0 && sources.size < 2 && <p className={styles.notice}>{t("brief.singleSource")}</p>}
       {itemIds.length > 0 && <p className={styles.meta}>{t("brief.matter", { count: matter })}</p>}
       {itemIds.length > 0 && level === "limited" && <p className={styles.notice}>{t("brief.matterLimited")}</p>}
       {itemIds.length > 0 && level === "insufficient" && <p className={styles.warning}>{t("brief.matterInsufficient")}</p>}
-      {addable.length > 0 && (
-        <details>
-          <summary>{t("brief.addKept", { count: addable.length })}</summary>
-          <ul className={styles.list}>
-            {addable.map((entry) => (
-              <li key={entry.item.id} className={styles.pick}>
-                <button
-                  type="button"
-                  className={styles.button}
-                  aria-label={t("brief.addItem", { title: entry.item.title })}
-                  onClick={() => {
-                    onChange([...itemIds, entry.item.id]);
-                  }}
-                >
-                  +
-                </button>
-                <span>
-                  {entry.item.title}{" "}
-                  <span className={styles.meta}>
-                    {entry.item.source_name ?? t("watch.manualOrigin")} · {t("watch.words", { count: entry.item.words })}
-                  </span>
-                </span>
-              </li>
-            ))}
-          </ul>
-        </details>
-      )}
+      </div>
     </fieldset>
   );
 }

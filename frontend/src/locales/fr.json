@@ -582,10 +582,7 @@
     "angleHelp": "Ce que vous voulez dire : votre expérience, votre avis, votre analyse. C'est ce qui fait de l'article le vôtre ; la façon d'écrire va dans les consignes ci-dessous.",
     "title": "Titre de travail",
     "items": "{count, plural, =0 {Éléments} one {Élément (#)} other {Éléments (#)}}",
-    "noItems": "Aucun élément : ajoutez-en au moins un.",
     "removeItem": "Retirer « {title} » du brief",
-    "addKept": "{count, plural, one {Ajouter un élément retenu (# disponible)} other {Ajouter des éléments retenus (# disponibles)}}",
-    "addItem": "Ajouter « {title} » au brief",
     "singleSource": "Une seule source : un article d'actualité en croise d'habitude au moins deux. Le brief reste possible.",
     "audience": "Public",
     "tone": "Ton",
@@ -644,7 +641,11 @@
     "matterLimited": "Matière limitée : le brouillon sera court. Relisez-le avec soin.",
     "matterInsufficient": "Matière insuffisante : un résumé de quelques lignes ou moins de 150 mots de sources. Otlet demandera confirmation avant de générer.",
     "angleSet": "✓ Angle défini",
-    "angleUnset": "○ Angle non défini : le brouillon restituera les sources, sans point de vue de votre part."
+    "angleUnset": "○ Angle non défini : le brouillon restituera les sources, sans point de vue de votre part.",
+    "pickItem": "Choisir un élément retenu…",
+    "itemLine": "Élément {number}",
+    "addLine": "Ajouter un élément",
+    "noKept": "Aucun élément retenu : retenez-en dans la Veille pour les choisir ici."
   },
   "draft": {
     "title": "Brouillon",

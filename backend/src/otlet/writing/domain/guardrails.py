@@ -135,8 +135,9 @@ def copying(paragraphs: list[str], sources: list[str]) -> Copying:
                 length = i - run_start + COPY_GRAM - 1
                 if length >= COPY_PASSAGE:
                     # The same words as fold() reads them, as the paragraph writes them.
-                    original = re.findall(r"\w+", paragraph)
-                    excerpt = " ".join(original[run_start : run_start + 10])
+                    spans = [m.span() for m in re.finditer(r"\w+", paragraph)]
+                    last = spans[min(run_start + 9, len(spans) - 1)]
+                    excerpt = paragraph[spans[run_start][0] : last[1]]
                     passages.append((start_of(paragraph), excerpt, length))
                 run_start = None
     return Copying(round(copied / total, 3) if total else 0.0, tuple(passages))

@@ -25,6 +25,7 @@ import {
   useSetContextWindow,
   useStartPull,
   type CatalogueView,
+  type CharterRoomView,
   type ProviderView,
 } from "../../ai.ts";
 import { ApiError } from "../../api/client.ts";
@@ -656,6 +657,7 @@ function Charter() {
             {data.is_default ? t("ai.charter.isDefault") : t("ai.charter.isOwn")}
           </span>
         </div>
+        {data.room !== null && <CharterRoom room={data.room} text={text ?? data.text} />}
         {errorOf(t, save.error) !== null && (
           <p className={styles.error} role="alert">
             {errorOf(t, save.error)}
@@ -682,6 +684,36 @@ function Charter() {
         </div>
       </form>
     </section>
+  );
+}
+
+/** The room the charter takes in the window of the main model, and what is left for the
+ * sources, counted as drafts count it (Joël, 2026-10-19). */
+function CharterRoom({ room, text }: { room: CharterRoomView; text: string }) {
+  const { t } = useTranslation();
+  const charter = Math.ceil(text.trim().length / room.chars_per_token);
+  const left = (length: string) =>
+    room.window_tokens - room.rules_tokens - (room.answer_tokens[length] ?? 0) - charter;
+  const [short, medium, long] = ["short", "medium", "long"].map(left);
+  return (
+    <div className={styles.meta} aria-live="polite">
+      <p>
+        {room.model === null
+          ? t("ai.charter.roomUnknown", { charter, window: room.window_tokens })
+          : t("ai.charter.room", { charter, window: room.window_tokens, model: room.model })}
+      </p>
+      <p>
+        {t("ai.charter.left", {
+          short: Math.max(short ?? 0, 0),
+          medium: Math.max(medium ?? 0, 0),
+          long: Math.max(long ?? 0, 0),
+          rules: room.rules_tokens,
+        })}
+      </p>
+      {(long ?? 0) <= 0 && (
+        <p className={styles.error}>{t("ai.charter.noRoom")}</p>
+      )}
+    </div>
   );
 }
 

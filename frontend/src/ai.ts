@@ -13,6 +13,7 @@ export type PolicyView = components["schemas"]["PolicyView"];
 export type ProfileCheckView = components["schemas"]["ProfileCheckView"];
 export type CallView = components["schemas"]["CallView"];
 export type CharterView = components["schemas"]["CharterView"];
+export type CharterRoomView = components["schemas"]["CharterRoomView"];
 
 const KEY = ["ai"] as const;
 

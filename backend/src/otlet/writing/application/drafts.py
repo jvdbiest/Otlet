@@ -16,6 +16,7 @@ from otlet.workspaces.domain.model import WorkspaceContext
 from otlet.writing.domain.article import Article, Generation
 from otlet.writing.domain.brief import Brief, Mode, ModelChoice
 from otlet.writing.domain.draft import (
+    CHARS_PER_TOKEN,
     PROMPT_VERSION,
     WORDS,
     SourceText,
@@ -239,6 +240,7 @@ class Drafts:
             "window_tokens": window,
             "local": local,
             "output_tokens": output,
+            "charter_tokens": -(-len(charter) // CHARS_PER_TOKEN),
             "source_room_chars": budget,
             "sources": [
                 {

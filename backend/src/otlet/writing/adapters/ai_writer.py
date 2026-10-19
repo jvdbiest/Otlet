@@ -23,18 +23,8 @@ class GatewayWriter:
         self._catalogue = catalogue
 
     def room(self, user_id: UUID, model: ModelChoice | None) -> tuple[int, bool]:
-        entries = self._entries(user_id, model)
-        providers = {p.id: p for p in self._settings.list_providers(user_id)}
-        first = next(iter(entries), None)
-        provider = None if first is None else providers.get(first.provider_id)
-        entry = (
-            None
-            if provider is None or first is None
-            else self._catalogue.model(provider.kind, first.model)
-        )
-        if provider is None or entry is None:
-            return LOCAL_DEFAULT_WINDOW, True  # unknown: the smallest room
-        return effective_window(provider, entry.context, entry.local), entry.local
+        window, local, _ = profile_window(self._settings, self._catalogue, user_id, model)
+        return window, local
 
     def write(
         self,
@@ -78,6 +68,31 @@ class GatewayWriter:
         )
 
     def _entries(self, user_id: UUID, model: ModelChoice | None) -> tuple[ProfileEntry, ...]:
-        if model is not None:
-            return (ProfileEntry(model.provider_id, model.model),)
-        return tuple(self._settings.profile(user_id).entries)
+        return _entries(self._settings, user_id, model)
+
+
+def _entries(
+    settings: ProfileSource, user_id: UUID, model: ModelChoice | None
+) -> tuple[ProfileEntry, ...]:
+    if model is not None:
+        return (ProfileEntry(model.provider_id, model.model),)
+    return tuple(settings.profile(user_id).entries)
+
+
+def profile_window(
+    settings: ProfileSource,
+    catalogue: Catalogue,
+    user_id: UUID,
+    model: ModelChoice | None = None,
+) -> tuple[int, bool, str | None]:
+    """The window a draft runs with (the first model of the brief, else of the profile), whether
+    that model is local, and its name (None when unknown)."""
+    first = next(iter(_entries(settings, user_id, model)), None)
+    providers = {p.id: p for p in settings.list_providers(user_id)}
+    provider = None if first is None else providers.get(first.provider_id)
+    entry = (
+        None if provider is None or first is None else catalogue.model(provider.kind, first.model)
+    )
+    if provider is None or first is None or entry is None:
+        return LOCAL_DEFAULT_WINDOW, True, None  # unknown: the smallest room
+    return effective_window(provider, entry.context, entry.local), entry.local, first.model

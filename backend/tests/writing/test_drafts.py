@@ -38,7 +38,7 @@ from otlet.platform import database as db
 from otlet.workspaces.adapters.postgres import PostgresWorkspaceStore
 from otlet.workspaces.application.workspaces import Workspaces
 from otlet.workspaces.domain.model import WorkspaceContext
-from otlet.writing.adapters.ai_writer import GatewayWriter
+from otlet.writing.adapters.ai_writer import GatewayWriter, profile_window
 from otlet.writing.adapters.articles_postgres import PostgresArticleStore
 from otlet.writing.adapters.charter_postgres import PostgresCharters
 from otlet.writing.adapters.postgres import PostgresBriefStore
@@ -184,7 +184,9 @@ def world(migrated: TestDatabase, tmp_path: Path) -> Iterator[World]:
     )
     brief_store = PostgresBriefStore(engine)
     articles = PostgresArticleStore(engine, enqueue)
-    charters = Charters(PostgresCharters(engine))
+    charters = Charters(
+        PostgresCharters(engine), lambda user: profile_window(store, catalogue, user)
+    )
     drafts = Drafts(
         brief_store,
         articles,
@@ -299,6 +301,10 @@ def test_each_draft_follows_the_charter_of_its_author(world: World) -> None:
     assert world.charters.reset(context.user_id) == Charter(DEFAULT_CHARTER, True)
     with pytest.raises(CharterError):
         world.charters.set(context.user_id, "x" * 8001)
+    # The room shown beside the charter: the window of the main model, shared as drafts do.
+    room = world.charters.room(context.user_id)
+    assert room is not None and room.model == "llama3.1" and room.window_tokens > 0
+    assert (room.rules_tokens, room.answer_tokens["medium"], room.chars_per_token) == (800, 2800, 3)
     # Each user has their own: another one sees no row of Alice's.
     with db.scoped_transaction(world.engine, user_id=uuid.uuid4()) as connection:
         world.charters.set(context.user_id, "Pour Alice.")

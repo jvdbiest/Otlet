@@ -1382,10 +1382,26 @@ export interface components {
             /** Text */
             text: string;
         };
+        /** CharterRoomView */
+        CharterRoomView: {
+            /** Answer Tokens */
+            answer_tokens: {
+                [key: string]: number;
+            };
+            /** Chars Per Token */
+            chars_per_token: number;
+            /** Model */
+            model: string | null;
+            /** Rules Tokens */
+            rules_tokens: number;
+            /** Window Tokens */
+            window_tokens: number;
+        };
         /** CharterView */
         CharterView: {
             /** Is Default */
             is_default: boolean;
+            room: components["schemas"]["CharterRoomView"] | null;
             /** Text */
             text: string;
         };

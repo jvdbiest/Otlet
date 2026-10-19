@@ -571,11 +571,64 @@
         "title": "CharterBody",
         "type": "object"
       },
+      "CharterRoomView": {
+        "properties": {
+          "answer_tokens": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Answer Tokens",
+            "type": "object"
+          },
+          "chars_per_token": {
+            "title": "Chars Per Token",
+            "type": "integer"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "rules_tokens": {
+            "title": "Rules Tokens",
+            "type": "integer"
+          },
+          "window_tokens": {
+            "title": "Window Tokens",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "model",
+          "window_tokens",
+          "rules_tokens",
+          "answer_tokens",
+          "chars_per_token"
+        ],
+        "title": "CharterRoomView",
+        "type": "object"
+      },
       "CharterView": {
         "properties": {
           "is_default": {
             "title": "Is Default",
             "type": "boolean"
+          },
+          "room": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CharterRoomView"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "text": {
             "title": "Text",
@@ -584,7 +637,8 @@
         },
         "required": [
           "text",
-          "is_default"
+          "is_default",
+          "room"
         ],
         "title": "CharterView",
         "type": "object"

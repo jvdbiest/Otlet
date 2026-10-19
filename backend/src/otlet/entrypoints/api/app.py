@@ -50,6 +50,7 @@ from otlet.watch.domain.triage import Decision
 from otlet.workspaces.adapters.postgres import PostgresWorkspaceStore
 from otlet.workspaces.application.workspaces import Workspaces
 from otlet.workspaces.domain.model import WorkspaceContext
+from otlet.writing.adapters.ai_writer import profile_window
 from otlet.writing.adapters.articles_postgres import PostgresArticleStore
 from otlet.writing.adapters.charter_postgres import PostgresCharters
 from otlet.writing.adapters.export_docx import docx
@@ -173,7 +174,10 @@ def create_app(settings: Settings) -> FastAPI:
             PostgresChecks(engine, enqueue),
             Models(ai_store, ai_catalogue, OllamaHost(), PostgresPulls(engine, enqueue), uuid4),
             PostgresCallJournal(engine),
-            Charters(PostgresCharters(engine)),
+            Charters(
+                PostgresCharters(engine),
+                lambda user: profile_window(ai_store, ai_catalogue, user),
+            ),
             authentication,
             current_session,
         )

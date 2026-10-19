@@ -456,7 +456,11 @@
       "isDefault": "Charte par défaut d'Otlet.",
       "isOwn": "Votre charte. « Rétablir la charte par défaut » reprend celle d'Otlet.",
       "save": "Enregistrer",
-      "reset": "Rétablir la charte par défaut"
+      "reset": "Rétablir la charte par défaut",
+      "room": "Votre charte prend environ {charter, number} tokens sur les {window, number} de la fenêtre de {model}, le premier modèle de votre profil.",
+      "roomUnknown": "Votre charte prend environ {charter, number} tokens sur les {window, number} de la fenêtre par défaut (aucun modèle reconnu dans votre profil).",
+      "left": "Reste pour les sources, après les règles d'Otlet ({rules, number} tokens) et la réponse : environ {short, number} tokens pour un article court, {medium, number} pour un moyen, {long, number} pour un long. Un brief qui choisit un autre modèle a une autre fenêtre.",
+      "noRoom": "La fenêtre est trop petite : les sources ne seront envoyées qu'en courts extraits. Raccourcissez la charte ou agrandissez la fenêtre du modèle."
     },
     "status": {
       "tested": "testé",

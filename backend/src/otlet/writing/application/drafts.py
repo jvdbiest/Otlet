@@ -129,12 +129,18 @@ class BriefSource(Protocol):
 
 class Drafts:
     def __init__(
-        self, briefs: BriefSource, articles: ArticleStore, writer: Writer | None = None
+        self,
+        briefs: BriefSource,
+        articles: ArticleStore,
+        writer: Writer | None = None,
+        charter: Callable[[UUID], str] | None = None,
     ) -> None:
-        """The API passes no writer: it only records generations; the worker writes them."""
+        """The API passes no writer: it only records generations; the worker writes them.
+        `charter` gives the writing charter of a user (none when not given)."""
         self._briefs = briefs
         self._articles = articles
         self._writer = writer
+        self._charter = charter or (lambda user_id: "")
 
     def start(self, context: WorkspaceContext, brief_id: UUID) -> Generation | None:
         """None when the brief does not exist; a generation already running is returned as is."""
@@ -181,7 +187,9 @@ class Drafts:
         fields = brief.fields
         window, local = writer.room(user_id, fields.model)
         output = OUTPUT_TOKENS[fields.length]
-        budget = source_budget(window, output)
+        charter = self._charter(user_id)
+        # The charter takes room in the window too: as much less for the sources.
+        budget = max(source_budget(window, output) - len(charter), 0)
         sources = prompt_sources(texts, budget)
         keys = [source.key for source in sources]
         checks = 0
@@ -208,7 +216,7 @@ class Drafts:
 
         written = writer.write(
             user_id,
-            messages(fields, sources),
+            messages(fields, sources, charter),
             output_schema(keys),
             validate,
             fields.model,
@@ -222,6 +230,7 @@ class Drafts:
                 "model": "profile" if fields.model is None else fields.model.model,
                 "angle": fields.angle,
                 "instructions": fields.instructions,
+                "charter": charter,
                 "audience": fields.audience,
                 "tone": fields.tone,
                 "channel": fields.channel,

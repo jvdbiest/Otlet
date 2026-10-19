@@ -557,6 +557,38 @@
         "title": "CatalogueView",
         "type": "object"
       },
+      "CharterBody": {
+        "properties": {
+          "text": {
+            "maxLength": 10000,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "CharterBody",
+        "type": "object"
+      },
+      "CharterView": {
+        "properties": {
+          "is_default": {
+            "title": "Is Default",
+            "type": "boolean"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "is_default"
+        ],
+        "title": "CharterView",
+        "type": "object"
+      },
       "CheckView": {
         "properties": {
           "allowed": {
@@ -2851,6 +2883,78 @@
           }
         },
         "summary": "Catalogue"
+      }
+    },
+    "/api/ai/charter": {
+      "delete": {
+        "description": "Back to the default charter.",
+        "operationId": "reset_charter_api_ai_charter_delete",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CharterView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Reset Charter"
+      },
+      "get": {
+        "description": "The writing charter of the user, added to each of their drafts (Joël, 2026-10-19).",
+        "operationId": "get_charter_api_ai_charter_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CharterView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Charter"
+      },
+      "put": {
+        "operationId": "set_charter_api_ai_charter_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CharterBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CharterView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Charter"
       }
     },
     "/api/ai/checks": {

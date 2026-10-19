@@ -33,6 +33,7 @@ from otlet.entrypoints.api.auth import same_origin
 from otlet.identity.application.authentication import Authentication
 from otlet.identity.domain.model import Session
 from otlet.platform.secrets import SecretError
+from otlet.writing.application.charter import CharterError, Charters
 
 PREFIX = "/api/ai"
 
@@ -196,6 +197,15 @@ class BudgetView(BaseModel):
     usable: Decimal
 
 
+class CharterView(BaseModel):
+    text: str  # what every draft follows; empty: no charter
+    is_default: bool  # the charter of the product, not changed by the user
+
+
+class CharterBody(BaseModel):
+    text: str = Field(max_length=10_000)
+
+
 class NewLimit(BaseModel):
     monthly_limit: Decimal = Field(ge=0, le=LIMIT_MAX)
 
@@ -254,6 +264,7 @@ def build_router(
     checks: CheckStore,
     models: Models,
     journal: CallJournalReader,
+    charters: Charters,
     auth: Authentication,
     current_session: Callable[..., Session],
 ) -> APIRouter:
@@ -409,6 +420,26 @@ def build_router(
             reserved=_cents(state.reserved),
             usable=_cents(state.usable),
         )
+
+    @router.get("/charter")
+    def get_charter(session: CurrentSession) -> CharterView:
+        """The writing charter of the user, added to each of their drafts (Joël, 2026-10-19)."""
+        charter = charters.of(session.user_id)
+        return CharterView(text=charter.text, is_default=charter.is_default)
+
+    @router.put("/charter")
+    def set_charter(body: CharterBody, session: CurrentSession) -> CharterView:
+        try:
+            charter = charters.set(session.user_id, body.text)
+        except CharterError as error:
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "invalid_charter") from error
+        return CharterView(text=charter.text, is_default=charter.is_default)
+
+    @router.delete("/charter")
+    def reset_charter(session: CurrentSession) -> CharterView:
+        """Back to the default charter."""
+        charter = charters.reset(session.user_id)
+        return CharterView(text=charter.text, is_default=charter.is_default)
 
     @router.get("/budget")
     def get_budget(session: CurrentSession) -> BudgetView:

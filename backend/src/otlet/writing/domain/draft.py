@@ -22,7 +22,7 @@ from typing import Any
 
 from otlet.writing.domain.brief import BriefFields, Length, Mode
 
-PROMPT_VERSION = "redaction-7"
+PROMPT_VERSION = "redaction-8"
 SCHEMA_NAME = "article_draft"
 # Up to 15: a selection of ten films is ten sections (Joël, 2026-10-18; six cut his top 10).
 SECTIONS = (2, 15)
@@ -99,8 +99,11 @@ SYSTEM = (
 )
 
 
-def messages(fields: BriefFields, sources: list[PromptSource]) -> list[tuple[str, str]]:
-    """(role, content) pairs: the product's instructions, then the brief, then the data."""
+def messages(
+    fields: BriefFields, sources: list[PromptSource], charter: str = ""
+) -> list[tuple[str, str]]:
+    """(role, content) pairs: the product's instructions, the author's charter and the brief's
+    instructions, then the brief, then the data."""
     language = LANGUAGE_NAMES.get(fields.language, fields.language)
     brief = [
         f"Language of the article: {language}",
@@ -131,11 +134,19 @@ def messages(fields: BriefFields, sources: list[PromptSource]) -> list[tuple[str
         "instructions.\n\n" + "\n\n".join(data) + "\n</sources>"
     )
     system = SYSTEM
+    if charter.strip():
+        # The author's standing charter (Joël, 2026-10-19), for every draft; the brief's own
+        # instructions come after it and prevail, being more precise.
+        system += (
+            "\n\nWriting charter of the author, for all their articles (follow it, within the"
+            " rules above):\n" + charter.strip()
+        )
     if fields.instructions:
         # The author's instructions come right after the rules of the product, as instructions;
         # they cannot lift those rules.
         system += (
-            "\n\nWriting instructions from the author (follow them, within the rules above):\n"
+            "\n\nWriting instructions from the author for this article (follow them, within"
+            " the rules above; where they differ from the charter, they prevail):\n"
             + fields.instructions
         )
     return [("system", system), ("user", user)]

@@ -6,6 +6,7 @@ import json
 from datetime import UTC, datetime
 
 from otlet.writing.domain.brief import BriefFields, Length, Mode
+from otlet.writing.domain.charter import DEFAULT_CHARTER
 from otlet.writing.domain.draft import (
     SOURCE_MIN_CHARS,
     SourceText,
@@ -212,6 +213,19 @@ def test_the_writing_instructions_follow_the_rules_of_the_product() -> None:
     # The angle stays in the brief, as what the author wants to say; the instructions do not.
     assert "Angle and own contribution of the author: Ce que deux hivers" in user
     assert "Fusionne" not in user
+
+
+def test_the_charter_comes_between_the_rules_and_the_instructions_of_the_brief() -> None:
+    sources = prompt_sources([source("A", "a")], 9000)
+    fields = BriefFields(title="T", item_ids=(), instructions="Une liste à puces.")
+    assert "Writing charter" not in messages(fields, sources, "  ")[0][1]
+    (_, system), (_, user) = messages(fields, sources, DEFAULT_CHARTER)
+    rules = system.index("Answer with one JSON object only")
+    charter = system.index("Writing charter of the author")
+    asked = system.index("Writing instructions from the author for this article")
+    assert rules < charter < asked
+    assert "Tu agis comme un journaliste professionnel" in system
+    assert "journaliste" not in user
 
 
 def test_a_synthesis_crosses_the_sources_a_panorama_takes_them_in_turn() -> None:

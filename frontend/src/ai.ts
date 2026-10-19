@@ -12,6 +12,7 @@ export type BudgetView = components["schemas"]["BudgetView"];
 export type PolicyView = components["schemas"]["PolicyView"];
 export type ProfileCheckView = components["schemas"]["ProfileCheckView"];
 export type CallView = components["schemas"]["CallView"];
+export type CharterView = components["schemas"]["CharterView"];
 
 const KEY = ["ai"] as const;
 
@@ -171,6 +172,36 @@ export function useSaveProfile() {
   return useMutation({
     mutationFn: async (body: ProfileView) => {
       const { data, error, response } = await api.PUT("/api/ai/profile", { body });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: refresh,
+  });
+}
+
+/** The writing charter of the user, added to each of their drafts (Joël, 2026-10-19). */
+export const charterQuery = queryOptions({
+  queryKey: [...KEY, "charter"],
+  queryFn: async (): Promise<CharterView> => {
+    const { data, error, response } = await api.GET("/api/ai/charter");
+    if (data === undefined) {
+      throw apiError(response, error);
+    }
+    return data;
+  },
+});
+
+/** Saves the charter (text), or goes back to the default one (null). */
+export function useSaveCharter() {
+  const refresh = useRefresh();
+  return useMutation({
+    mutationFn: async (text: string | null) => {
+      const { data, error, response } =
+        text === null
+          ? await api.DELETE("/api/ai/charter")
+          : await api.PUT("/api/ai/charter", { body: { text } });
       if (data === undefined) {
         throw apiError(response, error);
       }

@@ -63,6 +63,31 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/ai/charter": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Charter
+         * @description The writing charter of the user, added to each of their drafts (Joël, 2026-10-19).
+         */
+        get: operations["get_charter_api_ai_charter_get"];
+        /** Set Charter */
+        put: operations["set_charter_api_ai_charter_put"];
+        post?: never;
+        /**
+         * Reset Charter
+         * @description Back to the default charter.
+         */
+        delete: operations["reset_charter_api_ai_charter_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/ai/checks": {
         parameters: {
             query?: never;
@@ -1352,6 +1377,18 @@ export interface components {
             /** Models */
             models: components["schemas"]["ModelView"][];
         };
+        /** CharterBody */
+        CharterBody: {
+            /** Text */
+            text: string;
+        };
+        /** CharterView */
+        CharterView: {
+            /** Is Default */
+            is_default: boolean;
+            /** Text */
+            text: string;
+        };
         /** CheckView */
         CheckView: {
             /** Allowed */
@@ -2239,6 +2276,79 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CatalogueView"];
+                };
+            };
+        };
+    };
+    get_charter_api_ai_charter_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CharterView"];
+                };
+            };
+        };
+    };
+    set_charter_api_ai_charter_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CharterBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CharterView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reset_charter_api_ai_charter_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CharterView"];
                 };
             };
         };

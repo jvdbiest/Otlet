@@ -19,7 +19,7 @@ def test_upgrade_then_downgrade(database: TestDatabase, tmp_path: Path) -> None:
     migrations.downgrade(settings, "base")
 
     migrations.upgrade(settings)
-    assert db.schema_revision(engine) == "0030"
+    assert db.schema_revision(engine) == "0031"
 
     migrations.downgrade(settings, "base")
     with engine.connect() as connection:

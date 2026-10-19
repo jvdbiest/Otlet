@@ -9,6 +9,7 @@ import {
   pullQuery,
   callsQuery,
   catalogueQuery,
+  charterQuery,
   checkQuery,
   policyQuery,
   profileQuery,
@@ -16,6 +17,7 @@ import {
   useAddProvider,
   useDeleteProvider,
   useSaveBudget,
+  useSaveCharter,
   useSavePolicy,
   useSaveProfile,
   useStartCheck,
@@ -45,6 +47,7 @@ export function AiSettingsPage() {
       <p className={styles.help}>{t("ai.intro")}</p>
       <Providers catalogue={catalogue.data} />
       <Profile catalogue={catalogue.data} />
+      <Charter />
       <Budget />
       <Check />
       {session.data?.user.is_instance_admin === true && <Policy catalogue={catalogue.data} />}
@@ -62,6 +65,7 @@ const AI_ERRORS = [
   "invalid_model_name",
   "not_a_local_engine",
   "invalid_context_window",
+  "invalid_charter",
   "invalid_endpoint",
   "invalid_key",
   "invalid_name",
@@ -608,6 +612,76 @@ function ContextWindow({ provider, local }: { provider: ProviderView; local: boo
         )}
       </p>
     </fieldset>
+  );
+}
+
+/** The writing charter: standing instructions for every draft of the user (Joël, 2026-10-19). */
+function Charter() {
+  const { t } = useTranslation();
+  const charter = useQuery(charterQuery);
+  const save = useSaveCharter();
+  const [text, setText] = useState<string | null>(null);
+  if (charter.data === undefined) {
+    return null;
+  }
+  const data = charter.data;
+  const done = {
+    onSuccess: () => {
+      setText(null);
+    },
+  };
+  return (
+    <section className={styles.panel} aria-labelledby="ai-charter">
+      <h2 id="ai-charter">{t("ai.charter.title")}</h2>
+      <p className={styles.help}>{t("ai.charter.help")}</p>
+      <form
+        className={styles.form}
+        onSubmit={(event) => {
+          event.preventDefault();
+          save.mutate(text ?? data.text, done);
+        }}
+      >
+        <div className={styles.field}>
+          <label htmlFor="ai-charter-text">{t("ai.charter.label")}</label>
+          <textarea
+            id="ai-charter-text"
+            rows={16}
+            maxLength={8000}
+            value={text ?? data.text}
+            onChange={(event) => {
+              setText(event.target.value);
+            }}
+          />
+          <span className={styles.help}>
+            {data.is_default ? t("ai.charter.isDefault") : t("ai.charter.isOwn")}
+          </span>
+        </div>
+        {errorOf(t, save.error) !== null && (
+          <p className={styles.error} role="alert">
+            {errorOf(t, save.error)}
+          </p>
+        )}
+        <div className={styles.row}>
+          <button
+            type="submit"
+            className={styles.primary}
+            disabled={save.isPending || text === null}
+          >
+            {t("ai.charter.save")}
+          </button>
+          <button
+            type="button"
+            className={styles.button}
+            disabled={save.isPending || (data.is_default && text === null)}
+            onClick={() => {
+              save.mutate(null, done);
+            }}
+          >
+            {t("ai.charter.reset")}
+          </button>
+        </div>
+      </form>
+    </section>
   );
 }
 

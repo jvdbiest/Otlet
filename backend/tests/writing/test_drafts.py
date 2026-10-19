@@ -40,13 +40,16 @@ from otlet.workspaces.application.workspaces import Workspaces
 from otlet.workspaces.domain.model import WorkspaceContext
 from otlet.writing.adapters.ai_writer import GatewayWriter
 from otlet.writing.adapters.articles_postgres import PostgresArticleStore
+from otlet.writing.adapters.charter_postgres import PostgresCharters
 from otlet.writing.adapters.postgres import PostgresBriefStore
 from otlet.writing.application.briefs import Briefs
+from otlet.writing.application.charter import Charter, CharterError, Charters
 from otlet.writing.application.drafts import GENERATE_DRAFT, Drafts
 from otlet.writing.application.editing import Editing
 from otlet.writing.application.library import Library, TagError, clean_tags
 from otlet.writing.domain.article import Version
 from otlet.writing.domain.brief import BriefFields, Length
+from otlet.writing.domain.charter import DEFAULT_CHARTER
 
 pytestmark = requires_database
 
@@ -105,6 +108,7 @@ class World:
     fake: Fake
     jobs: list[tuple[str, dict[str, str]]]
     articles: PostgresArticleStore
+    charters: Charters
 
 
 @pytest.fixture
@@ -180,7 +184,13 @@ def world(migrated: TestDatabase, tmp_path: Path) -> Iterator[World]:
     )
     brief_store = PostgresBriefStore(engine)
     articles = PostgresArticleStore(engine, enqueue)
-    drafts = Drafts(brief_store, articles, GatewayWriter(gateway, store, catalogue))
+    charters = Charters(PostgresCharters(engine))
+    drafts = Drafts(
+        brief_store,
+        articles,
+        GatewayWriter(gateway, store, catalogue),
+        lambda user: charters.of(user).text,
+    )
     try:
         yield World(
             engine,
@@ -190,6 +200,7 @@ def world(migrated: TestDatabase, tmp_path: Path) -> Iterator[World]:
             fake,
             jobs,
             articles,
+            charters,
         )
     finally:
         fake.server.shutdown()
@@ -238,7 +249,7 @@ def test_a_draft_becomes_a_version_of_the_article_of_the_brief(world: World) -> 
     version = article.versions[0]
     assert (version.origin, version.provider_kind, version.model) == ("ia", "ollama", "llama3.1")
     assert (
-        version.prompt_version == "redaction-7"
+        version.prompt_version == "redaction-8"
         and version.cut_sources == () == version.unused_sources
         and not version.context_overflow
     )
@@ -264,6 +275,36 @@ def test_a_draft_becomes_a_version_of_the_article_of_the_brief(world: World) -> 
     assert article is not None and [v.number for v in article.versions] == [1, 2]
 
 
+def test_each_draft_follows_the_charter_of_its_author(world: World) -> None:
+    context = world.context
+    agence, journal = items(world)
+    brief = world.briefs.create(context, BriefFields(title="T", item_ids=(journal, agence)))
+
+    def system_sent() -> str:
+        generation = world.drafts.start(context, brief.id)
+        assert generation is not None
+        world.drafts.run(context.workspace_id, context.user_id, generation.id)
+        content: str = world.fake.requests[-1]["body"]["messages"][0]["content"]
+        return content
+
+    # Until the author changes it, the default charter; then theirs; empty, none; then back.
+    assert world.charters.of(context.user_id) == Charter(DEFAULT_CHARTER, True)
+    assert "Tu agis comme un journaliste professionnel" in system_sent()
+    assert world.charters.set(context.user_id, "  Phrases courtes.  ") == Charter(
+        "Phrases courtes.", False
+    )
+    assert system_sent().endswith("Phrases courtes.")
+    world.charters.set(context.user_id, "")
+    assert "Writing charter" not in system_sent()
+    assert world.charters.reset(context.user_id) == Charter(DEFAULT_CHARTER, True)
+    with pytest.raises(CharterError):
+        world.charters.set(context.user_id, "x" * 8001)
+    # Each user has their own: another one sees no row of Alice's.
+    with db.scoped_transaction(world.engine, user_id=uuid.uuid4()) as connection:
+        world.charters.set(context.user_id, "Pour Alice.")
+        assert connection.execute(sa.text("SELECT count(*) FROM writing_charters")).scalar() == 0
+
+
 def test_a_failed_draft_says_why_and_makes_no_version(world: World) -> None:
     context = world.context
     agence, _ = items(world)
@@ -284,6 +325,8 @@ def test_a_failed_draft_says_why_and_makes_no_version(world: World) -> None:
 
 def test_a_draft_that_leaves_a_source_out_is_sent_back_then_says_so(world: World) -> None:
     context = world.context
+    # A small window (4096 tokens): without a charter, so the sources still have room.
+    world.charters.set(context.user_id, "")
     agence, journal = items(world)
     brief = world.briefs.create(
         context, BriefFields(title="Deux sources", item_ids=(journal, agence))

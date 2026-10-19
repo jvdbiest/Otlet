@@ -45,3 +45,4 @@ La numérotation continue celle de l'architecture.
 | [0035](0035-recherche-seuil-e1.md) | Recherche plein texte : clore L2 pour É1, ou poursuivre | Proposé (P01d) |
 | [0036](0036-editeur-versions-et-mise-en-forme.md) | Éditeur : enregistrer une version, mise en forme libre, images et exports | Accepté (X03) |
 | [0037](0037-bibliotheque.md) | Bibliothèque : l'article au centre, le brief comme atelier | Accepté (X04) |
+| [0038](0038-garde-fous-et-mesure-de-la-redaction.md) | Rédaction : contrôles après génération et mesure, plutôt que retouches du prompt | Accepté (U05 lot 1) |

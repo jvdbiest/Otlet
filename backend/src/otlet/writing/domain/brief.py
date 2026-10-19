@@ -123,6 +123,8 @@ class BriefItem:
     source_id: UUID | None  # None for a manual entry
     source_name: str | None
     published_at: datetime | None
+    words: int = 0  # the words a draft may use of it
+    full_text: bool = True  # False: only its summary may be used
 
 
 @dataclass(frozen=True, slots=True)
@@ -139,6 +141,11 @@ class Brief:
     def sources(self) -> int:
         """How many sources the brief rests on: each manual entry counts as its own."""
         return len({item.source_id or item.id for item in self.items})
+
+    @property
+    def matter_words(self) -> int:
+        """The words of the sources a draft may use: what its length rests on (draft.py)."""
+        return sum(item.words for item in self.items)
 
     @property
     def single_source(self) -> bool:

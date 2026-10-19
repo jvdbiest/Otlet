@@ -266,10 +266,11 @@ def test_the_charter_comes_between_the_rules_and_the_instructions_of_the_brief()
 def test_a_synthesis_crosses_the_sources_a_panorama_takes_them_in_turn() -> None:
     sources = prompt_sources([source("A", "a"), source("B", "b")], 9000)
     synthesis = messages(BriefFields(title="T", item_ids=()), sources)[1][1]
-    assert "Mode: synthesis" in synthesis and "never about a single source" in synthesis
+    assert "Mode: synthesis" in synthesis and "Never invent a link" in synthesis
     panorama = messages(BriefFields(title="T", item_ids=(), mode=Mode.PANORAMA), sources)[1][1]
     assert "Mode: overview" in panorama and "a section for each" in panorama
-    assert "Every section draws on two sources or more" in synthesis
+    # Crossing is advised, no longer required (Joël, 2026-10-19, after the audit).
+    assert "a source that shares nothing with the others gets its own section" in synthesis
     # In a synthesis, a section that draws on one source only is sent back once, by name
     # (Joël, 2026-10-18: one crossing paragraph out of seven was not a synthesis).
     keys = ["S1", "S2"]

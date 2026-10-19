@@ -7,14 +7,15 @@ stores it as a new version of the brief's article. A failed generation says why;
 kept as it was.
 """
 
+import json
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any, Protocol
 from uuid import UUID
 
 from otlet.workspaces.domain.model import WorkspaceContext
 from otlet.writing.domain.article import Article, Generation
-from otlet.writing.domain.brief import Brief, Mode, ModelChoice
+from otlet.writing.domain.brief import Brief, BriefFields, Length, Mode, ModelChoice
 from otlet.writing.domain.draft import (
     CHARS_PER_TOKEN,
     PROMPT_VERSION,
@@ -23,6 +24,7 @@ from otlet.writing.domain.draft import (
     check_answer,
     cited_keys,
     lone_sections,
+    longest_for,
     messages,
     output_schema,
     prompt_sources,
@@ -30,6 +32,7 @@ from otlet.writing.domain.draft import (
     source_budget,
     to_document,
 )
+from otlet.writing.domain.guardrails import copying, unsupported
 from otlet.writing.domain.vocabulary import choice
 
 GENERATE_DRAFT = "writing.generate_draft"
@@ -186,7 +189,13 @@ class Drafts:
         if brief is None or not texts:
             self._articles.finish(workspace_id, generation_id, "no_sources", (), None, {})
             return
-        fields = brief.fields
+        # The length the sources can carry (Joël, 2026-10-19, after the audit): never more than
+        # asked, never more than their words hold; thin sources get a short draft and a warning.
+        matter = sum(len(text.text.split()) for text in texts)
+        longest = longest_for(matter)
+        asked = brief.fields.length
+        used = Length.SHORT if longest is None else min(asked, longest, key=WORDS.__getitem__)
+        fields = replace(brief.fields, length=used)
         window, local = writer.room(user_id, fields.model)
         output = OUTPUT_TOKENS[fields.length]
         charter = self._charter(user_id)
@@ -205,12 +214,13 @@ class Drafts:
             nonlocal checks
             checks += 1
             first = checks == 1
-            synthesis = fields.mode is Mode.SYNTHESIS
+            # Crossing the sources is no longer sent back (Joël, 2026-10-19): forced, it made
+            # the model invent links; the sections on one source stay a warning.
             found = check_answer(
                 raw,
                 keys,
                 every_source=first,
-                crossing=first and synthesis,
+                crossing=False,
                 words=WORDS[fields.length],
                 repeats=first,
             )
@@ -228,7 +238,8 @@ class Drafts:
         details = {
             "brief": {
                 "mode": fields.mode.value,
-                "length": fields.length.value,
+                "length": asked.value,
+                "length_used": used.value,
                 "language": fields.language,
                 "model": "profile" if fields.model is None else fields.model.model,
                 "angle": fields.angle,
@@ -248,6 +259,8 @@ class Drafts:
             "local": local,
             "output_tokens": output,
             "charter_tokens": -(-len(charter) // CHARS_PER_TOKEN),
+            "matter_words": matter,
+            "thin_matter": longest is None,
             "source_room_chars": budget,
             "sources": [
                 {
@@ -300,4 +313,29 @@ class Drafts:
             # the version says which (a warning, not a failure).
             details["lone_sections"] = lone_sections(written.text)
         details["repeated_paragraphs"] = repeated_paragraphs(written.text)
+        details.update(checked(written.text, texts, brief.fields))
         self._articles.finish(workspace_id, generation_id, None, written.attempts, made, details)
+
+
+def checked(raw: str, texts: Sequence[SourceText], fields: BriefFields) -> dict[str, Any]:
+    """The guardrails of a model's draft (U05, first batch, Joël, 2026-10-19): its names, dates
+    and numbers that no source writes, and what it copies from the sources. The author's own
+    words in the brief (title, angle, instructions) are no invention."""
+    data = json.loads(raw)
+    paragraphs = [data["lead"]] + [p["text"] for s in data["sections"] for p in s["paragraphs"]]
+    sources = [f"{text.title}\n{text.text}" for text in texts]
+    allowed = " ".join([fields.title, fields.angle, fields.instructions])
+    copied = copying(paragraphs, sources)
+    return {
+        "unsupported": [
+            {"kind": f.kind, "text": f.text, "paragraph": f.paragraph}
+            for f in unsupported(paragraphs, sources, allowed)
+        ],
+        "copying": {
+            "share": copied.share,
+            "passages": [
+                {"paragraph": paragraph, "excerpt": excerpt, "words": words}
+                for paragraph, excerpt, words in copied.passages
+            ],
+        },
+    }

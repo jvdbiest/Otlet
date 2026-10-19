@@ -1258,6 +1258,8 @@ export interface components {
         };
         /** BriefItemView */
         BriefItemView: {
+            /** Full Text */
+            full_text: boolean;
             /**
              * Id
              * Format: uuid
@@ -1273,6 +1275,8 @@ export interface components {
             title: string;
             /** Url */
             url: string | null;
+            /** Words */
+            words: number;
         };
         /** BriefView */
         BriefView: {
@@ -1303,6 +1307,10 @@ export interface components {
              * @enum {string}
              */
             length: "short" | "medium" | "long";
+            /** Length Max */
+            length_max: ("short" | "medium" | "long") | null;
+            /** Matter Words */
+            matter_words: number;
             /**
              * Mode
              * @enum {string}
@@ -2207,6 +2215,12 @@ export interface components {
             audience: components["schemas"]["ChoiceView"][];
             /** Channel */
             channel: components["schemas"]["ChoiceView"][];
+            /** Length Words */
+            length_words: {
+                [key: string]: number;
+            };
+            /** Matter Share */
+            matter_share: number;
             /** Tone */
             tone: components["schemas"]["ChoiceView"][];
             /** Tone Default */

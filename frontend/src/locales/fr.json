@@ -636,7 +636,12 @@
       "panorama": "Les sources l'une après l'autre, une section chacune, avec une introduction et une conclusion qui les relient."
     },
     "unspecified": "Non précisé",
-    "lengthCapped": "Ce canal ne porte pas d'article plus long."
+    "lengthCapped": "Ce canal ne porte pas d'article plus long.",
+    "words": "{count, plural, one {# mot} other {# mots}}",
+    "summaryOnly": "{count, plural, one {résumé seulement, # mot} other {résumé seulement, # mots}}",
+    "matter": "{count, plural, one {Matière disponible : # mot de sources.} other {Matière disponible : # mots de sources.}}",
+    "lengthMatter": "{count, plural, one {Avec # mot de sources, un article plus long serait du remplissage.} other {Avec # mots de sources, un article plus long serait du remplissage.}}",
+    "thinMatter": "{count, plural, one {# mot de sources seulement : trop peu pour un article, même court. Ajoutez des éléments au texte complet.} other {# mots de sources seulement : trop peu pour un article, même court. Ajoutez des éléments au texte complet.}}"
   },
   "draft": {
     "title": "Brouillon",
@@ -663,7 +668,7 @@
       "cancelled": "Génération annulée : rien n'a été enregistré."
     },
     "unused": "{count, plural, one {Ce brouillon n'utilise pas cet élément du brief, malgré une demande de correction au modèle :} other {Ce brouillon n'utilise pas ces # éléments du brief, malgré une demande de correction au modèle :}}",
-    "lone": "{count, plural, one {Synthèse : cette section ne s'appuie que sur une source, malgré une demande de correction au modèle :} other {Synthèse : ces # sections ne s'appuient que sur une source, malgré une demande de correction au modèle :}}",
+    "lone": "{count, plural, one {Synthèse : cette section ne s'appuie que sur une source. Si les sources n'ont pas de sujet commun, le mode Panorama conviendra mieux :} other {Synthèse : ces # sections ne s'appuient que sur une source. Si les sources n'ont pas de sujet commun, le mode Panorama conviendra mieux :}}",
     "repeated": "{count, plural, one {Ce paragraphe répète presque mot pour mot un paragraphe précédent, malgré une demande de correction au modèle :} other {Ces # paragraphes répètent presque mot pour mot un paragraphe précédent, malgré une demande de correction au modèle :}}",
     "overflow": "Ce brouillon a dépassé la fenêtre de contexte du modèle : un moteur local a pu effacer le début de la conversation, où se trouvent les règles d'Otlet. Relisez-le avec soin, et agrandissez la fenêtre du fournisseur.",
     "details": {
@@ -693,7 +698,16 @@
       "html": "Page web (HTML)",
       "md": "Markdown",
       "txt": "Texte brut (TXT)"
-    }
+    },
+    "thin": "{count, plural, one {Ce brouillon s'appuie sur # mot de sources seulement : il a été rédigé court, et il risque de compléter avec des connaissances du modèle. Vérifiez chaque fait.} other {Ce brouillon s'appuie sur # mots de sources seulement : il a été rédigé court, et il risque de compléter avec des connaissances du modèle. Vérifiez chaque fait.}}",
+    "unsupported": "{count, plural, one {Ce nom, cette date ou ce nombre n'apparaît dans aucune source du brief. Vérifiez-le : le modèle a pu l'ajouter de lui-même.} other {Ces # noms, dates ou nombres n'apparaissent dans aucune source du brief. Vérifiez-les : le modèle a pu les ajouter de lui-même.}}",
+    "found": {
+      "name": "Nom : {text}",
+      "date": "Date : {text}",
+      "number": "Nombre : {text}"
+    },
+    "copied": "{count, plural, one {Ce passage reprend une source mot pour mot ({share} % du texte en suites de 8 mots reprises). Reformulez-le :} other {Ces # passages reprennent une source mot pour mot ({share} % du texte en suites de 8 mots reprises). Reformulez-les :}}",
+    "passage": "« {excerpt}… » ({words} mots repris)"
   },
   "editor": {
     "ribbon": "Mise en forme",

@@ -7,6 +7,7 @@ export type BriefView = components["schemas"]["BriefView"];
 export type BriefBody = components["schemas"]["BriefBody"];
 export type BriefLength = BriefView["length"];
 export type BriefMode = BriefView["mode"];
+export type BriefItemView = BriefView["items"][number];
 export type VocabularyView = components["schemas"]["VocabularyView"];
 export type ChoiceView = components["schemas"]["ChoiceView"];
 

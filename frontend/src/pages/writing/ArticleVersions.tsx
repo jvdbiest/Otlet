@@ -20,6 +20,31 @@ function listed(details: Record<string, unknown>, key: "lone_sections" | "repeat
   return Array.isArray(found) ? found.filter((h): h is string => typeof h === "string") : [];
 }
 
+interface Guardrails {
+  thin: boolean;
+  matter: number;
+  unsupported: { kind: "name" | "date" | "number"; text: string; paragraph: string }[];
+  share: number;
+  passages: { paragraph: string; excerpt: string; words: number }[];
+}
+
+/** What the guardrails found in a model's draft (U05, first batch, Joël, 2026-10-19). */
+function guardrails(details: Record<string, unknown>): Guardrails {
+  const found = details as {
+    thin_matter?: boolean;
+    matter_words?: number;
+    unsupported?: Guardrails["unsupported"];
+    copying?: { share?: number; passages?: Guardrails["passages"] };
+  };
+  return {
+    thin: found.thin_matter === true,
+    matter: found.matter_words ?? 0,
+    unsupported: Array.isArray(found.unsupported) ? found.unsupported : [],
+    share: found.copying?.share ?? 0,
+    passages: Array.isArray(found.copying?.passages) ? found.copying.passages : [],
+  };
+}
+
 /** The versions of an article (U04, X03, X04): read one, edit it with the editor of Otlet, export
  * it. The same in the brief (the workshop) and in the Library. `chosen` is the version shown, the
  * latest when null. */
@@ -51,6 +76,7 @@ export function ArticleVersions({
   const prefix = `v${String(shown.number)}`;
   const lone = listed(shown.details, "lone_sections");
   const repeated = listed(shown.details, "repeated_paragraphs");
+  const guard = guardrails(shown.details);
   const anchor = (type: string, start: string, skip = 0): string | undefined => {
     const id = findBlock(shown.document as unknown as PlatformDocument, type, start, skip);
     return id === undefined ? undefined : blockAnchor(prefix, id);
@@ -99,6 +125,25 @@ export function ArticleVersions({
         <Warning
           text={t("draft.unused", { count: shown.unused_sources.length })}
           items={shown.unused_sources.map((title) => ({ label: title }))}
+        />
+      )}
+      {guard.thin && <Warning text={t("draft.thin", { count: guard.matter })} />}
+      {guard.unsupported.length > 0 && (
+        <Warning
+          text={t("draft.unsupported", { count: guard.unsupported.length })}
+          items={guard.unsupported.map((found) => ({
+            label: t(`draft.found.${found.kind}`, { text: found.text }),
+            anchor: anchor("paragraph", found.paragraph),
+          }))}
+        />
+      )}
+      {guard.passages.length > 0 && (
+        <Warning
+          text={t("draft.copied", { count: guard.passages.length, share: Math.round(guard.share * 100) })}
+          items={guard.passages.map((passage) => ({
+            label: t("draft.passage", { excerpt: passage.excerpt, words: passage.words }),
+            anchor: anchor("paragraph", passage.paragraph),
+          }))}
         />
       )}
       {lone.length > 0 && (

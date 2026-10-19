@@ -251,7 +251,7 @@ def test_a_draft_becomes_a_version_of_the_article_of_the_brief(world: World) -> 
     version = article.versions[0]
     assert (version.origin, version.provider_kind, version.model) == ("ia", "ollama", "llama3.1")
     assert (
-        version.prompt_version == "redaction-10"
+        version.prompt_version == "redaction-11"
         and version.cut_sources == () == version.unused_sources
         and not version.context_overflow
     )
@@ -349,8 +349,10 @@ def test_a_draft_that_leaves_a_source_out_is_sent_back_then_says_so(world: World
     assert [a["result"] for a in done.attempts] == ["ok", "ok"]  # sent back once
     repair = world.fake.requests[-1]["body"]["messages"][-1]["content"]
     assert "sources not used: S2" in repair
-    assert "sections drawing on one source: sections[0] (S1 only), sections[1]" in repair
-    assert "about 600 words: rewrite, do not shorten" in repair
+    # A section on one source is no longer sent back (Joël, 2026-10-19): only a warning.
+    assert "sections drawing on one source" not in repair
+    # The sources are summaries of a few words: the draft is held to « short » (the audit).
+    assert "about 300 words: rewrite, do not shorten" in repair
     article = world.drafts.article(context, brief.id)
     assert article is not None
     assert article.versions[0].unused_sources == ("Article de agence",)
@@ -362,6 +364,11 @@ def test_a_draft_that_leaves_a_source_out_is_sent_back_then_says_so(world: World
     assert [s["key"] for s in details["sources"]] == ["S1", "S2"]
     assert details["brief"]["mode"] == "synthesis" and details["window_tokens"] == 4_096
     assert details["source_room_chars"] > 0 and details["local"] is True
+    # The length asked, the one the matter allowed, and the guardrails of U05 (first batch).
+    assert (details["brief"]["length"], details["brief"]["length_used"]) == ("medium", "short")
+    assert details["thin_matter"] is True and details["matter_words"] < 100
+    assert isinstance(details["unsupported"], list)
+    assert set(details["copying"]) == {"share", "passages"}
     # Clearing empties the details and attempts; the version stays.
     assert world.drafts.clear_details(context, brief.id) == 1
     article = world.drafts.article(context, brief.id)

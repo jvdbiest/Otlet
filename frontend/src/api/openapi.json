@@ -195,6 +195,10 @@
       },
       "BriefItemView": {
         "properties": {
+          "full_text": {
+            "title": "Full Text",
+            "type": "boolean"
+          },
           "id": {
             "format": "uuid",
             "title": "Id",
@@ -249,6 +253,10 @@
               }
             ],
             "title": "Url"
+          },
+          "words": {
+            "title": "Words",
+            "type": "integer"
           }
         },
         "required": [
@@ -257,7 +265,9 @@
           "url",
           "source_id",
           "source_name",
-          "published_at"
+          "published_at",
+          "words",
+          "full_text"
         ],
         "title": "BriefItemView",
         "type": "object"
@@ -309,6 +319,26 @@
             ],
             "title": "Length",
             "type": "string"
+          },
+          "length_max": {
+            "anyOf": [
+              {
+                "enum": [
+                  "short",
+                  "medium",
+                  "long"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Length Max"
+          },
+          "matter_words": {
+            "title": "Matter Words",
+            "type": "integer"
           },
           "mode": {
             "enum": [
@@ -379,6 +409,8 @@
           "items",
           "sources",
           "single_source",
+          "matter_words",
+          "length_max",
           "created_at",
           "updated_at"
         ],
@@ -2860,6 +2892,17 @@
             "title": "Channel",
             "type": "array"
           },
+          "length_words": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Length Words",
+            "type": "object"
+          },
+          "matter_share": {
+            "title": "Matter Share",
+            "type": "number"
+          },
           "tone": {
             "items": {
               "$ref": "#/components/schemas/ChoiceView"
@@ -2876,7 +2919,9 @@
           "audience",
           "tone",
           "channel",
-          "tone_default"
+          "tone_default",
+          "length_words",
+          "matter_share"
         ],
         "title": "VocabularyView",
         "type": "object"

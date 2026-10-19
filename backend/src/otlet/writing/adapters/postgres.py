@@ -28,7 +28,13 @@ BRIEF_COLUMNS = (
 # The items of the brief, in order, with what the brief shows of them.
 BRIEF_ITEMS = (
     "(SELECT coalesce(json_agg(json_build_object('id', i.id, 'title', i.title, 'url', i.url,"
-    " 'source_id', i.source_id, 'source_name', s.name, 'published_at', i.published_at)"
+    " 'source_id', i.source_id, 'source_name', s.name, 'published_at', i.published_at,"
+    # The words a draft may use, as the drafts count them: the full text or the user's entry,
+    # else the summary (articles_postgres.sources).
+    " 'full_text', i.text_status IN ('full_text', 'manual'),"
+    " 'words', coalesce(cardinality(regexp_split_to_array(nullif(btrim(coalesce("
+    "CASE WHEN i.text_status IN ('full_text', 'manual') THEN coalesce(i.text, i.feed_content) END,"
+    " i.summary, i.title)), ''), '\\s+')), 0))"
     " ORDER BY bi.position), '[]') FROM brief_items AS bi"
     " JOIN source_items AS i ON i.id = bi.item_id AND i.workspace_id = bi.workspace_id"
     " LEFT JOIN sources AS s ON s.id = i.source_id"
@@ -49,6 +55,8 @@ def _brief(row: sa.Row[Any]) -> Brief:
             published_at=None
             if item["published_at"] is None
             else datetime.fromisoformat(item["published_at"]),
+            words=item.get("words", 0),
+            full_text=item.get("full_text", True),
         )
         for item in row.items
     )

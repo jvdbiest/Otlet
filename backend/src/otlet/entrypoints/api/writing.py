@@ -28,6 +28,7 @@ from otlet.writing.domain.brief import (
     Mode,
     ModelChoice,
 )
+from otlet.writing.domain.draft import MATTER_SHARE, WORDS, longest_for
 from otlet.writing.domain.vocabulary import TONE_DEFAULT, VOCABULARY
 
 
@@ -38,6 +39,8 @@ class BriefItemView(BaseModel):
     source_id: UUID | None
     source_name: str | None
     published_at: datetime | None
+    words: int  # the words a draft may use of it
+    full_text: bool  # False: only its summary may be used
 
     @classmethod
     def of(cls, item: BriefItem) -> "BriefItemView":
@@ -48,6 +51,8 @@ class BriefItemView(BaseModel):
             source_id=item.source_id,
             source_name=item.source_name,
             published_at=item.published_at,
+            words=item.words,
+            full_text=item.full_text,
         )
 
 
@@ -67,12 +72,16 @@ class BriefView(BaseModel):
     items: list[BriefItemView]
     sources: int
     single_source: bool  # fewer than two sources: said, not refused
+    matter_words: int  # the words of its sources a draft may use
+    # The longest article they can carry (Joël, 2026-10-19); None: even a short one is thin.
+    length_max: Literal["short", "medium", "long"] | None
     created_at: datetime
     updated_at: datetime
 
     @classmethod
     def of(cls, brief: Brief) -> "BriefView":
         fields = brief.fields
+        longest = longest_for(brief.matter_words)
         return cls(
             id=brief.id,
             title=fields.title,
@@ -89,6 +98,8 @@ class BriefView(BaseModel):
             items=[BriefItemView.of(item) for item in brief.items],
             sources=brief.sources,
             single_source=brief.single_source,
+            matter_words=brief.matter_words,
+            length_max=None if longest is None else longest.value,
             created_at=brief.created_at,
             updated_at=brief.updated_at,
         )
@@ -108,6 +119,10 @@ class VocabularyView(BaseModel):
     tone: list[ChoiceView]
     channel: list[ChoiceView]
     tone_default: str
+    # The rule of the length (Joël, 2026-10-19): an article of `length_words` words needs
+    # sources of `length_words / matter_share` words at least.
+    length_words: dict[str, int]
+    matter_share: float
 
 
 class BriefBody(BaseModel):
@@ -317,7 +332,12 @@ def build_router(
             ]
             for field, values in VOCABULARY.items()
         }
-        return VocabularyView(**lists, tone_default=TONE_DEFAULT)
+        return VocabularyView(
+            **lists,
+            tone_default=TONE_DEFAULT,
+            length_words={length.value: words for length, words in WORDS.items()},
+            matter_share=MATTER_SHARE,
+        )
 
     @router.get("/briefs")
     def list_briefs(context: Context) -> list[BriefView]:

@@ -16,8 +16,10 @@ import {
   vocabularyQuery,
   type BriefLength,
   type BriefMode,
+  type BriefItemView,
   type BriefView,
   type ChoiceView,
+  type VocabularyView,
 } from "../../writing.ts";
 import { errorText, formatDate } from "../watch/labels.ts";
 import { styles } from "../watch/styles.ts";
@@ -145,7 +147,12 @@ function BriefForm({
   const [itemIds, setItemIds] = useState<string[]>(brief?.items.map((item) => item.id) ?? initialItems);
   const [confirming, setConfirming] = useState(false);
   const channels = vocabulary.data?.channel ?? [];
-  const lengthMax = channels.find((choice) => choice.key === channel)?.length_max ?? "long";
+  const channelMax = channels.find((choice) => choice.key === channel)?.length_max ?? "long";
+  const known = useBriefItems(workspaceId, brief, itemIds);
+  const matter = itemIds.reduce((sum, id) => sum + (known.get(id)?.words ?? 0), 0);
+  // The length the sources can carry (Joël, 2026-10-19): the drafts hold to it as well.
+  const matterMax = longestFor(matter, vocabulary.data);
+  const lengthMax = [channelMax, matterMax ?? "short"].reduce((a, b) => (LENGTHS.indexOf(a) <= LENGTHS.indexOf(b) ? a : b));
   return (
     <section aria-labelledby="page-title">
       <p>
@@ -241,23 +248,26 @@ function BriefForm({
           value={tone}
           onChange={setTone}
         />
-        <div className={styles.field}>
-          <label htmlFor="brief-mode">{t("brief.mode")}</label>
-          <select
-            id="brief-mode"
-            value={mode}
-            onChange={(event) => {
-              setMode(MODES.find((choice) => choice === event.target.value) ?? "synthesis");
-            }}
-          >
-            {MODES.map((choice) => (
-              <option key={choice} value={choice}>
-                {t(`brief.modes.${choice}`)}
-              </option>
-            ))}
-          </select>
-          <span className={styles.help}>{t(`brief.modeHelp.${mode}`)}</span>
-        </div>
+        {/* With one item, the mode is not even sent to the model (Joël, 2026-10-19). */}
+        {itemIds.length > 1 && (
+          <div className={styles.field}>
+            <label htmlFor="brief-mode">{t("brief.mode")}</label>
+            <select
+              id="brief-mode"
+              value={mode}
+              onChange={(event) => {
+                setMode(MODES.find((choice) => choice === event.target.value) ?? "synthesis");
+              }}
+            >
+              {MODES.map((choice) => (
+                <option key={choice} value={choice}>
+                  {t(`brief.modes.${choice}`)}
+                </option>
+              ))}
+            </select>
+            <span className={styles.help}>{t(`brief.modeHelp.${mode}`)}</span>
+          </div>
+        )}
         <div className={styles.search}>
           <div className={styles.field}>
             <label htmlFor="brief-length">{t("brief.length")}</label>
@@ -274,7 +284,17 @@ function BriefForm({
                 </option>
               ))}
             </select>
-            {lengthMax !== "long" && <span className={styles.help}>{t("brief.lengthCapped")}</span>}
+            {matterMax === null ? (
+              <span className={styles.help}>{t("brief.thinMatter", { count: matter })}</span>
+            ) : (
+              lengthMax !== "long" && (
+                <span className={styles.help}>
+                  {LENGTHS.indexOf(matterMax) < LENGTHS.indexOf(channelMax)
+                    ? t("brief.lengthMatter", { count: matter })
+                    : t("brief.lengthCapped")}
+                </span>
+              )
+            )}
           </div>
           <div className={styles.field}>
             <label htmlFor="brief-language">{t("brief.language")}</label>
@@ -367,6 +387,40 @@ function BriefForm({
 }
 
 /** The items of the brief, and the kept items that can be added to it. */
+/** The items of the form: those of the saved brief, and those added since, fetched. */
+function useBriefItems(workspaceId: string, brief: BriefView | null, itemIds: string[]): Map<string, BriefItemView> {
+  const known = new Map((brief?.items ?? []).map((item) => [item.id, item]));
+  const missing = itemIds.filter((id) => !known.has(id));
+  const fetched = useQueries({ queries: missing.map((id) => itemQuery(workspaceId, id)) });
+  for (const result of fetched) {
+    if (result.data !== undefined) {
+      const item = result.data;
+      // The words a draft may use, as the drafts count them: the text Otlet may use, else the summary.
+      const text = item.text ?? item.summary ?? item.title;
+      known.set(item.id, {
+        id: item.id,
+        title: item.title,
+        url: item.url,
+        source_id: item.source_id,
+        source_name: item.source_name,
+        published_at: item.published_at,
+        words: text.trim() === "" ? 0 : text.trim().split(/\s+/).length,
+        full_text: item.text !== null,
+      });
+    }
+  }
+  return known;
+}
+
+/** The longest article the words of the sources can carry (draft.py, longest_for); null: thin. */
+function longestFor(matter: number, vocabulary: VocabularyView | undefined): BriefLength | null {
+  if (vocabulary === undefined) {
+    return "long";
+  }
+  const fitting = LENGTHS.filter((length) => (vocabulary.length_words[length] ?? 0) <= matter * vocabulary.matter_share);
+  return fitting.at(-1) ?? null;
+}
+
 function BriefItems({
   workspaceId,
   brief,
@@ -379,22 +433,8 @@ function BriefItems({
   onChange: (ids: string[]) => void;
 }) {
   const { t } = useTranslation();
-  const known = new Map((brief?.items ?? []).map((item) => [item.id, item]));
-  const missing = itemIds.filter((id) => !known.has(id));
-  const fetched = useQueries({ queries: missing.map((id) => itemQuery(workspaceId, id)) });
-  for (const result of fetched) {
-    if (result.data !== undefined) {
-      const item = result.data;
-      known.set(item.id, {
-        id: item.id,
-        title: item.title,
-        url: item.url,
-        source_id: item.source_id,
-        source_name: item.source_name,
-        published_at: item.published_at,
-      });
-    }
-  }
+  const known = useBriefItems(workspaceId, brief, itemIds);
+  const matter = itemIds.reduce((sum, id) => sum + (known.get(id)?.words ?? 0), 0);
   const kept = useQuery(
     feedQuery(
       workspaceId,
@@ -426,7 +466,12 @@ function BriefItems({
                 <Link to="/veille/elements/$itemId" params={{ itemId: id }}>
                   {item?.title ?? t("app.loading")}
                 </Link>{" "}
-                <span className={styles.meta}>{item?.source_name ?? t("watch.manualOrigin")}</span>
+                <span className={styles.meta}>{item?.source_name ?? t("watch.manualOrigin")}</span>{" "}
+                {item !== undefined && (
+                  <span className={styles.meta}>
+                    {item.full_text ? t("brief.words", { count: item.words }) : t("brief.summaryOnly", { count: item.words })}
+                  </span>
+                )}
               </span>
               <button
                 type="button"
@@ -443,6 +488,7 @@ function BriefItems({
         })}
       </ol>
       {itemIds.length > 0 && sources.size < 2 && <p className={styles.notice}>{t("brief.singleSource")}</p>}
+      {itemIds.length > 0 && <p className={styles.meta}>{t("brief.matter", { count: matter })}</p>}
       {addable.length > 0 && (
         <details>
           <summary>{t("brief.addKept", { count: addable.length })}</summary>

@@ -503,7 +503,8 @@ function BriefItems({
   );
   // An empty line waiting for its item: « + » adds one (Joël, 2026-10-19).
   const [empty, setEmpty] = useState(itemIds.length === 0);
-  const rows = empty ? [...itemIds, ""] : itemIds;
+  // Always one line at least: removing the last item leaves an empty one (Joël, 2026-10-19).
+  const rows = empty || itemIds.length === 0 ? [...itemIds, ""] : itemIds;
   const sources = new Set(itemIds.map((id) => known.get(id)?.source_id ?? id));
   const label = (title: string, source: string | null, words: number): string =>
     `${title.length > 90 ? `${title.slice(0, 89)}…` : title} · ${source ?? t("watch.manualOrigin")} · ${t("watch.words", { count: words })}`;

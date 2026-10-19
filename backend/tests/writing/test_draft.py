@@ -225,6 +225,9 @@ def test_the_charter_comes_between_the_rules_and_the_instructions_of_the_brief()
     asked = system.index("Writing instructions from the author for this article")
     assert rules < charter < asked
     assert "Tu agis comme un journaliste professionnel" in system
+    # Otlet, then the charter, then the brief (Joël, 2026-10-19): the brief cannot lift it.
+    assert charter < system.index("The charter prevails over the brief") < asked
+    assert "within the rules above and the charter" in system
     assert "journaliste" not in user
 
 

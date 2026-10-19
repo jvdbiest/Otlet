@@ -451,7 +451,7 @@
     },
     "charter": {
       "title": "Charte de rédaction",
-      "help": "Vos consignes permanentes, ajoutées à chaque génération de brouillon, après les règles d'Otlet. Les consignes de rédaction d'un brief viennent ensuite et l'emportent en cas de désaccord. Laissez le champ vide pour générer sans charte.",
+      "help": "Vos consignes permanentes, ajoutées à chaque génération de brouillon. L'ordre est le suivant : les règles d'Otlet, puis votre charte, puis le brief. Le brief règle le style et le public (ton, audience, consignes de rédaction) mais ne peut pas lever la charte : exactitude, neutralité, rien d'inventé. Laissez le champ vide pour générer sans charte.",
       "label": "Charte",
       "isDefault": "Charte par défaut d'Otlet.",
       "isOwn": "Votre charte. « Rétablir la charte par défaut » reprend celle d'Otlet.",

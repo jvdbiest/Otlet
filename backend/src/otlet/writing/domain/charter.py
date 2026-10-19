@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """The writing charter (Joël, 2026-10-19): the author's standing instructions, added to every
-draft after the rules of the product and before the instructions of the brief, which are more
-precise and prevail. Each user has one; until they change it, this one, written by Joël."""
+draft. The order is the rules of Otlet, then the charter, then the brief: the brief sets the style
+and the audience but never lifts the charter. Each user has one; until they change it, this one,
+written by Joël. It frames the writing; catching inventions is the job of the guardrails (U05)."""
 
 CHARTER_MAX = 8000
 

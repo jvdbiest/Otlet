@@ -22,7 +22,7 @@ from typing import Any
 
 from otlet.writing.domain.brief import BriefFields, Length, Mode
 
-PROMPT_VERSION = "redaction-8"
+PROMPT_VERSION = "redaction-9"
 SCHEMA_NAME = "article_draft"
 # Up to 15: a selection of ten films is ten sections (Joël, 2026-10-18; six cut his top 10).
 SECTIONS = (2, 15)
@@ -135,18 +135,26 @@ def messages(
     )
     system = SYSTEM
     if charter.strip():
-        # The author's standing charter (Joël, 2026-10-19), for every draft; the brief's own
-        # instructions come after it and prevail, being more precise.
+        # The author's standing charter (Joël, 2026-10-19): the rules of Otlet, then the
+        # charter, then the brief. The brief sets the style and the audience; it never lifts
+        # the charter.
         system += (
             "\n\nWriting charter of the author, for all their articles (follow it, within the"
-            " rules above):\n" + charter.strip()
+            " rules above):\n"
+            + charter.strip()
+            + "\n\nThe charter prevails over the brief. The tone, audience, channel and writing"
+            " instructions of the brief only adjust the style and the readers; where they"
+            " conflict with the charter (accuracy, neutrality, nothing invented, no unattributed"
+            " superlatives or judgements), follow the charter."
         )
     if fields.instructions:
-        # The author's instructions come right after the rules of the product, as instructions;
-        # they cannot lift those rules.
+        # The author's instructions come after the rules of the product and the charter, as
+        # instructions; they cannot lift either.
         system += (
             "\n\nWriting instructions from the author for this article (follow them, within"
-            " the rules above; where they differ from the charter, they prevail):\n"
+            " the rules above"
+            + (" and the charter" if charter.strip() else "")
+            + "):\n"
             + fields.instructions
         )
     return [("system", system), ("user", user)]

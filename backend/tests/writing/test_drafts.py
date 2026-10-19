@@ -251,7 +251,7 @@ def test_a_draft_becomes_a_version_of_the_article_of_the_brief(world: World) -> 
     version = article.versions[0]
     assert (version.origin, version.provider_kind, version.model) == ("ia", "ollama", "llama3.1")
     assert (
-        version.prompt_version == "redaction-8"
+        version.prompt_version == "redaction-9"
         and version.cut_sources == () == version.unused_sources
         and not version.context_overflow
     )
@@ -295,7 +295,7 @@ def test_each_draft_follows_the_charter_of_its_author(world: World) -> None:
     assert world.charters.set(context.user_id, "  Phrases courtes.  ") == Charter(
         "Phrases courtes.", False
     )
-    assert system_sent().endswith("Phrases courtes.")
+    assert "rules above):\nPhrases courtes.\n\nThe charter prevails" in system_sent()
     world.charters.set(context.user_id, "")
     assert "Writing charter" not in system_sent()
     assert world.charters.reset(context.user_id) == Charter(DEFAULT_CHARTER, True)

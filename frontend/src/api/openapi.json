@@ -181,7 +181,7 @@
             "type": "string"
           },
           "tone": {
-            "default": "",
+            "default": "neutral",
             "title": "Tone",
             "type": "string"
           }
@@ -675,6 +675,46 @@
           "detail"
         ],
         "title": "CheckView",
+        "type": "object"
+      },
+      "ChoiceView": {
+        "properties": {
+          "definition": {
+            "title": "Definition",
+            "type": "string"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "length_max": {
+            "anyOf": [
+              {
+                "enum": [
+                  "short",
+                  "medium",
+                  "long"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Length Max"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "definition",
+          "length_max"
+        ],
+        "title": "ChoiceView",
         "type": "object"
       },
       "ContextWindowBody": {
@@ -2803,6 +2843,44 @@
         "title": "View",
         "type": "string"
       },
+      "VocabularyView": {
+        "description": "The values a brief's audience, tone and channel take (Joël, 2026-10-19, phase 1).",
+        "properties": {
+          "audience": {
+            "items": {
+              "$ref": "#/components/schemas/ChoiceView"
+            },
+            "title": "Audience",
+            "type": "array"
+          },
+          "channel": {
+            "items": {
+              "$ref": "#/components/schemas/ChoiceView"
+            },
+            "title": "Channel",
+            "type": "array"
+          },
+          "tone": {
+            "items": {
+              "$ref": "#/components/schemas/ChoiceView"
+            },
+            "title": "Tone",
+            "type": "array"
+          },
+          "tone_default": {
+            "title": "Tone Default",
+            "type": "string"
+          }
+        },
+        "required": [
+          "audience",
+          "tone",
+          "channel",
+          "tone_default"
+        ],
+        "title": "VocabularyView",
+        "type": "object"
+      },
       "WorkspaceView": {
         "properties": {
           "id": {
@@ -4150,6 +4228,47 @@
           }
         },
         "summary": "Export Version"
+      }
+    },
+    "/api/workspaces/{workspace_id}/brief-vocabulary": {
+      "get": {
+        "description": "The same for every workspace in phase 1; each workspace edits its own in phase 2.",
+        "operationId": "brief_vocabulary_api_workspaces__workspace_id__brief_vocabulary_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VocabularyView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Brief Vocabulary"
       }
     },
     "/api/workspaces/{workspace_id}/briefs": {

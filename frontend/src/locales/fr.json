@@ -610,9 +610,9 @@
     "errors": {
       "invalid_title": "Donnez un titre de travail (200 caractères au plus).",
       "invalid_angle": "L'angle compte 4 000 caractères au plus.",
-      "invalid_audience": "Le public compte 200 caractères au plus.",
-      "invalid_tone": "Le ton compte 200 caractères au plus.",
-      "invalid_channel": "Le canal compte 200 caractères au plus.",
+      "invalid_audience": "Choisissez un public dans la liste.",
+      "invalid_tone": "Choisissez un ton dans la liste.",
+      "invalid_channel": "Choisissez un canal dans la liste.",
       "invalid_language": "Langue inconnue.",
       "invalid_items": "Un brief compte de 1 à 20 éléments.",
       "invalid_model": "Choisissez un modèle.",
@@ -634,7 +634,9 @@
     "modeHelp": {
       "synthesis": "Un seul raisonnement à travers les sources : les intertitres portent sur des idées communes, et la plupart des paragraphes croisent plusieurs sources.",
       "panorama": "Les sources l'une après l'autre, une section chacune, avec une introduction et une conclusion qui les relient."
-    }
+    },
+    "unspecified": "Non précisé",
+    "lengthCapped": "Ce canal ne porte pas d'article plus long."
   },
   "draft": {
     "title": "Brouillon",

@@ -18,6 +18,7 @@ from otlet.writing.domain.brief import (
     Mode,
     ModelChoice,
 )
+from otlet.writing.domain.vocabulary import settled
 
 BRIEF_COLUMNS = (
     "b.id, b.workspace_id, b.created_by, b.title, b.angle, b.instructions, b.audience, b.tone,"
@@ -55,18 +56,20 @@ def _brief(row: sa.Row[Any]) -> Brief:
         id=row.id,
         workspace_id=row.workspace_id,
         created_by=row.created_by,
-        fields=BriefFields(
-            title=row.title,
-            item_ids=tuple(item.id for item in items),
-            angle=row.angle,
-            instructions=row.instructions,
-            audience=row.audience,
-            tone=row.tone,
-            length=Length(row.length),
-            mode=Mode(row.mode),
-            language=row.language,
-            channel=row.channel,
-            model=model,
+        fields=settled(
+            BriefFields(
+                title=row.title,
+                item_ids=tuple(item.id for item in items),
+                angle=row.angle,
+                instructions=row.instructions,
+                audience=row.audience,
+                tone=row.tone,
+                length=Length(row.length),
+                mode=Mode(row.mode),
+                language=row.language,
+                channel=row.channel,
+                model=model,
+            )
         ),
         items=items,
         created_at=row.created_at,

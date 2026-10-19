@@ -517,6 +517,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/brief-vocabulary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Brief Vocabulary
+         * @description The same for every workspace in phase 1; each workspace edits its own in phase 2.
+         */
+        get: operations["brief_vocabulary_api_workspaces__workspace_id__brief_vocabulary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/briefs": {
         parameters: {
             query?: never;
@@ -1232,7 +1252,7 @@ export interface components {
             title: string;
             /**
              * Tone
-             * @default
+             * @default neutral
              */
             tone: string;
         };
@@ -1420,6 +1440,17 @@ export interface components {
             reason: string;
             /** Url */
             url: string;
+        };
+        /** ChoiceView */
+        ChoiceView: {
+            /** Definition */
+            definition: string;
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Length Max */
+            length_max: ("short" | "medium" | "long") | null;
         };
         /**
          * ContextWindowBody
@@ -2167,6 +2198,20 @@ export interface components {
          * @enum {string}
          */
         View: "to_sort" | "kept" | "writing" | "dismissed" | "archived" | "pinned" | "all";
+        /**
+         * VocabularyView
+         * @description The values a brief's audience, tone and channel take (Joël, 2026-10-19, phase 1).
+         */
+        VocabularyView: {
+            /** Audience */
+            audience: components["schemas"]["ChoiceView"][];
+            /** Channel */
+            channel: components["schemas"]["ChoiceView"][];
+            /** Tone */
+            tone: components["schemas"]["ChoiceView"][];
+            /** Tone Default */
+            tone_default: string;
+        };
         /** WorkspaceView */
         WorkspaceView: {
             /** Id */
@@ -3221,6 +3266,37 @@ export interface operations {
                 };
                 content: {
                     "application/octet-stream": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    brief_vocabulary_api_workspaces__workspace_id__brief_vocabulary_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VocabularyView"];
                 };
             };
             /** @description Validation Error */

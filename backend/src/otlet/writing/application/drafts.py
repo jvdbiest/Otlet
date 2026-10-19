@@ -30,6 +30,7 @@ from otlet.writing.domain.draft import (
     source_budget,
     to_document,
 )
+from otlet.writing.domain.vocabulary import choice
 
 GENERATE_DRAFT = "writing.generate_draft"
 # Room for the answer: about three tokens a word, plus the JSON around the text and what a
@@ -189,6 +190,7 @@ class Drafts:
         window, local = writer.room(user_id, fields.model)
         output = OUTPUT_TOKENS[fields.length]
         charter = self._charter(user_id)
+        chosen = {f: choice(f, getattr(fields, f)) for f in ("audience", "tone", "channel")}
         # The charter takes room in the window too: as much less for the sources.
         budget = max(source_budget(window, output) - len(charter), 0)
         sources = prompt_sources(texts, budget)
@@ -232,9 +234,14 @@ class Drafts:
                 "angle": fields.angle,
                 "instructions": fields.instructions,
                 "charter": charter,
-                "audience": fields.audience,
-                "tone": fields.tone,
-                "channel": fields.channel,
+                # The labels, as the details show them; the keys and definitions sent, to
+                # compare generations on the same terms (Joël, 2026-10-19).
+                **{field: found.label if found else "" for field, found in chosen.items()},
+                "choices": {
+                    field: {"key": found.key, "label": found.label, "definition": found.definition}
+                    for field, found in chosen.items()
+                    if found is not None
+                },
             },
             "prompt_version": PROMPT_VERSION,
             "window_tokens": window,

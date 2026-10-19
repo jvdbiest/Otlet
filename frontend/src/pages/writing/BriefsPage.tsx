@@ -8,7 +8,17 @@ import { ApiError } from "../../api/client.ts";
 import { itemQuery } from "../../collection.ts";
 import { useWorkspaceId } from "../../session.ts";
 import { feedQuery, ANY_TIME } from "../../triage.ts";
-import { briefQuery, briefsQuery, useDeleteBrief, useSaveBrief, type BriefLength, type BriefMode, type BriefView } from "../../writing.ts";
+import {
+  briefQuery,
+  briefsQuery,
+  useDeleteBrief,
+  useSaveBrief,
+  vocabularyQuery,
+  type BriefLength,
+  type BriefMode,
+  type BriefView,
+  type ChoiceView,
+} from "../../writing.ts";
 import { errorText, formatDate } from "../watch/labels.ts";
 import { styles } from "../watch/styles.ts";
 import { DraftPanel } from "./DraftPanel.tsx";
@@ -125,7 +135,8 @@ function BriefForm({
   const [angle, setAngle] = useState(brief?.angle ?? "");
   const [instructions, setInstructions] = useState(brief?.instructions ?? "");
   const [audience, setAudience] = useState(brief?.audience ?? "");
-  const [tone, setTone] = useState(brief?.tone ?? "");
+  const [tone, setTone] = useState(brief?.tone ?? "neutral");
+  const vocabulary = useQuery(vocabularyQuery(workspaceId));
   const [length, setLength] = useState<BriefLength>(brief?.length ?? "medium");
   const [mode, setMode] = useState<BriefMode>(brief?.mode ?? "synthesis");
   const [language, setLanguage] = useState(brief?.language ?? "fr");
@@ -133,6 +144,8 @@ function BriefForm({
   const [model, setModel] = useState(brief?.provider_id ? `${brief.provider_id}|${brief.model ?? ""}` : "");
   const [itemIds, setItemIds] = useState<string[]>(brief?.items.map((item) => item.id) ?? initialItems);
   const [confirming, setConfirming] = useState(false);
+  const channels = vocabulary.data?.channel ?? [];
+  const lengthMax = channels.find((choice) => choice.key === channel)?.length_max ?? "long";
   return (
     <section aria-labelledby="page-title">
       <p>
@@ -214,28 +227,20 @@ function BriefForm({
           />
         </div>
         <BriefItems workspaceId={workspaceId} brief={brief} itemIds={itemIds} onChange={setItemIds} />
-        <div className={styles.field}>
-          <label htmlFor="brief-audience">{t("brief.audience")}</label>
-          <input
-            id="brief-audience"
-            maxLength={200}
-            value={audience}
-            onChange={(event) => {
-              setAudience(event.target.value);
-            }}
-          />
-        </div>
-        <div className={styles.field}>
-          <label htmlFor="brief-tone">{t("brief.tone")}</label>
-          <input
-            id="brief-tone"
-            maxLength={200}
-            value={tone}
-            onChange={(event) => {
-              setTone(event.target.value);
-            }}
-          />
-        </div>
+        <ChoiceField
+          id="brief-audience"
+          label={t("brief.audience")}
+          choices={vocabulary.data?.audience ?? []}
+          value={audience}
+          onChange={setAudience}
+        />
+        <ChoiceField
+          id="brief-tone"
+          label={t("brief.tone")}
+          choices={vocabulary.data?.tone ?? []}
+          value={tone}
+          onChange={setTone}
+        />
         <div className={styles.field}>
           <label htmlFor="brief-mode">{t("brief.mode")}</label>
           <select
@@ -264,11 +269,12 @@ function BriefForm({
               }}
             >
               {LENGTHS.map((choice) => (
-                <option key={choice} value={choice}>
+                <option key={choice} value={choice} disabled={LENGTHS.indexOf(choice) > LENGTHS.indexOf(lengthMax)}>
                   {t(`brief.lengths.${choice}`)}
                 </option>
               ))}
             </select>
+            {lengthMax !== "long" && <span className={styles.help}>{t("brief.lengthCapped")}</span>}
           </div>
           <div className={styles.field}>
             <label htmlFor="brief-language">{t("brief.language")}</label>
@@ -287,17 +293,20 @@ function BriefForm({
             </select>
           </div>
         </div>
-        <div className={styles.field}>
-          <label htmlFor="brief-channel">{t("brief.channel")}</label>
-          <input
-            id="brief-channel"
-            maxLength={200}
-            value={channel}
-            onChange={(event) => {
-              setChannel(event.target.value);
-            }}
-          />
-        </div>
+        <ChoiceField
+          id="brief-channel"
+          label={t("brief.channel")}
+          choices={channels}
+          value={channel}
+          onChange={(key) => {
+            setChannel(key);
+            // A channel that cannot carry a longer article brings the length down (Joël, 2026-10-19).
+            const max = channels.find((choice) => choice.key === key)?.length_max ?? "long";
+            if (LENGTHS.indexOf(length) > LENGTHS.indexOf(max)) {
+              setLength(max);
+            }
+          }}
+        />
         <ModelSelect value={model} onChange={setModel} />
         {save.error !== null && (
           <p role="alert" className={styles.error}>
@@ -466,6 +475,44 @@ function BriefItems({
 /** The model of the brief: the profile of Réglages > IA, or one model of one provider. The
  * models offered are those of Mon profil: installed on a local engine, listed by the catalogue
  * for the others. */
+/** A closed list of the brief (audience, tone, channel), with the definition the model receives. */
+function ChoiceField({
+  id,
+  label,
+  choices,
+  value,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  choices: ChoiceView[];
+  value: string;
+  onChange: (key: string) => void;
+}) {
+  const { t } = useTranslation();
+  const chosen = choices.find((choice) => choice.key === value);
+  return (
+    <div className={styles.field}>
+      <label htmlFor={id}>{label}</label>
+      <select
+        id={id}
+        value={value}
+        onChange={(event) => {
+          onChange(event.target.value);
+        }}
+      >
+        <option value="">{t("brief.unspecified")}</option>
+        {choices.map((choice) => (
+          <option key={choice.key} value={choice.key}>
+            {choice.label}
+          </option>
+        ))}
+      </select>
+      {chosen !== undefined && <span className={styles.help}>{chosen.definition}</span>}
+    </div>
+  );
+}
+
 function ModelSelect({ value, onChange }: { value: string; onChange: (value: string) => void }) {
   const { t } = useTranslation();
   const providers = useQuery(providersQuery);

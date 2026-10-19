@@ -7,6 +7,24 @@ export type BriefView = components["schemas"]["BriefView"];
 export type BriefBody = components["schemas"]["BriefBody"];
 export type BriefLength = BriefView["length"];
 export type BriefMode = BriefView["mode"];
+export type VocabularyView = components["schemas"]["VocabularyView"];
+export type ChoiceView = components["schemas"]["ChoiceView"];
+
+/** The values of a brief's audience, tone and channel, each with its definition for the model. */
+export const vocabularyQuery = (workspaceId: string) =>
+  queryOptions({
+    queryKey: ["workspaces", workspaceId, "brief-vocabulary"],
+    staleTime: Infinity,
+    queryFn: async (): Promise<VocabularyView> => {
+      const { data, error, response } = await api.GET("/api/workspaces/{workspace_id}/brief-vocabulary", {
+        params: { path: { workspace_id: workspaceId } },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+  });
 
 export const briefsQuery = (workspaceId: string) =>
   queryOptions({

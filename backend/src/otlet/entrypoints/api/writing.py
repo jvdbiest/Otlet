@@ -28,6 +28,7 @@ from otlet.writing.domain.brief import (
     Mode,
     ModelChoice,
 )
+from otlet.writing.domain.vocabulary import TONE_DEFAULT, VOCABULARY
 
 
 class BriefItemView(BaseModel):
@@ -93,13 +94,29 @@ class BriefView(BaseModel):
         )
 
 
+class ChoiceView(BaseModel):
+    key: str
+    label: str
+    definition: str  # what the model receives
+    length_max: Literal["short", "medium", "long"] | None  # a channel's longest article
+
+
+class VocabularyView(BaseModel):
+    """The values a brief's audience, tone and channel take (Joël, 2026-10-19, phase 1)."""
+
+    audience: list[ChoiceView]
+    tone: list[ChoiceView]
+    channel: list[ChoiceView]
+    tone_default: str
+
+
 class BriefBody(BaseModel):
     title: str
     item_ids: list[UUID] = Field(min_length=1, max_length=ITEMS_MAX)
     angle: str = ""
     instructions: str = ""
-    audience: str = ""
-    tone: str = ""
+    audience: str = ""  # keys of the lists of /brief-vocabulary; "" for none
+    tone: str = "neutral"
     length: Literal["short", "medium", "long"] = "medium"
     mode: Literal["synthesis", "panorama"] = "synthesis"
     language: str = "fr"
@@ -284,6 +301,23 @@ def build_router(
 ) -> APIRouter:
     Context = Annotated[WorkspaceContext, Depends(workspace_context)]
     router = APIRouter(prefix=PREFIX + "/{workspace_id}", dependencies=[Depends(same_origin)])
+
+    @router.get("/brief-vocabulary")
+    def brief_vocabulary(context: Context) -> VocabularyView:
+        """The same for every workspace in phase 1; each workspace edits its own in phase 2."""
+        lists = {
+            field: [
+                ChoiceView(
+                    key=c.key,
+                    label=c.label,
+                    definition=c.definition,
+                    length_max=None if c.length_max is None else c.length_max.value,
+                )
+                for c in values
+            ]
+            for field, values in VOCABULARY.items()
+        }
+        return VocabularyView(**lists, tone_default=TONE_DEFAULT)
 
     @router.get("/briefs")
     def list_briefs(context: Context) -> list[BriefView]:

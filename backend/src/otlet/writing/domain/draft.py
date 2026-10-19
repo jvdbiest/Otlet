@@ -21,8 +21,9 @@ from datetime import datetime
 from typing import Any
 
 from otlet.writing.domain.brief import BriefFields, Length, Mode
+from otlet.writing.domain.vocabulary import choice
 
-PROMPT_VERSION = "redaction-9"
+PROMPT_VERSION = "redaction-10"
 SCHEMA_NAME = "article_draft"
 # Up to 15: a selection of ten films is ten sections (Joël, 2026-10-18; six cut his top 10).
 SECTIONS = (2, 15)
@@ -111,12 +112,15 @@ def messages(
         f"Length: about {WORDS[fields.length]} words",
         f"Angle and own contribution of the author: {fields.angle or '(none given)'}",
     ]
-    if fields.audience:
-        brief.append(f"Audience: {fields.audience}")
-    if fields.tone:
-        brief.append(f"Tone: {fields.tone}")
-    if fields.channel:
-        brief.append(f"Where it will be published: {fields.channel}")
+    # Each value comes with its definition (Joël, 2026-10-19): an instruction, not a word to guess.
+    for name, field in (
+        ("Audience", "audience"),
+        ("Tone", "tone"),
+        ("Where it will be published", "channel"),
+    ):
+        found = choice(field, getattr(fields, field))
+        if found is not None:
+            brief.append(f"{name}: {found.label}. {found.definition}")
     if len(sources) > 1:
         keys = ", ".join(source.key for source in sources)
         brief.append(MODES[fields.mode].format(keys=keys))

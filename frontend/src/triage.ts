@@ -172,3 +172,22 @@ export function useBulkTriage(workspaceId: string) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
   });
 }
+
+/** « Supprimer définitivement » in Archivés (Joël, 2026-10-20): the items archived that no brief
+ * holds; how many were deleted, and how many kept for a brief or an article. */
+export function usePurgeArchived(workspaceId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (itemIds: string[]) => {
+      const { data, error, response } = await api.POST("/api/workspaces/{workspace_id}/items/purge", {
+        params: { path: { workspace_id: workspaceId } },
+        body: { item_ids: itemIds },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
+  });
+}

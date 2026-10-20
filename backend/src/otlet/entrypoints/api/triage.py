@@ -88,6 +88,15 @@ class BulkResult(BaseModel):
     changed: int
 
 
+class PurgeBody(BaseModel):
+    item_ids: list[UUID] = Field(min_length=1, max_length=SELECTION_MAX)
+
+
+class PurgeResult(BaseModel):
+    deleted: int
+    kept: int  # archived, but held by a brief (and so by an article)
+
+
 BULK_CHANGES = {
     "keep": Change(decision=Decision.KEPT),
     "dismiss": Change(decision=Decision.DISMISSED),
@@ -210,6 +219,17 @@ def build_router(feed: Feed, workspace_context: Callable[..., WorkspaceContext])
         return BulkResult(
             changed=feed.change_many(context, body.item_ids, BULK_CHANGES[body.action])
         )
+
+    @router.post("/items/purge")
+    def purge_archived(body: PurgeBody, context: Context) -> PurgeResult:
+        """« Supprimer définitivement » in Archivés: deletes for good the items chosen that the
+        user archived, except those a brief holds; each leaves its address so that its feed
+        does not bring it back. The owner of the workspace only (403 owner_only)."""
+        try:
+            purged = feed.purge_archived(context, body.item_ids)
+        except PermissionError as error:
+            raise HTTPException(status.HTTP_403_FORBIDDEN, "owner_only") from error
+        return PurgeResult(deleted=purged.deleted, kept=purged.kept)
 
     @router.get("/items/{item_id}/triage")
     def get_triage(item_id: UUID, context: Context) -> TriageView:

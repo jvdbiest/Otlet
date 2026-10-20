@@ -2,7 +2,7 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { type BulkAction, useBulkTriage } from "../../triage.ts";
+import { type BulkAction, useBulkTriage, usePurgeArchived } from "../../triage.ts";
 import { styles } from "./styles.ts";
 
 const ACTIONS: readonly BulkAction[] = ["keep", "pin", "archive", "dismiss", "to_sort"];
@@ -17,15 +17,20 @@ export function BulkBar({
   selected,
   onSelect,
   everything,
+  purge = false,
 }: {
   workspaceId: string;
   visible: string[];
   selected: string[];
   onSelect: (ids: string[]) => void;
   everything?: (() => Promise<string[]>) | undefined;
+  /** « Supprimer définitivement »: in Archivés, for the owner of the workspace. */
+  purge?: boolean;
 }) {
   const { t } = useTranslation();
   const triage = useBulkTriage(workspaceId);
+  const purging = usePurgeArchived(workspaceId);
+  const [confirming, setConfirming] = useState(false);
   const [done, setDone] = useState<string | null>(null);
   const [total, setTotal] = useState<number | null>(null);
   const [gathering, setGathering] = useState(false);
@@ -45,15 +50,16 @@ export function BulkBar({
   if (visible.length === 0) {
     // An action may empty the list: its result stays readable.
     return done === null ? null : (
-      <p className={styles.meta} role="status">
+      <p className={styles.meta} role="status" style={{ whiteSpace: "pre-line" }}>
         {done}
       </p>
     );
   }
-  const busy = triage.isPending || gathering;
+  const busy = triage.isPending || purging.isPending || gathering;
   const finish = (message: string) => {
     setDone(message);
     setTotal(null);
+    setConfirming(false);
     onSelect([]);
   };
   return (
@@ -90,14 +96,43 @@ export function BulkBar({
         />{" "}
         {t("triage.bulk.all")}
       </label>
-      <span className={styles.meta} aria-live="polite">
+      <span className={styles.meta} aria-live="polite" style={{ whiteSpace: "pre-line" }}>
         {gathering
           ? t("triage.bulk.gathering")
           : chosen.length > 0
             ? t("triage.bulk.selected", { count: chosen.length })
             : done}
       </span>
-      {chosen.length > 0 && (
+      {chosen.length > 0 && confirming && (
+        <div className={styles.row} role="alertdialog" aria-label={t("triage.bulk.purge")}>
+          <span>{t("triage.bulk.confirmPurge", { count: chosen.length })}</span>
+          <button
+            type="button"
+            className={styles.primary}
+            disabled={busy}
+            onClick={() => {
+              purging.mutate(chosen, {
+                onSuccess: (result) => {
+                  const deleted = t("triage.bulk.purged", { count: result.deleted });
+                  finish(result.kept === 0 ? deleted : `${deleted}\n${t("triage.bulk.purgeKept", { count: result.kept })}`);
+                },
+              });
+            }}
+          >
+            {t("triage.bulk.purgeForGood")}
+          </button>
+          <button
+            type="button"
+            className={styles.button}
+            onClick={() => {
+              setConfirming(false);
+            }}
+          >
+            {t("triage.bulk.cancel")}
+          </button>
+        </div>
+      )}
+      {chosen.length > 0 && !confirming && (
         <div className={styles.row}>
           {chosen.length <= BRIEF_MAX ? (
             <Link to="/redaction/nouveau" search={{ items: chosen.join(",") }} className={styles.primary}>
@@ -126,9 +161,21 @@ export function BulkBar({
               {t(`triage.bulk.${action}`)}
             </button>
           ))}
+          {purge && (
+            <button
+              type="button"
+              className={styles.button}
+              disabled={busy}
+              onClick={() => {
+                setConfirming(true);
+              }}
+            >
+              {t("triage.bulk.purge")}
+            </button>
+          )}
         </div>
       )}
-      {(triage.error !== null || failed) && (
+      {(triage.error !== null || purging.error !== null || failed) && (
         <span role="alert" className={styles.error}>
           {t("errors.generic")}
         </span>

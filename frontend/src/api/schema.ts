@@ -862,6 +862,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/items/purge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Purge Archived
+         * @description « Supprimer définitivement » in Archivés: deletes for good the items chosen that the
+         *     user archived, except those a brief holds; each leaves its address so that its feed
+         *     does not bring it back. The owner of the workspace only (403 owner_only).
+         */
+        post: operations["purge_archived_api_workspaces__workspace_id__items_purge_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/items/triage": {
         parameters: {
             query?: never;
@@ -2571,6 +2593,18 @@ export interface components {
             step: string;
             /** Total */
             total: number;
+        };
+        /** PurgeBody */
+        PurgeBody: {
+            /** Item Ids */
+            item_ids: string[];
+        };
+        /** PurgeResult */
+        PurgeResult: {
+            /** Deleted */
+            deleted: number;
+            /** Kept */
+            kept: number;
         };
         /** RefreshView */
         RefreshView: {
@@ -4740,6 +4774,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ItemView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    purge_archived_api_workspaces__workspace_id__items_purge_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PurgeBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurgeResult"];
                 };
             };
             /** @description Validation Error */

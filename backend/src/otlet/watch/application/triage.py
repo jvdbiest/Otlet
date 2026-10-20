@@ -25,13 +25,21 @@ from otlet.watch.domain.triage import (
     Triage,
     View,
 )
-from otlet.workspaces.domain.model import WorkspaceContext
+from otlet.workspaces.domain.model import Role, WorkspaceContext
 
 # « Tout sélectionner » takes every item of the filters, not only the page shown (Joël,
 # 2026-10-20): one bulk action takes as many.
 SELECTION_MAX = 5000
 BULK_MAX = SELECTION_MAX  # items of one bulk action
 FEED_MAX = 200
+
+
+@dataclass(frozen=True, slots=True)
+class Purged:
+    """What « Supprimer définitivement » did: items deleted, archived items kept for a brief."""
+
+    deleted: int
+    kept: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -98,6 +106,14 @@ class TriageStore(Protocol):
         """The ids of the items the feed shows with these filters, every page and group."""
         ...
 
+    def purge_archived(
+        self, workspace_id: UUID, user_id: UUID, item_ids: list[UUID]
+    ) -> tuple[int, int]:
+        """Deletes for good those of the items this user archived that no brief holds, each
+        leaving its address so that its feed does not bring it back; how many were deleted,
+        and how many archived ones were kept for a brief."""
+        ...
+
     def triage(self, workspace_id: UUID, user_id: UUID, item_id: UUID) -> Triage | None:
         """The triage of an item of the workspace (the default for one never sorted), or None
         when the item does not exist."""
@@ -119,6 +135,16 @@ class TriageStore(Protocol):
 class Feed:
     def __init__(self, store: TriageStore) -> None:
         self._store = store
+
+    def purge_archived(self, context: WorkspaceContext, item_ids: list[UUID]) -> Purged:
+        """« Supprimer définitivement » in Archivés (Joël, 2026-10-20): the owner of the
+        workspace only; the items used by a brief, and so by an article, are kept."""
+        if context.role is not Role.OWNER:
+            raise PermissionError("owner_only")
+        deleted, kept = self._store.purge_archived(
+            context.workspace_id, context.user_id, list(dict.fromkeys(item_ids))[:BULK_MAX]
+        )
+        return Purged(deleted, kept)
 
     def ids(
         self,

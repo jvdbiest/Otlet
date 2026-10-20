@@ -375,7 +375,13 @@
       },
       "brief": "Créer un brief",
       "gathering": "Sélection de tous les éléments…",
-      "briefMax": "Un brief prend {max} éléments au plus."
+      "briefMax": "Un brief prend {max} éléments au plus.",
+      "purge": "Supprimer définitivement",
+      "purgeForGood": "Supprimer définitivement",
+      "cancel": "Annuler",
+      "confirmPurge": "{count, plural, one {Supprimer définitivement # élément archivé ? S'il est utilisé par un brief ou un article, il sera conservé. Cette action est irréversible.} other {Supprimer définitivement # éléments archivés ? Ceux qu'utilise un brief ou un article seront conservés. Cette action est irréversible.}}",
+      "purged": "{count, plural, one {# élément supprimé définitivement.} other {# éléments supprimés définitivement.}}",
+      "purgeKept": "{count, plural, one {# élément conservé car utilisé par un brief ou un article.} other {# éléments conservés car utilisés par un brief ou un article.}}"
     },
     "period": {
       "label": "Période",

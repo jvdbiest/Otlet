@@ -2703,6 +2703,43 @@
         "title": "PullView",
         "type": "object"
       },
+      "PurgeBody": {
+        "properties": {
+          "item_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 5000,
+            "minItems": 1,
+            "title": "Item Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "item_ids"
+        ],
+        "title": "PurgeBody",
+        "type": "object"
+      },
+      "PurgeResult": {
+        "properties": {
+          "deleted": {
+            "title": "Deleted",
+            "type": "integer"
+          },
+          "kept": {
+            "title": "Kept",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "deleted",
+          "kept"
+        ],
+        "title": "PurgeResult",
+        "type": "object"
+      },
       "RefreshView": {
         "properties": {
           "sources": {
@@ -6641,6 +6678,57 @@
           }
         },
         "summary": "Add Manual Url"
+      }
+    },
+    "/api/workspaces/{workspace_id}/items/purge": {
+      "post": {
+        "description": "« Supprimer définitivement » in Archivés: deletes for good the items chosen that the\nuser archived, except those a brief holds; each leaves its address so that its feed\ndoes not bring it back. The owner of the workspace only (403 owner_only).",
+        "operationId": "purge_archived_api_workspaces__workspace_id__items_purge_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PurgeBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurgeResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Purge Archived"
       }
     },
     "/api/workspaces/{workspace_id}/items/triage": {

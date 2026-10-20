@@ -100,3 +100,4 @@ date,heures,domaine,etape,tache,note
 2026-10-20,3,fonction,E1,X04,médiathèque lot 2 : étiquettes des images (migration 0035), sélecteur de la médiathèque dans l'éditeur ; estimation grossière (Claude)
 2026-10-20,1,fonction,E1,X04,médiathèque : télécharger l'original et exporter les originaux en ZIP ; estimation grossière (Claude)
 2026-10-20,1,fonction,E1,I1,Veille : « Tout sélectionner » sur tous les éléments des filtres ; estimation grossière (Claude)
+2026-10-20,1.5,fonction,E1,I1,Veille : supprimer définitivement des éléments archivés (propriétaire, briefs conservés) ; estimation grossière (Claude)

@@ -184,8 +184,38 @@ class PostgresCollectionStore:
         name: str | None,
         interval_minutes: int | None,
         active: bool | None,
+        address: tuple[str, str, str | None] | None = None,
     ) -> Source | None:
         with workspace_transaction(self._engine, workspace_id) as connection:
+            if address is not None:
+                url, feed_url, site_url = address
+                taken = connection.execute(
+                    sa.text(
+                        f"SELECT id FROM sources WHERE feed_url = :feed AND id <> :id AND {here()}"
+                    ),
+                    {"feed": feed_url, "id": source_id},
+                ).first()
+                if taken is not None:
+                    raise CollectionError("already_followed", "this feed is already followed")
+                # Another address: what was known of the old one no longer holds.
+                moved = connection.execute(
+                    sa.text(
+                        "UPDATE sources SET url = :url, feed_url = :feed, site_url = :site,"
+                        " etag = NULL, last_modified = NULL, legal_status = 'unknown',"
+                        " legal_reason = NULL, consecutive_failures = 0, last_error = NULL,"
+                        " next_fetch_at = now()"
+                        f" WHERE id = :id AND {here()} RETURNING id"
+                    ),
+                    {"url": url, "feed": feed_url, "site": site_url, "id": source_id},
+                ).scalar_one_or_none()
+                if moved is None:
+                    return None
+                self._enqueue(
+                    connection,
+                    COLLECT_SOURCE,
+                    workspace_id=str(workspace_id),
+                    source_id=str(source_id),
+                )
             updated = connection.execute(
                 sa.text(
                     "UPDATE sources SET"

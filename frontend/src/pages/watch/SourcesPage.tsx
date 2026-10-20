@@ -151,6 +151,89 @@ function AddSource({ workspaceId }: { workspaceId: string }) {
   );
 }
 
+/** Changes a source (Joël, 2026-10-20): its name, its address (the site or its feed, checked
+ * again as when it was added), how often it is collected. */
+function SourceEdit({ workspaceId, source, onDone }: { workspaceId: string; source: SourceView; onDone: () => void }) {
+  const { t } = useTranslation();
+  const update = useUpdateSource(workspaceId);
+  const [name, setName] = useState(source.name);
+  const [url, setUrl] = useState(source.url);
+  const [interval, setInterval] = useState(String(source.interval_minutes));
+  const prefix = `source-edit-${source.id}`;
+  return (
+    <form
+      className={styles.form}
+      onSubmit={(event) => {
+        event.preventDefault();
+        update.mutate(
+          {
+            sourceId: source.id,
+            ...(name.trim() !== source.name ? { name: name.trim() } : {}),
+            ...(Number(interval) !== source.interval_minutes ? { interval_minutes: Number(interval) } : {}),
+            ...(url.trim() !== source.url ? { url: url.trim() } : {}),
+          },
+          { onSuccess: onDone },
+        );
+      }}
+    >
+      <div className={styles.field}>
+        <label htmlFor={`${prefix}-name`}>{t("sources.add.name")}</label>
+        <input
+          id={`${prefix}-name`}
+          required
+          maxLength={200}
+          value={name}
+          onChange={(event) => {
+            setName(event.target.value);
+          }}
+        />
+      </div>
+      <div className={styles.field}>
+        <label htmlFor={`${prefix}-url`}>{t("sources.edit.url")}</label>
+        <input
+          id={`${prefix}-url`}
+          required
+          type="url"
+          value={url}
+          onChange={(event) => {
+            setUrl(event.target.value);
+          }}
+        />
+        <span className={styles.help}>{t("sources.edit.urlHelp")}</span>
+      </div>
+      <div className={styles.field}>
+        <label htmlFor={`${prefix}-interval`}>{t("sources.add.interval")}</label>
+        <select
+          id={`${prefix}-interval`}
+          value={interval}
+          onChange={(event) => {
+            setInterval(event.target.value);
+          }}
+        >
+          {INTERVALS.map((minutes) => (
+            <option key={minutes} value={minutes}>
+              {t(`sources.intervals.${minutes}`)}
+            </option>
+          ))}
+        </select>
+      </div>
+      {update.error !== null && (
+        <p role="alert" className={styles.error}>
+          {errorText(t, update.error)}
+        </p>
+      )}
+      <p className={styles.row}>
+        <button type="submit" className={styles.primary} disabled={update.isPending}>
+          {update.isPending ? t("sources.edit.saving") : t("sources.edit.save")}
+        </button>
+        <button type="button" className={styles.button} onClick={onDone}>
+          {t("brief.cancel")}
+        </button>
+      </p>
+    </form>
+  );
+}
+
 function SourceCard({ workspaceId, source }: { workspaceId: string; source: SourceView }) {
   const { t } = useTranslation();
   const update = useUpdateSource(workspaceId);
@@ -158,6 +241,7 @@ function SourceCard({ workspaceId, source }: { workspaceId: string; source: Sour
   const remove = useDeleteSource(workspaceId);
   const [confirming, setConfirming] = useState(false);
   const [showJournal, setShowJournal] = useState(false);
+  const [editing, setEditing] = useState(false);
   const failed = update.error ?? collect.error ?? remove.error;
   const headingId = `source-${source.id}`;
 
@@ -216,6 +300,15 @@ function SourceCard({ workspaceId, source }: { workspaceId: string; source: Sour
         </Button>
         <Button
           className={styles.button}
+          aria-expanded={editing}
+          onPress={() => {
+            setEditing((open) => !open);
+          }}
+        >
+          {t("sources.edit.open")}
+        </Button>
+        <Button
+          className={styles.button}
           aria-expanded={showJournal}
           onPress={() => {
             setShowJournal((shown) => !shown);
@@ -260,6 +353,15 @@ function SourceCard({ workspaceId, source }: { workspaceId: string; source: Sour
         <p role="alert" className={styles.error}>
           {t("sources.actionFailed")}
         </p>
+      )}
+      {editing && (
+        <SourceEdit
+          workspaceId={workspaceId}
+          source={source}
+          onDone={() => {
+            setEditing(false);
+          }}
+        />
       )}
       {showJournal && <Journal workspaceId={workspaceId} sourceId={source.id} />}
     </li>

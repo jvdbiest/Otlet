@@ -2144,6 +2144,8 @@ export interface components {
             interval_minutes?: number | null;
             /** Name */
             name?: string | null;
+            /** Url */
+            url?: string | null;
         };
         /**
          * SourceTextView

@@ -111,7 +111,16 @@ export function useAddSource(workspaceId: string) {
 export function useUpdateSource(workspaceId: string) {
   const refresh = useRefresh(workspaceId);
   return useMutation({
-    mutationFn: async ({ sourceId, ...body }: { sourceId: string; active?: boolean; interval_minutes?: number }) => {
+    mutationFn: async ({
+      sourceId,
+      ...body
+    }: {
+      sourceId: string;
+      active?: boolean;
+      interval_minutes?: number;
+      name?: string;
+      url?: string; // another address: the site or its feed, checked again (Joël, 2026-10-20)
+    }) => {
       const { data, error, response } = await api.PATCH("/api/workspaces/{workspace_id}/sources/{source_id}", {
         params: { path: { workspace_id: workspaceId, source_id: sourceId } },
         body,

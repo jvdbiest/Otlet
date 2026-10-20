@@ -530,3 +530,29 @@ def test_a_declaration_never_passes_robots_nor_a_disabled_instance(world: World)
     with pytest.raises(RightsError) as refused:
         closed.declare_rights(world.context, item.id, basis="licence", certified=True)
     assert refused.value.code == "declarations_disabled"
+
+
+def test_a_source_moves_to_another_address(world: World) -> None:
+    open_site(world.web, "a")
+    source = world.collection.add_source(world.context, FEED)
+    world.run_jobs()
+    # The site moves its feed (Joël, 2026-10-20): the source follows, checked again at once.
+    world.web.pages[SITE + "/news.xml"] = (200, XML, rss("b"))
+    world.web.pages[f"{SITE}/b"] = (200, HTML, article("b"))
+    moved = world.collection.update_source(
+        world.context, source.id, url=SITE + "/news.xml", name="Le Journal, actualités"
+    )
+    assert moved is not None
+    assert (moved.feed_url, moved.name, moved.legal_status) == (
+        SITE + "/news.xml",
+        "Le Journal, actualités",
+        LegalStatus.UNKNOWN,
+    )
+    world.run_jobs()
+    titles = sorted(item.title for item in world.collection.list_items(world.context))
+    assert titles == ["Article a", "Article b"]  # what was collected stays
+    # Another source cannot move to a feed already followed (the old one is free again).
+    second = world.collection.add_source(world.context, FEED)
+    with pytest.raises(CollectionError) as taken:
+        world.collection.update_source(world.context, second.id, url=SITE + "/news.xml")
+    assert taken.value.code == "already_followed"

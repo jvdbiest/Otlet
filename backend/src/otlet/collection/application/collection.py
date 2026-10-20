@@ -214,7 +214,16 @@ class Collection:
         name: str | None = None,
         interval_minutes: int | None = None,
         active: bool | None = None,
+        url: str | None = None,
     ) -> Source | None:
+        """Changes a source (Joël, 2026-10-20). A new address is read as when the source was
+        added: its feed found, then its rules (robots.txt, reservation of mining) checked again
+        at its next collection, which comes at once. Its items stay."""
+        address = None
+        if url is not None:
+            entered = model.check_url(url)
+            feed_url, feed = self._find_feed(entered)
+            address = (entered, feed_url, feed.site_url)
         return self._store.update_source(
             context.workspace_id,
             source_id,
@@ -223,6 +232,7 @@ class Collection:
             if interval_minutes is None
             else model.check_interval(interval_minutes),
             active=active,
+            address=address,
         )
 
     def delete_source(self, context: WorkspaceContext, source_id: UUID) -> bool:

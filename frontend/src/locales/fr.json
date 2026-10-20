@@ -158,7 +158,14 @@
     "allowed": "autorisé",
     "refusedDecision": "refusé",
     "policy": "Politique annoncée par le site",
-    "actionFailed": "L'action a échoué. Réessayez dans un instant."
+    "actionFailed": "L'action a échoué. Réessayez dans un instant.",
+    "edit": {
+      "open": "Modifier",
+      "url": "Adresse du site ou de son flux",
+      "urlHelp": "Une nouvelle adresse est vérifiée comme à l'ajout : Otlet y cherche le flux, puis relit les règles du site (robots.txt, réserve de fouille) à la collecte suivante, lancée aussitôt. Les éléments déjà collectés restent.",
+      "save": "Enregistrer",
+      "saving": "Vérification…"
+    }
   },
   "legal": {
     "full_text": "Texte intégral utilisable",

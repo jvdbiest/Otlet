@@ -172,6 +172,7 @@ class SourceChanges(BaseModel):
         default=None, ge=model.INTERVAL_MIN_MINUTES, le=model.INTERVAL_MAX_MINUTES
     )
     active: bool | None = None
+    url: str | None = Field(default=None, min_length=1, max_length=model.URL_MAX_LENGTH)
 
 
 class ManualUrl(BaseModel):
@@ -233,6 +234,7 @@ def build_router(
                 name=body.name,
                 interval_minutes=body.interval_minutes,
                 active=body.active,
+                url=body.url,
             )
         except CollectionError as error:
             raise _refused(error) from error

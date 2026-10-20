@@ -240,6 +240,17 @@ class Collection:
         action of its page (dismissing and archiving are the usual ones)."""
         return self._store.remove_item(context.workspace_id, item_id)
 
+    def retry_text(self, context: WorkspaceContext, item_id: UUID) -> Item | None:
+        """« Réessayer la récupération » (Joël, 2026-10-20): reads the page again when its text
+        was missed for a technical reason. None when the item is unknown or not retryable: a
+        refusal of the site (robots.txt, a reservation of mining) is never read again."""
+        item = self._store.get_item(context.workspace_id, item_id)
+        if item is None or not model.retryable(item.text_reason):
+            return None
+        if not self._store.retry_text(context.workspace_id, item_id):
+            return None
+        return self._store.get_item(context.workspace_id, item_id)
+
     def add_manual_url(self, context: WorkspaceContext, url: str) -> Item:
         """An article the user points to: its page is read under the same rules as a feed's."""
         return self._store.add_manual_url(context.workspace_id, model.check_url(url), self._clock())

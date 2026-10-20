@@ -507,6 +507,23 @@ class PostgresCollectionStore:
             )
             return self._get_item(connection, item_id)
 
+    def retry_text(self, workspace_id: UUID, item_id: UUID) -> bool:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            updated = connection.execute(
+                sa.text(
+                    "UPDATE source_items SET text_status = 'pending', text_reason = NULL"
+                    f" WHERE id = :id AND text_status = 'summary_only' AND url IS NOT NULL"
+                    f" AND {here()} RETURNING id"
+                ),
+                {"id": item_id},
+            ).scalar()
+            if updated is None:
+                return False
+            self._enqueue(
+                connection, EXTRACT_ITEM, workspace_id=str(workspace_id), item_id=str(item_id)
+            )
+            return True
+
     def remove_item(self, workspace_id: UUID, item_id: UUID) -> bool:
         with workspace_transaction(self._engine, workspace_id) as connection:
             connection.execute(

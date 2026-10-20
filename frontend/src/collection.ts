@@ -172,6 +172,23 @@ export function useAddManualUrl(workspaceId: string) {
   });
 }
 
+/** « Réessayer la récupération »: reads the page again, for a text missed by accident. */
+export function useRetryText(workspaceId: string) {
+  const refresh = useRefresh(workspaceId);
+  return useMutation({
+    mutationFn: async (itemId: string) => {
+      const { data, error, response } = await api.POST("/api/workspaces/{workspace_id}/items/{item_id}/text/retry", {
+        params: { path: { workspace_id: workspaceId, item_id: itemId } },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: refresh,
+  });
+}
+
 export interface ManualText {
   title: string;
   text: string;

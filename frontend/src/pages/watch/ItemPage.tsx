@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { ApiError } from "../../api/client.ts";
-import { itemQuery, useRemoveItem } from "../../collection.ts";
+import { itemQuery, useRemoveItem, useRetryText } from "../../collection.ts";
 import { itemTriageQuery, useChangeTriage } from "../../triage.ts";
 import { itemWatchQuery } from "../../watch.ts";
 import { useWorkspaceId } from "../../session.ts";
-import { explain, formatDate, isWebUrl, reasonText, textLabel, textTone } from "./labels.ts";
+import { errorText, explain, formatDate, isWebUrl, reasonText, retryable, textLabel, textTone } from "./labels.ts";
 import { styles } from "./styles.ts";
 import { TriageActions } from "./TriageActions.tsx";
 
@@ -20,7 +20,12 @@ export function ItemPage({ itemId }: { itemId: string }) {
 
 function Item({ workspaceId, itemId }: { workspaceId: string; itemId: string }) {
   const { t } = useTranslation();
-  const item = useQuery(itemQuery(workspaceId, itemId));
+  const item = useQuery({
+    ...itemQuery(workspaceId, itemId),
+    // A page being read again: followed until its text is there.
+    refetchInterval: (query) => (query.state.data?.text_status === "pending" ? 3_000 : false),
+  });
+  const retry = useRetryText(workspaceId);
   const back = (
     <p>
       <Link to="/veille">{t("item.back")}</Link>
@@ -52,9 +57,26 @@ function Item({ workspaceId, itemId }: { workspaceId: string; itemId: string }) 
           : t("item.collected", { date: formatDate(data.collected_at) })}
       </p>
       <p className={styles.row}>
-        <span className={styles[textTone(data.text_status)]}>{textLabel(t, data.text_status)}</span>
+        <span className={styles[textTone(data.text_status)]}>{textLabel(t, data.text_status, data.text_reason)}</span>
         <span className={styles.meta}>{reasonText(t, data.text_reason)}</span>
+        {data.text_status === "summary_only" && retryable(data.text_reason) && (
+          <button
+            type="button"
+            className={styles.button}
+            disabled={retry.isPending}
+            onClick={() => {
+              retry.mutate(data.id);
+            }}
+          >
+            {t("item.retryText")}
+          </button>
+        )}
       </p>
+      {retry.error !== null && (
+        <p role="alert" className={styles.error}>
+          {errorText(t, retry.error)}
+        </p>
+      )}
       {data.url !== null && isWebUrl(data.url) && (
         <p>
           <a href={data.url} target="_blank" rel="noopener noreferrer nofollow">

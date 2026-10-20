@@ -106,7 +106,8 @@
     "noTopic": "Cet élément ne correspond à aucun de vos sujets.",
     "sameStory": "La même histoire ailleurs",
     "points": "{points, plural, one {# point} other {# points}}",
-    "notFound": "Cet élément n'existe pas ou plus."
+    "notFound": "Cet élément n'existe pas ou plus.",
+    "retryText": "Réessayer la récupération"
   },
   "sources": {
     "title": "Sources",
@@ -169,7 +170,10 @@
     "pending": "Lecture de la page en attente",
     "full_text": "Texte intégral",
     "summary_only": "Résumé seulement",
-    "manual": "Saisie manuelle"
+    "manual": "Saisie manuelle",
+    "reserved": "Texte réservé par l'éditeur",
+    "refused": "Texte refusé par le site",
+    "missed": "Texte non récupéré"
   },
   "reasons": {
     "robots_allowed": "robots.txt autorise la collecte.",
@@ -228,7 +232,8 @@
     "too_large": "Cette image dépasse 15 Mo.",
     "not_an_image": "Ce fichier n'est pas une image JPEG, PNG, WebP ou GIF lisible.",
     "invalid_tags": "Une étiquette a 40 caractères au plus, et un article 20 étiquettes au plus.",
-    "article_not_found": "Cet article n'existe plus."
+    "article_not_found": "Cet article n'existe plus.",
+    "not_retryable": "Ce texte ne peut pas être récupéré : le site le refuse ou l'éditeur le réserve."
   },
   "manual": {
     "title": "Ajouter à la main",

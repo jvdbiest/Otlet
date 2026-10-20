@@ -421,3 +421,34 @@ def test_a_removed_item_does_not_come_back(world: World) -> None:
     world.collection.collect(world.context.workspace_id, source.id)
     world.run_jobs()
     assert [i.title for i in world.collection.list_items(world.context)] == ["Article b"]
+
+
+def test_a_text_missed_by_accident_can_be_read_again(world: World) -> None:
+    # The page answers 503 at the first reading, then is back (Joël, 2026-10-20).
+    open_site(world.web, "a")
+    world.web.pages[f"{SITE}/a"] = (503, HTML, b"")
+    world.collection.add_source(world.context, FEED)
+    world.run_jobs()
+    (item,) = world.collection.list_items(world.context)
+    assert (item.text_status, item.text_reason) == (TextStatus.SUMMARY_ONLY, "http_503")
+    open_site(world.web, "a")
+    retried = world.collection.retry_text(world.context, item.id)
+    assert retried is not None and retried.text_status is TextStatus.PENDING
+    world.run_jobs()
+    read = world.collection.get_item(world.context, item.id)
+    assert read is not None and read.text_status is TextStatus.FULL_TEXT
+
+
+def test_a_reservation_of_the_publisher_is_never_read_again(world: World) -> None:
+    open_site(world.web, "a")
+    world.web.pages[SITE + "/.well-known/tdmrep.json"] = (
+        200,
+        {},
+        b'[{"location": "/", "tdm-reservation": 1}]',
+    )
+    world.collection.add_source(world.context, FEED)
+    world.run_jobs()
+    (item,) = world.collection.list_items(world.context)
+    assert world.collection.retry_text(world.context, item.id) is None
+    still = world.collection.get_item(world.context, item.id)
+    assert still is not None and still.text_reason == "tdm_reserved_file"

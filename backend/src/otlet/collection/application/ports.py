@@ -160,6 +160,11 @@ class CollectionStore(Protocol):
         leaves a trace so that its next collection skips it. False when there is no such item."""
         ...
 
+    def retry_text(self, workspace_id: UUID, item_id: UUID) -> bool:
+        """Sets an item whose text was missed back to pending and enqueues its reading, in one
+        transaction; False when it is unknown or its text cannot be retried."""
+        ...
+
     def add_manual_url(self, workspace_id: UUID, url: str, at: datetime) -> Item:
         """Creates a pending item and enqueues the reading of its page."""
         ...

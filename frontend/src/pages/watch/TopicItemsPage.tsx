@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { ApiError } from "../../api/client.ts";
 import { useWorkspaceId } from "../../session.ts";
 import { TOPIC_PAGE_SIZE, topicItemsQuery, topicQuery, type ScoredItemView } from "../../watch.ts";
-import { explain, formatDate, textLabel, textTone } from "./labels.ts";
+import { explain, formatDate, reasonText, textLabel, textTone } from "./labels.ts";
 import { RescoreStatus } from "./RescoreStatus.tsx";
 import { emptyStyles, styles } from "./styles.ts";
 import { TriageActions } from "./TriageActions.tsx";
@@ -127,7 +127,9 @@ function ScoredCard({ workspaceId, entry }: { workspaceId: string; entry: Scored
       </h3>
       <p className={styles.meta}>
         {item.source_name ?? t("watch.manualOrigin")} · {formatDate(item.published_at ?? item.collected_at)}{" "}
-        <span className={styles[textTone(item.text_status)]}>{textLabel(t, item.text_status)}</span>
+        <span className={styles[textTone(item.text_status)]} title={reasonText(t, item.text_reason)}>
+          {textLabel(t, item.text_status, item.text_reason)}
+        </span>
         {item.duplicates > 0 && <> · {t("watch.duplicates", { count: item.duplicates })}</>}
       </p>
       <p className={styles.why}>

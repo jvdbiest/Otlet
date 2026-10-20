@@ -250,6 +250,17 @@ def build_router(
         if not collection.remove_item(context, item_id):
             raise HTTPException(status.HTTP_404_NOT_FOUND, "item_not_found")
 
+    @router.post("/items/{item_id}/text/retry", status_code=status.HTTP_202_ACCEPTED)
+    def retry_text(item_id: UUID, context: Context) -> ItemView:
+        """Reads the page of an item again when its text was missed for a technical reason;
+        409 `not_retryable` for a refusal of the site (robots.txt, a reservation of mining)."""
+        if collection.get_item(context, item_id) is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "item_not_found")
+        item = collection.retry_text(context, item_id)
+        if item is None:
+            raise HTTPException(status.HTTP_409_CONFLICT, "not_retryable")
+        return ItemView.of(item)
+
     @router.post("/items/manual-url", status_code=status.HTTP_201_CREATED)
     def add_manual_url(body: ManualUrl, context: Context) -> ItemView:
         try:

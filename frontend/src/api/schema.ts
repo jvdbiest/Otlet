@@ -840,6 +840,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/items/{item_id}/text/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Retry Text
+         * @description Reads the page of an item again when its text was missed for a technical reason;
+         *     409 `not_retryable` for a refusal of the site (robots.txt, a reservation of mining).
+         */
+        post: operations["retry_text_api_workspaces__workspace_id__items__item_id__text_retry_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/items/{item_id}/triage": {
         parameters: {
             query?: never;
@@ -4016,6 +4037,38 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    retry_text_api_workspaces__workspace_id__items__item_id__text_retry_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemView"];
+                };
             };
             /** @description Validation Error */
             422: {

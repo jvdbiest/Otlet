@@ -32,6 +32,7 @@ const REASONS = [
   "fetch_invalid_url",
 ] as const;
 const ERRORS = [
+  "not_retryable",
   "invalid_url",
   "fetch_http_error",
   "fetch_refused",
@@ -83,8 +84,26 @@ export function legalTone(status: string): Tone {
         : "neutral";
 }
 
-export function textLabel(t: TFunction, status: string): string {
+/** The state of an item's text, and why when it is only a summary (Joël, 2026-10-20): a
+ * reservation of the publisher, a refusal of the site, or a text missed by accident. */
+export function textLabel(t: TFunction, status: string, reason: string | null = null): string {
+  if (status === "summary_only" && reason !== null) {
+    if (reason.startsWith("tdm_reserved")) {
+      return t("text.reserved");
+    }
+    if (reason.startsWith("robots_")) {
+      return t("text.refused");
+    }
+    if (retryable(reason)) {
+      return t("text.missed");
+    }
+  }
   return among(TEXT, status) ? t(`text.${status}`) : status;
+}
+
+/** A text missed for a technical reason, which reading the page again may fix (model.retryable). */
+export function retryable(reason: string | null): boolean {
+  return reason !== null && (reason === "no_text_found" || reason === "not_html" || /^(http|fetch)_/.test(reason));
 }
 
 export function textTone(status: string): Tone {

@@ -131,6 +131,14 @@ class Item:
     duplicates: int = 0  # other items of the same story (U02)
 
 
+def retryable(reason: str | None) -> bool:
+    """A text missed for a technical reason, which reading the page again may fix (Joël,
+    2026-10-20); never a refusal of the site (robots.txt, a reservation of text mining)."""
+    if reason is None:
+        return False
+    return reason in ("no_text_found", "not_html") or reason.startswith(("http_", "fetch_"))
+
+
 @dataclass(frozen=True, slots=True)
 class Check:
     """An entry of a source's compliance journal."""

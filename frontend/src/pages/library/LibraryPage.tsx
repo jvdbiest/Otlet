@@ -71,11 +71,13 @@ const FORMATS: readonly ExportKind[] = ["pdf", "docx", "html", "md", "txt"];
  * validated version, else the latest. */
 function SelectionBar({
   workspaceId,
+  archived,
   visible,
   selected,
   onSelect,
 }: {
   workspaceId: string;
+  archived: boolean;
   visible: LibraryEntryView[];
   selected: string[];
   onSelect: (ids: string[]) => void;
@@ -201,7 +203,7 @@ function SelectionBar({
               </option>
             ))}
           </select>
-          {archivedCount < chosen.length && (
+          {!archived && (
             <button
               type="button"
               className={styles.button}
@@ -213,7 +215,7 @@ function SelectionBar({
               {t("library.selection.archive")}
             </button>
           )}
-          {archivedCount > 0 && (
+          {archived && (
             <button
               type="button"
               className={styles.button}
@@ -225,17 +227,18 @@ function SelectionBar({
               {t("library.selection.unarchive")}
             </button>
           )}
-          <button
-            type="button"
-            className={styles.button}
-            disabled={busy || archivedCount === 0}
-            title={archivedCount === 0 ? t("library.selection.deleteArchivedOnly") : undefined}
-            onClick={() => {
-              setConfirming(true);
-            }}
-          >
-            {t("library.selection.delete")}
-          </button>
+          {archived && (
+            <button
+              type="button"
+              className={styles.button}
+              disabled={busy || archivedCount === 0}
+              onClick={() => {
+                setConfirming(true);
+              }}
+            >
+              {t("library.selection.delete")}
+            </button>
+          )}
           <button
             type="button"
             className={styles.button}
@@ -373,14 +376,14 @@ function Entry({
   );
 }
 
-/** The Library (X04, ADR-0037): the validated articles, searched, filtered, grouped. */
-export function LibraryPage() {
+/** The articles of the Library (X04, ADR-0037), searched, filtered, grouped; or its archives,
+ * the only place they are deleted from for good. */
+export function LibraryPage({ archived }: { archived: boolean }) {
   const { t } = useTranslation();
   const workspaces = useQuery(workspacesQuery);
   const workspaceId = workspaces.data?.[0]?.id ?? "";
   const [typed, setTyped] = useState("");
   const [query, setQuery] = useState("");
-  const [archived, setArchived] = useState(false);
   const [tag, setTag] = useState("");
   const [topic, setTopic] = useState("");
   const [grouping, setGrouping] = useState<Grouping>("date");
@@ -400,10 +403,9 @@ export function LibraryPage() {
     }
   }
   return (
-    <section>
-      <h1>{t("library.title")}</h1>
-      <NewArticle workspaceId={workspaceId} />
-      <p className={styles.help}>{t("library.help")}</p>
+    <>
+      {!archived && <NewArticle workspaceId={workspaceId} />}
+      <p className={styles.help}>{t(archived ? "library.archivesHelp" : "library.help")}</p>
       <form
         className={styles.filter}
         role="search"
@@ -468,26 +470,17 @@ export function LibraryPage() {
             <option value="date">{t("library.groupDate")}</option>
             <option value="none">{t("library.groupNone")}</option>
           </select>
-          <label className={styles.check}>
-            <input
-              type="checkbox"
-              checked={archived}
-              onChange={(event) => {
-                setArchived(event.target.checked);
-              }}
-            />
-            {t("library.archived")}
-          </label>
         </p>
       </form>
       <SelectionBar
         workspaceId={workspaceId}
+        archived={archived}
         visible={entries.data ?? []}
         selected={selected}
         onSelect={setSelected}
       />
       {entries.data?.length === 0 && (
-        <p className={styles.help}>{query || tag || topic ? t("library.noMatch") : t("library.empty")}</p>
+        <p className={styles.help}>{query || tag || topic ? t("library.noMatch") : t(archived ? "library.noArchives" : "library.empty")}</p>
       )}
       {groups.map(([name, members]) => (
         <section key={name || "all"} className={styles.group} aria-label={name || t("library.title")}>
@@ -506,6 +499,6 @@ export function LibraryPage() {
           </ul>
         </section>
       ))}
-    </section>
+    </>
   );
 }

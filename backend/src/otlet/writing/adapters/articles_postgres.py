@@ -551,6 +551,45 @@ class PostgresArticleStore:
             )
         return article_id
 
+    # Where the images are shown (médiathèque, ADR-0040): read in the blocks of the versions,
+    # so always true, and kept by no one.
+
+    def media_counts(self, workspace_id: UUID) -> dict[UUID, int]:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            rows = connection.execute(
+                sa.text(
+                    "SELECT block -> 'attrs' ->> 'media' AS media,"
+                    " count(DISTINCT v.article_id) AS articles FROM article_versions v,"
+                    " jsonb_array_elements(CASE WHEN jsonb_typeof(v.document -> 'content')"
+                    " = 'array' THEN v.document -> 'content' ELSE '[]'::jsonb END) AS block"
+                    f" WHERE block ->> 'type' = 'image' AND {here('v')} GROUP BY 1"
+                )
+            ).all()
+        counts = {}
+        for row in rows:
+            try:
+                counts[UUID(row.media)] = row.articles
+            except (TypeError, ValueError):
+                continue  # never written: a version's images are checked
+        return counts
+
+    def media_usages(
+        self, workspace_id: UUID, media_id: UUID
+    ) -> list[tuple[UUID, str, str, tuple[int, ...]]]:
+        probe = json.dumps([{"type": "image", "attrs": {"media": str(media_id)}}])
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            rows = connection.execute(
+                sa.text(
+                    "SELECT a.id, a.title, a.status, array_agg(v.number ORDER BY v.number)"
+                    " AS versions FROM article_versions v JOIN articles a ON a.id = v.article_id"
+                    f" AND {here('a')} WHERE {here('v')}"
+                    " AND v.document -> 'content' @> CAST(:probe AS jsonb)"
+                    " GROUP BY a.id, a.title, a.status ORDER BY a.title, a.id"
+                ),
+                {"probe": probe},
+            ).all()
+        return [(row.id, row.title, row.status, tuple(row.versions)) for row in rows]
+
     def delete_archived(self, workspace_id: UUID, article_id: UUID) -> bool:
         """Deletes an archived article and its versions for good (Joël, 2026-10-20: archived
         first, deleted after). Its brief stays; its generations forget it."""

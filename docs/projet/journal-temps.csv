@@ -96,3 +96,4 @@ date,heures,domaine,etape,tache,note
 2026-10-20,1.5,fonction,E1,X04,fusion de la pile (main ramené, conflits de documentation) et sujets hérités du brief dans la Bibliothèque ; estimation grossière (Claude)
 2026-10-20,2,fonction,E1,X04,dupliquer un article, créer un article sans brief, bulle de sujet centrée ; estimation grossière (Claude)
 2026-10-20,2.5,fonction,E1,X04,sélection dans la Bibliothèque : actions en masse, export ZIP, suppression des archivés ; estimation grossière (Claude)
+2026-10-20,4,fonction,E1,X04,onglets de la Bibliothèque et médiathèque lot 1 (ADR-0040, migration 0034, vignettes, fiche, banque d'images) ; estimation grossière (Claude)

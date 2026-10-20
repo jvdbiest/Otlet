@@ -149,7 +149,9 @@ def create_app(settings: Settings) -> FastAPI:
         brief_store = PostgresBriefStore(engine)
         article_store = PostgresArticleStore(engine, enqueue)
         files_dir = settings.files_dir or settings.run_dir / "files"
-        library = MediaLibrary(PostgresMediaStore(engine), DiskFiles(files_dir), PillowImages())
+        library = MediaLibrary(
+            PostgresMediaStore(engine), DiskFiles(files_dir), PillowImages(), article_store
+        )
 
         def media_check(workspace_id: UUID, ids: set[str]) -> set[str]:
             return {str(found) for found in library.existing(workspace_id, map(UUID, ids))}

@@ -1,0 +1,132 @@
+{
+ "type": "doc",
+ "attrs": {
+  "version_schema": 1,
+  "langue": "fr",
+  "sources": [
+   {
+    "id": "S1",
+    "titre": "Dossier 24, document 1",
+    "editeur": "Bulletin communal",
+    "date": "2026-07-17",
+    "url": "https://exemple.org/dossiers/24/document-1"
+   },
+   {
+    "id": "S2",
+    "titre": "Dossier 24, document 2",
+    "editeur": "Revue des territoires",
+    "date": "2026-04-23",
+    "url": "https://exemple.org/dossiers/24/document-2"
+   },
+   {
+    "id": "S3",
+    "titre": "Dossier 24, document 3",
+    "editeur": "Revue des territoires",
+    "date": "2026-06-18",
+    "url": "https://exemple.org/dossiers/24/document-3"
+   },
+   {
+    "id": "S4",
+    "titre": "Dossier 24, document 4",
+    "editeur": "Bulletin communal",
+    "date": "2026-06-28",
+    "url": "https://exemple.org/dossiers/24/document-4"
+   }
+  ]
+ },
+ "content": [
+  {
+   "type": "heading",
+   "attrs": {
+    "id": "b1",
+    "origine": "humain",
+    "level": 2
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Ce que prévoit le projet sur santé"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "attrs": {
+    "id": "b2",
+    "origine": "humain"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Selon les documents consultés, le coût total reste à confirmer. L’opposition salue l’intention mais s’interroge sur le coût d’entretien à long terme."
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "attrs": {
+    "id": "b3",
+    "origine": "humain"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "La "
+    },
+    {
+     "type": "text",
+     "text": "fiche détaillée",
+     "marks": [
+      {
+       "type": "link",
+       "attrs": {
+        "href": "https://exemple.org/santé/fiche-24"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": " est disponible en ligne, et "
+    },
+    {
+     "type": "text",
+     "text": "plusieurs points restent ouverts",
+     "marks": [
+      {
+       "type": "bold"
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "."
+    }
+   ]
+  },
+  {
+   "type": "citation",
+   "attrs": {
+    "id": "b4",
+    "origine": "humain",
+    "source": "S2"
+   },
+   "content": [
+    {
+     "type": "paragraph",
+     "content": [
+      {
+       "type": "text",
+       "text": "Les chiffres sont encourageants, mais il faut rester prudent.",
+       "marks": [
+        {
+         "type": "italic"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

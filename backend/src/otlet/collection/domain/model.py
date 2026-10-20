@@ -5,7 +5,7 @@ import re
 import unicodedata
 from collections import Counter
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from enum import StrEnum
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from uuid import UUID
@@ -129,6 +129,63 @@ class Item:
     declared_origin: str | None
     usage_right: str | None
     duplicates: int = 0  # other items of the same story (U02)
+
+
+# Declarations of rights (Joël, 2026-10-20): the bases a person may give, and the commitment
+# they accept, kept word for word with each declaration.
+RIGHTS_BASES = ("publisher_agreement", "licence", "own_content", "other")
+RIGHTS_COMMITMENT = (
+    "Je certifie disposer des droits ou autorisations nécessaires pour importer et exploiter ce"
+    " contenu dans Otlet. J'assume l'entière responsabilité de son utilisation."
+)
+SOURCE_RIGHTS_BASES = ("publisher_agreement", "licence")  # a whole site: nothing else
+SOURCE_RIGHTS_COMMITMENT = (
+    "Je certifie disposer d'un accord de l'éditeur ou d'une licence couvrant l'import et"
+    " l'exploitation des articles de cette source dans Otlet. J'assume l'entière responsabilité"
+    " de leur utilisation."
+)
+DECLARED_RIGHTS = "declared_rights"  # the text reason of a text read under a declaration
+RIGHTS_DETAIL_MAX = 500
+
+
+def reserved(reason: str | None) -> bool:
+    """A text the publisher reserves from text mining: only a declaration of rights opens it."""
+    return reason is not None and reason.startswith("tdm_reserved")
+
+
+@dataclass(frozen=True, slots=True)
+class SourceRights:
+    """A declaration covering a source: the articles collected from `declared_at` on, until
+    `ends_on` (a licence that ends) when given."""
+
+    id: UUID
+    source_id: UUID
+    declared_by: UUID
+    basis: str
+    reference: str
+    commitment: str
+    declared_at: datetime
+    ends_on: date | None
+
+
+@dataclass(frozen=True, slots=True)
+class RightsDeclaration:
+    id: UUID
+    item_id: UUID
+    declared_by: UUID
+    basis: str
+    detail: str
+    reference: str
+    commitment: str
+    declared_at: datetime
+
+
+def retryable(reason: str | None) -> bool:
+    """A text missed for a technical reason, which reading the page again may fix (Joël,
+    2026-10-20); never a refusal of the site (robots.txt, a reservation of text mining)."""
+    if reason is None:
+        return False
+    return reason in ("no_text_found", "not_html") or reason.startswith(("http_", "fetch_"))
 
 
 @dataclass(frozen=True, slots=True)

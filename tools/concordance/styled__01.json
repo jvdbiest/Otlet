@@ -1,0 +1,955 @@
+{
+ "type": "doc",
+ "attrs": {
+  "version_schema": 1,
+  "langue": "fr",
+  "sources": [
+   {
+    "id": "S1",
+    "titre": "Le journal",
+    "url": "https://journal.example.org/1",
+    "editeur": "Journal"
+   },
+   {
+    "id": "S2",
+    "titre": "Une note sans adresse"
+   }
+  ]
+ },
+ "content": [
+  {
+   "type": "paragraph",
+   "content": [
+    {
+     "type": "text",
+     "text": "arial ",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "font": "arial"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "calibri ",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "font": "calibri"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "cambria ",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "font": "cambria"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "georgia ",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "font": "georgia"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "times ",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "font": "times"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "verdana ",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "font": "verdana"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "courier ",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "font": "courier"
+       }
+      }
+     ]
+    }
+   ],
+   "attrs": {
+    "id": "b1",
+    "origine": "humain"
+   }
+  },
+  {
+   "type": "paragraph",
+   "content": [
+    {
+     "type": "text",
+     "text": "9pt ",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "size": 9
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "10pt ",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "size": 10
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "11pt ",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "size": 11
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "12pt ",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "size": 12
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "14pt ",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "size": 14
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "16pt ",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "size": 16
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "18pt ",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "size": 18
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "20pt ",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "size": 20
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "24pt ",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "size": 24
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "28pt ",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "size": 28
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "32pt ",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "size": 32
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "36pt ",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "size": 36
+       }
+      }
+     ]
+    }
+   ],
+   "attrs": {
+    "id": "b2",
+    "origine": "humain"
+   }
+  },
+  {
+   "type": "paragraph",
+   "content": [
+    {
+     "type": "text",
+     "text": "#000000 ",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "color": "#000000"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "#595959 ",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "color": "#595959"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "#c00000 ",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "color": "#c00000"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "#e36c09 ",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "color": "#e36c09"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "#9c6500 ",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "color": "#9c6500"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "#00843d ",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "color": "#00843d"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "#0070c0 ",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "color": "#0070c0"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "#1f3864 ",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "color": "#1f3864"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "#7030a0 ",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "color": "#7030a0"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "#ffffff ",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "color": "#ffffff"
+       }
+      }
+     ]
+    }
+   ],
+   "attrs": {
+    "id": "b3",
+    "origine": "humain"
+   }
+  },
+  {
+   "type": "paragraph",
+   "content": [
+    {
+     "type": "text",
+     "text": "#fff59d ",
+     "marks": [
+      {
+       "type": "highlight",
+       "attrs": {
+        "color": "#fff59d"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "#c8e6c9 ",
+     "marks": [
+      {
+       "type": "highlight",
+       "attrs": {
+        "color": "#c8e6c9"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "#b3e5fc ",
+     "marks": [
+      {
+       "type": "highlight",
+       "attrs": {
+        "color": "#b3e5fc"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "#f8bbd0 ",
+     "marks": [
+      {
+       "type": "highlight",
+       "attrs": {
+        "color": "#f8bbd0"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "#ffe0b2 ",
+     "marks": [
+      {
+       "type": "highlight",
+       "attrs": {
+        "color": "#ffe0b2"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "#e0e0e0 ",
+     "marks": [
+      {
+       "type": "highlight",
+       "attrs": {
+        "color": "#e0e0e0"
+       }
+      }
+     ]
+    }
+   ],
+   "attrs": {
+    "id": "b4",
+    "origine": "humain"
+   }
+  },
+  {
+   "type": "paragraph",
+   "content": [
+    {
+     "type": "text",
+     "text": "gras ",
+     "marks": [
+      {
+       "type": "bold"
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "gras italique ",
+     "marks": [
+      {
+       "type": "bold"
+      },
+      {
+       "type": "italic"
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "gras barré",
+     "marks": [
+      {
+       "type": "bold"
+      },
+      {
+       "type": "strike"
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": " rien "
+    },
+    {
+     "type": "text",
+     "text": "tout",
+     "marks": [
+      {
+       "type": "bold"
+      },
+      {
+       "type": "italic"
+      },
+      {
+       "type": "strike"
+      },
+      {
+       "type": "highlight",
+       "attrs": {
+        "color": "#fff59d"
+       }
+      },
+      {
+       "type": "text_style",
+       "attrs": {
+        "font": "georgia",
+        "size": 14,
+        "color": "#c00000"
+       }
+      },
+      {
+       "type": "link",
+       "attrs": {
+        "href": "https://exemple.org/a?b=1&c=2"
+       }
+      }
+     ]
+    }
+   ],
+   "attrs": {
+    "id": "b5",
+    "origine": "humain"
+   }
+  },
+  {
+   "type": "paragraph",
+   "content": [
+    {
+     "type": "text",
+     "text": "lien ",
+     "marks": [
+      {
+       "type": "link",
+       "attrs": {
+        "href": "https://exemple.org/a?b=1&c=2"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "lien gras",
+     "marks": [
+      {
+       "type": "link",
+       "attrs": {
+        "href": "https://exemple.org/a?b=1&c=2"
+       }
+      },
+      {
+       "type": "bold"
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": " [1]",
+     "marks": [
+      {
+       "type": "source_ref",
+       "attrs": {
+        "source": "S1"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": " "
+    },
+    {
+     "type": "text",
+     "text": "<échappé> & \"cité\"",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "font": "georgia",
+        "size": 14,
+        "color": "#c00000"
+       }
+      },
+      {
+       "type": "highlight",
+       "attrs": {
+        "color": "#fff59d"
+       }
+      }
+     ]
+    }
+   ],
+   "attrs": {
+    "id": "b6",
+    "origine": "humain"
+   }
+  },
+  {
+   "type": "heading",
+   "attrs": {
+    "level": 3,
+    "id": "b7",
+    "origine": "humain"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Titre "
+    },
+    {
+     "type": "text",
+     "text": "stylé",
+     "marks": [
+      {
+       "type": "text_style",
+       "attrs": {
+        "font": "georgia",
+        "size": 14,
+        "color": "#c00000"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "type": "bullet_list",
+   "content": [
+    {
+     "type": "list_item",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "un",
+         "marks": [
+          {
+           "type": "strike"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "type": "ordered_list",
+       "content": [
+        {
+         "type": "list_item",
+         "content": [
+          {
+           "type": "paragraph",
+           "content": [
+            {
+             "type": "text",
+             "text": "un.un",
+             "marks": [
+              {
+               "type": "highlight",
+               "attrs": {
+                "color": "#fff59d"
+               }
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "list_item",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "deux"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "attrs": {
+    "id": "b8",
+    "origine": "humain"
+   }
+  },
+  {
+   "type": "citation",
+   "attrs": {
+    "source": "S2",
+    "id": "b9",
+    "origine": "humain"
+   },
+   "content": [
+    {
+     "type": "paragraph",
+     "content": [
+      {
+       "type": "text",
+       "text": "Citée sans adresse",
+       "marks": [
+        {
+         "type": "italic"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "type": "encadre",
+   "content": [
+    {
+     "type": "paragraph",
+     "content": [
+      {
+       "type": "text",
+       "text": "Encadré",
+       "marks": [
+        {
+         "type": "text_style",
+         "attrs": {
+          "font": "georgia",
+          "size": 14,
+          "color": "#c00000"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "attrs": {
+    "id": "b10",
+    "origine": "humain"
+   }
+  },
+  {
+   "type": "separateur",
+   "attrs": {
+    "id": "b11",
+    "origine": "humain"
+   }
+  },
+  {
+   "type": "paragraph",
+   "content": [],
+   "attrs": {
+    "id": "b12",
+    "origine": "humain"
+   }
+  },
+  {
+   "type": "paragraph",
+   "attrs": {
+    "align": "center",
+    "id": "b13",
+    "origine": "humain"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "H"
+    },
+    {
+     "type": "text",
+     "text": "2",
+     "marks": [
+      {
+       "type": "subscript"
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "O et m"
+    },
+    {
+     "type": "text",
+     "text": "2",
+     "marks": [
+      {
+       "type": "superscript"
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": " gras",
+     "marks": [
+      {
+       "type": "superscript"
+      },
+      {
+       "type": "bold"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "attrs": {
+    "level": 2,
+    "align": "right",
+    "id": "b14",
+    "origine": "humain"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Titre à droite"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "attrs": {
+    "align": "justify",
+    "id": "b15",
+    "origine": "humain"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Justifié"
+    }
+   ]
+  },
+  {
+   "type": "bullet_list",
+   "content": [
+    {
+     "type": "list_item",
+     "content": [
+      {
+       "type": "paragraph",
+       "attrs": {
+        "align": "center"
+       },
+       "content": [
+        {
+         "type": "text",
+         "text": "item centré"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "attrs": {
+    "id": "b16",
+    "origine": "humain"
+   }
+  },
+  {
+   "type": "image",
+   "attrs": {
+    "id": "b17",
+    "origine": "humain",
+    "media": "0b0e6f5e-3c4e-4c33-9a54-6f1f3c1b2a10",
+    "alt": "Une \"moto\" & <route>",
+    "width": 50,
+    "align": "center"
+   }
+  },
+  {
+   "type": "image",
+   "attrs": {
+    "id": "b18",
+    "origine": "humain",
+    "media": "0b0e6f5e-3c4e-4c33-9a54-6f1f3c1b2a10",
+    "alt": "",
+    "align": "right",
+    "width": 25
+   }
+  },
+  {
+   "type": "image",
+   "attrs": {
+    "id": "b19",
+    "origine": "humain",
+    "media": "0b0e6f5e-3c4e-4c33-9a54-6f1f3c1b2a10",
+    "alt": "gauche",
+    "align": "left",
+    "wrap": true,
+    "width": 40
+   }
+  },
+  {
+   "type": "paragraph",
+   "attrs": {
+    "id": "b20",
+    "origine": "humain"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Le texte s'écoule à droite de l'image."
+    }
+   ]
+  },
+  {
+   "type": "image",
+   "attrs": {
+    "id": "b21",
+    "origine": "humain",
+    "media": "0b0e6f5e-3c4e-4c33-9a54-6f1f3c1b2a10",
+    "alt": "",
+    "align": "right",
+    "wrap": true
+   }
+  }
+ ]
+}

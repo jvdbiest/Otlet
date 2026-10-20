@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+import type { TFunction } from "i18next";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button, Form, Input, Label, TextField } from "react-aria-components";
@@ -75,7 +76,7 @@ export function LoginPage({ redirect }: { redirect: string | undefined }) {
   );
 }
 
-function errorMessage(error: Error, t: ReturnType<typeof useTranslation>["t"]): string {
+function errorMessage(error: Error, t: TFunction): string {
   if (error instanceof ApiError && error.status === 401) {
     return t("login.invalidCredentials");
   }

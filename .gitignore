@@ -37,3 +37,7 @@ spikes/**/models/
 .vscode/
 .DS_Store
 spikes/s3-document/build/
+
+# Banc de rédaction : textes des sources (articles d autrui) et résultats bruts
+tools/bench_redaction/data/
+tools/bench_redaction/results/

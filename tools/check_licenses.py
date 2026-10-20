@@ -25,7 +25,7 @@ from pathlib import Path
 
 ALLOWED = {
     "0BSD", "AFL-2.1", "Apache-2.0", "BlueOak-1.0.0", "BSD-2-Clause", "BSD-3-Clause",
-    "CC0-1.0", "CC-BY-4.0", "HPND", "ISC", "MIT", "MIT-0", "MPL-2.0", "PostgreSQL",
+    "CC0-1.0", "CC-BY-4.0", "HPND", "ISC", "MIT", "MIT-0", "MIT-CMU", "MPL-2.0", "PostgreSQL",
     "PSF-2.0", "Python-2.0", "Unlicense", "Zlib",
     "LGPL-2.0-or-later", "LGPL-2.1-only", "LGPL-2.1-or-later", "LGPL-3.0-only", "LGPL-3.0-or-later",
     "GPL-2.0-or-later", "GPL-3.0-only", "GPL-3.0-or-later",

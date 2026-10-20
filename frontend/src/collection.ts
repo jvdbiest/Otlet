@@ -111,7 +111,16 @@ export function useAddSource(workspaceId: string) {
 export function useUpdateSource(workspaceId: string) {
   const refresh = useRefresh(workspaceId);
   return useMutation({
-    mutationFn: async ({ sourceId, ...body }: { sourceId: string; active?: boolean; interval_minutes?: number }) => {
+    mutationFn: async ({
+      sourceId,
+      ...body
+    }: {
+      sourceId: string;
+      active?: boolean;
+      interval_minutes?: number;
+      name?: string;
+      url?: string; // another address: the site or its feed, checked again (Joël, 2026-10-20)
+    }) => {
       const { data, error, response } = await api.PATCH("/api/workspaces/{workspace_id}/sources/{source_id}", {
         params: { path: { workspace_id: workspaceId, source_id: sourceId } },
         body,
@@ -162,6 +171,122 @@ export function useAddManualUrl(workspaceId: string) {
       const { data, error, response } = await api.POST("/api/workspaces/{workspace_id}/items/manual-url", {
         params: path(workspaceId),
         body: { url },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: refresh,
+  });
+}
+
+export type RightsView = components["schemas"]["RightsView"];
+export type SourceRightsView = components["schemas"]["SourceRightsView"];
+export type SourceRightsBasis = components["schemas"]["SourceRightsBody"]["basis"];
+
+/** The agreement or licence covering a source, if any (Joël, 2026-10-20). */
+export const sourceRightsQuery = (workspaceId: string, sourceId: string) =>
+  queryOptions({
+    queryKey: ["workspaces", workspaceId, "sources", sourceId, "rights"],
+    queryFn: async (): Promise<SourceRightsView> => {
+      const { data, error, response } = await api.GET("/api/workspaces/{workspace_id}/sources/{source_id}/rights", {
+        params: { path: { workspace_id: workspaceId, source_id: sourceId } },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+  });
+
+export function useDeclareSourceRights(workspaceId: string, sourceId: string) {
+  const refresh = useRefresh(workspaceId);
+  return useMutation({
+    mutationFn: async (body: { basis: SourceRightsBasis; reference: string; ends_on: string | null; certified: boolean }) => {
+      const { data, error, response } = await api.POST("/api/workspaces/{workspace_id}/sources/{source_id}/rights", {
+        params: { path: { workspace_id: workspaceId, source_id: sourceId } },
+        body,
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: refresh,
+  });
+}
+
+export function useWithdrawSourceRights(workspaceId: string, sourceId: string) {
+  const refresh = useRefresh(workspaceId);
+  return useMutation({
+    mutationFn: async () => {
+      const { error, response } = await api.DELETE("/api/workspaces/{workspace_id}/sources/{source_id}/rights", {
+        params: { path: { workspace_id: workspaceId, source_id: sourceId } },
+      });
+      if (!response.ok) {
+        throw apiError(response, error);
+      }
+    },
+    onSuccess: refresh,
+  });
+}
+export type RightsBasis = components["schemas"]["RightsBody"]["basis"];
+
+/** Whether rights may be declared on an item, and the declaration in force (Joël, 2026-10-20). */
+export const rightsQuery = (workspaceId: string, itemId: string) =>
+  queryOptions({
+    queryKey: ["workspaces", workspaceId, "item", itemId, "rights"],
+    queryFn: async (): Promise<RightsView> => {
+      const { data, error, response } = await api.GET("/api/workspaces/{workspace_id}/items/{item_id}/rights", {
+        params: { path: { workspace_id: workspaceId, item_id: itemId } },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+  });
+
+export function useDeclareRights(workspaceId: string, itemId: string) {
+  const refresh = useRefresh(workspaceId);
+  return useMutation({
+    mutationFn: async (body: { basis: RightsBasis; detail: string; reference: string; certified: boolean }) => {
+      const { data, error, response } = await api.POST("/api/workspaces/{workspace_id}/items/{item_id}/rights", {
+        params: { path: { workspace_id: workspaceId, item_id: itemId } },
+        body,
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: refresh,
+  });
+}
+
+export function useWithdrawRights(workspaceId: string, itemId: string) {
+  const refresh = useRefresh(workspaceId);
+  return useMutation({
+    mutationFn: async () => {
+      const { error, response } = await api.DELETE("/api/workspaces/{workspace_id}/items/{item_id}/rights", {
+        params: { path: { workspace_id: workspaceId, item_id: itemId } },
+      });
+      if (!response.ok) {
+        throw apiError(response, error);
+      }
+    },
+    onSuccess: refresh,
+  });
+}
+
+/** « Réessayer la récupération »: reads the page again, for a text missed by accident. */
+export function useRetryText(workspaceId: string) {
+  const refresh = useRefresh(workspaceId);
+  return useMutation({
+    mutationFn: async (itemId: string) => {
+      const { data, error, response } = await api.POST("/api/workspaces/{workspace_id}/items/{item_id}/text/retry", {
+        params: { path: { workspace_id: workspaceId, item_id: itemId } },
       });
       if (data === undefined) {
         throw apiError(response, error);

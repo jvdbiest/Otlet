@@ -84,3 +84,12 @@ date,heures,domaine,etape,tache,note
 2026-10-17,1,projet,E1,P01,mesure P01d, rapport et ADR-0035 ; estimation grossière (Claude)
 2026-10-17,8,fonction,E1,F05,"passerelle IA en cinq tranches (catalogue, profils, budget, generate, Réglages > IA), essai réel avec Ollama ; estimation grossière (Claude)"
 2026-10-17,2.5,fonction,E1,X02,trier et grouper la veille (retour de Joël) ; estimation grossière (Claude)
+2026-10-19,2,fonction,E1,U04,charte de rédaction par compte dans Réglages > IA, ajoutée à chaque génération (migration 0031) ; estimation grossière (Claude)
+2026-10-19,4,fonction,E1,U03,listes Public, Ton et Canal du brief avec définitions envoyées au modèle, plafond de longueur par canal, place de la charte affichée ; estimation grossière (Claude)
+2026-10-19,3,fonction,E1,U04,audit qualité du moteur de génération : mesures sur 64 générations, 12 essais contrôlés, rapport ; estimation grossière (Claude)
+2026-10-19,4,fonction,E1,U05,lot 1 des garde-fous (absents des sources, recopie), longueur liée à la matière, synthèse sans croisement exigé, banc de rédaction, ADR-0038 ; estimation grossière (Claude)
+2026-10-19,2,fonction,E1,U05,matière en trois niveaux (Générer quand même), nombre de mots dans la Veille, les briefs, les sources, les versions et l'éditeur ; estimation grossière (Claude)
+2026-10-20,4,fonction,E1,X03,Comparer : panneau de référence (sources, versions), défilement lié, onglets sur mobile, formulaire du brief réorganisé ; estimation grossière (Claude)
+2026-10-20,1.5,fonction,E1,U01,raison réelle des textes non utilisables, « Réessayer la récupération » pour les échecs techniques, analyse de la déclaration de droits ; estimation grossière (Claude)
+2026-10-20,4,fonction,E1,U01,déclaration de droits sur un texte réservé (ADR-0039, migration 0032) : trace, récupération sous déclaration, retrait, réglage d'instance ; estimation grossière (Claude)
+2026-10-20,4,fonction,E1,U01,modification d'une source (adresse revérifiée) et déclaration d'accord pour toute une source (migration 0033) ; estimation grossière (Claude)

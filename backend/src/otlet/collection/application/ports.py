@@ -3,7 +3,7 @@
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 from typing import Protocol
 from uuid import UUID
 
@@ -16,7 +16,9 @@ from otlet.collection.domain.model import (
     LegalStatus,
     Page,
     ParsedFeed,
+    RightsDeclaration,
     Source,
+    SourceRights,
     TextStatus,
 )
 from otlet.platform.http import FetchResult
@@ -106,7 +108,11 @@ class CollectionStore(Protocol):
         name: str | None,
         interval_minutes: int | None,
         active: bool | None,
-    ) -> Source | None: ...
+        address: tuple[str, str, str | None] | None = None,
+    ) -> Source | None:
+        """`address`: a new (url, feed_url, site_url); the source is then checked again from
+        scratch at once. CollectionError « already_followed » when another source has the feed."""
+        ...
 
     def delete_source(self, workspace_id: UUID, source_id: UUID) -> bool: ...
     def request_collection(self, workspace_id: UUID, source_id: UUID) -> bool: ...
@@ -158,6 +164,45 @@ class CollectionStore(Protocol):
     def remove_item(self, workspace_id: UUID, item_id: UUID) -> bool:
         """Deletes an item of the workspace with its text, matches and triage; an item of a feed
         leaves a trace so that its next collection skips it. False when there is no such item."""
+        ...
+
+    def declare_rights(self, workspace_id: UUID, declaration: RightsDeclaration) -> bool:
+        """Keeps the declaration, sets the reserved item back to pending and enqueues its
+        reading under the declaration, in one transaction; False when the item is not reserved."""
+        ...
+
+    def rights_declaration(self, workspace_id: UUID, item_id: UUID) -> RightsDeclaration | None:
+        """The declaration in force on an item, if any."""
+        ...
+
+    def withdraw_rights(self, workspace_id: UUID, item_id: UUID, at: datetime) -> bool:
+        """Withdraws the declaration in force: its text is erased, the reservation comes back."""
+        ...
+
+    def declare_source_rights(self, workspace_id: UUID, declaration: SourceRights) -> bool:
+        """Keeps a declaration covering a source; False when the source is unknown or already
+        covered by one in force."""
+        ...
+
+    def source_rights(self, workspace_id: UUID, source_id: UUID) -> SourceRights | None:
+        """The declaration in force on a source, if any (ended ones included: `ends_on` says)."""
+        ...
+
+    def withdraw_source_rights(self, workspace_id: UUID, source_id: UUID, at: datetime) -> bool:
+        """Withdraws it: the texts read under it are erased, the items reserved again."""
+        ...
+
+    def covered_by_source_rights(self, workspace_id: UUID, item_id: UUID, today: date) -> bool:
+        """The item was collected while a declaration of its source was in force."""
+        ...
+
+    def source_covered(self, workspace_id: UUID, source_id: UUID, today: date) -> bool:
+        """A declaration in force covers the source today."""
+        ...
+
+    def retry_text(self, workspace_id: UUID, item_id: UUID) -> bool:
+        """Sets an item whose text was missed back to pending and enqueues its reading, in one
+        transaction; False when it is unknown or its text cannot be retried."""
         ...
 
     def add_manual_url(self, workspace_id: UUID, url: str, at: datetime) -> Item:

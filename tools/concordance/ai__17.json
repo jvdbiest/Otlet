@@ -1,0 +1,244 @@
+{
+ "type": "doc",
+ "attrs": {
+  "version_schema": 1,
+  "langue": "fr",
+  "sources": [
+   {
+    "id": "S1",
+    "titre": "Dossier 17, document 1",
+    "editeur": "Revue des territoires",
+    "date": "2026-03-10",
+    "url": "https://exemple.org/dossiers/17/document-1"
+   },
+   {
+    "id": "S2",
+    "titre": "Dossier 17, document 2",
+    "editeur": "Revue des territoires",
+    "date": "2026-02-09",
+    "url": "https://exemple.org/dossiers/17/document-2"
+   }
+  ]
+ },
+ "content": [
+  {
+   "type": "paragraph",
+   "attrs": {
+    "id": "b1",
+    "origine": "ia"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Le conseil a présenté mardi soir le projet consacré à la création d’un jardin partagé."
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "attrs": {
+    "id": "b2",
+    "origine": "ia",
+    "level": 2
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Ce que prévoit le projet sur environnement"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "attrs": {
+    "id": "b3",
+    "origine": "ia"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Selon les documents consultés, "
+    },
+    {
+     "type": "text",
+     "text": "le coût total reste à confirmer",
+     "marks": [
+      {
+       "type": "source_ref",
+       "attrs": {
+        "source": "S1"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": ". L’opposition salue l’intention mais s’interroge sur le coût d’entretien à long terme."
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "attrs": {
+    "id": "b4",
+    "origine": "ia"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "La "
+    },
+    {
+     "type": "text",
+     "text": "fiche détaillée",
+     "marks": [
+      {
+       "type": "link",
+       "attrs": {
+        "href": "https://exemple.org/environnement/fiche-17"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": " est disponible en ligne, et "
+    },
+    {
+     "type": "text",
+     "text": "plusieurs points restent ouverts",
+     "marks": [
+      {
+       "type": "bold"
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "."
+    }
+   ]
+  },
+  {
+   "type": "citation",
+   "attrs": {
+    "id": "b5",
+    "origine": "ia",
+    "source": "S2"
+   },
+   "content": [
+    {
+     "type": "paragraph",
+     "content": [
+      {
+       "type": "text",
+       "text": "Le projet n’a de sens que s’il est construit avec celles et ceux qui l’utiliseront."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "attrs": {
+    "id": "b6",
+    "origine": "ia",
+    "level": 3
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Les prochaines étapes"
+    }
+   ]
+  },
+  {
+   "type": "bullet_list",
+   "attrs": {
+    "id": "b7",
+    "origine": "ia"
+   },
+   "content": [
+    {
+     "type": "list_item",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "un budget de fonctionnement distinct"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "list_item",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "une étude de faisabilité"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "list_item",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "un rapport annuel public"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "attrs": {
+    "id": "b8",
+    "origine": "ia"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Le calendrier prévoit une première phase dès le printemps, puis une évaluation à l’automne.",
+     "marks": [
+      {
+       "type": "italic"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "type": "citation",
+   "attrs": {
+    "id": "b9",
+    "origine": "ia",
+    "source": "S1"
+   },
+   "content": [
+    {
+     "type": "paragraph",
+     "content": [
+      {
+       "type": "text",
+       "text": "Nous voulons des résultats mesurables, pas seulement des annonces."
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

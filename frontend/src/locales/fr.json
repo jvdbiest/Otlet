@@ -79,7 +79,8 @@
     "more": "Voir les éléments plus anciens",
     "addSource": "Ajouter une source",
     "loadFailed": "Impossible de charger la veille. Réessayez dans un instant.",
-    "end": "Il n'y a pas d'élément plus ancien."
+    "end": "Il n'y a pas d'élément plus ancien.",
+    "words": "{count, plural, one {# mot} other {# mots}}"
   },
   "item": {
     "back": "Revenir à la veille",
@@ -105,7 +106,8 @@
     "noTopic": "Cet élément ne correspond à aucun de vos sujets.",
     "sameStory": "La même histoire ailleurs",
     "points": "{points, plural, one {# point} other {# points}}",
-    "notFound": "Cet élément n'existe pas ou plus."
+    "notFound": "Cet élément n'existe pas ou plus.",
+    "retryText": "Réessayer la récupération"
   },
   "sources": {
     "title": "Sources",
@@ -156,7 +158,14 @@
     "allowed": "autorisé",
     "refusedDecision": "refusé",
     "policy": "Politique annoncée par le site",
-    "actionFailed": "L'action a échoué. Réessayez dans un instant."
+    "actionFailed": "L'action a échoué. Réessayez dans un instant.",
+    "edit": {
+      "open": "Modifier",
+      "url": "Adresse du site ou de son flux",
+      "urlHelp": "Une nouvelle adresse est vérifiée comme à l'ajout : Otlet y cherche le flux, puis relit les règles du site (robots.txt, réserve de fouille) à la collecte suivante, lancée aussitôt. Les éléments déjà collectés restent.",
+      "save": "Enregistrer",
+      "saving": "Vérification…"
+    }
   },
   "legal": {
     "full_text": "Texte intégral utilisable",
@@ -168,7 +177,11 @@
     "pending": "Lecture de la page en attente",
     "full_text": "Texte intégral",
     "summary_only": "Résumé seulement",
-    "manual": "Saisie manuelle"
+    "manual": "Saisie manuelle",
+    "reserved": "Texte réservé par l'éditeur",
+    "refused": "Texte refusé par le site",
+    "missed": "Texte non récupéré",
+    "declared": "Importé sous votre responsabilité"
   },
   "reasons": {
     "robots_allowed": "robots.txt autorise la collecte.",
@@ -196,7 +209,8 @@
     "fetch_scheme_not_allowed": "Seules les adresses http et https sont acceptées.",
     "fetch_port_not_allowed": "Seuls les ports web habituels (80 et 443) sont acceptés.",
     "fetch_invalid_url": "Cette adresse n'est pas valide.",
-    "unknown": "Raison : {code}."
+    "unknown": "Raison : {code}.",
+    "declared_rights": "Texte lu sous votre déclaration de droits : vous en répondez."
   },
   "errors": {
     "invalid_url": "Saisissez une adresse web qui commence par http:// ou https://.",
@@ -220,7 +234,24 @@
     "name_taken": "Un sujet porte déjà ce nom.",
     "unknown_source": "Une des sources choisies n'existe plus.",
     "invalid_query": "Saisissez entre 1 et 200 caractères.",
-    "generic": "L'opération a échoué. Réessayez dans un instant."
+    "generic": "L'opération a échoué. Réessayez dans un instant.",
+    "version_changed": "Cette version a été enregistrée ailleurs entre-temps.",
+    "version_not_found": "Cette version n'existe plus.",
+    "invalid_document": "Otlet n'a pas pu enregistrer ce texte : une mise en forme n'est pas reconnue.",
+    "too_large": "Cette image dépasse 15 Mo.",
+    "not_an_image": "Ce fichier n'est pas une image JPEG, PNG, WebP ou GIF lisible.",
+    "invalid_tags": "Une étiquette a 40 caractères au plus, et un article 20 étiquettes au plus.",
+    "article_not_found": "Cet article n'existe plus.",
+    "not_retryable": "Ce texte ne peut pas être récupéré : le site le refuse ou l'éditeur le réserve.",
+    "not_reserved": "Cet élément n'est pas réservé par son éditeur : il n'y a rien à déclarer.",
+    "not_certified": "Cochez l'engagement pour déclarer vos droits.",
+    "detail_required": "Précisez la base de vos droits.",
+    "invalid_basis": "Choisissez la base de vos droits.",
+    "detail_too_long": "500 caractères au plus.",
+    "declarations_disabled": "L'administrateur de cette instance n'autorise pas les déclarations de droits.",
+    "declaration_not_found": "Aucune déclaration en cours sur cet élément.",
+    "already_declared": "Un accord est déjà déclaré pour cette source.",
+    "ended": "La date de fin est déjà passée."
   },
   "manual": {
     "title": "Ajouter à la main",
@@ -442,6 +473,19 @@
       "save": "Enregistrer le profil",
       "statuses": "« testé » : mesuré par le projet Otlet (format, qualité, coût) ; « non testé » : pas encore mesuré par le projet, il peut très bien fonctionner ; « bloqué » : l'administrateur ne l'a pas autorisé. Le bouton « Tester » ci-dessous vérifie seulement que vos modèles répondent, il ne change pas ces statuts."
     },
+    "charter": {
+      "title": "Charte de rédaction",
+      "help": "Vos consignes permanentes, ajoutées à chaque génération de brouillon. L'ordre est le suivant : les règles d'Otlet, puis votre charte, puis le brief. Le brief règle le style et le public (ton, audience, consignes de rédaction) mais ne peut pas lever la charte : exactitude, neutralité, rien d'inventé. Laissez le champ vide pour générer sans charte.",
+      "label": "Charte",
+      "isDefault": "Charte par défaut d'Otlet.",
+      "isOwn": "Votre charte. « Rétablir la charte par défaut » reprend celle d'Otlet.",
+      "save": "Enregistrer",
+      "reset": "Rétablir la charte par défaut",
+      "room": "Votre charte prend environ {charter, number} tokens sur les {window, number} de la fenêtre de {model}, le premier modèle de votre profil.",
+      "roomUnknown": "Votre charte prend environ {charter, number} tokens sur les {window, number} de la fenêtre par défaut (aucun modèle reconnu dans votre profil).",
+      "left": "Reste pour les sources, après les règles d'Otlet ({rules, number} tokens) et la réponse : environ {short, number} tokens pour un article court, {medium, number} pour un moyen, {long, number} pour un long. Un brief qui choisit un autre modèle a une autre fenêtre.",
+      "noRoom": "La fenêtre est trop petite : les sources ne seront envoyées qu'en courts extraits. Raccourcissez la charte ou agrandissez la fenêtre du modèle."
+    },
     "status": {
       "tested": "testé",
       "untested": "non testé",
@@ -520,7 +564,8 @@
       "install_not_allowed": "L'administrateur de l'instance n'autorise pas l'installation de modèles.",
       "invalid_model_name": "Ce nom de modèle n'est pas valide (par exemple qwen3:8b).",
       "not_a_local_engine": "Seul un moteur local liste ses modèles.",
-      "invalid_context_window": "Une fenêtre de contexte compte de 2 048 à 2 000 000 jetons."
+      "invalid_context_window": "Une fenêtre de contexte compte de 2 048 à 2 000 000 jetons.",
+      "invalid_charter": "La charte dépasse 8 000 caractères."
     },
     "models": {
       "loading": "Lecture des modèles installés…",
@@ -558,13 +603,9 @@
     "notFound": "Ce brief n'existe pas ou plus.",
     "angle": "Angle et apport propre",
     "angleHelp": "Ce que vous voulez dire : votre expérience, votre avis, votre analyse. C'est ce qui fait de l'article le vôtre ; la façon d'écrire va dans les consignes ci-dessous.",
-    "noAngle": "Pas encore d'angle ni d'apport propre : le brouillon risque de seulement résumer les sources.",
     "title": "Titre de travail",
     "items": "{count, plural, =0 {Éléments} one {Élément (#)} other {Éléments (#)}}",
-    "noItems": "Aucun élément : ajoutez-en au moins un.",
     "removeItem": "Retirer « {title} » du brief",
-    "addKept": "{count, plural, one {Ajouter un élément retenu (# disponible)} other {Ajouter des éléments retenus (# disponibles)}}",
-    "addItem": "Ajouter « {title} » au brief",
     "singleSource": "Une seule source : un article d'actualité en croise d'habitude au moins deux. Le brief reste possible.",
     "audience": "Public",
     "tone": "Ton",
@@ -589,9 +630,9 @@
     "errors": {
       "invalid_title": "Donnez un titre de travail (200 caractères au plus).",
       "invalid_angle": "L'angle compte 4 000 caractères au plus.",
-      "invalid_audience": "Le public compte 200 caractères au plus.",
-      "invalid_tone": "Le ton compte 200 caractères au plus.",
-      "invalid_channel": "Le canal compte 200 caractères au plus.",
+      "invalid_audience": "Choisissez un public dans la liste.",
+      "invalid_tone": "Choisissez un ton dans la liste.",
+      "invalid_channel": "Choisissez un canal dans la liste.",
       "invalid_language": "Langue inconnue.",
       "invalid_items": "Un brief compte de 1 à 20 éléments.",
       "invalid_model": "Choisissez un modèle.",
@@ -613,7 +654,21 @@
     "modeHelp": {
       "synthesis": "Un seul raisonnement à travers les sources : les intertitres portent sur des idées communes, et la plupart des paragraphes croisent plusieurs sources.",
       "panorama": "Les sources l'une après l'autre, une section chacune, avec une introduction et une conclusion qui les relient."
-    }
+    },
+    "unspecified": "Non précisé",
+    "lengthCapped": "Ce canal ne porte pas d'article plus long.",
+    "words": "{count, plural, one {# mot} other {# mots}}",
+    "summaryOnly": "{count, plural, one {résumé seulement, # mot} other {résumé seulement, # mots}}",
+    "matter": "{count, plural, one {Matière disponible : # mot de sources.} other {Matière disponible : # mots de sources.}}",
+    "lengthMatter": "{count, plural, one {Avec # mot de sources, un article plus long serait du remplissage.} other {Avec # mots de sources, un article plus long serait du remplissage.}}",
+    "matterLimited": "Matière limitée : le brouillon sera court. Relisez-le avec soin.",
+    "matterInsufficient": "Matière insuffisante : un résumé de quelques lignes ou moins de 150 mots de sources. Otlet demandera confirmation avant de générer.",
+    "angleSet": "✓ Angle défini",
+    "angleUnset": "○ Angle non défini : le brouillon restituera les sources, sans point de vue de votre part.",
+    "pickItem": "Choisir un élément retenu…",
+    "itemLine": "Élément {number}",
+    "addLine": "Ajouter un élément",
+    "noKept": "Aucun élément retenu : retenez-en dans la Veille pour les choisir ici."
   },
   "draft": {
     "title": "Brouillon",
@@ -622,9 +677,9 @@
     "again": "Générer une nouvelle version",
     "running": "Génération en cours depuis {since}… Un modèle local peut prendre plusieurs minutes.",
     "version": "Version affichée",
-    "versionLabel": "Version {number} ({date})",
+    "versionLabel": "Version {number} · {who} ({date}) ({words, plural, one {# mot} other {# mots}})",
     "byModel": "Version {number}, écrite par {model} ({provider}) le {date}",
-    "byPerson": "Version {number}, modifiée par vous le {date}",
+    "byPerson": "Version {number}, la vôtre, d'après la version {based}, enregistrée le {date}",
     "cut": "Le texte de ces sources a été raccourci pour tenir dans le modèle : {sources}.",
     "sources": "Sources",
     "failed": {
@@ -636,9 +691,12 @@
       "quota": "Quota atteint chez les fournisseurs du profil.",
       "unavailable": "Aucun modèle n'a répondu.",
       "blocked": "Ce modèle est bloqué sur cette instance.",
-      "out_of_room": "Le modèle a manqué de place : sa réponse a été coupée avant la fin. Agrandissez la fenêtre de contexte du fournisseur (Réglages > IA), ou raccourcissez le brief."
+      "out_of_room": "Le modèle a manqué de place : sa réponse a été coupée avant la fin. Agrandissez la fenêtre de contexte du fournisseur (Réglages > IA), ou raccourcissez le brief.",
+      "cancelled": "Génération annulée : rien n'a été enregistré."
     },
     "unused": "{count, plural, one {Ce brouillon n'utilise pas cet élément du brief, malgré une demande de correction au modèle :} other {Ce brouillon n'utilise pas ces # éléments du brief, malgré une demande de correction au modèle :}}",
+    "lone": "{count, plural, one {Synthèse : cette section ne s'appuie que sur une source. Si les sources n'ont pas de sujet commun, le mode Panorama conviendra mieux :} other {Synthèse : ces # sections ne s'appuient que sur une source. Si les sources n'ont pas de sujet commun, le mode Panorama conviendra mieux :}}",
+    "repeated": "{count, plural, one {Ce paragraphe répète presque mot pour mot un paragraphe précédent, malgré une demande de correction au modèle :} other {Ces # paragraphes répètent presque mot pour mot un paragraphe précédent, malgré une demande de correction au modèle :}}",
     "overflow": "Ce brouillon a dépassé la fenêtre de contexte du modèle : un moteur local a pu effacer le début de la conversation, où se trouvent les règles d'Otlet. Relisez-le avec soin, et agrandissez la fenêtre du fournisseur.",
     "details": {
       "title": "Détails de génération",
@@ -650,6 +708,187 @@
       "clearAll": "Effacer les détails de génération de ce brief",
       "confirmClear": "Effacer les détails et les tentatives de toutes les générations de ce brief ? Les versions restent.",
       "clear": "Oui, effacer"
+    },
+    "warning": "Avertissement",
+    "edit": "Modifier cette version",
+    "who": {
+      "ia": "IA",
+      "humain": "vous"
+    },
+    "cancel": "Annuler la génération",
+    "print": "Imprimer",
+    "export": "Exporter…",
+    "printFailed": "Impossible de préparer l'impression.",
+    "formats": {
+      "pdf": "PDF",
+      "docx": "Word (DOCX)",
+      "html": "Page web (HTML)",
+      "md": "Markdown",
+      "txt": "Texte brut (TXT)"
+    },
+    "thin": "{count, plural, one {Ce brouillon a été demandé malgré une matière insuffisante (# mot de sources) : le modèle a sans doute complété avec ses propres connaissances. Vérifiez chaque fait.} other {Ce brouillon a été demandé malgré une matière insuffisante (# mots de sources) : le modèle a sans doute complété avec ses propres connaissances. Vérifiez chaque fait.}}",
+    "unsupported": "{count, plural, one {Ce nom, cette date ou ce nombre n'apparaît dans aucune source du brief. Vérifiez-le : le modèle a pu l'ajouter de lui-même.} other {Ces # noms, dates ou nombres n'apparaissent dans aucune source du brief. Vérifiez-les : le modèle a pu les ajouter de lui-même.}}",
+    "found": {
+      "name": "Nom : {text}",
+      "date": "Date : {text}",
+      "number": "Nombre : {text}"
+    },
+    "copied": "{count, plural, one {Ce passage reprend une source mot pour mot ({share} % du texte en suites de 8 mots reprises). Reformulez-le :} other {Ces # passages reprennent une source mot pour mot ({share} % du texte en suites de 8 mots reprises). Reformulez-les :}}",
+    "passage": "« {excerpt}… » ({words} mots repris)",
+    "limited": "{count, plural, one {Matière limitée (# mot de sources) : brouillon court.} other {Matière limitée (# mots de sources) : brouillon court.}}",
+    "insufficient": "Les sources de ce brief sont trop minces pour un brouillon (un résumé de quelques lignes, ou moins de 150 mots) : le modèle inventerait l'essentiel. Ajoutez un élément au texte complet, ou générez quand même en connaissance de cause.",
+    "generateAnyway": "Générer quand même"
+  },
+  "editor": {
+    "ribbon": "Mise en forme",
+    "page": "Texte de l'article",
+    "title": "Titre de l'article",
+    "tools": {
+      "undo": "Annuler (Ctrl+Z)",
+      "redo": "Rétablir (Ctrl+Y)",
+      "cut": "Couper (Ctrl+X)",
+      "copy": "Copier (Ctrl+C)",
+      "paste": "Coller (Ctrl+V)",
+      "block": "Style de paragraphe",
+      "font": "Police",
+      "size": "Taille",
+      "bold": "Gras (Ctrl+B)",
+      "italic": "Italique (Ctrl+I)",
+      "strike": "Barré (Ctrl+Maj+X)",
+      "color": "Couleur du texte",
+      "highlight": "Couleur de surlignage",
+      "bullet": "Liste à puces",
+      "ordered": "Liste numérotée",
+      "link": "Lien",
+      "separator": "Séparateur",
+      "clear": "Effacer la mise en forme",
+      "subscript": "Indice (Ctrl+,)",
+      "superscript": "Exposant (Ctrl+.)",
+      "left": "Aligner à gauche",
+      "center": "Centrer",
+      "right": "Aligner à droite",
+      "justify": "Justifier",
+      "image": "Insérer une image (ou la coller, ou la glisser dans le texte ; cliquez-la ensuite pour la redimensionner ou l'aligner)"
+    },
+    "blocks": {
+      "p": "Paragraphe",
+      "h2": "Titre 2",
+      "h3": "Titre 3",
+      "h4": "Titre 4"
+    },
+    "defaultColor": "Automatique",
+    "noHighlight": "Aucun surlignage",
+    "linkPrompt": "Adresse du lien (laisser vide pour retirer le lien) :",
+    "linkInvalid": "Un lien commence par http://, https:// ou mailto:.",
+    "save": "Enregistrer",
+    "saveAsNew": "Enregistrer comme nouvelle version",
+    "close": "Fermer l'éditeur",
+    "saving": "Enregistrement…",
+    "unsaved": "Modifications non enregistrées.",
+    "saved": "Enregistré dans la version {number}.",
+    "modelVersion": "Version {number}, écrite par le modèle : « Enregistrer » créera votre version, sans toucher à celle-ci.",
+    "leave": "Des modifications ne sont pas enregistrées. Les abandonner ?",
+    "conflict": "Cette version a été enregistrée ailleurs (un autre onglet ?) depuis son ouverture. Enregistrez comme nouvelle version pour ne rien perdre, ou fermez l'éditeur pour recharger.",
+    "clipboardRefused": "Le navigateur n'a pas autorisé l'accès au presse-papiers depuis le bouton. Les raccourcis Ctrl+C, Ctrl+X et Ctrl+V fonctionnent toujours.",
+    "copied": "Nouvelle version créée : vous travaillez désormais sur une copie du document généré par l'IA. La version {number} est votre copie ; la version {from}, écrite par le modèle, reste intacte. Si vous fermez l'éditeur sans rien modifier, cette copie est supprimée.",
+    "titleHelp": "Le titre reste en texte simple : votre site et les réseaux l'affichent tel quel, sans mise en forme.",
+    "uploading": "{count, plural, one {Envoi d'une image…} other {Envoi de # images…}}",
+    "imageWidth": "{width} %",
+    "imageHandle": "Largeur de l'image : tirez la poignée, ou utilisez les flèches",
+    "imageOwn": "Taille d'origine",
+    "imageWrap": "Habiller le texte",
+    "validatedVersion": "Version {number}, validée : « Enregistrer » créera une nouvelle version, sans toucher à celle qui part en export et en publication."
+  },
+  "library": {
+    "title": "Bibliothèque",
+    "help": "Les articles validés : envoyés depuis leur brief par « Envoyer en Bibliothèque ». Le brief reste l'atelier ; la Bibliothèque montre le même article, sans copie.",
+    "search": "Chercher dans les titres et les textes",
+    "searchButton": "Chercher",
+    "tag": "Étiquette",
+    "allTags": "Toutes les étiquettes",
+    "groupBy": "Grouper par",
+    "groupDate": "Grouper par date",
+    "groupNone": "Sans regroupement",
+    "archived": "Articles archivés",
+    "empty": "La Bibliothèque est vide : envoyez-y un article depuis son brief, avec « Envoyer en Bibliothèque ».",
+    "noMatch": "Aucun article ne correspond.",
+    "today": "Aujourd'hui",
+    "thisWeek": "Cette semaine",
+    "thisMonth": "Ce mois-ci",
+    "status": {
+      "brouillon": "Brouillon",
+      "valide": "Validé",
+      "archive": "Archivé"
+    },
+    "ahead": "Version courante V{current} non validée",
+    "entryMeta": "Version validée V{validated} · modifié le {date}",
+    "back": "← Bibliothèque",
+    "validated": "Version validée : V{number} ({date})",
+    "current": "Version courante : V{number}, brouillon",
+    "aheadWarning": "{count, plural, one {La version V{to} ne part ni en export ni en publication} other {Les versions V{from} à V{to} ne partent ni en export ni en publication}} : c'est la version validée V{validated} qui part, tant qu'une autre n'est pas validée.",
+    "validateThis": "Valider la version {number}",
+    "isValidated": "Version validée",
+    "validatedMark": " · validée",
+    "send": "Envoyer en Bibliothèque",
+    "inLibrary": "Dans la Bibliothèque · version validée V{number}",
+    "openBrief": "Rouvrir le brief",
+    "archive": "Archiver",
+    "unarchive": "Sortir des archives",
+    "tags": "Étiquettes",
+    "tagsPlaceholder": "séparées par des virgules",
+    "saveTags": "Enregistrer les étiquettes",
+    "versions": "Versions",
+    "forked": "Vous avez retouché la version validée V{from} : vos modifications sont dans la nouvelle version V{to}. Laquelle doit partir en export et en publication ? L'autre reste dans l'historique.",
+    "keepValidated": "Garder V{number} validée"
+  },
+  "compare": {
+    "button": "Comparer",
+    "show": "Afficher",
+    "combined": "Sources combinées ({count})",
+    "source": "Source {number} : {title}",
+    "version": "Version {number} ({words, plural, one {# mot} other {# mots}})",
+    "current": " · celle-ci",
+    "notCited": "non citée par ce brouillon",
+    "reference": "Référence",
+    "bound": "Défilement lié",
+    "free": "Défilement libre",
+    "bind": "Lier le défilement des deux panneaux",
+    "unbind": "Faire défiler les panneaux séparément",
+    "tabs": {
+      "draft": "Brouillon",
+      "reference": "Référence"
     }
+  },
+  "rights": {
+    "open": "J'ai les droits sur ce texte…",
+    "help": "L'éditeur réserve ce texte à la fouille de textes. Si vous disposez d'une autorisation (accord de l'éditeur, licence, vos propres contenus), déclarez-la : Otlet lira la page pour vous, une seule fois, sans jamais passer outre le robots.txt du site, une connexion ou un paywall. Votre déclaration est conservée.",
+    "basis": "Base de vos droits",
+    "bases": {
+      "publisher_agreement": "Accord de l'éditeur",
+      "licence": "Licence",
+      "own_content": "Mes propres contenus",
+      "other": "Autre"
+    },
+    "detail": "Précisez la base de vos droits",
+    "reference": "Référence (facultatif)",
+    "referenceExample": "Numéro de licence, lien vers l'accord…",
+    "responsibility": "La responsabilité de cette utilisation vous incombe, et non à Otlet.",
+    "submit": "Récupérer le texte sous ma responsabilité",
+    "importedTitle": "Texte importé sous votre responsabilité",
+    "imported": "Vous avez déclaré disposer des droits sur ce texte le {date}.",
+    "commitmentKept": "Engagement accepté",
+    "withdraw": "Retirer ma déclaration",
+    "withdrawConfirm": "Le texte récupéré sera effacé et l'élément redeviendra réservé. Votre déclaration reste dans l'historique."
+  },
+  "sourceRights": {
+    "open": "J'ai un accord ou une licence pour toute cette source…",
+    "help": "Si un accord de l'éditeur ou une licence couvre tout ce site, déclarez-le : les articles collectés à partir de maintenant seront lus sous votre responsabilité, sans jamais passer outre le robots.txt du site, une connexion ou un paywall. Les articles déjà collectés ne changent pas : vous pouvez les déclarer un par un. Votre déclaration est conservée.",
+    "endsOn": "Fin de l'accord ou de la licence (facultatif)",
+    "submit": "Déclarer l'accord pour cette source",
+    "inForce": "Accord déclaré pour cette source",
+    "ended": "Accord déclaré, arrivé à son terme",
+    "declared": "Déclaré le {date} :",
+    "until": "jusqu'au {date}",
+    "withdrawConfirm": "Les textes lus sous cet accord seront effacés et les articles redeviendront réservés. La déclaration reste dans l'historique."
   }
 }

@@ -14,7 +14,6 @@ from uuid import UUID
 TITLE_MAX_LENGTH = 200
 ANGLE_MAX_LENGTH = 4000
 INSTRUCTIONS_MAX_LENGTH = 2000
-FIELD_MAX_LENGTH = 200  # audience, tone, channel
 MODEL_MAX_LENGTH = 200
 ITEMS_MAX = 20
 LANGUAGES = ("fr", "en", "de", "nl", "es", "it", "pt")
@@ -59,8 +58,9 @@ class BriefFields:
     # How to write, for the model: structure, what to stress or avoid (Joël, 2026-10-17). The
     # angle says what the author wants to say; these say how the draft is written.
     instructions: str = ""
+    # Keys of closed lists, each with its definition for the model (vocabulary.py); "" is none.
     audience: str = ""
-    tone: str = ""
+    tone: str = "neutral"
     length: Length = Length.MEDIUM
     mode: Mode = Mode.SYNTHESIS
     language: str = "fr"
@@ -81,12 +81,12 @@ class BriefFields:
                 "invalid_instructions",
                 f"instructions have at most {INSTRUCTIONS_MAX_LENGTH} characters",
             )
+        from otlet.writing.domain.vocabulary import capped, choice
+
         short = {"audience": self.audience, "tone": self.tone, "channel": self.channel}
         for name, value in short.items():
-            if len(value.strip()) > FIELD_MAX_LENGTH:
-                raise BriefError(
-                    f"invalid_{name}", f"{name} has at most {FIELD_MAX_LENGTH} characters"
-                )
+            if value and choice(name, value) is None:
+                raise BriefError(f"invalid_{name}", f"{value!r} is not a known {name}")
         if self.language not in LANGUAGES:
             raise BriefError("invalid_language", f"a language is one of {LANGUAGES}")
         items = tuple(dict.fromkeys(self.item_ids))
@@ -103,12 +103,12 @@ class BriefFields:
             item_ids=items,
             angle=angle,
             instructions=instructions,
-            audience=self.audience.strip(),
-            tone=self.tone.strip(),
-            length=self.length,
+            audience=self.audience,
+            tone=self.tone,
+            length=capped(self.length, self.channel),
             mode=self.mode,
             language=self.language,
-            channel=self.channel.strip(),
+            channel=self.channel,
             model=model,
         )
 
@@ -123,6 +123,9 @@ class BriefItem:
     source_id: UUID | None  # None for a manual entry
     source_name: str | None
     published_at: datetime | None
+    words: int = 0  # the words a draft may use of it
+    full_text: bool = True  # False: only its summary may be used
+    declared: bool = False  # read under the author's declaration of rights
 
 
 @dataclass(frozen=True, slots=True)
@@ -139,6 +142,16 @@ class Brief:
     def sources(self) -> int:
         """How many sources the brief rests on: each manual entry counts as its own."""
         return len({item.source_id or item.id for item in self.items})
+
+    @property
+    def matter_words(self) -> int:
+        """The words of the sources a draft may use: what its length rests on (draft.py)."""
+        return sum(item.words for item in self.items)
+
+    @property
+    def full_text(self) -> bool:
+        """One item at least is a complete text, not a summary."""
+        return any(item.full_text for item in self.items)
 
     @property
     def single_source(self) -> bool:

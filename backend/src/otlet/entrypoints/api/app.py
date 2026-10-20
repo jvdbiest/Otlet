@@ -30,11 +30,15 @@ from otlet.ai.domain.settings import ProfileEntry, SettingsError
 from otlet.collection.adapters.parsing import FeedparserReader, ReadabilityReader
 from otlet.collection.adapters.postgres import PostgresCollectionStore
 from otlet.collection.application.collection import Collection
-from otlet.entrypoints.api import ai, auth, collection, triage, watch, workspaces, writing
+from otlet.entrypoints.api import ai, auth, collection, media, triage, watch, workspaces, writing
 from otlet.identity.adapters.argon2_hasher import Argon2Hasher
 from otlet.identity.adapters.postgres import PostgresIdentityStore
 from otlet.identity.application.authentication import Authentication
 from otlet.jobs.adapters import procrastinate_queue
+from otlet.media.adapters.files_disk import DiskFiles
+from otlet.media.adapters.images_pillow import PillowImages
+from otlet.media.adapters.postgres import PostgresMediaStore
+from otlet.media.application.library import MediaLibrary
 from otlet.platform import database
 from otlet.platform.config import Settings
 from otlet.platform.http import SafeClient
@@ -46,10 +50,18 @@ from otlet.watch.domain.triage import Decision
 from otlet.workspaces.adapters.postgres import PostgresWorkspaceStore
 from otlet.workspaces.application.workspaces import Workspaces
 from otlet.workspaces.domain.model import WorkspaceContext
+from otlet.writing.adapters.ai_writer import profile_window
 from otlet.writing.adapters.articles_postgres import PostgresArticleStore
+from otlet.writing.adapters.charter_postgres import PostgresCharters
+from otlet.writing.adapters.export_docx import docx
+from otlet.writing.adapters.export_pdf import pdf
 from otlet.writing.adapters.postgres import PostgresBriefStore
 from otlet.writing.application.briefs import Briefs
+from otlet.writing.application.charter import Charters
 from otlet.writing.application.drafts import Drafts
+from otlet.writing.application.editing import Editing
+from otlet.writing.application.exports import Exports
+from otlet.writing.application.library import Library
 from otlet.writing.domain.brief import BriefError, ModelChoice
 
 logger = logging.getLogger(__name__)
@@ -103,7 +115,13 @@ def create_app(settings: Settings) -> FastAPI:
         enqueue = procrastinate_queue.enqueuer(settings.require_database_url())
         store = PostgresCollectionStore(engine, enqueue)
         collection_router = collection.build_router(
-            Collection(store, SafeClient(), FeedparserReader(), ReadabilityReader()),
+            Collection(
+                store,
+                SafeClient(),
+                FeedparserReader(),
+                ReadabilityReader(),
+                declarations=settings.rights_declarations,
+            ),
             workspace_context,
         )
         watch_router = watch.build_router(
@@ -129,18 +147,43 @@ def create_app(settings: Settings) -> FastAPI:
                 raise BriefError(error.code, str(error)) from error
 
         brief_store = PostgresBriefStore(engine)
+        article_store = PostgresArticleStore(engine, enqueue)
+        files_dir = settings.files_dir or settings.run_dir / "files"
+        library = MediaLibrary(PostgresMediaStore(engine), DiskFiles(files_dir), PillowImages())
+
+        def media_check(workspace_id: UUID, ids: set[str]) -> set[str]:
+            return {str(found) for found in library.existing(workspace_id, map(UUID, ids))}
+
+        def read_image(
+            context: WorkspaceContext, media_id: str
+        ) -> tuple[bytes, str, int, int] | None:
+            found = library.read(context, UUID(media_id))
+            return (
+                None
+                if found is None
+                else (found[1], found[0].mime, found[0].width, found[0].height)
+            )
+
         writing_router = writing.build_router(
             Briefs(brief_store, mark_writing, check_model),
             # The API only records a generation: the worker alone calls the models (DR6).
-            Drafts(brief_store, PostgresArticleStore(engine, enqueue)),
+            Drafts(brief_store, article_store),
+            Editing(article_store, media_check),
+            Exports(article_store, read_image, docx, pdf),
+            Library(article_store),
             workspace_context,
         )
+        media_router = media.build_router(library, workspace_context)
         ai_router = ai.build_router(
             ai_settings,
             Budget(PostgresBudget(engine)),
             PostgresChecks(engine, enqueue),
             Models(ai_store, ai_catalogue, OllamaHost(), PostgresPulls(engine, enqueue), uuid4),
             PostgresCallJournal(engine),
+            Charters(
+                PostgresCharters(engine),
+                lambda user: profile_window(ai_store, ai_catalogue, user),
+            ),
             authentication,
             current_session,
         )
@@ -152,6 +195,7 @@ def create_app(settings: Settings) -> FastAPI:
             triage_router,
             ai_router,
             writing_router,
+            media_router,
         ]
         for router in routers:
             app.include_router(router)

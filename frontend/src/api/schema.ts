@@ -63,6 +63,31 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/ai/charter": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Charter
+         * @description The writing charter of the user, added to each of their drafts (Joël, 2026-10-19).
+         */
+        get: operations["get_charter_api_ai_charter_get"];
+        /** Set Charter */
+        put: operations["set_charter_api_ai_charter_put"];
+        post?: never;
+        /**
+         * Reset Charter
+         * @description Back to the default charter.
+         */
+        delete: operations["reset_charter_api_ai_charter_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/ai/checks": {
         parameters: {
             query?: never;
@@ -371,6 +396,147 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/articles/{article_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Article */
+        get: operations["get_article_api_workspaces__workspace_id__articles__article_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/articles/{article_id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Archive Article */
+        post: operations["archive_article_api_workspaces__workspace_id__articles__article_id__archive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/articles/{article_id}/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send Article
+         * @description « Envoyer en Bibliothèque », then « Valider » a later version: the version given is the
+         *     one exports and publications take.
+         */
+        post: operations["send_article_api_workspaces__workspace_id__articles__article_id__send_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/articles/{article_id}/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Tags */
+        put: operations["set_tags_api_workspaces__workspace_id__articles__article_id__tags_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/articles/{article_id}/versions/{number}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Save Version
+         * @description « Enregistrer » a version retouched in the editor: a person's version is updated, a
+         *     version of the model is kept and the person's version is added. With `as_new`, a new
+         *     version is added whatever the version edited. 409 when the version changed since the
+         *     editor loaded it.
+         */
+        put: operations["save_version_api_workspaces__workspace_id__articles__article_id__versions__number__put"];
+        post?: never;
+        /**
+         * Discard Version
+         * @description Removes the copy « Modifier » made of a model's version when the editor is closed
+         *     without a change. 409 for any version saved since, or written by the model.
+         */
+        delete: operations["discard_version_api_workspaces__workspace_id__articles__article_id__versions__number__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/articles/{article_id}/versions/{number}/export/{kind}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export Version
+         * @description A version as a file (X03c): pdf, docx, html, md (a ZIP when it has images), txt or json,
+         *     with its Sources block and AI mention. Made on demand, never stored.
+         */
+        get: operations["export_version_api_workspaces__workspace_id__articles__article_id__versions__number__export__kind__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/brief-vocabulary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Brief Vocabulary
+         * @description The same for every workspace in phase 1; each workspace edits its own in phase 2.
+         */
+        get: operations["brief_vocabulary_api_workspaces__workspace_id__brief_vocabulary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/briefs": {
         parameters: {
             query?: never;
@@ -467,9 +633,50 @@ export interface paths {
         /**
          * Generate
          * @description Asks the worker for a draft of the brief, a new version of its article; while one
-         *     runs, the same is answered.
+         *     runs, the same is answered. Sources too thin: 409 `insufficient_matter`, unless the
+         *     author confirms (« Générer quand même »).
          */
         post: operations["generate_api_workspaces__workspace_id__briefs__brief_id__generations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/briefs/{brief_id}/generations/running": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Cancel Generation
+         * @description Cancels the draft being written for the brief: no version is made from it.
+         */
+        delete: operations["cancel_generation_api_workspaces__workspace_id__briefs__brief_id__generations_running_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/briefs/{brief_id}/sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Brief Sources
+         * @description The texts of the brief's sources, for the reference panel of « Comparer ».
+         */
+        get: operations["brief_sources_api_workspaces__workspace_id__briefs__brief_id__sources_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -633,6 +840,56 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/items/{item_id}/rights": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Rights
+         * @description Whether rights may be declared on the item, and the declaration in force.
+         */
+        get: operations["get_rights_api_workspaces__workspace_id__items__item_id__rights_get"];
+        put?: never;
+        /**
+         * Declare Rights
+         * @description « J'ai les droits sur ce texte » (Joël, 2026-10-20): the declaration is kept and the
+         *     page read under it, within robots.txt and the limits of the site.
+         */
+        post: operations["declare_rights_api_workspaces__workspace_id__items__item_id__rights_post"];
+        /**
+         * Withdraw Rights
+         * @description Withdraws the declaration: the text read under it is erased; the record stays.
+         */
+        delete: operations["withdraw_rights_api_workspaces__workspace_id__items__item_id__rights_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/items/{item_id}/text/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Retry Text
+         * @description Reads the page of an item again when its text was missed for a technical reason;
+         *     409 `not_retryable` for a refusal of the site (robots.txt, a reservation of mining).
+         */
+        post: operations["retry_text_api_workspaces__workspace_id__items__item_id__text_retry_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/items/{item_id}/triage": {
         parameters: {
             query?: never;
@@ -663,6 +920,86 @@ export interface paths {
          * @description The topics of an item, with their explained scores, and the same story elsewhere.
          */
         get: operations["item_watch_api_workspaces__workspace_id__items__item_id__watch_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/library": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Library
+         * @description The Library (X04): the articles sent to it, the latest changed first; `q` searches the
+         *     title and the text of the latest version; archived articles only with status=archive.
+         */
+        get: operations["list_library_api_workspaces__workspace_id__library_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/library/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Tags */
+        get: operations["list_tags_api_workspaces__workspace_id__library_tags_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/media": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Import Image
+         * @description Imports an image into the workspace: decoded, re-encoded without its metadata (GPS
+         *     position, camera, author), no larger than 4096 pixels a side. 413 above 15 MB; 422 when
+         *     it is not a JPEG, PNG, WebP or GIF image.
+         */
+        post: operations["import_image_api_workspaces__workspace_id__media_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/media/{media_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read Image
+         * @description The file of an image of the workspace; never shown to anyone outside it.
+         */
+        get: operations["read_image_api_workspaces__workspace_id__media__media_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -809,6 +1146,32 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/sources/{source_id}/rights": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Source Rights
+         * @description The declaration covering a source, if any (Joël, 2026-10-20).
+         */
+        get: operations["get_source_rights_api_workspaces__workspace_id__sources__source_id__rights_get"];
+        put?: never;
+        /**
+         * Declare Source Rights
+         * @description An agreement or a licence covering the source: the articles collected from now on
+         *     are read under it, within robots.txt and the limits of the site.
+         */
+        post: operations["declare_source_rights_api_workspaces__workspace_id__sources__source_id__rights_post"];
+        /** Withdraw Source Rights */
+        delete: operations["withdraw_source_rights_api_workspaces__workspace_id__sources__source_id__rights_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/topics": {
         parameters: {
             query?: never;
@@ -907,15 +1270,33 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ArchiveBody */
+        ArchiveBody: {
+            /** Archived */
+            archived: boolean;
+        };
         /** ArticleView */
         ArticleView: {
+            /** Brief Id */
+            brief_id: string | null;
             /**
              * Id
              * Format: uuid
              */
             id: string;
+            /** Sent At */
+            sent_at: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "brouillon" | "valide" | "archive";
+            /** Tags */
+            tags: string[];
             /** Title */
             title: string;
+            /** Validated Version */
+            validated_version: number | null;
             /** Versions */
             versions: components["schemas"]["VersionView"][];
         };
@@ -968,12 +1349,16 @@ export interface components {
             title: string;
             /**
              * Tone
-             * @default
+             * @default neutral
              */
             tone: string;
         };
         /** BriefItemView */
         BriefItemView: {
+            /** Declared */
+            declared: boolean;
+            /** Full Text */
+            full_text: boolean;
             /**
              * Id
              * Format: uuid
@@ -989,6 +1374,8 @@ export interface components {
             title: string;
             /** Url */
             url: string | null;
+            /** Words */
+            words: number;
         };
         /** BriefView */
         BriefView: {
@@ -1019,6 +1406,15 @@ export interface components {
              * @enum {string}
              */
             length: "short" | "medium" | "long";
+            /** Length Max */
+            length_max: ("short" | "medium" | "long") | null;
+            /**
+             * Matter Level
+             * @enum {string}
+             */
+            matter_level: "enough" | "limited" | "insufficient";
+            /** Matter Words */
+            matter_words: number;
             /**
              * Mode
              * @enum {string}
@@ -1113,6 +1509,34 @@ export interface components {
             /** Models */
             models: components["schemas"]["ModelView"][];
         };
+        /** CharterBody */
+        CharterBody: {
+            /** Text */
+            text: string;
+        };
+        /** CharterRoomView */
+        CharterRoomView: {
+            /** Answer Tokens */
+            answer_tokens: {
+                [key: string]: number;
+            };
+            /** Chars Per Token */
+            chars_per_token: number;
+            /** Model */
+            model: string | null;
+            /** Rules Tokens */
+            rules_tokens: number;
+            /** Window Tokens */
+            window_tokens: number;
+        };
+        /** CharterView */
+        CharterView: {
+            /** Is Default */
+            is_default: boolean;
+            room: components["schemas"]["CharterRoomView"] | null;
+            /** Text */
+            text: string;
+        };
         /** CheckView */
         CheckView: {
             /** Allowed */
@@ -1128,6 +1552,17 @@ export interface components {
             reason: string;
             /** Url */
             url: string;
+        };
+        /** ChoiceView */
+        ChoiceView: {
+            /** Definition */
+            definition: string;
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Length Max */
+            length_max: ("short" | "medium" | "long") | null;
         };
         /**
          * ContextWindowBody
@@ -1154,6 +1589,30 @@ export interface components {
             login: string;
             /** Password */
             password: string;
+        };
+        /** DeclarationView */
+        DeclarationView: {
+            /**
+             * Basis
+             * @enum {string}
+             */
+            basis: "publisher_agreement" | "licence" | "own_content" | "other";
+            /** Commitment */
+            commitment: string;
+            /**
+             * Declared At
+             * Format: date-time
+             */
+            declared_at: string;
+            /**
+             * Declared By
+             * Format: uuid
+             */
+            declared_by: string;
+            /** Detail */
+            detail: string;
+            /** Reference */
+            reference: string;
         };
         /**
          * DraftView
@@ -1189,6 +1648,14 @@ export interface components {
             /** Topics */
             topics: components["schemas"]["TopicTagView"][];
             triage: components["schemas"]["TriageView"];
+        };
+        /** GenerateBody */
+        GenerateBody: {
+            /**
+             * Force
+             * @default false
+             */
+            force: boolean;
         };
         /** GenerationView */
         GenerationView: {
@@ -1308,6 +1775,8 @@ export interface components {
             url: string | null;
             /** Usage Right */
             usage_right: string | null;
+            /** Words */
+            words: number;
         };
         /** ItemWatchView */
         ItemWatchView: {
@@ -1329,6 +1798,41 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** LibraryEntryView */
+        LibraryEntryView: {
+            /** Brief Id */
+            brief_id: string | null;
+            /** Current Version */
+            current_version: number;
+            /** Excerpt */
+            excerpt: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Sent At
+             * Format: date-time
+             */
+            sent_at: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "brouillon" | "valide" | "archive";
+            /** Tags */
+            tags: string[];
+            /** Title */
+            title: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Validated Version */
+            validated_version: number | null;
+        };
         /** ManualText */
         ManualText: {
             /** Declared Origin */
@@ -1346,6 +1850,27 @@ export interface components {
         ManualUrl: {
             /** Url */
             url: string;
+        };
+        /** MediaView */
+        MediaView: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Height */
+            height: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Mime */
+            mime: string;
+            /** Size */
+            size: number;
+            /** Width */
+            width: number;
         };
         /** ModelView */
         ModelView: {
@@ -1557,6 +2082,58 @@ export interface components {
             /** Topics */
             topics: number;
         };
+        /** RightsBody */
+        RightsBody: {
+            /**
+             * Basis
+             * @enum {string}
+             */
+            basis: "publisher_agreement" | "licence" | "own_content" | "other";
+            /** Certified */
+            certified: boolean;
+            /**
+             * Detail
+             * @default
+             */
+            detail: string;
+            /**
+             * Reference
+             * @default
+             */
+            reference: string;
+        };
+        /** RightsView */
+        RightsView: {
+            /** Allowed */
+            allowed: boolean;
+            /** Commitment */
+            commitment: string;
+            declaration: components["schemas"]["DeclarationView"] | null;
+            /** Reserved */
+            reserved: boolean;
+        };
+        /**
+         * SaveBody
+         * @description A version retouched in the editor (X03, ADR-0036).
+         */
+        SaveBody: {
+            /**
+             * As New
+             * @default false
+             */
+            as_new: boolean;
+            /** Document */
+            document: {
+                [key: string]: unknown;
+            };
+            /** Title */
+            title: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
         /** ScoredItemView */
         ScoredItemView: {
             /** Contributions */
@@ -1567,6 +2144,11 @@ export interface components {
             /** Score */
             score: number;
             triage: components["schemas"]["TriageView"];
+        };
+        /** SendBody */
+        SendBody: {
+            /** Number */
+            number: number;
         };
         /** SessionView */
         SessionView: {
@@ -1588,6 +2170,77 @@ export interface components {
             interval_minutes?: number | null;
             /** Name */
             name?: string | null;
+            /** Url */
+            url?: string | null;
+        };
+        /** SourceDeclarationView */
+        SourceDeclarationView: {
+            /**
+             * Basis
+             * @enum {string}
+             */
+            basis: "publisher_agreement" | "licence";
+            /** Commitment */
+            commitment: string;
+            /**
+             * Declared At
+             * Format: date-time
+             */
+            declared_at: string;
+            /**
+             * Declared By
+             * Format: uuid
+             */
+            declared_by: string;
+            /** Ends On */
+            ends_on: string | null;
+            /** Reference */
+            reference: string;
+        };
+        /** SourceRightsBody */
+        SourceRightsBody: {
+            /**
+             * Basis
+             * @enum {string}
+             */
+            basis: "publisher_agreement" | "licence";
+            /** Certified */
+            certified: boolean;
+            /** Ends On */
+            ends_on?: string | null;
+            /**
+             * Reference
+             * @default
+             */
+            reference: string;
+        };
+        /** SourceRightsView */
+        SourceRightsView: {
+            /** Allowed */
+            allowed: boolean;
+            /** Commitment */
+            commitment: string;
+            declaration: components["schemas"]["SourceDeclarationView"] | null;
+        };
+        /**
+         * SourceTextView
+         * @description A source of the brief as the drafts receive it: its text Otlet may use, else its summary.
+         */
+        SourceTextView: {
+            /** Key */
+            key: string;
+            /** Published At */
+            published_at: string | null;
+            /** Publisher */
+            publisher: string | null;
+            /** Text */
+            text: string;
+            /** Title */
+            title: string;
+            /** Url */
+            url: string | null;
+            /** Words */
+            words: number;
         };
         /** SourceView */
         SourceView: {
@@ -1628,6 +2281,11 @@ export interface components {
             site_url: string | null;
             /** Url */
             url: string;
+        };
+        /** TagsBody */
+        TagsBody: {
+            /** Tags */
+            tags: string[];
         };
         /** TopicBody */
         TopicBody: {
@@ -1739,6 +2397,8 @@ export interface components {
         };
         /** VersionView */
         VersionView: {
+            /** Based On */
+            based_on: number | null;
             /** Context Overflow */
             context_overflow: boolean;
             /**
@@ -1773,6 +2433,13 @@ export interface components {
             title: string;
             /** Unused Sources */
             unused_sources: string[];
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Words */
+            words: number;
         };
         /**
          * View
@@ -1780,6 +2447,28 @@ export interface components {
          * @enum {string}
          */
         View: "to_sort" | "kept" | "writing" | "dismissed" | "archived" | "pinned" | "all";
+        /**
+         * VocabularyView
+         * @description The values a brief's audience, tone and channel take (Joël, 2026-10-19, phase 1).
+         */
+        VocabularyView: {
+            /** Audience */
+            audience: components["schemas"]["ChoiceView"][];
+            /** Channel */
+            channel: components["schemas"]["ChoiceView"][];
+            /** Length Words */
+            length_words: {
+                [key: string]: number;
+            };
+            /** Matter Floor */
+            matter_floor: number;
+            /** Matter Share */
+            matter_share: number;
+            /** Tone */
+            tone: components["schemas"]["ChoiceView"][];
+            /** Tone Default */
+            tone_default: string;
+        };
         /** WorkspaceView */
         WorkspaceView: {
             /** Id */
@@ -1905,6 +2594,79 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CatalogueView"];
+                };
+            };
+        };
+    };
+    get_charter_api_ai_charter_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CharterView"];
+                };
+            };
+        };
+    };
+    set_charter_api_ai_charter_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CharterBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CharterView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reset_charter_api_ai_charter_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CharterView"];
                 };
             };
         };
@@ -2532,6 +3294,279 @@ export interface operations {
             };
         };
     };
+    get_article_api_workspaces__workspace_id__articles__article_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    archive_article_api_workspaces__workspace_id__articles__article_id__archive_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ArchiveBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    send_article_api_workspaces__workspace_id__articles__article_id__send_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_tags_api_workspaces__workspace_id__articles__article_id__tags_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TagsBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_version_api_workspaces__workspace_id__articles__article_id__versions__number__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: string;
+                number: number;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VersionView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    discard_version_api_workspaces__workspace_id__articles__article_id__versions__number__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: string;
+                number: number;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_version_api_workspaces__workspace_id__articles__article_id__versions__number__export__kind__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: string;
+                number: number;
+                kind: "pdf" | "docx" | "html" | "md" | "txt" | "json";
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    brief_vocabulary_api_workspaces__workspace_id__brief_vocabulary_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VocabularyView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_briefs_api_workspaces__workspace_id__briefs_get: {
         parameters: {
             query?: never;
@@ -2768,7 +3803,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["GenerateBody"] | null;
+            };
+        };
         responses: {
             /** @description Successful Response */
             202: {
@@ -2777,6 +3816,70 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GenerationView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_generation_api_workspaces__workspace_id__briefs__brief_id__generations_running_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                brief_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GenerationView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    brief_sources_api_workspaces__workspace_id__briefs__brief_id__sources_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                brief_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceTextView"][];
                 };
             };
             /** @description Validation Error */
@@ -3108,6 +4211,136 @@ export interface operations {
             };
         };
     };
+    get_rights_api_workspaces__workspace_id__items__item_id__rights_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RightsView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    declare_rights_api_workspaces__workspace_id__items__item_id__rights_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RightsBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    withdraw_rights_api_workspaces__workspace_id__items__item_id__rights_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    retry_text_api_workspaces__workspace_id__items__item_id__text_retry_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_triage_api_workspaces__workspace_id__items__item_id__triage_get: {
         parameters: {
             query?: never;
@@ -3195,6 +4428,144 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ItemWatchView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_library_api_workspaces__workspace_id__library_get: {
+        parameters: {
+            query?: {
+                q?: string;
+                status?: ("brouillon" | "valide" | "archive") | null;
+                tag?: string | null;
+            };
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LibraryEntryView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_tags_api_workspaces__workspace_id__library_tags_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    import_image_api_workspaces__workspace_id__media_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "image/gif": string;
+                "image/jpeg": string;
+                "image/png": string;
+                "image/webp": string;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_image_api_workspaces__workspace_id__media__media_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                media_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/jpeg": unknown;
+                    "image/png": unknown;
+                    "image/webp": unknown;
                 };
             };
             /** @description Validation Error */
@@ -3524,6 +4895,104 @@ export interface operations {
                 content: {
                     "application/json": unknown;
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_source_rights_api_workspaces__workspace_id__sources__source_id__rights_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceRightsView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    declare_source_rights_api_workspaces__workspace_id__sources__source_id__rights_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SourceRightsBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceDeclarationView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    withdraw_source_rights_api_workspaces__workspace_id__sources__source_id__rights_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

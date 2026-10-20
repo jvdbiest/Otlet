@@ -12,7 +12,9 @@ from otlet.ai.adapters.postgres import PostgresAiSettings
 from otlet.jobs.application.registry import JobEnvironment, job
 from otlet.writing.adapters.ai_writer import GatewayWriter
 from otlet.writing.adapters.articles_postgres import PostgresArticleStore
+from otlet.writing.adapters.charter_postgres import PostgresCharters
 from otlet.writing.adapters.postgres import PostgresBriefStore
+from otlet.writing.application.charter import Charters
 from otlet.writing.application.drafts import GENERATE_DRAFT, Drafts
 
 
@@ -26,6 +28,10 @@ def generate_draft(
     writer = GatewayWriter(
         gateway(environment), PostgresAiSettings(engine), PackagedCatalogue().load()
     )
+    charters = Charters(PostgresCharters(engine))
     Drafts(
-        PostgresBriefStore(engine), PostgresArticleStore(engine, environment.enqueue), writer
+        PostgresBriefStore(engine),
+        PostgresArticleStore(engine, environment.enqueue),
+        writer,
+        lambda user: charters.of(user).text,
     ).run(UUID(workspace_id), UUID(user_id), UUID(generation_id))

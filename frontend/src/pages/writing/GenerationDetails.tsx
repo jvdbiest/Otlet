@@ -9,6 +9,7 @@ interface Details {
   brief?: {
     mode?: string;
     length?: string;
+    length_used?: string;
     language?: string;
     model?: string;
     angle?: string;
@@ -26,6 +27,12 @@ interface Details {
   refusals?: string[][];
   attempts?: { provider?: string; model?: string; result?: string; seconds?: number; tokens_in?: number; tokens_out?: number }[];
   context_overflow?: boolean;
+  lone_sections?: string[];
+  repeated_paragraphs?: string[];
+  matter_words?: number;
+  thin_matter?: boolean;
+  unsupported?: { kind: string; text: string }[];
+  copying?: { share?: number; passages?: unknown[] };
 }
 
 const NUMBER = new Intl.NumberFormat("fr-BE");
@@ -67,6 +74,27 @@ function detailsText(raw: Record<string, unknown>, heading: string): string {
   for (const attempt of details.attempts ?? []) {
     lines.push(
       `Appel : ${attempt.model ?? "?"} (${attempt.provider ?? "?"}) · ${attempt.result ?? "?"} · ${String(attempt.seconds ?? 0)} s · ${NUMBER.format(attempt.tokens_in ?? 0)} jetons envoyés, ${NUMBER.format(attempt.tokens_out ?? 0)} reçus`,
+    );
+  }
+  if (details.lone_sections?.length) {
+    lines.push(`Sections à une seule source : ${details.lone_sections.join(" ; ")}`);
+  }
+  if (details.repeated_paragraphs?.length) {
+    lines.push(`Paragraphes répétés : ${details.repeated_paragraphs.join(" ; ")}`);
+  }
+  if (details.matter_words !== undefined) {
+    lines.push(
+      `Matière : ${NUMBER.format(details.matter_words)} mots de sources${details.thin_matter ? " (trop peu)" : ""} ; longueur demandée ${brief.length ?? "?"}, utilisée ${brief.length_used ?? "?"}`,
+    );
+  }
+  if (details.unsupported !== undefined) {
+    lines.push(
+      `Absents des sources : ${details.unsupported.length === 0 ? "aucun" : details.unsupported.map((f) => f.text).join(" ; ")}`,
+    );
+  }
+  if (details.copying !== undefined) {
+    lines.push(
+      `Recopie : ${String(Math.round((details.copying.share ?? 0) * 100))} % des suites de 8 mots, ${String(details.copying.passages?.length ?? 0)} passage(s) de 12 mots ou plus`,
     );
   }
   if (details.context_overflow) {

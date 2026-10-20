@@ -1,0 +1,58 @@
+{
+  "about": "Jeu de briefs de référence du moteur de rédaction (Joël, 2026-10-19, après l'audit qualité). Les textes des sources ne sont jamais versionnés : export.sh les copie de la VM de travail dans data/.",
+  "briefs": [
+    {
+      "id": "disney-top10",
+      "why": "Une source liste (10 films), connue du modèle : inventions de connaissances, liste complète, attribution de la sélection, longueur demandée au-delà de la matière.",
+      "sources": ["https://www.lesnumeriques.com/cine-svod/disney-10-films-parfaits-a-voir-en-streaming-pour-halloween-2026-n263432.html"],
+      "fields": {"title": "Disney+ Top 10", "length": "long", "tone": "neutral", "audience": "general_public", "channel": "website"},
+      "expect": {"items": ["casper", "colline", "traquee", "wedding", "hocus", "rocky", "romulus", "mouche", "manoir", "village"], "names": ["les numeriques"]}
+    },
+    {
+      "id": "f1-synthesis",
+      "why": "Trois sources sans sujet commun évident : liens forcés en Synthèse.",
+      "sources": [
+        "https://sports.auto-moto.com/f1/actualite/red-bull-wache-encense-verstappen-et-revele-larme-secrete-qui-le-distingue-de-ses-rivaux-38933",
+        "https://sports.auto-moto.com/f1/actualite/formule-1-le-couperet-semble-finalement-repousse-concernant-lissue-de-la-fin-de-saison-38909",
+        "https://sports.auto-moto.com/f1/actualite/mclaren-ralf-schumacher-recadre-lando-norris-qui-doit-prouver-sa-valeur-38904"
+      ],
+      "fields": {"title": "Max Verstappen", "angle": "Ce qui fait la différence de Verstappen selon les ingénieurs et ses rivaux.", "length": "medium", "mode": "synthesis", "tone": "neutral", "audience": "informed_amateur", "channel": "website"},
+      "expect": {"names": ["wache", "norris"]}
+    },
+    {
+      "id": "f1-panorama",
+      "why": "Les mêmes sources en Panorama : la référence de comparaison du précédent.",
+      "sources": [
+        "https://sports.auto-moto.com/f1/actualite/red-bull-wache-encense-verstappen-et-revele-larme-secrete-qui-le-distingue-de-ses-rivaux-38933",
+        "https://sports.auto-moto.com/f1/actualite/formule-1-le-couperet-semble-finalement-repousse-concernant-lissue-de-la-fin-de-saison-38909",
+        "https://sports.auto-moto.com/f1/actualite/mclaren-ralf-schumacher-recadre-lando-norris-qui-doit-prouver-sa-valeur-38904"
+      ],
+      "fields": {"title": "Max Verstappen", "angle": "Ce qui fait la différence de Verstappen selon les ingénieurs et ses rivaux.", "length": "medium", "mode": "panorama", "tone": "neutral", "audience": "informed_amateur", "channel": "website"},
+      "expect": {"names": ["wache", "norris"]}
+    },
+    {
+      "id": "settlers-synthesis",
+      "why": "Deux sources anglaises sur le même événement : une vraie synthèse, en français, à partir de l'anglais.",
+      "sources": [
+        "https://www.theguardian.com/world/2026/oct/17/israeli-settlers-attack-european-diplomats-in-west-bank",
+        "https://www.theguardian.com/world/2026/oct/17/masked-settlers-attack-european-diplomats-occupied-west-bank"
+      ],
+      "fields": {"title": "Des diplomates européens attaqués en Cisjordanie", "length": "medium", "mode": "synthesis", "tone": "neutral", "audience": "general_public", "channel": "website"},
+      "expect": {}
+    },
+    {
+      "id": "nvidia-thin",
+      "why": "Une source dont Otlet n'a que le résumé (40 mots) : matière trop mince.",
+      "sources": ["https://www.01net.com/actualites/pourquoi-nvidia-investit-ses-milliards-de-dollars-un-peu-partout.html"],
+      "fields": {"title": "Pourquoi Nvidia investit ses milliards", "length": "short", "tone": "neutral", "audience": "professional", "channel": "website"},
+      "expect": {}
+    },
+    {
+      "id": "lula-short",
+      "why": "Un texte complet mais court (192 mots) pour un article court : la limite basse de la matière.",
+      "sources": ["https://www.lemonde.fr/international/article/2026/10/17/au-bresil-le-camp-du-president-lula-accuse-meta-d-ingerence-electorale-en-faveur-de-son-opposant-d-extreme-droite-flavio-bolsonaro_6796484_3210.html"],
+      "fields": {"title": "Lula accuse Meta d'ingérence", "length": "short", "tone": "neutral", "audience": "general_public", "channel": "website"},
+      "expect": {"names": ["lula", "meta"]}
+    }
+  ]
+}

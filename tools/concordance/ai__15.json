@@ -1,0 +1,324 @@
+{
+ "type": "doc",
+ "attrs": {
+  "version_schema": 1,
+  "langue": "fr",
+  "sources": [
+   {
+    "id": "S1",
+    "titre": "Dossier 15, document 1",
+    "editeur": "Bulletin communal",
+    "date": "2026-01-18",
+    "url": "https://exemple.org/dossiers/15/document-1"
+   },
+   {
+    "id": "S2",
+    "titre": "Dossier 15, document 2",
+    "editeur": "Bulletin communal",
+    "date": "2026-06-12",
+    "url": "https://exemple.org/dossiers/15/document-2"
+   },
+   {
+    "id": "S3",
+    "titre": "Dossier 15, document 3",
+    "editeur": "Bulletin communal",
+    "date": "2026-02-18",
+    "url": "https://exemple.org/dossiers/15/document-3"
+   }
+  ]
+ },
+ "content": [
+  {
+   "type": "paragraph",
+   "attrs": {
+    "id": "b1",
+    "origine": "ia"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Les habitants étaient nombreux à suivre le débat sur la numérisation des archives communales."
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "attrs": {
+    "id": "b2",
+    "origine": "ia",
+    "level": 2
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Ce que prévoit le projet sur numérique"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "attrs": {
+    "id": "b3",
+    "origine": "ia"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Selon les documents consultés, "
+    },
+    {
+     "type": "text",
+     "text": "le coût total reste à confirmer",
+     "marks": [
+      {
+       "type": "source_ref",
+       "attrs": {
+        "source": "S1"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": ". Un comité de suivi réunira élus, agents et riverains deux fois par an."
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "attrs": {
+    "id": "b4",
+    "origine": "ia"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "La "
+    },
+    {
+     "type": "text",
+     "text": "fiche détaillée",
+     "marks": [
+      {
+       "type": "link",
+       "attrs": {
+        "href": "https://exemple.org/numérique/fiche-15"
+       }
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": " est disponible en ligne, et "
+    },
+    {
+     "type": "text",
+     "text": "plusieurs points restent ouverts",
+     "marks": [
+      {
+       "type": "bold"
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "text": "."
+    }
+   ]
+  },
+  {
+   "type": "citation",
+   "attrs": {
+    "id": "b5",
+    "origine": "ia",
+    "source": "S2"
+   },
+   "content": [
+    {
+     "type": "paragraph",
+     "content": [
+      {
+       "type": "text",
+       "text": "Chaque euro dépensé doit pouvoir être expliqué aux habitants."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "attrs": {
+    "id": "b6",
+    "origine": "ia",
+    "level": 3
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Les prochaines étapes"
+    }
+   ]
+  },
+  {
+   "type": "bullet_list",
+   "attrs": {
+    "id": "b7",
+    "origine": "ia"
+   },
+   "content": [
+    {
+     "type": "list_item",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "un rapport annuel public"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "list_item",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "une consultation en ligne de six semaines"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "list_item",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "un budget de fonctionnement distinct"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "attrs": {
+    "id": "b8",
+    "origine": "ia"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Plusieurs associations demandent que les données de suivi soient rendues publiques.",
+     "marks": [
+      {
+       "type": "italic"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "type": "heading",
+   "attrs": {
+    "id": "b9",
+    "origine": "ia",
+    "level": 2
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Contexte"
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "attrs": {
+    "id": "b10",
+    "origine": "ia"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Le calendrier prévoit une première phase dès le printemps, puis une évaluation à l’automne."
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "attrs": {
+    "id": "b11",
+    "origine": "ia"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Les montants annoncés restent provisoires tant que les subsides régionaux ne sont pas confirmés."
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "attrs": {
+    "id": "b12",
+    "origine": "ia"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Plusieurs associations demandent que les données de suivi soient rendues publiques."
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "attrs": {
+    "id": "b13",
+    "origine": "ia"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "L’opposition salue l’intention mais s’interroge sur le coût d’entretien à long terme."
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "attrs": {
+    "id": "b14",
+    "origine": "ia"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Un comité de suivi réunira élus, agents et riverains deux fois par an."
+    }
+   ]
+  },
+  {
+   "type": "paragraph",
+   "attrs": {
+    "id": "b15",
+    "origine": "ia"
+   },
+   "content": [
+    {
+     "type": "text",
+     "text": "Les premiers retours d’expérience venus d’autres communes sont jugés encourageants."
+    }
+   ]
+  }
+ ]
+}

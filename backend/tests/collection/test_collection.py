@@ -16,11 +16,13 @@ from otlet.collection.adapters.parsing import FeedparserReader, ReadabilityReade
 from otlet.collection.adapters.postgres import PostgresCollectionStore
 from otlet.collection.application.collection import (
     COLLECT_SOURCE,
+    EXTRACT_DECLARED,
     EXTRACT_ITEM,
     ITEM_READY,
     Collection,
+    RightsError,
 )
-from otlet.collection.domain.model import CollectionError, LegalStatus, TextStatus
+from otlet.collection.domain.model import CollectionError, Item, LegalStatus, TextStatus
 from otlet.identity.adapters.argon2_hasher import Argon2Hasher
 from otlet.identity.adapters.postgres import PostgresIdentityStore
 from otlet.identity.application.authentication import Authentication
@@ -109,6 +111,8 @@ class World:
                 self.collection.collect(workspace, uuid.UUID(kwargs["source_id"]))
             elif name == EXTRACT_ITEM:
                 self.collection.extract(workspace, uuid.UUID(kwargs["item_id"]))
+            elif name == EXTRACT_DECLARED:
+                self.collection.extract_declared(workspace, uuid.UUID(kwargs["item_id"]))
 
 
 def make_context(engine: sa.Engine, login: str) -> WorkspaceContext:
@@ -421,3 +425,188 @@ def test_a_removed_item_does_not_come_back(world: World) -> None:
     world.collection.collect(world.context.workspace_id, source.id)
     world.run_jobs()
     assert [i.title for i in world.collection.list_items(world.context)] == ["Article b"]
+
+
+def test_a_text_missed_by_accident_can_be_read_again(world: World) -> None:
+    # The page answers 503 at the first reading, then is back (Joël, 2026-10-20).
+    open_site(world.web, "a")
+    world.web.pages[f"{SITE}/a"] = (503, HTML, b"")
+    world.collection.add_source(world.context, FEED)
+    world.run_jobs()
+    (item,) = world.collection.list_items(world.context)
+    assert (item.text_status, item.text_reason) == (TextStatus.SUMMARY_ONLY, "http_503")
+    open_site(world.web, "a")
+    retried = world.collection.retry_text(world.context, item.id)
+    assert retried is not None and retried.text_status is TextStatus.PENDING
+    world.run_jobs()
+    read = world.collection.get_item(world.context, item.id)
+    assert read is not None and read.text_status is TextStatus.FULL_TEXT
+
+
+def test_a_reservation_of_the_publisher_is_never_read_again(world: World) -> None:
+    open_site(world.web, "a")
+    world.web.pages[SITE + "/.well-known/tdmrep.json"] = (
+        200,
+        {},
+        b'[{"location": "/", "tdm-reservation": 1}]',
+    )
+    world.collection.add_source(world.context, FEED)
+    world.run_jobs()
+    (item,) = world.collection.list_items(world.context)
+    assert world.collection.retry_text(world.context, item.id) is None
+    still = world.collection.get_item(world.context, item.id)
+    assert still is not None and still.text_reason == "tdm_reserved_file"
+
+
+def reserved_item(world: World) -> Item:
+    open_site(world.web, "a")
+    world.web.pages[SITE + "/.well-known/tdmrep.json"] = (
+        200,
+        {},
+        b'[{"location": "/", "tdm-reservation": 1}]',
+    )
+    world.collection.add_source(world.context, FEED)
+    world.run_jobs()
+    (item,) = world.collection.list_items(world.context)
+    return item
+
+
+def test_a_declaration_of_rights_opens_a_reserved_text(world: World) -> None:
+    item = reserved_item(world)
+    # A declaration is complete: the commitment accepted, « other » named (Joël, 2026-10-20).
+    for basis, certified, code in (
+        ("licence", False, "not_certified"),
+        ("other", True, "detail_required"),
+        ("friendship", True, "invalid_basis"),
+    ):
+        with pytest.raises(RightsError) as refused:
+            world.collection.declare_rights(
+                world.context, item.id, basis=basis, certified=certified
+            )
+        assert refused.value.code == code
+    declared = world.collection.declare_rights(
+        world.context, item.id, basis="licence", reference="Licence n° 42", certified=True
+    )
+    assert declared is not None and declared.text_status is TextStatus.PENDING
+    world.run_jobs()
+    read = world.collection.get_item(world.context, item.id)
+    assert read is not None
+    assert (read.text_status, read.text_reason) == (TextStatus.MANUAL, "declared_rights")
+    assert read.text is not None and read.declared_origin == "licence"
+    found = world.collection.rights_declaration(world.context, item.id)
+    assert found is not None and found.reference == "Licence n° 42"
+    assert found.commitment.startswith("Je certifie disposer des droits")
+    # Withdrawn: the text goes, the reservation comes back; the record stays.
+    assert world.collection.withdraw_rights(world.context, item.id)
+    back = world.collection.get_item(world.context, item.id)
+    assert back is not None
+    assert (back.text_status, back.text_reason, back.text) == (
+        TextStatus.SUMMARY_ONLY,
+        "tdm_reserved_file",
+        None,
+    )
+    assert world.collection.rights_declaration(world.context, item.id) is None
+    assert not world.collection.withdraw_rights(world.context, item.id)
+
+
+def test_a_declaration_never_passes_robots_nor_a_disabled_instance(world: World) -> None:
+    item = reserved_item(world)
+    # The site closes the page to Otlet: a declaration does not open it.
+    world.web.pages[SITE + "/robots.txt"] = (200, {}, b"User-agent: *\nDisallow: /a\n")
+    world.clock[0] = world.clock[0] + timedelta(days=30)  # the policy of the site is read again
+    world.collection.declare_rights(world.context, item.id, basis="own_content", certified=True)
+    world.run_jobs()
+    read = world.collection.get_item(world.context, item.id)
+    assert read is not None and read.text_status is TextStatus.SUMMARY_ONLY
+    assert read.text_reason is not None and read.text_reason.startswith("robots_")
+    # An instance that does not allow declarations refuses them.
+    closed = Collection(
+        PostgresCollectionStore(world.engine, world.queue),
+        world.web,
+        FeedparserReader(),
+        ReadabilityReader(),
+        declarations=False,
+    )
+    with pytest.raises(RightsError) as refused:
+        closed.declare_rights(world.context, item.id, basis="licence", certified=True)
+    assert refused.value.code == "declarations_disabled"
+
+
+def test_a_source_moves_to_another_address(world: World) -> None:
+    open_site(world.web, "a")
+    source = world.collection.add_source(world.context, FEED)
+    world.run_jobs()
+    # The site moves its feed (Joël, 2026-10-20): the source follows, checked again at once.
+    world.web.pages[SITE + "/news.xml"] = (200, XML, rss("b"))
+    world.web.pages[f"{SITE}/b"] = (200, HTML, article("b"))
+    moved = world.collection.update_source(
+        world.context, source.id, url=SITE + "/news.xml", name="Le Journal, actualités"
+    )
+    assert moved is not None
+    assert (moved.feed_url, moved.name, moved.legal_status) == (
+        SITE + "/news.xml",
+        "Le Journal, actualités",
+        LegalStatus.UNKNOWN,
+    )
+    world.run_jobs()
+    titles = sorted(item.title for item in world.collection.list_items(world.context))
+    assert titles == ["Article a", "Article b"]  # what was collected stays
+    # Another source cannot move to a feed already followed (the old one is free again).
+    second = world.collection.add_source(world.context, FEED)
+    with pytest.raises(CollectionError) as taken:
+        world.collection.update_source(world.context, second.id, url=SITE + "/news.xml")
+    assert taken.value.code == "already_followed"
+
+
+def test_an_agreement_covers_the_new_articles_of_a_source(world: World) -> None:
+    open_site(world.web, "a")
+    world.web.pages[SITE + "/.well-known/tdmrep.json"] = (
+        200,
+        {},
+        b'[{"location": "/", "tdm-reservation": 1}]',
+    )
+    source = world.collection.add_source(world.context, FEED)
+    world.run_jobs()
+    (old,) = world.collection.list_items(world.context)
+    assert old.text_reason == "tdm_reserved_file"
+    # An agreement or a licence only, for a whole site (Joël, 2026-10-20).
+    with pytest.raises(RightsError) as refused:
+        world.collection.declare_source_rights(
+            world.context, source.id, basis="own_content", certified=True
+        )
+    assert refused.value.code == "invalid_basis"
+    declared = world.collection.declare_source_rights(
+        world.context,
+        source.id,
+        basis="publisher_agreement",
+        reference="Accord 2026",
+        certified=True,
+    )
+    assert declared is not None and declared.commitment.startswith("Je certifie disposer d'un")
+    assert (
+        world.collection.declare_source_rights(
+            world.context, source.id, basis="licence", certified=True
+        )
+        is None
+    )  # one in force at a time
+    # A new article, collected after the declaration, is read under it; the old one is not.
+    world.clock[0] = world.clock[0] + timedelta(hours=2)
+    open_site(world.web, "a", "b")
+    world.collection.collect_now(world.context, source.id)
+    world.run_jobs()
+    items = {item.title: item for item in world.collection.list_items(world.context)}
+    assert (items["Article b"].text_status, items["Article b"].text_reason) == (
+        TextStatus.MANUAL,
+        "declared_rights",
+    )
+    assert items["Article a"].text_reason == "tdm_reserved_file"
+    # Withdrawn: the texts read under it go, the reservation comes back.
+    assert world.collection.withdraw_source_rights(world.context, source.id)
+    back = world.collection.get_item(world.context, items["Article b"].id)
+    assert back is not None
+    assert (back.text_status, back.text_reason, back.text) == (
+        TextStatus.SUMMARY_ONLY,
+        "tdm_reserved_file",
+        None,
+    )
+    assert world.collection.source_rights(world.context, source.id) is None

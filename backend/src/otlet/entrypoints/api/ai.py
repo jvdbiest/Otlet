@@ -6,6 +6,7 @@ Keys go in, never out: a provider shows only the last characters of its key."""
 
 import uuid
 from collections.abc import Callable
+from dataclasses import asdict
 from datetime import date, datetime
 from decimal import Decimal
 from typing import Annotated, Any, Literal, Protocol
@@ -33,6 +34,7 @@ from otlet.entrypoints.api.auth import same_origin
 from otlet.identity.application.authentication import Authentication
 from otlet.identity.domain.model import Session
 from otlet.platform.secrets import SecretError
+from otlet.writing.application.charter import Charter, CharterError, Charters
 
 PREFIX = "/api/ai"
 
@@ -196,6 +198,24 @@ class BudgetView(BaseModel):
     usable: Decimal
 
 
+class CharterRoomView(BaseModel):
+    model: str | None  # the first model of the profile; None: unknown, the smallest window
+    window_tokens: int
+    rules_tokens: int
+    answer_tokens: dict[str, int]  # by length of the article: short, medium, long
+    chars_per_token: int
+
+
+class CharterView(BaseModel):
+    text: str  # what every draft follows; empty: no charter
+    is_default: bool  # the charter of the product, not changed by the user
+    room: CharterRoomView | None  # the room in the window of the main model
+
+
+class CharterBody(BaseModel):
+    text: str = Field(max_length=10_000)
+
+
 class NewLimit(BaseModel):
     monthly_limit: Decimal = Field(ge=0, le=LIMIT_MAX)
 
@@ -254,6 +274,7 @@ def build_router(
     checks: CheckStore,
     models: Models,
     journal: CallJournalReader,
+    charters: Charters,
     auth: Authentication,
     current_session: Callable[..., Session],
 ) -> APIRouter:
@@ -409,6 +430,32 @@ def build_router(
             reserved=_cents(state.reserved),
             usable=_cents(state.usable),
         )
+
+    def charter_view(user_id: UUID, charter: Charter) -> CharterView:
+        room = charters.room(user_id)
+        return CharterView(
+            text=charter.text,
+            is_default=charter.is_default,
+            room=None if room is None else CharterRoomView(**asdict(room)),
+        )
+
+    @router.get("/charter")
+    def get_charter(session: CurrentSession) -> CharterView:
+        """The writing charter of the user, added to each of their drafts (Joël, 2026-10-19)."""
+        return charter_view(session.user_id, charters.of(session.user_id))
+
+    @router.put("/charter")
+    def set_charter(body: CharterBody, session: CurrentSession) -> CharterView:
+        try:
+            charter = charters.set(session.user_id, body.text)
+        except CharterError as error:
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "invalid_charter") from error
+        return charter_view(session.user_id, charter)
+
+    @router.delete("/charter")
+    def reset_charter(session: CurrentSession) -> CharterView:
+        """Back to the default charter."""
+        return charter_view(session.user_id, charters.reset(session.user_id))
 
     @router.get("/budget")
     def get_budget(session: CurrentSession) -> BudgetView:

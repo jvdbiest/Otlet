@@ -21,7 +21,7 @@ import {
   type TriageView,
 } from "../../triage.ts";
 import { searchQuery, useRefreshWatch, type FoundItemView } from "../../watch.ts";
-import { formatDate, textLabel, textTone } from "./labels.ts";
+import { formatDate, reasonText, textLabel, textTone } from "./labels.ts";
 import { BulkBar } from "./BulkBar.tsx";
 import { PeriodFilter } from "./PeriodFilter.tsx";
 import { StartPanel } from "./StartPanel.tsx";
@@ -505,12 +505,15 @@ function ItemCard({
       <h2 className={unread ? styles.unread : undefined}>
         <Link to="/veille/elements/$itemId" params={{ itemId: item.id }}>
           {item.title}
-        </Link>
+        </Link>{" "}
+        <span className={styles.meta}>({t("watch.words", { count: item.words })})</span>
       </h2>
       <p className={styles.meta}>
         {unread && <span className={styles.neutral}>{t("triage.unread")}</span>}{" "}
         {item.source_name ?? t("watch.manualOrigin")} · {formatDate(date)}{" "}
-        <span className={styles[textTone(item.text_status)]}>{textLabel(t, item.text_status)}</span>
+        <span className={styles[textTone(item.text_status)]} title={reasonText(t, item.text_reason)}>
+          {textLabel(t, item.text_status, item.text_reason)}
+        </span>
         {item.duplicates > 0 && <> · {t("watch.duplicates", { count: item.duplicates })}</>}
       </p>
       {item.summary !== null && <p className={styles.meta}>{item.summary.slice(0, 280)}</p>}

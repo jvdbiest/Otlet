@@ -1,16 +1,80 @@
 {
   "components": {
     "schemas": {
+      "ArchiveBody": {
+        "properties": {
+          "archived": {
+            "title": "Archived",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "archived"
+        ],
+        "title": "ArchiveBody",
+        "type": "object"
+      },
       "ArticleView": {
         "properties": {
+          "brief_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brief Id"
+          },
           "id": {
             "format": "uuid",
             "title": "Id",
             "type": "string"
           },
+          "sent_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sent At"
+          },
+          "status": {
+            "enum": [
+              "brouillon",
+              "valide",
+              "archive"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
           "title": {
             "title": "Title",
             "type": "string"
+          },
+          "validated_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Validated Version"
           },
           "versions": {
             "items": {
@@ -22,8 +86,13 @@
         },
         "required": [
           "id",
+          "brief_id",
           "title",
-          "versions"
+          "versions",
+          "status",
+          "validated_version",
+          "sent_at",
+          "tags"
         ],
         "title": "ArticleView",
         "type": "object"
@@ -112,7 +181,7 @@
             "type": "string"
           },
           "tone": {
-            "default": "",
+            "default": "neutral",
             "title": "Tone",
             "type": "string"
           }
@@ -126,6 +195,14 @@
       },
       "BriefItemView": {
         "properties": {
+          "declared": {
+            "title": "Declared",
+            "type": "boolean"
+          },
+          "full_text": {
+            "title": "Full Text",
+            "type": "boolean"
+          },
           "id": {
             "format": "uuid",
             "title": "Id",
@@ -180,6 +257,10 @@
               }
             ],
             "title": "Url"
+          },
+          "words": {
+            "title": "Words",
+            "type": "integer"
           }
         },
         "required": [
@@ -188,7 +269,10 @@
           "url",
           "source_id",
           "source_name",
-          "published_at"
+          "published_at",
+          "words",
+          "full_text",
+          "declared"
         ],
         "title": "BriefItemView",
         "type": "object"
@@ -240,6 +324,35 @@
             ],
             "title": "Length",
             "type": "string"
+          },
+          "length_max": {
+            "anyOf": [
+              {
+                "enum": [
+                  "short",
+                  "medium",
+                  "long"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Length Max"
+          },
+          "matter_level": {
+            "enum": [
+              "enough",
+              "limited",
+              "insufficient"
+            ],
+            "title": "Matter Level",
+            "type": "string"
+          },
+          "matter_words": {
+            "title": "Matter Words",
+            "type": "integer"
           },
           "mode": {
             "enum": [
@@ -310,6 +423,9 @@
           "items",
           "sources",
           "single_source",
+          "matter_words",
+          "matter_level",
+          "length_max",
           "created_at",
           "updated_at"
         ],
@@ -488,6 +604,92 @@
         "title": "CatalogueView",
         "type": "object"
       },
+      "CharterBody": {
+        "properties": {
+          "text": {
+            "maxLength": 10000,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "CharterBody",
+        "type": "object"
+      },
+      "CharterRoomView": {
+        "properties": {
+          "answer_tokens": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Answer Tokens",
+            "type": "object"
+          },
+          "chars_per_token": {
+            "title": "Chars Per Token",
+            "type": "integer"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "rules_tokens": {
+            "title": "Rules Tokens",
+            "type": "integer"
+          },
+          "window_tokens": {
+            "title": "Window Tokens",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "model",
+          "window_tokens",
+          "rules_tokens",
+          "answer_tokens",
+          "chars_per_token"
+        ],
+        "title": "CharterRoomView",
+        "type": "object"
+      },
+      "CharterView": {
+        "properties": {
+          "is_default": {
+            "title": "Is Default",
+            "type": "boolean"
+          },
+          "room": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CharterRoomView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "is_default",
+          "room"
+        ],
+        "title": "CharterView",
+        "type": "object"
+      },
       "CheckView": {
         "properties": {
           "allowed": {
@@ -520,6 +722,46 @@
           "detail"
         ],
         "title": "CheckView",
+        "type": "object"
+      },
+      "ChoiceView": {
+        "properties": {
+          "definition": {
+            "title": "Definition",
+            "type": "string"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "length_max": {
+            "anyOf": [
+              {
+                "enum": [
+                  "short",
+                  "medium",
+                  "long"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Length Max"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "definition",
+          "length_max"
+        ],
+        "title": "ChoiceView",
         "type": "object"
       },
       "ContextWindowBody": {
@@ -588,6 +830,52 @@
           "password"
         ],
         "title": "Credentials",
+        "type": "object"
+      },
+      "DeclarationView": {
+        "properties": {
+          "basis": {
+            "enum": [
+              "publisher_agreement",
+              "licence",
+              "own_content",
+              "other"
+            ],
+            "title": "Basis",
+            "type": "string"
+          },
+          "commitment": {
+            "title": "Commitment",
+            "type": "string"
+          },
+          "declared_at": {
+            "format": "date-time",
+            "title": "Declared At",
+            "type": "string"
+          },
+          "declared_by": {
+            "format": "uuid",
+            "title": "Declared By",
+            "type": "string"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "reference": {
+            "title": "Reference",
+            "type": "string"
+          }
+        },
+        "required": [
+          "basis",
+          "detail",
+          "reference",
+          "commitment",
+          "declared_by",
+          "declared_at"
+        ],
+        "title": "DeclarationView",
         "type": "object"
       },
       "DraftView": {
@@ -714,6 +1002,17 @@
           "topics"
         ],
         "title": "FoundItemView",
+        "type": "object"
+      },
+      "GenerateBody": {
+        "properties": {
+          "force": {
+            "default": false,
+            "title": "Force",
+            "type": "boolean"
+          }
+        },
+        "title": "GenerateBody",
         "type": "object"
       },
       "GenerationView": {
@@ -1063,6 +1362,10 @@
               }
             ],
             "title": "Usage Right"
+          },
+          "words": {
+            "title": "Words",
+            "type": "integer"
           }
         },
         "required": [
@@ -1081,7 +1384,8 @@
           "text_reason",
           "declared_origin",
           "usage_right",
-          "duplicates"
+          "duplicates",
+          "words"
         ],
         "title": "ItemView",
         "type": "object"
@@ -1143,6 +1447,90 @@
         "title": "KindView",
         "type": "object"
       },
+      "LibraryEntryView": {
+        "properties": {
+          "brief_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brief Id"
+          },
+          "current_version": {
+            "title": "Current Version",
+            "type": "integer"
+          },
+          "excerpt": {
+            "title": "Excerpt",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "sent_at": {
+            "format": "date-time",
+            "title": "Sent At",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "brouillon",
+              "valide",
+              "archive"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "validated_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Validated Version"
+          }
+        },
+        "required": [
+          "id",
+          "brief_id",
+          "title",
+          "status",
+          "validated_version",
+          "current_version",
+          "tags",
+          "sent_at",
+          "updated_at",
+          "excerpt"
+        ],
+        "title": "LibraryEntryView",
+        "type": "object"
+      },
       "ManualText": {
         "properties": {
           "declared_origin": {
@@ -1202,6 +1590,46 @@
           "url"
         ],
         "title": "ManualUrl",
+        "type": "object"
+      },
+      "MediaView": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "height": {
+            "title": "Height",
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "mime": {
+            "title": "Mime",
+            "type": "string"
+          },
+          "size": {
+            "title": "Size",
+            "type": "integer"
+          },
+          "width": {
+            "title": "Width",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "mime",
+          "width",
+          "height",
+          "size",
+          "created_at"
+        ],
+        "title": "MediaView",
         "type": "object"
       },
       "ModelView": {
@@ -1759,6 +2187,108 @@
         "title": "RefreshView",
         "type": "object"
       },
+      "RightsBody": {
+        "properties": {
+          "basis": {
+            "enum": [
+              "publisher_agreement",
+              "licence",
+              "own_content",
+              "other"
+            ],
+            "title": "Basis",
+            "type": "string"
+          },
+          "certified": {
+            "title": "Certified",
+            "type": "boolean"
+          },
+          "detail": {
+            "default": "",
+            "maxLength": 500,
+            "title": "Detail",
+            "type": "string"
+          },
+          "reference": {
+            "default": "",
+            "maxLength": 500,
+            "title": "Reference",
+            "type": "string"
+          }
+        },
+        "required": [
+          "basis",
+          "certified"
+        ],
+        "title": "RightsBody",
+        "type": "object"
+      },
+      "RightsView": {
+        "properties": {
+          "allowed": {
+            "title": "Allowed",
+            "type": "boolean"
+          },
+          "commitment": {
+            "title": "Commitment",
+            "type": "string"
+          },
+          "declaration": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DeclarationView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reserved": {
+            "title": "Reserved",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "allowed",
+          "reserved",
+          "commitment",
+          "declaration"
+        ],
+        "title": "RightsView",
+        "type": "object"
+      },
+      "SaveBody": {
+        "description": "A version retouched in the editor (X03, ADR-0036).",
+        "properties": {
+          "as_new": {
+            "default": false,
+            "title": "As New",
+            "type": "boolean"
+          },
+          "document": {
+            "additionalProperties": true,
+            "title": "Document",
+            "type": "object"
+          },
+          "title": {
+            "maxLength": 1000,
+            "title": "Title",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "document",
+          "updated_at"
+        ],
+        "title": "SaveBody",
+        "type": "object"
+      },
       "ScoredItemView": {
         "properties": {
           "contributions": {
@@ -1791,6 +2321,19 @@
           "triage"
         ],
         "title": "ScoredItemView",
+        "type": "object"
+      },
+      "SendBody": {
+        "properties": {
+          "number": {
+            "title": "Number",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "number"
+        ],
+        "title": "SendBody",
         "type": "object"
       },
       "SessionView": {
@@ -1859,9 +2402,209 @@
               }
             ],
             "title": "Name"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
           }
         },
         "title": "SourceChanges",
+        "type": "object"
+      },
+      "SourceDeclarationView": {
+        "properties": {
+          "basis": {
+            "enum": [
+              "publisher_agreement",
+              "licence"
+            ],
+            "title": "Basis",
+            "type": "string"
+          },
+          "commitment": {
+            "title": "Commitment",
+            "type": "string"
+          },
+          "declared_at": {
+            "format": "date-time",
+            "title": "Declared At",
+            "type": "string"
+          },
+          "declared_by": {
+            "format": "uuid",
+            "title": "Declared By",
+            "type": "string"
+          },
+          "ends_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends On"
+          },
+          "reference": {
+            "title": "Reference",
+            "type": "string"
+          }
+        },
+        "required": [
+          "basis",
+          "reference",
+          "commitment",
+          "declared_by",
+          "declared_at",
+          "ends_on"
+        ],
+        "title": "SourceDeclarationView",
+        "type": "object"
+      },
+      "SourceRightsBody": {
+        "properties": {
+          "basis": {
+            "enum": [
+              "publisher_agreement",
+              "licence"
+            ],
+            "title": "Basis",
+            "type": "string"
+          },
+          "certified": {
+            "title": "Certified",
+            "type": "boolean"
+          },
+          "ends_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends On"
+          },
+          "reference": {
+            "default": "",
+            "maxLength": 500,
+            "title": "Reference",
+            "type": "string"
+          }
+        },
+        "required": [
+          "basis",
+          "certified"
+        ],
+        "title": "SourceRightsBody",
+        "type": "object"
+      },
+      "SourceRightsView": {
+        "properties": {
+          "allowed": {
+            "title": "Allowed",
+            "type": "boolean"
+          },
+          "commitment": {
+            "title": "Commitment",
+            "type": "string"
+          },
+          "declaration": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SourceDeclarationView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "allowed",
+          "commitment",
+          "declaration"
+        ],
+        "title": "SourceRightsView",
+        "type": "object"
+      },
+      "SourceTextView": {
+        "description": "A source of the brief as the drafts receive it: its text Otlet may use, else its summary.",
+        "properties": {
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
+          "publisher": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publisher"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "words": {
+            "title": "Words",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "key",
+          "title",
+          "url",
+          "publisher",
+          "published_at",
+          "words",
+          "text"
+        ],
+        "title": "SourceTextView",
         "type": "object"
       },
       "SourceView": {
@@ -2001,6 +2744,23 @@
           "item_count"
         ],
         "title": "SourceView",
+        "type": "object"
+      },
+      "TagsBody": {
+        "properties": {
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 50,
+            "title": "Tags",
+            "type": "array"
+          }
+        },
+        "required": [
+          "tags"
+        ],
+        "title": "TagsBody",
         "type": "object"
       },
       "TopicBody": {
@@ -2330,6 +3090,17 @@
       },
       "VersionView": {
         "properties": {
+          "based_on": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Based On"
+          },
           "context_overflow": {
             "title": "Context Overflow",
             "type": "boolean"
@@ -2411,6 +3182,15 @@
             },
             "title": "Unused Sources",
             "type": "array"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "words": {
+            "title": "Words",
+            "type": "integer"
           }
         },
         "required": [
@@ -2425,7 +3205,10 @@
           "unused_sources",
           "context_overflow",
           "details",
-          "created_at"
+          "created_at",
+          "updated_at",
+          "based_on",
+          "words"
         ],
         "title": "VersionView",
         "type": "object"
@@ -2443,6 +3226,62 @@
         ],
         "title": "View",
         "type": "string"
+      },
+      "VocabularyView": {
+        "description": "The values a brief's audience, tone and channel take (Joël, 2026-10-19, phase 1).",
+        "properties": {
+          "audience": {
+            "items": {
+              "$ref": "#/components/schemas/ChoiceView"
+            },
+            "title": "Audience",
+            "type": "array"
+          },
+          "channel": {
+            "items": {
+              "$ref": "#/components/schemas/ChoiceView"
+            },
+            "title": "Channel",
+            "type": "array"
+          },
+          "length_words": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Length Words",
+            "type": "object"
+          },
+          "matter_floor": {
+            "title": "Matter Floor",
+            "type": "integer"
+          },
+          "matter_share": {
+            "title": "Matter Share",
+            "type": "number"
+          },
+          "tone": {
+            "items": {
+              "$ref": "#/components/schemas/ChoiceView"
+            },
+            "title": "Tone",
+            "type": "array"
+          },
+          "tone_default": {
+            "title": "Tone Default",
+            "type": "string"
+          }
+        },
+        "required": [
+          "audience",
+          "tone",
+          "channel",
+          "tone_default",
+          "length_words",
+          "matter_share",
+          "matter_floor"
+        ],
+        "title": "VocabularyView",
+        "type": "object"
       },
       "WorkspaceView": {
         "properties": {
@@ -2578,6 +3417,78 @@
           }
         },
         "summary": "Catalogue"
+      }
+    },
+    "/api/ai/charter": {
+      "delete": {
+        "description": "Back to the default charter.",
+        "operationId": "reset_charter_api_ai_charter_delete",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CharterView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Reset Charter"
+      },
+      "get": {
+        "description": "The writing charter of the user, added to each of their drafts (Joël, 2026-10-19).",
+        "operationId": "get_charter_api_ai_charter_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CharterView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Charter"
+      },
+      "put": {
+        "operationId": "set_charter_api_ai_charter_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CharterBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CharterView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Charter"
       }
     },
     "/api/ai/checks": {
@@ -3296,6 +4207,472 @@
         "summary": "Get Workspace"
       }
     },
+    "/api/workspaces/{workspace_id}/articles/{article_id}": {
+      "get": {
+        "operationId": "get_article_api_workspaces__workspace_id__articles__article_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Article Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Article"
+      }
+    },
+    "/api/workspaces/{workspace_id}/articles/{article_id}/archive": {
+      "post": {
+        "operationId": "archive_article_api_workspaces__workspace_id__articles__article_id__archive_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Article Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArchiveBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Archive Article"
+      }
+    },
+    "/api/workspaces/{workspace_id}/articles/{article_id}/send": {
+      "post": {
+        "description": "« Envoyer en Bibliothèque », then « Valider » a later version: the version given is the\none exports and publications take.",
+        "operationId": "send_article_api_workspaces__workspace_id__articles__article_id__send_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Article Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Send Article"
+      }
+    },
+    "/api/workspaces/{workspace_id}/articles/{article_id}/tags": {
+      "put": {
+        "operationId": "set_tags_api_workspaces__workspace_id__articles__article_id__tags_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Article Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagsBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Tags"
+      }
+    },
+    "/api/workspaces/{workspace_id}/articles/{article_id}/versions/{number}": {
+      "delete": {
+        "description": "Removes the copy « Modifier » made of a model's version when the editor is closed\nwithout a change. 409 for any version saved since, or written by the model.",
+        "operationId": "discard_version_api_workspaces__workspace_id__articles__article_id__versions__number__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Article Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "number",
+            "required": true,
+            "schema": {
+              "title": "Number",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Discard Version"
+      },
+      "put": {
+        "description": "« Enregistrer » a version retouched in the editor: a person's version is updated, a\nversion of the model is kept and the person's version is added. With `as_new`, a new\nversion is added whatever the version edited. 409 when the version changed since the\neditor loaded it.",
+        "operationId": "save_version_api_workspaces__workspace_id__articles__article_id__versions__number__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Article Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "number",
+            "required": true,
+            "schema": {
+              "title": "Number",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Save Version"
+      }
+    },
+    "/api/workspaces/{workspace_id}/articles/{article_id}/versions/{number}/export/{kind}": {
+      "get": {
+        "description": "A version as a file (X03c): pdf, docx, html, md (a ZIP when it has images), txt or json,\nwith its Sources block and AI mention. Made on demand, never stored.",
+        "operationId": "export_version_api_workspaces__workspace_id__articles__article_id__versions__number__export__kind__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Article Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "number",
+            "required": true,
+            "schema": {
+              "title": "Number",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "kind",
+            "required": true,
+            "schema": {
+              "enum": [
+                "pdf",
+                "docx",
+                "html",
+                "md",
+                "txt",
+                "json"
+              ],
+              "title": "Kind",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {}
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Export Version"
+      }
+    },
+    "/api/workspaces/{workspace_id}/brief-vocabulary": {
+      "get": {
+        "description": "The same for every workspace in phase 1; each workspace edits its own in phase 2.",
+        "operationId": "brief_vocabulary_api_workspaces__workspace_id__brief_vocabulary_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VocabularyView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Brief Vocabulary"
+      }
+    },
     "/api/workspaces/{workspace_id}/briefs": {
       "get": {
         "description": "The briefs of the workspace, the most recently changed first.",
@@ -3636,7 +5013,7 @@
     },
     "/api/workspaces/{workspace_id}/briefs/{brief_id}/generations": {
       "post": {
-        "description": "Asks the worker for a draft of the brief, a new version of its article; while one\nruns, the same is answered.",
+        "description": "Asks the worker for a draft of the brief, a new version of its article; while one\nruns, the same is answered. Sources too thin: 409 `insufficient_matter`, unless the\nauthor confirms (« Générer quand même »).",
         "operationId": "generate_api_workspaces__workspace_id__briefs__brief_id__generations_post",
         "parameters": [
           {
@@ -3660,6 +5037,23 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/GenerateBody"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
         "responses": {
           "202": {
             "content": {
@@ -3683,6 +5077,112 @@
           }
         },
         "summary": "Generate"
+      }
+    },
+    "/api/workspaces/{workspace_id}/briefs/{brief_id}/generations/running": {
+      "delete": {
+        "description": "Cancels the draft being written for the brief: no version is made from it.",
+        "operationId": "cancel_generation_api_workspaces__workspace_id__briefs__brief_id__generations_running_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "brief_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Brief Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerationView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Cancel Generation"
+      }
+    },
+    "/api/workspaces/{workspace_id}/briefs/{brief_id}/sources": {
+      "get": {
+        "description": "The texts of the brief's sources, for the reference panel of « Comparer ».",
+        "operationId": "brief_sources_api_workspaces__workspace_id__briefs__brief_id__sources_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "brief_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Brief Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SourceTextView"
+                  },
+                  "title": "Response Brief Sources Api Workspaces  Workspace Id  Briefs  Brief Id  Sources Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Brief Sources"
       }
     },
     "/api/workspaces/{workspace_id}/feed": {
@@ -4427,6 +5927,209 @@
         "summary": "Get Item"
       }
     },
+    "/api/workspaces/{workspace_id}/items/{item_id}/rights": {
+      "delete": {
+        "description": "Withdraws the declaration: the text read under it is erased; the record stays.",
+        "operationId": "withdraw_rights_api_workspaces__workspace_id__items__item_id__rights_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Item Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Withdraw Rights"
+      },
+      "get": {
+        "description": "Whether rights may be declared on the item, and the declaration in force.",
+        "operationId": "get_rights_api_workspaces__workspace_id__items__item_id__rights_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Item Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RightsView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Rights"
+      },
+      "post": {
+        "description": "« J'ai les droits sur ce texte » (Joël, 2026-10-20): the declaration is kept and the\npage read under it, within robots.txt and the limits of the site.",
+        "operationId": "declare_rights_api_workspaces__workspace_id__items__item_id__rights_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Item Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RightsBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Declare Rights"
+      }
+    },
+    "/api/workspaces/{workspace_id}/items/{item_id}/text/retry": {
+      "post": {
+        "description": "Reads the page of an item again when its text was missed for a technical reason;\n409 `not_retryable` for a refusal of the site (robots.txt, a reservation of mining).",
+        "operationId": "retry_text_api_workspaces__workspace_id__items__item_id__text_retry_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Item Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Retry Text"
+      }
+    },
     "/api/workspaces/{workspace_id}/items/{item_id}/triage": {
       "get": {
         "operationId": "get_triage_api_workspaces__workspace_id__items__item_id__triage_get",
@@ -4584,6 +6287,261 @@
           }
         },
         "summary": "Item Watch"
+      }
+    },
+    "/api/workspaces/{workspace_id}/library": {
+      "get": {
+        "description": "The Library (X04): the articles sent to it, the latest changed first; `q` searches the\ntitle and the text of the latest version; archived articles only with status=archive.",
+        "operationId": "list_library_api_workspaces__workspace_id__library_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "default": "",
+              "title": "Q",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "brouillon",
+                    "valide",
+                    "archive"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tag",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tag"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/LibraryEntryView"
+                  },
+                  "title": "Response List Library Api Workspaces  Workspace Id  Library Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Library"
+      }
+    },
+    "/api/workspaces/{workspace_id}/library/tags": {
+      "get": {
+        "operationId": "list_tags_api_workspaces__workspace_id__library_tags_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "Response List Tags Api Workspaces  Workspace Id  Library Tags Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Tags"
+      }
+    },
+    "/api/workspaces/{workspace_id}/media": {
+      "post": {
+        "description": "Imports an image into the workspace: decoded, re-encoded without its metadata (GPS\nposition, camera, author), no larger than 4096 pixels a side. 413 above 15 MB; 422 when\nit is not a JPEG, PNG, WebP or GIF image.",
+        "operationId": "import_image_api_workspaces__workspace_id__media_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "image/gif": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            },
+            "image/jpeg": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            },
+            "image/png": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            },
+            "image/webp": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Import Image"
+      }
+    },
+    "/api/workspaces/{workspace_id}/media/{media_id}": {
+      "get": {
+        "description": "The file of an image of the workspace; never shown to anyone outside it.",
+        "operationId": "read_image_api_workspaces__workspace_id__media__media_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "media_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Media Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "image/jpeg": {},
+              "image/png": {},
+              "image/webp": {}
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Read Image"
       }
     },
     "/api/workspaces/{workspace_id}/progress": {
@@ -5138,6 +7096,157 @@
           }
         },
         "summary": "Collect Now"
+      }
+    },
+    "/api/workspaces/{workspace_id}/sources/{source_id}/rights": {
+      "delete": {
+        "operationId": "withdraw_source_rights_api_workspaces__workspace_id__sources__source_id__rights_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Source Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Withdraw Source Rights"
+      },
+      "get": {
+        "description": "The declaration covering a source, if any (Joël, 2026-10-20).",
+        "operationId": "get_source_rights_api_workspaces__workspace_id__sources__source_id__rights_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Source Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceRightsView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Source Rights"
+      },
+      "post": {
+        "description": "An agreement or a licence covering the source: the articles collected from now on\nare read under it, within robots.txt and the limits of the site.",
+        "operationId": "declare_source_rights_api_workspaces__workspace_id__sources__source_id__rights_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Source Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SourceRightsBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceDeclarationView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Declare Source Rights"
       }
     },
     "/api/workspaces/{workspace_id}/topics": {

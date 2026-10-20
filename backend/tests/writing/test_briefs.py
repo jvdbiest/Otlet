@@ -157,6 +157,10 @@ def test_the_fields_of_a_brief_are_checked(setup: Setup) -> None:
         "invalid_language": BriefFields(title="T", item_ids=item, language="xx"),
         "invalid_angle": BriefFields(title="T", item_ids=item, angle="a" * 4001),
         "invalid_instructions": BriefFields(title="T", item_ids=item, instructions="a" * 2001),
+        # The audience, tone and channel are keys of closed lists (Joël, 2026-10-19).
+        "invalid_audience": BriefFields(title="T", item_ids=item, audience="Motards"),
+        "invalid_tone": BriefFields(title="T", item_ids=item, tone="Professionnel"),
+        "invalid_channel": BriefFields(title="T", item_ids=item, channel="TikTok"),
         "unknown_item": BriefFields(title="T", item_ids=(uuid.uuid4(),)),
         "model_blocked": BriefFields(
             title="T", item_ids=item, model=ModelChoice(uuid.uuid4(), "blocked")

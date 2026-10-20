@@ -11,6 +11,7 @@ from otlet.collection.adapters.parsing import FeedparserReader, ReadabilityReade
 from otlet.collection.adapters.postgres import PostgresCollectionStore
 from otlet.collection.application.collection import (
     COLLECT_SOURCE,
+    EXTRACT_DECLARED,
     EXTRACT_ITEM,
     Collection,
 )
@@ -28,6 +29,12 @@ def collection(environment: JobEnvironment, client: SafeClient) -> Collection:
 def collect_source(environment: JobEnvironment, workspace_id: str, source_id: str) -> None:
     with SafeClient() as client:
         collection(environment, client).collect(UUID(workspace_id), UUID(source_id))
+
+
+@job(EXTRACT_DECLARED, attempts=3)
+def extract_declared(environment: JobEnvironment, workspace_id: str, item_id: str) -> None:
+    with SafeClient() as client:
+        collection(environment, client).extract_declared(UUID(workspace_id), UUID(item_id))
 
 
 @job(EXTRACT_ITEM, attempts=3)

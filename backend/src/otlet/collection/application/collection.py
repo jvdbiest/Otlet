@@ -8,9 +8,9 @@ fetches, then writes the outcome in one transaction.
 import logging
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from urllib.parse import urlsplit
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from otlet.collection.application.ports import (
     CollectionStore,
@@ -52,6 +52,17 @@ HTML_TYPES = ("text/html", "application/xhtml+xml")
 # enqueues the collections that are due (otlet.entrypoints.scheduler).
 COLLECT_SOURCE = "collection.collect_source"
 EXTRACT_ITEM = "collection.extract_item"
+EXTRACT_DECLARED = "collection.extract_declared"
+
+
+class RightsError(ValueError):
+    """A declaration of rights refused; `code` is stable and translated by the interface."""
+
+    def __init__(self, code: str, message: str) -> None:
+        super().__init__(message)
+        self.code = code
+
+
 # Event for the watch module: an item has its final text (otlet.watch.adapters.jobs).
 ITEM_READY = "watch.item_ready"
 
@@ -127,12 +138,17 @@ class Collection:
         feeds: FeedReader,
         pages: PageReader,
         clock: Clock = utc_now,
+        *,
+        declarations: bool = True,
     ) -> None:
+        """`declarations`: the instance allows declarations of rights (OTLET_RIGHTS_DECLARATIONS,
+        on by default for a self-hosted instance)."""
         self._store = store
         self._fetcher = fetcher
         self._feeds = feeds
         self._pages = pages
         self._clock = clock
+        self._declarations = declarations
         self._policies = SitePolicies(store, fetcher, clock)
 
     # Sources -----------------------------------------------------------------------------
@@ -198,7 +214,16 @@ class Collection:
         name: str | None = None,
         interval_minutes: int | None = None,
         active: bool | None = None,
+        url: str | None = None,
     ) -> Source | None:
+        """Changes a source (Joël, 2026-10-20). A new address is read as when the source was
+        added: its feed found, then its rules (robots.txt, reservation of mining) checked again
+        at its next collection, which comes at once. Its items stay."""
+        address = None
+        if url is not None:
+            entered = model.check_url(url)
+            feed_url, feed = self._find_feed(entered)
+            address = (entered, feed_url, feed.site_url)
         return self._store.update_source(
             context.workspace_id,
             source_id,
@@ -207,6 +232,7 @@ class Collection:
             if interval_minutes is None
             else model.check_interval(interval_minutes),
             active=active,
+            address=address,
         )
 
     def delete_source(self, context: WorkspaceContext, source_id: UUID) -> bool:
@@ -239,6 +265,142 @@ class Collection:
         """Removes an item from the watch of the whole workspace, for good: an exceptional
         action of its page (dismissing and archiving are the usual ones)."""
         return self._store.remove_item(context.workspace_id, item_id)
+
+    def declare_rights(
+        self,
+        context: WorkspaceContext,
+        item_id: UUID,
+        *,
+        basis: str,
+        detail: str = "",
+        reference: str = "",
+        certified: bool,
+    ) -> Item | None:
+        """« J'ai les droits sur ce texte » (Joël, 2026-10-20): on one reserved item, a person
+        declares the basis of their rights and accepts the commitment; Otlet then reads the page
+        under their responsibility, still within robots.txt, never past a login or a paywall.
+        None when the item is unknown or not reserved; RightsError when the declaration is not
+        complete or the instance does not allow declarations."""
+        if not self._declarations:
+            raise RightsError("declarations_disabled", "this instance does not allow declarations")
+        if not certified:
+            raise RightsError("not_certified", "the commitment must be accepted")
+        if basis not in model.RIGHTS_BASES:
+            raise RightsError("invalid_basis", f"a basis is one of {model.RIGHTS_BASES}")
+        detail, reference = detail.strip(), reference.strip()
+        if basis == "other" and not detail:
+            raise RightsError("detail_required", "the basis « other » is named")
+        if max(len(detail), len(reference)) > model.RIGHTS_DETAIL_MAX:
+            raise RightsError("detail_too_long", f"{model.RIGHTS_DETAIL_MAX} characters at most")
+        item = self._store.get_item(context.workspace_id, item_id)
+        if item is None or item.url is None or not model.reserved(item.text_reason):
+            return None
+        declaration = model.RightsDeclaration(
+            id=uuid4(),
+            item_id=item_id,
+            declared_by=context.user_id,
+            basis=basis,
+            detail=detail,
+            reference=reference,
+            commitment=model.RIGHTS_COMMITMENT,
+            declared_at=self._clock(),
+        )
+        if not self._store.declare_rights(context.workspace_id, declaration):
+            return None
+        return self._store.get_item(context.workspace_id, item_id)
+
+    def declare_source_rights(
+        self,
+        context: WorkspaceContext,
+        source_id: UUID,
+        *,
+        basis: str,
+        reference: str = "",
+        ends_on: date | None = None,
+        certified: bool,
+    ) -> model.SourceRights | None:
+        """An agreement or a licence covering a whole source (Joël, 2026-10-20): the articles
+        collected from now on are read under it, within robots.txt and the limits of the site,
+        until `ends_on` when given. None when the source is unknown or already covered."""
+        if not self._declarations:
+            raise RightsError("declarations_disabled", "this instance does not allow declarations")
+        if not certified:
+            raise RightsError("not_certified", "the commitment must be accepted")
+        if basis not in model.SOURCE_RIGHTS_BASES:
+            raise RightsError("invalid_basis", f"a basis is one of {model.SOURCE_RIGHTS_BASES}")
+        reference = reference.strip()
+        if len(reference) > model.RIGHTS_DETAIL_MAX:
+            raise RightsError("detail_too_long", f"{model.RIGHTS_DETAIL_MAX} characters at most")
+        now = self._clock()
+        if ends_on is not None and ends_on < now.date():
+            raise RightsError("ended", "the end date is past")
+        declaration = model.SourceRights(
+            id=uuid4(),
+            source_id=source_id,
+            declared_by=context.user_id,
+            basis=basis,
+            reference=reference,
+            commitment=model.SOURCE_RIGHTS_COMMITMENT,
+            declared_at=now,
+            ends_on=ends_on,
+        )
+        if not self._store.declare_source_rights(context.workspace_id, declaration):
+            return None
+        return declaration
+
+    def source_rights(
+        self, context: WorkspaceContext, source_id: UUID
+    ) -> model.SourceRights | None:
+        return self._store.source_rights(context.workspace_id, source_id)
+
+    def withdraw_source_rights(self, context: WorkspaceContext, source_id: UUID) -> bool:
+        """Withdraws the declaration of a source: the texts read under it are erased, its items
+        reserved again; the declaration stays in the record, marked withdrawn."""
+        return self._store.withdraw_source_rights(context.workspace_id, source_id, self._clock())
+
+    def rights_declaration(
+        self, context: WorkspaceContext, item_id: UUID
+    ) -> model.RightsDeclaration | None:
+        return self._store.rights_declaration(context.workspace_id, item_id)
+
+    def withdraw_rights(self, context: WorkspaceContext, item_id: UUID) -> bool:
+        """Withdraws a declaration: the text read under it is erased, the item is reserved
+        again. The declaration itself stays in the record, marked withdrawn."""
+        return self._store.withdraw_rights(context.workspace_id, item_id, self._clock())
+
+    @property
+    def declarations_allowed(self) -> bool:
+        return self._declarations
+
+    def extract_declared(self, workspace_id: UUID, item_id: UUID) -> None:
+        """Reads the page of an item under a declaration of rights (the job
+        collection.extract_declared): the reservation of mining is the person's to answer for;
+        robots.txt and the limits of the site still hold."""
+        url = self._store.pending_item_url(workspace_id, item_id)
+        if url is None:
+            return
+        reading = self._read_page(workspace_id, url, declared=True)
+        self._store.set_item_text(
+            workspace_id,
+            item_id,
+            status=reading.status,
+            reason=reading.reason,
+            text=reading.text,
+            title=reading.title,
+            language=reading.language,
+            at=self._clock(),
+        )
+
+    def retry_text(self, context: WorkspaceContext, item_id: UUID) -> Item | None:
+        """« Réessayer la récupération » (Joël, 2026-10-20): reads the page again when its text
+        was missed for a technical reason. None when the item is unknown or not retryable: a
+        refusal of the site (robots.txt, a reservation of mining) is never read again."""
+        item = self._store.get_item(context.workspace_id, item_id)
+        if item is None or not model.retryable(item.text_reason):
+            return None
+        if not self._store.retry_text(context.workspace_id, item_id):
+            return None
+        return self._store.get_item(context.workspace_id, item_id)
 
     def add_manual_url(self, context: WorkspaceContext, url: str) -> Item:
         """An article the user points to: its page is read under the same rules as a feed's."""
@@ -319,7 +481,10 @@ class Collection:
         feed_mining = compliance.mining(source.feed_url, policy.tdm_rules, dict(result.headers))
         legal = self._source_decision(workspace_id, feed, feed_mining)
         self._note(workspace_id, source, source.feed_url, legal[1], legal[0])
-        items = [self._new_item(entry, feed_mining) for entry in feed.entries]
+        covered = not feed_mining.allowed and self._store.source_covered(
+            workspace_id, source_id, now.date()
+        )
+        items = [self._new_item(entry, feed_mining, covered) for entry in feed.entries]
         new = self._store.finish_collection(
             workspace_id,
             source_id,
@@ -356,8 +521,8 @@ class Collection:
         return LegalStatus.FULL_TEXT, page_file or feed_mining
 
     @staticmethod
-    def _new_item(entry: model.FeedEntry, feed_mining: Decision) -> NewItem:
-        if not feed_mining.allowed:
+    def _new_item(entry: model.FeedEntry, feed_mining: Decision, covered: bool = False) -> NewItem:
+        if not feed_mining.allowed and not (covered and entry.url is not None):
             return NewItem(entry, TextStatus.SUMMARY_ONLY, feed_mining.reason)
         if entry.url is None:
             # Nothing more to read: the feed is all there is.
@@ -416,6 +581,11 @@ class Collection:
         if url is None:
             return
         reading = self._read_page(workspace_id, url)
+        if model.reserved(reading.reason) and self._store.covered_by_source_rights(
+            workspace_id, item_id, self._clock().date()
+        ):
+            # Collected while the source's declaration was in force (Joël, 2026-10-20).
+            reading = self._read_page(workspace_id, url, declared=True)
         self._store.set_item_text(
             workspace_id,
             item_id,
@@ -427,13 +597,13 @@ class Collection:
             at=self._clock(),
         )
 
-    def _read_page(self, workspace_id: UUID, url: str) -> PageReading:
+    def _read_page(self, workspace_id: UUID, url: str, *, declared: bool = False) -> PageReading:
         policy = self._policies.for_url(workspace_id, url)
         robots = policy.robots.decide(url)
         if not robots.allowed:
             return PageReading(TextStatus.SUMMARY_ONLY, robots.reason)
         reserved = compliance.file_reservation(url, policy.tdm_rules)
-        if reserved is not None and not reserved.allowed:
+        if reserved is not None and not reserved.allowed and not declared:
             return PageReading(TextStatus.SUMMARY_ONLY, reserved.reason)
         try:
             result = self._fetcher.get(url, max_bytes=PAGE_MAX_BYTES)
@@ -448,8 +618,11 @@ class Collection:
         page = self._pages.extract(html, result.url)
         title = page.title if page else None
         language = page.language if page else None
-        if not mining.allowed:
+        if not mining.allowed and not declared:
             return PageReading(TextStatus.SUMMARY_ONLY, mining.reason, None, title, language)
         if page is None or not page.text.strip():
             return PageReading(TextStatus.SUMMARY_ONLY, "no_text_found", None, title, language)
+        if declared:
+            # A text read under a declaration of rights: the person's, as a pasted one is.
+            return PageReading(TextStatus.MANUAL, model.DECLARED_RIGHTS, page.text, title, language)
         return PageReading(TextStatus.FULL_TEXT, mining.reason, page.text, title, language)

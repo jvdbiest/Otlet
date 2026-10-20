@@ -2,11 +2,19 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { draftQuery, useClearDetails, useGenerateDraft, type GenerationView } from "../../writing.ts";
+import {
+  draftQuery,
+  useCancelGeneration,
+  useClearDetails,
+  useGenerateDraft,
+  type GenerationView,
+} from "../../writing.ts";
+import { ApiError } from "../../api/client.ts";
 import { errorText, formatDate } from "../watch/labels.ts";
 import { styles } from "../watch/styles.ts";
-import { DocumentView, type PlatformDocument } from "./DocumentView.tsx";
+import { ArticleVersions } from "./ArticleVersions.tsx";
 import { GenerationDetails } from "./GenerationDetails.tsx";
+import { LibraryActions } from "./LibraryActions.tsx";
 
 const FAILURES = [
   "no_profile",
@@ -18,6 +26,7 @@ const FAILURES = [
   "quota",
   "unavailable",
   "blocked",
+  "cancelled",
 ] as const;
 
 function failure(generation: GenerationView): (typeof FAILURES)[number] {
@@ -29,6 +38,7 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
   const { t } = useTranslation();
   const draft = useQuery(draftQuery(workspaceId, briefId));
   const generate = useGenerateDraft(workspaceId, briefId);
+  const cancel = useCancelGeneration(workspaceId, briefId);
   const clear = useClearDetails(workspaceId, briefId);
   const [confirming, setConfirming] = useState(false);
   const [chosen, setChosen] = useState<number | null>(null);
@@ -38,7 +48,6 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
   const { article, generation } = draft.data;
   const running = generation?.status === "running";
   const versions = article?.versions ?? [];
-  const shown = versions.find((v) => v.number === chosen) ?? versions.at(-1);
   return (
     <section className={styles.panel} aria-labelledby="draft-title">
       <h2 id="draft-title">{t("draft.title")}</h2>
@@ -49,7 +58,7 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
           className={styles.primary}
           disabled={running || generate.isPending}
           onClick={() => {
-            generate.mutate(undefined, {
+            generate.mutate(false, {
               onSuccess: () => {
                 setChosen(null);
               },
@@ -63,11 +72,45 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
             {t("draft.running", { since: formatDate(generation.created_at) })}
           </span>
         )}
+        {running && (
+          <button
+            type="button"
+            className={styles.button}
+            disabled={cancel.isPending}
+            onClick={() => {
+              cancel.mutate();
+            }}
+          >
+            {t("draft.cancel")}
+          </button>
+        )}
       </p>
-      {generate.error !== null && (
-        <p role="alert" className={styles.error}>
-          {errorText(t, generate.error)}
-        </p>
+      {generate.error instanceof ApiError && generate.error.detail === "insufficient_matter" ? (
+        <div role="alert" className={styles.warning}>
+          <p>{t("draft.insufficient")}</p>
+          <p>
+            <button
+              type="button"
+              className={styles.button}
+              disabled={generate.isPending}
+              onClick={() => {
+                generate.mutate(true, {
+                  onSuccess: () => {
+                    setChosen(null);
+                  },
+                });
+              }}
+            >
+              {t("draft.generateAnyway")}
+            </button>
+          </p>
+        </div>
+      ) : (
+        generate.error !== null && (
+          <p role="alert" className={styles.error}>
+            {errorText(t, generate.error)}
+          </p>
+        )
       )}
       {generation?.status === "failed" && (
         <div role="alert" className={styles.warning}>
@@ -86,63 +129,15 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
           />
         </div>
       )}
-      {shown !== undefined && (
-        <>
-          <div className={styles.row}>
-            {versions.length > 1 && (
-              <select
-                aria-label={t("draft.version")}
-                value={shown.number}
-                onChange={(event) => {
-                  setChosen(Number(event.target.value));
-                }}
-              >
-                {versions.map((v) => (
-                  <option key={v.number} value={v.number}>
-                    {t("draft.versionLabel", { number: v.number, date: formatDate(v.created_at) })}
-                  </option>
-                ))}
-              </select>
-            )}
-            <span className={styles.meta}>
-              {shown.origin === "ia"
-                ? t("draft.byModel", {
-                    number: shown.number,
-                    model: shown.model ?? "",
-                    provider: shown.provider_kind ?? "",
-                    date: formatDate(shown.created_at),
-                  })
-                : t("draft.byPerson", { number: shown.number, date: formatDate(shown.created_at) })}
-            </span>
-          </div>
-          {shown.context_overflow && (
-            <p role="note" className={styles.warning}>
-              {t("draft.overflow")}
-            </p>
-          )}
-          {shown.unused_sources.length > 0 && (
-            <div role="note" className={styles.warning}>
-              <p>{t("draft.unused", { count: shown.unused_sources.length })}</p>
-              <ul>
-                {shown.unused_sources.map((title) => (
-                  <li key={title}>{title}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {shown.cut_sources.length > 0 && (
-            <p className={styles.notice}>{t("draft.cut", { sources: shown.cut_sources.join(", ") })}</p>
-          )}
-          <GenerationDetails
-            details={shown.details}
-            heading={t("draft.details.heading", { number: shown.number, date: formatDate(shown.created_at) })}
-          />
-          <DocumentView
-            document={shown.document as unknown as PlatformDocument}
-            title={shown.title}
-            prefix={`v${String(shown.number)}`}
-          />
-        </>
+      {article !== null && (
+        <ArticleVersions
+          key={article.id}
+          workspaceId={workspaceId}
+          article={article}
+          chosen={chosen}
+          onChoose={setChosen}
+          actions={(shown) => <LibraryActions workspaceId={workspaceId} article={article} number={shown.number} />}
+        />
       )}
       {(versions.length > 0 || generation !== null) && (
         <p className={styles.row}>

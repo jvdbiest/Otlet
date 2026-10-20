@@ -42,7 +42,7 @@ La numérotation continue celle de l'architecture.
 | [0032](0032-sujets-score-doublons-recherche.md) | Sujets, score lexical expliqué, doublons et recherche | Proposé (U02) |
 | [0033](0033-recherche-plein-texte-sous-rls.md) | Recherche plein texte par une fonction dédiée, sous RLS | Accepté (P01) |
 | [0034](0034-recherche-requete-fusionnee.md) | Recherche plein texte : une seule requête pour toutes les langues | Accepté (P01c) |
-| [0035](0035-recherche-seuil-e1.md) | Recherche plein texte : clore L2 pour É1, ou poursuivre | Proposé (P01d) |
+| [0035](0035-recherche-seuil-e1.md) | Recherche plein texte : clore L2 pour É1, ou poursuivre | Accepté (P01d) |
 | [0036](0036-editeur-versions-et-mise-en-forme.md) | Éditeur : enregistrer une version, mise en forme libre, images et exports | Accepté (X03) |
 | [0037](0037-bibliotheque.md) | Bibliothèque : l'article au centre, le brief comme atelier | Accepté (X04) |
 | [0038](0038-garde-fous-et-mesure-de-la-redaction.md) | Rédaction : contrôles après génération et mesure, plutôt que retouches du prompt | Accepté (U05 lot 1) |

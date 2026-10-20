@@ -4,13 +4,13 @@ depend on its context (F03); errors carry the stable code of CollectionError as 
 
 from collections.abc import Callable
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Any, Literal, cast
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
-from otlet.collection.application.collection import Collection
+from otlet.collection.application.collection import Collection, RightsError
 from otlet.collection.domain import model
 from otlet.collection.domain.model import Check, CollectionError, Item, Source
 from otlet.entrypoints.api.auth import same_origin
@@ -120,6 +120,40 @@ class ItemView(BaseModel):
             duplicates=item.duplicates,
             words=len((item.text or item.summary or item.title).split()),
         )
+
+
+class DeclarationView(BaseModel):
+    basis: Literal["publisher_agreement", "licence", "own_content", "other"]
+    detail: str
+    reference: str
+    commitment: str  # the words accepted, as they were
+    declared_by: UUID
+    declared_at: datetime
+
+    @classmethod
+    def of(cls, found: model.RightsDeclaration) -> "DeclarationView":
+        return cls(
+            basis=cast(Any, found.basis),
+            detail=found.detail,
+            reference=found.reference,
+            commitment=found.commitment,
+            declared_by=found.declared_by,
+            declared_at=found.declared_at,
+        )
+
+
+class RightsView(BaseModel):
+    allowed: bool  # the instance allows declarations (OTLET_RIGHTS_DECLARATIONS)
+    reserved: bool  # the publisher reserves this text from mining
+    commitment: str  # what the person certifies
+    declaration: DeclarationView | None  # in force
+
+
+class RightsBody(BaseModel):
+    basis: Literal["publisher_agreement", "licence", "own_content", "other"]
+    detail: str = Field(default="", max_length=500)  # required for « other »
+    reference: str = Field(default="", max_length=500)  # a licence number, a link…
+    certified: bool  # the commitment accepted
 
 
 class NewSource(BaseModel):
@@ -249,6 +283,52 @@ def build_router(
         feed leaves its address behind, so that the collection does not bring it back."""
         if not collection.remove_item(context, item_id):
             raise HTTPException(status.HTTP_404_NOT_FOUND, "item_not_found")
+
+    @router.get("/items/{item_id}/rights")
+    def get_rights(item_id: UUID, context: Context) -> RightsView:
+        """Whether rights may be declared on the item, and the declaration in force."""
+        item = collection.get_item(context, item_id)
+        if item is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "item_not_found")
+        found = collection.rights_declaration(context, item_id)
+        return RightsView(
+            allowed=collection.declarations_allowed,
+            reserved=model.reserved(item.text_reason),
+            commitment=model.RIGHTS_COMMITMENT,
+            declaration=None if found is None else DeclarationView.of(found),
+        )
+
+    @router.post("/items/{item_id}/rights", status_code=status.HTTP_202_ACCEPTED)
+    def declare_rights(item_id: UUID, body: RightsBody, context: Context) -> ItemView:
+        """« J'ai les droits sur ce texte » (Joël, 2026-10-20): the declaration is kept and the
+        page read under it, within robots.txt and the limits of the site."""
+        if collection.get_item(context, item_id) is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "item_not_found")
+        try:
+            item = collection.declare_rights(
+                context,
+                item_id,
+                basis=body.basis,
+                detail=body.detail,
+                reference=body.reference,
+                certified=body.certified,
+            )
+        except RightsError as error:
+            code = (
+                status.HTTP_403_FORBIDDEN
+                if error.code == "declarations_disabled"
+                else status.HTTP_422_UNPROCESSABLE_CONTENT
+            )
+            raise HTTPException(code, error.code) from error
+        if item is None:
+            raise HTTPException(status.HTTP_409_CONFLICT, "not_reserved")
+        return ItemView.of(item)
+
+    @router.delete("/items/{item_id}/rights", status_code=status.HTTP_204_NO_CONTENT)
+    def withdraw_rights(item_id: UUID, context: Context) -> None:
+        """Withdraws the declaration: the text read under it is erased; the record stays."""
+        if not collection.withdraw_rights(context, item_id):
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "declaration_not_found")
 
     @router.post("/items/{item_id}/text/retry", status_code=status.HTTP_202_ACCEPTED)
     def retry_text(item_id: UUID, context: Context) -> ItemView:

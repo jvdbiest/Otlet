@@ -32,6 +32,8 @@ BRIEF_ITEMS = (
     # The words a draft may use, as the drafts count them: the full text or the user's entry,
     # else the summary (articles_postgres.sources).
     " 'full_text', i.text_status IN ('full_text', 'manual'),"
+    # Read under a declaration of rights (Joël, 2026-10-20): marked wherever it is used.
+    " 'declared', i.text_reason = 'declared_rights',"
     " 'words', coalesce(cardinality(regexp_split_to_array(nullif(btrim(coalesce("
     "CASE WHEN i.text_status IN ('full_text', 'manual') THEN coalesce(i.text, i.feed_content) END,"
     " i.summary, i.title)), ''), '\\s+')), 0))"
@@ -57,6 +59,7 @@ def _brief(row: sa.Row[Any]) -> Brief:
             else datetime.fromisoformat(item["published_at"]),
             words=item.get("words", 0),
             full_text=item.get("full_text", True),
+            declared=item.get("declared") is True,
         )
         for item in row.items
     )

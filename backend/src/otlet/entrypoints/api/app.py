@@ -115,7 +115,13 @@ def create_app(settings: Settings) -> FastAPI:
         enqueue = procrastinate_queue.enqueuer(settings.require_database_url())
         store = PostgresCollectionStore(engine, enqueue)
         collection_router = collection.build_router(
-            Collection(store, SafeClient(), FeedparserReader(), ReadabilityReader()),
+            Collection(
+                store,
+                SafeClient(),
+                FeedparserReader(),
+                ReadabilityReader(),
+                declarations=settings.rights_declarations,
+            ),
             workspace_context,
         )
         watch_router = watch.build_router(

@@ -195,6 +195,10 @@
       },
       "BriefItemView": {
         "properties": {
+          "declared": {
+            "title": "Declared",
+            "type": "boolean"
+          },
           "full_text": {
             "title": "Full Text",
             "type": "boolean"
@@ -267,7 +271,8 @@
           "source_name",
           "published_at",
           "words",
-          "full_text"
+          "full_text",
+          "declared"
         ],
         "title": "BriefItemView",
         "type": "object"
@@ -825,6 +830,52 @@
           "password"
         ],
         "title": "Credentials",
+        "type": "object"
+      },
+      "DeclarationView": {
+        "properties": {
+          "basis": {
+            "enum": [
+              "publisher_agreement",
+              "licence",
+              "own_content",
+              "other"
+            ],
+            "title": "Basis",
+            "type": "string"
+          },
+          "commitment": {
+            "title": "Commitment",
+            "type": "string"
+          },
+          "declared_at": {
+            "format": "date-time",
+            "title": "Declared At",
+            "type": "string"
+          },
+          "declared_by": {
+            "format": "uuid",
+            "title": "Declared By",
+            "type": "string"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "reference": {
+            "title": "Reference",
+            "type": "string"
+          }
+        },
+        "required": [
+          "basis",
+          "detail",
+          "reference",
+          "commitment",
+          "declared_by",
+          "declared_at"
+        ],
+        "title": "DeclarationView",
         "type": "object"
       },
       "DraftView": {
@@ -2134,6 +2185,76 @@
           "topics"
         ],
         "title": "RefreshView",
+        "type": "object"
+      },
+      "RightsBody": {
+        "properties": {
+          "basis": {
+            "enum": [
+              "publisher_agreement",
+              "licence",
+              "own_content",
+              "other"
+            ],
+            "title": "Basis",
+            "type": "string"
+          },
+          "certified": {
+            "title": "Certified",
+            "type": "boolean"
+          },
+          "detail": {
+            "default": "",
+            "maxLength": 500,
+            "title": "Detail",
+            "type": "string"
+          },
+          "reference": {
+            "default": "",
+            "maxLength": 500,
+            "title": "Reference",
+            "type": "string"
+          }
+        },
+        "required": [
+          "basis",
+          "certified"
+        ],
+        "title": "RightsBody",
+        "type": "object"
+      },
+      "RightsView": {
+        "properties": {
+          "allowed": {
+            "title": "Allowed",
+            "type": "boolean"
+          },
+          "commitment": {
+            "title": "Commitment",
+            "type": "string"
+          },
+          "declaration": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DeclarationView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reserved": {
+            "title": "Reserved",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "allowed",
+          "reserved",
+          "commitment",
+          "declaration"
+        ],
+        "title": "RightsView",
         "type": "object"
       },
       "SaveBody": {
@@ -5670,6 +5791,158 @@
           }
         },
         "summary": "Get Item"
+      }
+    },
+    "/api/workspaces/{workspace_id}/items/{item_id}/rights": {
+      "delete": {
+        "description": "Withdraws the declaration: the text read under it is erased; the record stays.",
+        "operationId": "withdraw_rights_api_workspaces__workspace_id__items__item_id__rights_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Item Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Withdraw Rights"
+      },
+      "get": {
+        "description": "Whether rights may be declared on the item, and the declaration in force.",
+        "operationId": "get_rights_api_workspaces__workspace_id__items__item_id__rights_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Item Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RightsView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Rights"
+      },
+      "post": {
+        "description": "« J'ai les droits sur ce texte » (Joël, 2026-10-20): the declaration is kept and the\npage read under it, within robots.txt and the limits of the site.",
+        "operationId": "declare_rights_api_workspaces__workspace_id__items__item_id__rights_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Item Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RightsBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Declare Rights"
       }
     },
     "/api/workspaces/{workspace_id}/items/{item_id}/text/retry": {

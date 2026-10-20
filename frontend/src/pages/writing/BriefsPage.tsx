@@ -429,6 +429,7 @@ function useBriefItems(workspaceId: string, brief: BriefView | null, itemIds: st
         published_at: item.published_at,
         words: text.trim() === "" ? 0 : text.trim().split(/\s+/).length,
         full_text: item.text !== null,
+        declared: item.text_reason === "declared_rights",
       });
     }
   }
@@ -554,6 +555,7 @@ function BriefItems({
                 style={{ whiteSpace: "nowrap" }}
               >
                 {item.full_text ? t("brief.words", { count: item.words }) : t("brief.summaryOnly", { count: item.words })}
+                {item.declared && ` · ${t("text.declared")}`}
               </Link>
             )}
             {(id !== "" || rows.length > 1) && (

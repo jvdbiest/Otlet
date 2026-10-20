@@ -131,6 +131,34 @@ class Item:
     duplicates: int = 0  # other items of the same story (U02)
 
 
+# Declarations of rights (Joël, 2026-10-20): the bases a person may give, and the commitment
+# they accept, kept word for word with each declaration.
+RIGHTS_BASES = ("publisher_agreement", "licence", "own_content", "other")
+RIGHTS_COMMITMENT = (
+    "Je certifie disposer des droits ou autorisations nécessaires pour importer et exploiter ce"
+    " contenu dans Otlet. J'assume l'entière responsabilité de son utilisation."
+)
+DECLARED_RIGHTS = "declared_rights"  # the text reason of a text read under a declaration
+RIGHTS_DETAIL_MAX = 500
+
+
+def reserved(reason: str | None) -> bool:
+    """A text the publisher reserves from text mining: only a declaration of rights opens it."""
+    return reason is not None and reason.startswith("tdm_reserved")
+
+
+@dataclass(frozen=True, slots=True)
+class RightsDeclaration:
+    id: UUID
+    item_id: UUID
+    declared_by: UUID
+    basis: str
+    detail: str
+    reference: str
+    commitment: str
+    declared_at: datetime
+
+
 def retryable(reason: str | None) -> bool:
     """A text missed for a technical reason, which reading the page again may fix (Joël,
     2026-10-20); never a refusal of the site (robots.txt, a reservation of text mining)."""

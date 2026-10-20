@@ -840,6 +840,35 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/items/{item_id}/rights": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Rights
+         * @description Whether rights may be declared on the item, and the declaration in force.
+         */
+        get: operations["get_rights_api_workspaces__workspace_id__items__item_id__rights_get"];
+        put?: never;
+        /**
+         * Declare Rights
+         * @description « J'ai les droits sur ce texte » (Joël, 2026-10-20): the declaration is kept and the
+         *     page read under it, within robots.txt and the limits of the site.
+         */
+        post: operations["declare_rights_api_workspaces__workspace_id__items__item_id__rights_post"];
+        /**
+         * Withdraw Rights
+         * @description Withdraws the declaration: the text read under it is erased; the record stays.
+         */
+        delete: operations["withdraw_rights_api_workspaces__workspace_id__items__item_id__rights_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/items/{item_id}/text/retry": {
         parameters: {
             query?: never;
@@ -1300,6 +1329,8 @@ export interface components {
         };
         /** BriefItemView */
         BriefItemView: {
+            /** Declared */
+            declared: boolean;
             /** Full Text */
             full_text: boolean;
             /**
@@ -1532,6 +1563,30 @@ export interface components {
             login: string;
             /** Password */
             password: string;
+        };
+        /** DeclarationView */
+        DeclarationView: {
+            /**
+             * Basis
+             * @enum {string}
+             */
+            basis: "publisher_agreement" | "licence" | "own_content" | "other";
+            /** Commitment */
+            commitment: string;
+            /**
+             * Declared At
+             * Format: date-time
+             */
+            declared_at: string;
+            /**
+             * Declared By
+             * Format: uuid
+             */
+            declared_by: string;
+            /** Detail */
+            detail: string;
+            /** Reference */
+            reference: string;
         };
         /**
          * DraftView
@@ -2000,6 +2055,36 @@ export interface components {
             sources: number;
             /** Topics */
             topics: number;
+        };
+        /** RightsBody */
+        RightsBody: {
+            /**
+             * Basis
+             * @enum {string}
+             */
+            basis: "publisher_agreement" | "licence" | "own_content" | "other";
+            /** Certified */
+            certified: boolean;
+            /**
+             * Detail
+             * @default
+             */
+            detail: string;
+            /**
+             * Reference
+             * @default
+             */
+            reference: string;
+        };
+        /** RightsView */
+        RightsView: {
+            /** Allowed */
+            allowed: boolean;
+            /** Commitment */
+            commitment: string;
+            declaration: components["schemas"]["DeclarationView"] | null;
+            /** Reserved */
+            reserved: boolean;
         };
         /**
          * SaveBody
@@ -4020,6 +4105,104 @@ export interface operations {
         };
     };
     remove_item_api_workspaces__workspace_id__items__item_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_rights_api_workspaces__workspace_id__items__item_id__rights_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RightsView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    declare_rights_api_workspaces__workspace_id__items__item_id__rights_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RightsBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    withdraw_rights_api_workspaces__workspace_id__items__item_id__rights_delete: {
         parameters: {
             query?: never;
             header?: never;

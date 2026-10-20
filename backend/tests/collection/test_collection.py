@@ -16,11 +16,13 @@ from otlet.collection.adapters.parsing import FeedparserReader, ReadabilityReade
 from otlet.collection.adapters.postgres import PostgresCollectionStore
 from otlet.collection.application.collection import (
     COLLECT_SOURCE,
+    EXTRACT_DECLARED,
     EXTRACT_ITEM,
     ITEM_READY,
     Collection,
+    RightsError,
 )
-from otlet.collection.domain.model import CollectionError, LegalStatus, TextStatus
+from otlet.collection.domain.model import CollectionError, Item, LegalStatus, TextStatus
 from otlet.identity.adapters.argon2_hasher import Argon2Hasher
 from otlet.identity.adapters.postgres import PostgresIdentityStore
 from otlet.identity.application.authentication import Authentication
@@ -109,6 +111,8 @@ class World:
                 self.collection.collect(workspace, uuid.UUID(kwargs["source_id"]))
             elif name == EXTRACT_ITEM:
                 self.collection.extract(workspace, uuid.UUID(kwargs["item_id"]))
+            elif name == EXTRACT_DECLARED:
+                self.collection.extract_declared(workspace, uuid.UUID(kwargs["item_id"]))
 
 
 def make_context(engine: sa.Engine, login: str) -> WorkspaceContext:
@@ -452,3 +456,77 @@ def test_a_reservation_of_the_publisher_is_never_read_again(world: World) -> Non
     assert world.collection.retry_text(world.context, item.id) is None
     still = world.collection.get_item(world.context, item.id)
     assert still is not None and still.text_reason == "tdm_reserved_file"
+
+
+def reserved_item(world: World) -> Item:
+    open_site(world.web, "a")
+    world.web.pages[SITE + "/.well-known/tdmrep.json"] = (
+        200,
+        {},
+        b'[{"location": "/", "tdm-reservation": 1}]',
+    )
+    world.collection.add_source(world.context, FEED)
+    world.run_jobs()
+    (item,) = world.collection.list_items(world.context)
+    return item
+
+
+def test_a_declaration_of_rights_opens_a_reserved_text(world: World) -> None:
+    item = reserved_item(world)
+    # A declaration is complete: the commitment accepted, « other » named (Joël, 2026-10-20).
+    for basis, certified, code in (
+        ("licence", False, "not_certified"),
+        ("other", True, "detail_required"),
+        ("friendship", True, "invalid_basis"),
+    ):
+        with pytest.raises(RightsError) as refused:
+            world.collection.declare_rights(
+                world.context, item.id, basis=basis, certified=certified
+            )
+        assert refused.value.code == code
+    declared = world.collection.declare_rights(
+        world.context, item.id, basis="licence", reference="Licence n° 42", certified=True
+    )
+    assert declared is not None and declared.text_status is TextStatus.PENDING
+    world.run_jobs()
+    read = world.collection.get_item(world.context, item.id)
+    assert read is not None
+    assert (read.text_status, read.text_reason) == (TextStatus.MANUAL, "declared_rights")
+    assert read.text is not None and read.declared_origin == "licence"
+    found = world.collection.rights_declaration(world.context, item.id)
+    assert found is not None and found.reference == "Licence n° 42"
+    assert found.commitment.startswith("Je certifie disposer des droits")
+    # Withdrawn: the text goes, the reservation comes back; the record stays.
+    assert world.collection.withdraw_rights(world.context, item.id)
+    back = world.collection.get_item(world.context, item.id)
+    assert back is not None
+    assert (back.text_status, back.text_reason, back.text) == (
+        TextStatus.SUMMARY_ONLY,
+        "tdm_reserved_file",
+        None,
+    )
+    assert world.collection.rights_declaration(world.context, item.id) is None
+    assert not world.collection.withdraw_rights(world.context, item.id)
+
+
+def test_a_declaration_never_passes_robots_nor_a_disabled_instance(world: World) -> None:
+    item = reserved_item(world)
+    # The site closes the page to Otlet: a declaration does not open it.
+    world.web.pages[SITE + "/robots.txt"] = (200, {}, b"User-agent: *\nDisallow: /a\n")
+    world.clock[0] = world.clock[0] + timedelta(days=30)  # the policy of the site is read again
+    world.collection.declare_rights(world.context, item.id, basis="own_content", certified=True)
+    world.run_jobs()
+    read = world.collection.get_item(world.context, item.id)
+    assert read is not None and read.text_status is TextStatus.SUMMARY_ONLY
+    assert read.text_reason is not None and read.text_reason.startswith("robots_")
+    # An instance that does not allow declarations refuses them.
+    closed = Collection(
+        PostgresCollectionStore(world.engine, world.queue),
+        world.web,
+        FeedparserReader(),
+        ReadabilityReader(),
+        declarations=False,
+    )
+    with pytest.raises(RightsError) as refused:
+        closed.declare_rights(world.context, item.id, basis="licence", certified=True)
+    assert refused.value.code == "declarations_disabled"

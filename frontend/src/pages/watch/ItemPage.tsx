@@ -10,6 +10,7 @@ import { itemWatchQuery } from "../../watch.ts";
 import { useWorkspaceId } from "../../session.ts";
 import { errorText, explain, formatDate, isWebUrl, reasonText, retryable, textLabel, textTone } from "./labels.ts";
 import { styles } from "./styles.ts";
+import { ItemRights } from "./ItemRights.tsx";
 import { TriageActions } from "./TriageActions.tsx";
 
 /** One item, its text when Otlet may keep it, and where it comes from (U01, M-08). */
@@ -84,6 +85,7 @@ function Item({ workspaceId, itemId }: { workspaceId: string; itemId: string }) 
           </a>
         </p>
       )}
+      <ItemRights workspaceId={workspaceId} itemId={itemId} reason={data.text_reason} />
       {data.origin === "manual_text" && (
         <div className={styles.warning}>
           <p className={styles.success}>{t("item.manualNotice")}</p>

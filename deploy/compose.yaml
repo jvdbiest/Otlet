@@ -23,6 +23,9 @@ x-app: &app
   # The application connects as otlet_app, which cannot bypass row-level security (M-12).
   environment: &app-environment
     OTLET_DATABASE_URL: postgresql+psycopg://otlet_app:${OTLET_APP_PASSWORD:?run ./configure.sh --complete}@db:5432/otlet
+    # Declarations of rights on texts reserved by their publisher (ADR-0039): off on a hosted
+    # instance whose administrator does not take that risk.
+    OTLET_RIGHTS_DECLARATIONS: ${OTLET_RIGHTS_DECLARATIONS:-on}
 
 x-long-running: &long-running
   restart: unless-stopped

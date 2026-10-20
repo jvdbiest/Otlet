@@ -10,7 +10,12 @@ from uuid import UUID
 
 import sqlalchemy as sa
 
-from otlet.collection.application.collection import COLLECT_SOURCE, EXTRACT_ITEM, ITEM_READY
+from otlet.collection.application.collection import (
+    COLLECT_SOURCE,
+    EXTRACT_DECLARED,
+    EXTRACT_ITEM,
+    ITEM_READY,
+)
 from otlet.collection.application.ports import (
     CollectionState,
     NewItem,
@@ -26,6 +31,7 @@ from otlet.collection.domain.model import (
     Item,
     LegalStatus,
     Origin,
+    RightsDeclaration,
     Source,
     TextStatus,
 )
@@ -506,6 +512,101 @@ class PostgresCollectionStore:
                 connection, EXTRACT_ITEM, workspace_id=str(workspace_id), item_id=str(item_id)
             )
             return self._get_item(connection, item_id)
+
+    def declare_rights(self, workspace_id: UUID, declaration: RightsDeclaration) -> bool:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            previous = connection.execute(
+                sa.text(
+                    "UPDATE source_items AS i SET text_status = 'pending', text_reason = NULL,"
+                    " declared_origin = :basis, usage_right = :detail"
+                    " FROM (SELECT text_reason FROM source_items"
+                    f"       WHERE id = :id AND {here()} FOR UPDATE) AS before"
+                    " WHERE i.id = :id AND i.text_status = 'summary_only' AND i.url IS NOT NULL"
+                    f" AND i.text_reason LIKE 'tdm_reserved%' AND {here('i')}"
+                    " RETURNING before.text_reason"
+                ),
+                {
+                    "id": declaration.item_id,
+                    "basis": declaration.basis,
+                    "detail": declaration.detail or declaration.reference or declaration.basis,
+                },
+            ).scalar()
+            if previous is None:
+                return False
+            connection.execute(
+                sa.text(
+                    "INSERT INTO rights_declarations (id, workspace_id, item_id, declared_by,"
+                    " basis, detail, reference, commitment, previous_reason, declared_at)"
+                    " VALUES (:id, :workspace, :item, :user, :basis, :detail, :reference,"
+                    " :commitment, :previous, :at)"
+                ),
+                {
+                    "id": declaration.id,
+                    "workspace": workspace_id,
+                    "item": declaration.item_id,
+                    "user": declaration.declared_by,
+                    "basis": declaration.basis,
+                    "detail": declaration.detail,
+                    "reference": declaration.reference,
+                    "commitment": declaration.commitment,
+                    "previous": previous,
+                    "at": declaration.declared_at,
+                },
+            )
+            self._enqueue(
+                connection,
+                EXTRACT_DECLARED,
+                workspace_id=str(workspace_id),
+                item_id=str(declaration.item_id),
+            )
+            return True
+
+    def rights_declaration(self, workspace_id: UUID, item_id: UUID) -> RightsDeclaration | None:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            row = connection.execute(
+                sa.text(
+                    "SELECT id, item_id, declared_by, basis, detail, reference, commitment,"
+                    " declared_at FROM rights_declarations"
+                    f" WHERE item_id = :id AND withdrawn_at IS NULL AND {here()}"
+                    " ORDER BY declared_at DESC LIMIT 1"
+                ),
+                {"id": item_id},
+            ).first()
+        if row is None:
+            return None
+        return RightsDeclaration(
+            id=row.id,
+            item_id=row.item_id,
+            declared_by=row.declared_by,
+            basis=row.basis,
+            detail=row.detail,
+            reference=row.reference,
+            commitment=row.commitment,
+            declared_at=row.declared_at,
+        )
+
+    def withdraw_rights(self, workspace_id: UUID, item_id: UUID, at: datetime) -> bool:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            previous = connection.execute(
+                sa.text(
+                    "UPDATE rights_declarations SET withdrawn_at = :at"
+                    f" WHERE item_id = :id AND withdrawn_at IS NULL AND {here()}"
+                    " RETURNING previous_reason"
+                ),
+                {"id": item_id, "at": at},
+            ).scalar()
+            if previous is None:
+                return False
+            # The text read under it goes; the item is reserved again, as it was.
+            connection.execute(
+                sa.text(
+                    "UPDATE source_items SET text_status = 'summary_only', text_reason = :reason,"
+                    " text = NULL, declared_origin = NULL, usage_right = NULL"
+                    f" WHERE id = :id AND origin = 'feed' AND {here()}"
+                ),
+                {"id": item_id, "reason": previous},
+            )
+            return True
 
     def retry_text(self, workspace_id: UUID, item_id: UUID) -> bool:
         with workspace_transaction(self._engine, workspace_id) as connection:

@@ -125,6 +125,7 @@ class BriefItem:
     published_at: datetime | None
     words: int = 0  # the words a draft may use of it
     full_text: bool = True  # False: only its summary may be used
+    declared: bool = False  # read under the author's declaration of rights
 
 
 @dataclass(frozen=True, slots=True)

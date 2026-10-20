@@ -173,7 +173,8 @@
     "manual": "Saisie manuelle",
     "reserved": "Texte réservé par l'éditeur",
     "refused": "Texte refusé par le site",
-    "missed": "Texte non récupéré"
+    "missed": "Texte non récupéré",
+    "declared": "Importé sous votre responsabilité"
   },
   "reasons": {
     "robots_allowed": "robots.txt autorise la collecte.",
@@ -201,7 +202,8 @@
     "fetch_scheme_not_allowed": "Seules les adresses http et https sont acceptées.",
     "fetch_port_not_allowed": "Seuls les ports web habituels (80 et 443) sont acceptés.",
     "fetch_invalid_url": "Cette adresse n'est pas valide.",
-    "unknown": "Raison : {code}."
+    "unknown": "Raison : {code}.",
+    "declared_rights": "Texte lu sous votre déclaration de droits : vous en répondez."
   },
   "errors": {
     "invalid_url": "Saisissez une adresse web qui commence par http:// ou https://.",
@@ -233,7 +235,14 @@
     "not_an_image": "Ce fichier n'est pas une image JPEG, PNG, WebP ou GIF lisible.",
     "invalid_tags": "Une étiquette a 40 caractères au plus, et un article 20 étiquettes au plus.",
     "article_not_found": "Cet article n'existe plus.",
-    "not_retryable": "Ce texte ne peut pas être récupéré : le site le refuse ou l'éditeur le réserve."
+    "not_retryable": "Ce texte ne peut pas être récupéré : le site le refuse ou l'éditeur le réserve.",
+    "not_reserved": "Cet élément n'est pas réservé par son éditeur : il n'y a rien à déclarer.",
+    "not_certified": "Cochez l'engagement pour déclarer vos droits.",
+    "detail_required": "Précisez la base de vos droits.",
+    "invalid_basis": "Choisissez la base de vos droits.",
+    "detail_too_long": "500 caractères au plus.",
+    "declarations_disabled": "L'administrateur de cette instance n'autorise pas les déclarations de droits.",
+    "declaration_not_found": "Aucune déclaration en cours sur cet élément."
   },
   "manual": {
     "title": "Ajouter à la main",
@@ -840,5 +849,26 @@
       "draft": "Brouillon",
       "reference": "Référence"
     }
+  },
+  "rights": {
+    "open": "J'ai les droits sur ce texte…",
+    "help": "L'éditeur réserve ce texte à la fouille de textes. Si vous disposez d'une autorisation (accord de l'éditeur, licence, vos propres contenus), déclarez-la : Otlet lira la page pour vous, une seule fois, sans jamais passer outre le robots.txt du site, une connexion ou un paywall. Votre déclaration est conservée.",
+    "basis": "Base de vos droits",
+    "bases": {
+      "publisher_agreement": "Accord de l'éditeur",
+      "licence": "Licence",
+      "own_content": "Mes propres contenus",
+      "other": "Autre"
+    },
+    "detail": "Précisez la base de vos droits",
+    "reference": "Référence (facultatif)",
+    "referenceExample": "Numéro de licence, lien vers l'accord…",
+    "responsibility": "La responsabilité de cette utilisation vous incombe, et non à Otlet.",
+    "submit": "Récupérer le texte sous ma responsabilité",
+    "importedTitle": "Texte importé sous votre responsabilité",
+    "imported": "Vous avez déclaré disposer des droits sur ce texte le {date}.",
+    "commitmentKept": "Engagement accepté",
+    "withdraw": "Retirer ma déclaration",
+    "withdrawConfirm": "Le texte récupéré sera effacé et l'élément redeviendra réservé. Votre déclaration reste dans l'historique."
   }
 }

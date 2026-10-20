@@ -172,6 +172,56 @@ export function useAddManualUrl(workspaceId: string) {
   });
 }
 
+export type RightsView = components["schemas"]["RightsView"];
+export type RightsBasis = components["schemas"]["RightsBody"]["basis"];
+
+/** Whether rights may be declared on an item, and the declaration in force (Joël, 2026-10-20). */
+export const rightsQuery = (workspaceId: string, itemId: string) =>
+  queryOptions({
+    queryKey: ["workspaces", workspaceId, "item", itemId, "rights"],
+    queryFn: async (): Promise<RightsView> => {
+      const { data, error, response } = await api.GET("/api/workspaces/{workspace_id}/items/{item_id}/rights", {
+        params: { path: { workspace_id: workspaceId, item_id: itemId } },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+  });
+
+export function useDeclareRights(workspaceId: string, itemId: string) {
+  const refresh = useRefresh(workspaceId);
+  return useMutation({
+    mutationFn: async (body: { basis: RightsBasis; detail: string; reference: string; certified: boolean }) => {
+      const { data, error, response } = await api.POST("/api/workspaces/{workspace_id}/items/{item_id}/rights", {
+        params: { path: { workspace_id: workspaceId, item_id: itemId } },
+        body,
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: refresh,
+  });
+}
+
+export function useWithdrawRights(workspaceId: string, itemId: string) {
+  const refresh = useRefresh(workspaceId);
+  return useMutation({
+    mutationFn: async () => {
+      const { error, response } = await api.DELETE("/api/workspaces/{workspace_id}/items/{item_id}/rights", {
+        params: { path: { workspace_id: workspaceId, item_id: itemId } },
+      });
+      if (!response.ok) {
+        throw apiError(response, error);
+      }
+    },
+    onSuccess: refresh,
+  });
+}
+
 /** « Réessayer la récupération »: reads the page again, for a text missed by accident. */
 export function useRetryText(workspaceId: string) {
   const refresh = useRefresh(workspaceId);

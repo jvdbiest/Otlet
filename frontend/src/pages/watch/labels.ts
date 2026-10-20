@@ -6,6 +6,7 @@ import { ApiError } from "../../api/client.ts";
 const LEGAL = ["full_text", "summary_only", "refused", "unknown"] as const;
 const TEXT = ["pending", "full_text", "summary_only", "manual"] as const;
 const REASONS = [
+  "declared_rights",
   "robots_allowed",
   "robots_missing",
   "robots_disallowed",
@@ -33,6 +34,13 @@ const REASONS = [
 ] as const;
 const ERRORS = [
   "not_retryable",
+  "not_reserved",
+  "not_certified",
+  "detail_required",
+  "invalid_basis",
+  "detail_too_long",
+  "declarations_disabled",
+  "declaration_not_found",
   "invalid_url",
   "fetch_http_error",
   "fetch_refused",
@@ -87,6 +95,9 @@ export function legalTone(status: string): Tone {
 /** The state of an item's text, and why when it is only a summary (Joël, 2026-10-20): a
  * reservation of the publisher, a refusal of the site, or a text missed by accident. */
 export function textLabel(t: TFunction, status: string, reason: string | null = null): string {
+  if (status === "manual" && reason === "declared_rights") {
+    return t("text.declared");
+  }
   if (status === "summary_only" && reason !== null) {
     if (reason.startsWith("tdm_reserved")) {
       return t("text.reserved");

@@ -16,6 +16,7 @@ from otlet.collection.domain.model import (
     LegalStatus,
     Page,
     ParsedFeed,
+    RightsDeclaration,
     Source,
     TextStatus,
 )
@@ -158,6 +159,19 @@ class CollectionStore(Protocol):
     def remove_item(self, workspace_id: UUID, item_id: UUID) -> bool:
         """Deletes an item of the workspace with its text, matches and triage; an item of a feed
         leaves a trace so that its next collection skips it. False when there is no such item."""
+        ...
+
+    def declare_rights(self, workspace_id: UUID, declaration: RightsDeclaration) -> bool:
+        """Keeps the declaration, sets the reserved item back to pending and enqueues its
+        reading under the declaration, in one transaction; False when the item is not reserved."""
+        ...
+
+    def rights_declaration(self, workspace_id: UUID, item_id: UUID) -> RightsDeclaration | None:
+        """The declaration in force on an item, if any."""
+        ...
+
+    def withdraw_rights(self, workspace_id: UUID, item_id: UUID, at: datetime) -> bool:
+        """Withdraws the declaration in force: its text is erased, the reservation comes back."""
         ...
 
     def retry_text(self, workspace_id: UUID, item_id: UUID) -> bool:

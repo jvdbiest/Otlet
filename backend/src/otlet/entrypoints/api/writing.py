@@ -48,6 +48,7 @@ class BriefItemView(BaseModel):
     published_at: datetime | None
     words: int  # the words a draft may use of it
     full_text: bool  # False: only its summary may be used
+    declared: bool  # read under the author's declaration of rights (their responsibility)
 
     @classmethod
     def of(cls, item: BriefItem) -> "BriefItemView":
@@ -60,6 +61,7 @@ class BriefItemView(BaseModel):
             published_at=item.published_at,
             words=item.words,
             full_text=item.full_text,
+            declared=item.declared,
         )
 
 

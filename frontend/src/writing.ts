@@ -230,14 +230,19 @@ export type LibraryEntryView = components["schemas"]["LibraryEntryView"];
 export type ArticleStatus = ArticleView["status"];
 
 /** The Library (X04): the articles sent to it, searched and filtered. */
-export const libraryQuery = (workspaceId: string, q: string, archived: boolean, tag: string) =>
+export const libraryQuery = (workspaceId: string, q: string, archived: boolean, tag: string, topicId = "") =>
   queryOptions({
-    queryKey: ["workspaces", workspaceId, "library", q, archived, tag],
+    queryKey: ["workspaces", workspaceId, "library", q, archived, tag, topicId],
     queryFn: async (): Promise<LibraryEntryView[]> => {
       const { data, error, response } = await api.GET("/api/workspaces/{workspace_id}/library", {
         params: {
           path: { workspace_id: workspaceId },
-          query: { q, ...(archived ? { status: "archive" as const } : {}), ...(tag ? { tag } : {}) },
+          query: {
+            q,
+            ...(archived ? { status: "archive" as const } : {}),
+            ...(tag ? { tag } : {}),
+            ...(topicId ? { topic_id: topicId } : {}),
+          },
         },
       });
       if (data === undefined) {
@@ -252,6 +257,21 @@ export const libraryTagsQuery = (workspaceId: string) =>
     queryKey: ["workspaces", workspaceId, "library-tags"],
     queryFn: async (): Promise<string[]> => {
       const { data, error, response } = await api.GET("/api/workspaces/{workspace_id}/library/tags", {
+        params: { path: { workspace_id: workspaceId } },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+  });
+
+/** The topics of the Library's articles: those of the items of their briefs (Joël, 2026-10-20). */
+export const libraryTopicsQuery = (workspaceId: string) =>
+  queryOptions({
+    queryKey: ["workspaces", workspaceId, "library-topics"],
+    queryFn: async (): Promise<{ id: string; name: string }[]> => {
+      const { data, error, response } = await api.GET("/api/workspaces/{workspace_id}/library/topics", {
         params: { path: { workspace_id: workspaceId } },
       });
       if (data === undefined) {

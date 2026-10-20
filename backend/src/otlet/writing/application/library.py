@@ -27,10 +27,17 @@ class LibraryStore(Protocol):
     def set_tags(self, workspace_id: UUID, article_id: UUID, tags: Sequence[str]) -> bool: ...
 
     def library(
-        self, workspace_id: UUID, query: str, status: str | None, tag: str | None
+        self,
+        workspace_id: UUID,
+        query: str,
+        status: str | None,
+        tag: str | None,
+        topic_id: UUID | None = None,
     ) -> list[LibraryEntry]: ...
 
     def tags(self, workspace_id: UUID) -> list[str]: ...
+
+    def library_topics(self, workspace_id: UUID) -> list[tuple[UUID, str]]: ...
 
 
 class TagError(ValueError):
@@ -87,10 +94,15 @@ class Library:
         query: str = "",
         status: str | None = None,
         tag: str | None = None,
+        topic_id: UUID | None = None,
     ) -> list[LibraryEntry]:
         if status is not None and status not in STATUSES:
             status = None
-        return self._store.library(context.workspace_id, query[:200], status, tag or None)
+        return self._store.library(context.workspace_id, query[:200], status, tag or None, topic_id)
 
     def tags(self, context: WorkspaceContext) -> list[str]:
         return self._store.tags(context.workspace_id)
+
+    def topics(self, context: WorkspaceContext) -> list[tuple[UUID, str]]:
+        """The topics of the articles of the Library: those of the items of their briefs."""
+        return self._store.library_topics(context.workspace_id)

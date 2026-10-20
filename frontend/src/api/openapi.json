@@ -1499,6 +1499,13 @@
             "title": "Title",
             "type": "string"
           },
+          "topics": {
+            "items": {
+              "$ref": "#/components/schemas/TopicRefView"
+            },
+            "title": "Topics",
+            "type": "array"
+          },
           "updated_at": {
             "format": "date-time",
             "title": "Updated At",
@@ -1526,7 +1533,8 @@
           "tags",
           "sent_at",
           "updated_at",
-          "excerpt"
+          "excerpt",
+          "topics"
         ],
         "title": "LibraryEntryView",
         "type": "object"
@@ -2820,6 +2828,25 @@
           "name"
         ],
         "title": "TopicBody",
+        "type": "object"
+      },
+      "TopicRefView": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "TopicRefView",
         "type": "object"
       },
       "TopicTagView": {
@@ -6291,7 +6318,7 @@
     },
     "/api/workspaces/{workspace_id}/library": {
       "get": {
-        "description": "The Library (X04): the articles sent to it, the latest changed first; `q` searches the\ntitle and the text of the latest version; archived articles only with status=archive.",
+        "description": "The Library (X04): the articles sent to it, the latest changed first; `q` searches the\ntitle and the text of the latest version; archived articles only with status=archive;\n`topic_id`: those whose brief has items of that topic (Joël, 2026-10-20).",
         "operationId": "list_library_api_workspaces__workspace_id__library_get",
         "parameters": [
           {
@@ -6349,6 +6376,23 @@
                 }
               ],
               "title": "Tag"
+            }
+          },
+          {
+            "in": "query",
+            "name": "topic_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Topic Id"
             }
           }
         ],
@@ -6423,6 +6467,51 @@
           }
         },
         "summary": "List Tags"
+      }
+    },
+    "/api/workspaces/{workspace_id}/library/topics": {
+      "get": {
+        "description": "The topics of the articles of the Library: those of the items of their briefs.",
+        "operationId": "list_library_topics_api_workspaces__workspace_id__library_topics_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TopicRefView"
+                  },
+                  "title": "Response List Library Topics Api Workspaces  Workspace Id  Library Topics Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Library Topics"
       }
     },
     "/api/workspaces/{workspace_id}/media": {

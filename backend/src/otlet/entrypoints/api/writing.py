@@ -287,6 +287,7 @@ class LibraryEntryView(BaseModel):
     sent_at: datetime
     updated_at: datetime
     excerpt: str  # « words » searched for are between « and »
+    topics: list["TopicRefView"]  # those of the items of its brief
 
     @classmethod
     def of(cls, entry: LibraryEntry) -> "LibraryEntryView":
@@ -301,7 +302,13 @@ class LibraryEntryView(BaseModel):
             sent_at=entry.sent_at,
             updated_at=entry.updated_at,
             excerpt=entry.excerpt,
+            topics=[TopicRefView(id=i, name=n) for i, n in entry.topics],
         )
+
+
+class TopicRefView(BaseModel):
+    id: UUID
+    name: str
 
 
 class SendBody(BaseModel):
@@ -498,10 +505,17 @@ def build_router(
         q: str = "",
         status: Literal["brouillon", "valide", "archive"] | None = None,
         tag: str | None = None,
+        topic_id: UUID | None = None,
     ) -> list[LibraryEntryView]:
         """The Library (X04): the articles sent to it, the latest changed first; `q` searches the
-        title and the text of the latest version; archived articles only with status=archive."""
-        return [LibraryEntryView.of(e) for e in library.entries(context, q, status, tag)]
+        title and the text of the latest version; archived articles only with status=archive;
+        `topic_id`: those whose brief has items of that topic (Joël, 2026-10-20)."""
+        return [LibraryEntryView.of(e) for e in library.entries(context, q, status, tag, topic_id)]
+
+    @router.get("/library/topics")
+    def list_library_topics(context: Context) -> list[TopicRefView]:
+        """The topics of the articles of the Library: those of the items of their briefs."""
+        return [TopicRefView(id=i, name=n) for i, n in library.topics(context)]
 
     @router.get("/library/tags")
     def list_tags(context: Context) -> list[str]:

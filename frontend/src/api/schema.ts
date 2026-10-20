@@ -938,7 +938,8 @@ export interface paths {
         /**
          * List Library
          * @description The Library (X04): the articles sent to it, the latest changed first; `q` searches the
-         *     title and the text of the latest version; archived articles only with status=archive.
+         *     title and the text of the latest version; archived articles only with status=archive;
+         *     `topic_id`: those whose brief has items of that topic (Joël, 2026-10-20).
          */
         get: operations["list_library_api_workspaces__workspace_id__library_get"];
         put?: never;
@@ -958,6 +959,26 @@ export interface paths {
         };
         /** List Tags */
         get: operations["list_tags_api_workspaces__workspace_id__library_tags_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/library/topics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Library Topics
+         * @description The topics of the articles of the Library: those of the items of their briefs.
+         */
+        get: operations["list_library_topics_api_workspaces__workspace_id__library_topics_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1825,6 +1846,8 @@ export interface components {
             tags: string[];
             /** Title */
             title: string;
+            /** Topics */
+            topics: components["schemas"]["TopicRefView"][];
             /**
              * Updated At
              * Format: date-time
@@ -2309,6 +2332,16 @@ export interface components {
              * @default false
              */
             whole_sources: boolean;
+        };
+        /** TopicRefView */
+        TopicRefView: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
         };
         /** TopicTagView */
         TopicTagView: {
@@ -4447,6 +4480,7 @@ export interface operations {
                 q?: string;
                 status?: ("brouillon" | "valide" | "archive") | null;
                 tag?: string | null;
+                topic_id?: string | null;
             };
             header?: never;
             path: {
@@ -4494,6 +4528,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": string[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_library_topics_api_workspaces__workspace_id__library_topics_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TopicRefView"][];
                 };
             };
             /** @description Validation Error */

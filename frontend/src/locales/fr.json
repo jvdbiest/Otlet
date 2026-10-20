@@ -839,7 +839,9 @@
     "saveTags": "Enregistrer les étiquettes",
     "versions": "Versions",
     "forked": "Vous avez retouché la version validée V{from} : vos modifications sont dans la nouvelle version V{to}. Laquelle doit partir en export et en publication ? L'autre reste dans l'historique.",
-    "keepValidated": "Garder V{number} validée"
+    "keepValidated": "Garder V{number} validée",
+    "topic": "Sujet",
+    "allTopics": "Tous les sujets"
   },
   "compare": {
     "button": "Comparer",

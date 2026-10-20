@@ -511,6 +511,26 @@ def test_the_library_holds_the_articles_sent_to_it(world: World) -> None:
     assert library.tags(context) == ["Formule 1", "Pilotes"]
     assert len(library.entries(context, tag="Pilotes")) == 1
     assert library.entries(context, tag="Autre") == []
+    # Topics: those of the items of its brief, read in the watch (Joël, 2026-10-20).
+    with db.workspace_transaction(world.engine, context.workspace_id) as connection:
+        topic = connection.execute(
+            sa.text(
+                "INSERT INTO topics (workspace_id, name, keywords) VALUES (:w, 'Moto', '{moto}')"
+                " RETURNING id"
+            ),
+            {"w": context.workspace_id},
+        ).scalar_one()
+        connection.execute(
+            sa.text(
+                "INSERT INTO topic_matches (workspace_id, topic_id, item_id, score, contributions)"
+                " SELECT :w, :t, item_id, 3, '[]' FROM brief_items WHERE brief_id = :b"
+            ),
+            {"w": context.workspace_id, "t": topic, "b": article.brief_id},
+        )
+    (entry,) = library.entries(context, topic_id=topic)
+    assert entry.topics == ((topic, "Moto"),)
+    assert library.topics(context) == [(topic, "Moto")]
+    assert library.entries(context, topic_id=uuid.uuid4()) == []
     archived = library.archive(context, article.id, True)
     assert archived is not None and archived.status == "archive"
     assert library.entries(context) == []

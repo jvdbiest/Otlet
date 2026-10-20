@@ -4,7 +4,8 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { workspacesQuery } from "../../session.ts";
-import { libraryQuery, libraryTagsQuery, type LibraryEntryView } from "../../writing.ts";
+import { libraryQuery, libraryTagsQuery,
+  libraryTopicsQuery, type LibraryEntryView } from "../../writing.ts";
 import { formatDate } from "../watch/labels.ts";
 import { styles } from "../watch/styles.ts";
 
@@ -65,6 +66,15 @@ function Entry({ entry }: { entry: LibraryEntryView }) {
         })}
         {entry.tags.length > 0 && ` · ${entry.tags.join(", ")}`}
       </p>
+      {entry.topics.length > 0 && (
+        <p className={styles.chips}>
+          {entry.topics.map((topic) => (
+            <span key={topic.id} className={styles.chip}>
+              {topic.name}
+            </span>
+          ))}
+        </p>
+      )}
       {entry.excerpt && <Excerpt text={entry.excerpt} />}
     </li>
   );
@@ -79,9 +89,11 @@ export function LibraryPage() {
   const [query, setQuery] = useState("");
   const [archived, setArchived] = useState(false);
   const [tag, setTag] = useState("");
+  const [topic, setTopic] = useState("");
   const [grouping, setGrouping] = useState<Grouping>("date");
-  const entries = useQuery({ ...libraryQuery(workspaceId, query, archived, tag), enabled: workspaceId !== "" });
+  const entries = useQuery({ ...libraryQuery(workspaceId, query, archived, tag, topic), enabled: workspaceId !== "" });
   const tags = useQuery({ ...libraryTagsQuery(workspaceId), enabled: workspaceId !== "" });
+  const topics = useQuery({ ...libraryTopicsQuery(workspaceId), enabled: workspaceId !== "" });
   const now = new Date();
   const groups: [string, LibraryEntryView[]][] = [];
   for (const entry of entries.data ?? []) {
@@ -135,6 +147,22 @@ export function LibraryPage() {
               </option>
             ))}
           </select>
+          {(topics.data ?? []).length > 0 && (
+            <select
+              aria-label={t("library.topic")}
+              value={topic}
+              onChange={(event) => {
+                setTopic(event.target.value);
+              }}
+            >
+              <option value="">{t("library.allTopics")}</option>
+              {(topics.data ?? []).map((found) => (
+                <option key={found.id} value={found.id}>
+                  {found.name}
+                </option>
+              ))}
+            </select>
+          )}
           <select
             aria-label={t("library.groupBy")}
             value={grouping}
@@ -158,7 +186,7 @@ export function LibraryPage() {
         </p>
       </form>
       {entries.data?.length === 0 && (
-        <p className={styles.help}>{query || tag ? t("library.noMatch") : t("library.empty")}</p>
+        <p className={styles.help}>{query || tag || topic ? t("library.noMatch") : t("library.empty")}</p>
       )}
       {groups.map(([name, members]) => (
         <section key={name || "all"} className={styles.group} aria-label={name || t("library.title")}>

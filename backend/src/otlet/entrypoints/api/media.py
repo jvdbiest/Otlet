@@ -42,6 +42,7 @@ class MediaView(BaseModel):
     credit: str | None
     licence: str | None
     source_url: str | None
+    tags: list[str]
 
     @classmethod
     def of(cls, media: Media) -> "MediaView":
@@ -59,6 +60,7 @@ class MediaView(BaseModel):
             credit=media.credit,
             licence=media.licence,
             source_url=media.source_url,
+            tags=list(media.tags),
         )
 
 
@@ -99,6 +101,10 @@ class DescriptionBody(BaseModel):
     credit: str | None = Field(default=None, max_length=2000)
     licence: str | None = Field(default=None, max_length=2000)
     source_url: str | None = Field(default=None, max_length=4000)
+
+
+class MediaTagsBody(BaseModel):
+    tags: list[str] = Field(max_length=100)
 
 
 class MediaSelectionBody(BaseModel):
@@ -187,10 +193,27 @@ def build_router(
         view: Literal["articles", "bank"] = "articles",
         q: Annotated[str, Query(max_length=200)] = "",
         used: bool | None = None,
+        tag: Annotated[str | None, Query(max_length=100)] = None,
     ) -> list[MediaEntryView]:
         """The images of a view of the médiathèque, newest first: those of the articles, or
         those of the bank of images; `used` keeps those some article shows, or the others."""
-        return [MediaEntryView.of_entry(e) for e in library.entries(context, view, q, used)]
+        return [MediaEntryView.of_entry(e) for e in library.entries(context, view, q, used, tag)]
+
+    @router.get("/media/tags")
+    def media_tags(context: Context) -> list[str]:
+        """The tags of the images of the workspace, in order."""
+        return library.tags(context)
+
+    @router.put("/media/{media_id}/tags")
+    def set_media_tags(media_id: UUID, body: MediaTagsBody, context: Context) -> MediaView:
+        """Tags an image (40 characters, 20 tags at most: 422 invalid_tags)."""
+        try:
+            media = library.set_tags(context, media_id, body.tags)
+        except MediaError as error:
+            raise HTTPException(422, error.code) from error
+        if media is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "media_not_found")
+        return MediaView.of(media)
 
     @router.post("/media/bank")
     def keep_selection(body: BankSelectionBody, context: Context) -> MediaOutcomeView:

@@ -25,10 +25,17 @@ La Bibliothèque est devenue un module : articles, archives, et bientôt la publ
 ## Découpage
 
 - Lot 1 (fait) : onglets, migration 0034, liste par vue avec recherche et filtre d'utilisation, vignettes, fiche d'une image (description, utilisations), ajout et retrait de la banque, import dans la banque, suppression des images inutilisées.
-- Lot 2 : sélecteur d'images dans l'éditeur (la banque d'abord), étiquettes.
+- Lot 2 (fait, migration 0035) : étiquettes des images (fiche, filtre, recherche) ; dans l'éditeur commun, le bouton image propose « Depuis l'ordinateur » ou « Depuis la médiathèque ». Le sélecteur ouvre la banque d'abord, avec recherche, étiquettes, aperçu, crédit, licence et provenance.
 - Ensuite : OCR, images générées, récupération sous déclaration (ADR-0039), avertissement de crédit à la publication, nettoyage des fichiers orphelins, quota par espace.
 
 ## Conséquences
 
 - La sauvegarde F08 doit couvrir `files_data` (vignettes comprises).
 - Lister les usages parcourt les blocs des versions de l'espace : suffisant en É1 ; une table d'usages tenue à l'écriture reste possible si le volume l'exige.
+
+## Révision (Joël, 2026-10-20) : une référence, jamais une copie
+
+- Un bloc image d'un article ne contient que l'identifiant de l'image de la médiathèque. Insérer une image depuis la médiathèque ajoute une référence : aucune copie, aucun doublon, et « Utilisée dans » reste exact.
+- **À l'image** : le fichier, le nom, la description, le crédit, la licence, la provenance et les étiquettes. Une correction vaut pour tous les articles qui la montrent ; les exports et la publication liront le crédit là.
+- **À l'article** : le texte alternatif, l'alignement, la largeur et l'habillage. La description préremplit le texte alternatif à l'insertion, qui reste ensuite propre à l'article.
+- Le fichier d'une image n'est jamais remplacé : une image retouchée devient une nouvelle image.

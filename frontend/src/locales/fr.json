@@ -768,7 +768,7 @@
       "center": "Centrer",
       "right": "Aligner à droite",
       "justify": "Justifier",
-      "image": "Insérer une image (ou la coller, ou la glisser dans le texte ; cliquez-la ensuite pour la redimensionner ou l'aligner)"
+      "image": "Insérer une image : depuis l'ordinateur ou depuis la médiathèque (on peut aussi la coller ou la glisser dans le texte ; cliquez-la ensuite pour la redimensionner ou l'aligner)"
     },
     "blocks": {
       "p": "Paragraphe",
@@ -797,7 +797,9 @@
     "imageHandle": "Largeur de l'image : tirez la poignée, ou utilisez les flèches",
     "imageOwn": "Taille d'origine",
     "imageWrap": "Habiller le texte",
-    "validatedVersion": "Version {number}, validée : « Enregistrer » créera une nouvelle version, sans toucher à celle qui part en export et en publication."
+    "validatedVersion": "Version {number}, validée : « Enregistrer » créera une nouvelle version, sans toucher à celle qui part en export et en publication.",
+    "imageFromComputer": "Depuis l'ordinateur",
+    "imageFromLibrary": "Depuis la médiathèque"
   },
   "library": {
     "title": "Bibliothèque",
@@ -995,7 +997,20 @@
     },
     "errors": {
       "too_long": "Un des textes est trop long.",
-      "invalid_url": "L'adresse d'origine doit commencer par https:// ou http://."
+      "invalid_url": "L'adresse d'origine doit commencer par https:// ou http://.",
+      "invalid_tags": "Une étiquette a 40 caractères au plus, et une image 20 étiquettes au plus."
+    },
+    "tag": "Étiquette",
+    "tags": "Étiquettes",
+    "allTags": "Toutes les étiquettes",
+    "picker": {
+      "title": "Choisir une image dans la médiathèque",
+      "empty": "Aucune image ici. Importez-en dans Bibliothèque › Médias, ou depuis l'ordinateur.",
+      "choose": "Choisir « {name} »",
+      "details": "Image choisie",
+      "missing": "non indiqué",
+      "insert": "Insérer",
+      "cancel": "Annuler"
     }
   }
 }

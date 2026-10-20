@@ -67,3 +67,43 @@
   gap: var(--space-2);
   margin-bottom: var(--space-4);
 }
+
+/* The picker of the editor (ADR-0040, lot 2). */
+.picker {
+  width: min(64rem, 95vw);
+  max-height: 90vh;
+  padding: var(--space-4) var(--space-6);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.picker::backdrop {
+  background: rgb(0 0 0 / 45%);
+}
+
+.pickerBody {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 16rem;
+  gap: var(--space-4);
+  max-height: 55vh;
+  overflow: auto;
+  padding: 3px; /* room for the outline of the image chosen */
+  margin-bottom: var(--space-4);
+}
+
+@media (max-width: 48rem) {
+  .pickerBody {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.chosen img {
+  max-width: 100%;
+  border-radius: var(--radius);
+}
+
+.chosen dd {
+  margin: 0 0 var(--space-2);
+}

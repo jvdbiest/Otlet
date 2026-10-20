@@ -47,14 +47,20 @@ export async function uploadImage(workspaceId: string, file: Blob, bank = false)
 }
 
 /** The images of a section of the médiathèque, newest first (ADR-0040). */
-export const mediaListQuery = (workspaceId: string, section: MediaSection, q: string, used: boolean | null) =>
+export const mediaListQuery = (
+  workspaceId: string,
+  section: MediaSection,
+  q: string,
+  used: boolean | null,
+  tag = "",
+) =>
   queryOptions({
-    queryKey: ["workspaces", workspaceId, "media", section, q, used],
+    queryKey: ["workspaces", workspaceId, "media", section, q, used, tag],
     queryFn: async (): Promise<MediaEntryView[]> => {
       const { data, error, response } = await api.GET("/api/workspaces/{workspace_id}/media", {
         params: {
           path: { workspace_id: workspaceId },
-          query: { view: section, q, ...(used === null ? {} : { used }) },
+          query: { view: section, q, ...(used === null ? {} : { used }), ...(tag ? { tag } : {}) },
         },
       });
       if (data === undefined) {
@@ -78,6 +84,38 @@ export const mediaDetailsQuery = (workspaceId: string, mediaId: string) =>
       return data;
     },
   });
+
+/** The tags of the images of the workspace. */
+export const mediaTagsQuery = (workspaceId: string) =>
+  queryOptions({
+    queryKey: ["workspaces", workspaceId, "media-tags"],
+    queryFn: async (): Promise<string[]> => {
+      const { data, error, response } = await api.GET("/api/workspaces/{workspace_id}/media/tags", {
+        params: { path: { workspace_id: workspaceId } },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+  });
+
+export function useSetMediaTags(workspaceId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ mediaId, tags }: { mediaId: string; tags: string[] }) => {
+      const { data, error, response } = await api.PUT("/api/workspaces/{workspace_id}/media/{media_id}/tags", {
+        params: { path: { workspace_id: workspaceId, media_id: mediaId } },
+        body: { tags },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
+  });
+}
 
 export interface MediaDescription {
   name: string;

@@ -8,11 +8,13 @@ import {
   IMAGE_TYPES,
   mediaDetailsQuery,
   mediaListQuery,
+  mediaTagsQuery,
   mediaUrl,
   thumbnailUrl,
   uploadImage,
   useDescribeMedia,
   useMediaAction,
+  useSetMediaTags,
   type MediaAction,
   type MediaDescription,
   type MediaEntryView,
@@ -82,6 +84,43 @@ function describe(media: MediaView): MediaDescription {
     licence: media.licence ?? "",
     source_url: media.source_url ?? "",
   };
+}
+
+/** The tags of an image, typed separated by commas, as for the articles. */
+function MediaTags({ workspaceId, media }: { workspaceId: string; media: MediaView }) {
+  const { t } = useTranslation();
+  const setTags = useSetMediaTags(workspaceId);
+  const [typed, setTyped] = useState(media.tags.join(", "));
+  return (
+    <form
+      className={styles.row}
+      onSubmit={(event) => {
+        event.preventDefault();
+        setTags.mutate({ mediaId: media.id, tags: typed.split(",") });
+      }}
+    >
+      <label>
+        {t("media.tags")}{" "}
+        <input
+          value={typed}
+          placeholder={t("library.tagsPlaceholder")}
+          onChange={(event) => {
+            setTyped(event.target.value);
+          }}
+        />
+      </label>
+      <button type="submit" className={styles.button} disabled={setTags.isPending}>
+        {t("library.saveTags")}
+      </button>
+      {setTags.error !== null && (
+        <span role="alert" className={styles.error}>
+          {setTags.error instanceof ApiError && setTags.error.detail === "invalid_tags"
+            ? t("media.errors.invalid_tags")
+            : errorText(t, setTags.error)}
+        </span>
+      )}
+    </form>
+  );
 }
 
 /** The sheet of an image: what it is, what a person says of it, where it is used. */
@@ -158,6 +197,7 @@ function MediaSheet({ workspaceId, mediaId, onClose }: { workspaceId: string; me
             })}
           </p>
           <p className={styles.meta}>{t(`media.origins.${media.origin}`)}</p>
+          <MediaTags key={media.tags.join("|")} workspaceId={workspaceId} media={media} />
           <h3>{t("media.sheet.usedIn")}</h3>
           {usages.length === 0 ? (
             <p className={styles.meta}>{t("media.sheet.notUsed")}</p>
@@ -398,9 +438,11 @@ export function MediaPage() {
   const [typed, setTyped] = useState("");
   const [query, setQuery] = useState("");
   const [used, setUsed] = useState<boolean | null>(null);
+  const [tag, setTag] = useState("");
+  const tags = useQuery({ ...mediaTagsQuery(workspaceId), enabled: workspaceId !== "" });
   const [selected, setSelected] = useState<string[]>([]);
   const [open, setOpen] = useState<string | null>(null);
-  const list = useQuery({ ...mediaListQuery(workspaceId, section, query, used), enabled: workspaceId !== "" });
+  const list = useQuery({ ...mediaListQuery(workspaceId, section, query, used, tag), enabled: workspaceId !== "" });
   const entries = list.data ?? [];
   return (
     <>
@@ -457,6 +499,22 @@ export function MediaPage() {
             <option value="true">{t("media.usageUsed")}</option>
             <option value="false">{t("media.usageUnused")}</option>
           </select>
+          {(tags.data ?? []).length > 0 && (
+            <select
+              aria-label={t("media.tag")}
+              value={tag}
+              onChange={(event) => {
+                setTag(event.target.value);
+              }}
+            >
+              <option value="">{t("media.allTags")}</option>
+              {(tags.data ?? []).map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          )}
         </p>
       </form>
       {open !== null && (
@@ -476,7 +534,7 @@ export function MediaPage() {
         selected={selected}
         onSelect={setSelected}
       />
-      {list.data?.length === 0 && <p className={styles.help}>{query || used !== null ? t("media.noMatch") : t("media.empty")}</p>}
+      {list.data?.length === 0 && <p className={styles.help}>{query || used !== null || tag ? t("media.noMatch") : t("media.empty")}</p>}
       <ul className={local.grid}>
         {entries.map((entry) => {
           const name = entry.name ?? t("media.unnamed");
@@ -510,6 +568,7 @@ export function MediaPage() {
               <p className={styles.meta}>
                 {entry.width} × {entry.height} · {entry.articles > 0 ? t("media.usedIn", { count: entry.articles }) : t("media.unused")}
               </p>
+              {entry.tags.length > 0 && <p className={styles.meta}>{entry.tags.join(", ")}</p>}
               {section === "articles" && entry.in_bank && (
                 <p>
                   <span className={styles.badge}>{t("media.inBank")}</span>

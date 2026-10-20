@@ -106,6 +106,15 @@ def test_the_mediatheque_shows_two_views_of_the_same_images(
         None,
     )
     assert ids("bank", query="tracé") == [kept.id]
+    # Tags (lot 2): cleaned, listed, filtered on, searched.
+    tagged = library.set_tags(context, kept.id, [" Circuits ", "circuits", "Cartes", ""])
+    assert tagged is not None and tagged.tags == ("Circuits", "Cartes")
+    assert library.tags(context) == ["Cartes", "Circuits"]
+    assert [e.media.id for e in library.entries(context, "bank", tag="Cartes")] == [kept.id]
+    assert library.entries(context, "bank", tag="Autre") == []
+    assert ids("bank", query="circuits") == [kept.id]
+    with pytest.raises(MediaError):
+        library.set_tags(context, kept.id, ["x" * 41])
     with pytest.raises(MediaError) as error:
         library.describe(context, kept.id, Description(None, None, None, None, "ftp://x"))
     assert error.value.code == "invalid_url"

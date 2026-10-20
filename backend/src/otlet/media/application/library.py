@@ -20,6 +20,7 @@ from otlet.media.domain.media import (
     Outcome,
     Usage,
     cleaned,
+    cleaned_tags,
 )
 from otlet.workspaces.domain.model import WorkspaceContext
 
@@ -61,7 +62,13 @@ class MediaStore(Protocol):
 
     def existing(self, workspace_id: UUID, ids: list[UUID]) -> set[UUID]: ...
 
-    def search(self, workspace_id: UUID, query: str) -> list[Media]: ...
+    def search(self, workspace_id: UUID, query: str, tag: str | None = None) -> list[Media]: ...
+
+    def set_tags(
+        self, workspace_id: UUID, media_id: UUID, tags: tuple[str, ...]
+    ) -> Media | None: ...
+
+    def tags(self, workspace_id: UUID) -> list[str]: ...
 
     def describe(
         self, workspace_id: UUID, media_id: UUID, description: Description
@@ -173,12 +180,13 @@ class MediaLibrary:
         view: View,
         query: str = "",
         used: bool | None = None,
+        tag: str | None = None,
     ) -> list[Entry]:
         """The images of a view, newest first: those of the articles (brought by the work on
         an article, or shown by one) or those of the bank. One image may be in both."""
         counts = self._usages.media_counts(context.workspace_id)
         found = []
-        for media in self._store.search(context.workspace_id, " ".join(query.split())):
+        for media in self._store.search(context.workspace_id, " ".join(query.split()), tag or None):
             articles = counts.get(media.id, 0)
             if view == "bank" and not media.in_bank:
                 continue
@@ -201,6 +209,12 @@ class MediaLibrary:
         self, context: WorkspaceContext, media_id: UUID, description: Description
     ) -> Media | None:
         return self._store.describe(context.workspace_id, media_id, cleaned(description))
+
+    def set_tags(self, context: WorkspaceContext, media_id: UUID, tags: list[str]) -> Media | None:
+        return self._store.set_tags(context.workspace_id, media_id, cleaned_tags(tags))
+
+    def tags(self, context: WorkspaceContext) -> list[str]:
+        return self._store.tags(context.workspace_id)
 
     def keep_many(
         self, context: WorkspaceContext, media_ids: Sequence[UUID], in_bank: bool

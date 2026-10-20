@@ -1886,6 +1886,13 @@
             ],
             "title": "Source Url"
           },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
           "width": {
             "title": "Width",
             "type": "integer"
@@ -1905,6 +1912,7 @@
           "credit",
           "licence",
           "source_url",
+          "tags",
           "articles"
         ],
         "title": "MediaEntryView",
@@ -1975,6 +1983,23 @@
           "media_ids"
         ],
         "title": "MediaSelectionBody",
+        "type": "object"
+      },
+      "MediaTagsBody": {
+        "properties": {
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Tags",
+            "type": "array"
+          }
+        },
+        "required": [
+          "tags"
+        ],
+        "title": "MediaTagsBody",
         "type": "object"
       },
       "MediaView": {
@@ -2070,6 +2095,13 @@
             ],
             "title": "Source Url"
           },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
           "width": {
             "title": "Width",
             "type": "integer"
@@ -2088,7 +2120,8 @@
           "in_bank",
           "credit",
           "licence",
-          "source_url"
+          "source_url",
+          "tags"
         ],
         "title": "MediaView",
         "type": "object"
@@ -7426,6 +7459,23 @@
               ],
               "title": "Used"
             }
+          },
+          {
+            "in": "query",
+            "name": "tag",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 100,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tag"
+            }
           }
         ],
         "responses": {
@@ -7654,6 +7704,51 @@
         "summary": "Delete Selection"
       }
     },
+    "/api/workspaces/{workspace_id}/media/tags": {
+      "get": {
+        "description": "The tags of the images of the workspace, in order.",
+        "operationId": "media_tags_api_workspaces__workspace_id__media_tags_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "Response Media Tags Api Workspaces  Workspace Id  Media Tags Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Media Tags"
+      }
+    },
     "/api/workspaces/{workspace_id}/media/{media_id}": {
       "get": {
         "description": "The file of an image of the workspace; never shown to anyone outside it.",
@@ -7811,6 +7906,67 @@
           }
         },
         "summary": "Media Details"
+      }
+    },
+    "/api/workspaces/{workspace_id}/media/{media_id}/tags": {
+      "put": {
+        "description": "Tags an image (40 characters, 20 tags at most: 422 invalid_tags).",
+        "operationId": "set_media_tags_api_workspaces__workspace_id__media__media_id__tags_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "media_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Media Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MediaTagsBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Media Tags"
       }
     },
     "/api/workspaces/{workspace_id}/media/{media_id}/thumbnail": {

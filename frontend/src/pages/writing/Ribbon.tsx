@@ -200,14 +200,17 @@ export function Ribbon({
   disabled,
   onClipboardRefused,
   onImages,
+  onLibrary,
 }: {
   editor: Editor;
   disabled: boolean;
   onClipboardRefused: () => void;
   onImages: (files: File[]) => void;
+  onLibrary: () => void;
 }) {
   const { t } = useTranslation();
   const picker = useRef<HTMLInputElement>(null);
+  const [imageMenu, setImageMenu] = useState(false);
   const state = useEditorState({
     editor,
     selector: ({ editor: e }) => {
@@ -448,21 +451,62 @@ export function Ribbon({
           },
           state.link,
         )}
-        <button
-          type="button"
-          className={editorStyles.tool}
-          title={t("editor.tools.image")}
-          aria-label={t("editor.tools.image")}
-          disabled={disabled}
-          onMouseDown={(event) => {
-            event.preventDefault();
-          }}
-          onClick={() => {
-            picker.current?.click();
+        <span
+          className={editorStyles.picker}
+          onBlur={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget)) {
+              setImageMenu(false);
+            }
           }}
         >
-          🖼
-        </button>
+          <button
+            type="button"
+            className={editorStyles.tool}
+            title={t("editor.tools.image")}
+            aria-label={t("editor.tools.image")}
+            aria-haspopup="menu"
+            aria-expanded={imageMenu}
+            disabled={disabled}
+            onMouseDown={(event) => {
+              event.preventDefault();
+            }}
+            onClick={() => {
+              setImageMenu(!imageMenu);
+            }}
+          >
+            🖼<span aria-hidden="true"> ▾</span>
+          </button>
+          {imageMenu && (
+            <span className={editorStyles.menu} role="menu" aria-label={t("editor.tools.image")}>
+              <button
+                type="button"
+                role="menuitem"
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                }}
+                onClick={() => {
+                  setImageMenu(false);
+                  picker.current?.click();
+                }}
+              >
+                {t("editor.imageFromComputer")}
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                }}
+                onClick={() => {
+                  setImageMenu(false);
+                  onLibrary();
+                }}
+              >
+                {t("editor.imageFromLibrary")}
+              </button>
+            </span>
+          )}
+        </span>
         <input
           ref={picker}
           type="file"

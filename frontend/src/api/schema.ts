@@ -1176,6 +1176,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/media/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Media Tags
+         * @description The tags of the images of the workspace, in order.
+         */
+        get: operations["media_tags_api_workspaces__workspace_id__media_tags_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/media/{media_id}": {
         parameters: {
             query?: never;
@@ -1213,6 +1233,26 @@ export interface paths {
          */
         get: operations["media_details_api_workspaces__workspace_id__media__media_id__details_get"];
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/media/{media_id}/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Media Tags
+         * @description Tags an image (40 characters, 20 tags at most: 422 invalid_tags).
+         */
+        put: operations["set_media_tags_api_workspaces__workspace_id__media__media_id__tags_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -2181,6 +2221,8 @@ export interface components {
             size: number;
             /** Source Url */
             source_url: string | null;
+            /** Tags */
+            tags: string[];
             /** Width */
             width: number;
         };
@@ -2208,6 +2250,11 @@ export interface components {
         MediaSelectionBody: {
             /** Media Ids */
             media_ids: string[];
+        };
+        /** MediaTagsBody */
+        MediaTagsBody: {
+            /** Tags */
+            tags: string[];
         };
         /** MediaView */
         MediaView: {
@@ -2244,6 +2291,8 @@ export interface components {
             size: number;
             /** Source Url */
             source_url: string | null;
+            /** Tags */
+            tags: string[];
             /** Width */
             width: number;
         };
@@ -5175,6 +5224,7 @@ export interface operations {
                 view?: "articles" | "bank";
                 q?: string;
                 used?: boolean | null;
+                tag?: string | null;
             };
             header?: never;
             path: {
@@ -5315,6 +5365,37 @@ export interface operations {
             };
         };
     };
+    media_tags_api_workspaces__workspace_id__media_tags_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     read_image_api_workspaces__workspace_id__media__media_id__get: {
         parameters: {
             query?: never;
@@ -5404,6 +5485,42 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MediaDetailsView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_media_tags_api_workspaces__workspace_id__media__media_id__tags_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                media_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MediaTagsBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaView"];
                 };
             };
             /** @description Validation Error */

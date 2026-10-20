@@ -13,6 +13,7 @@ import { imageView } from "../../editor/imageView.ts";
 import { editorStyles } from "../../editor/styles.ts";
 import { IMAGE_TYPES, mediaIdOf, mediaUrl, uploadImage } from "../../media.ts";
 import { useDiscardVersion, useSaveVersion, type VersionView } from "../../writing.ts";
+import { MediaPicker } from "../library/MediaPicker.tsx";
 import { errorText } from "../watch/labels.ts";
 import { styles } from "../watch/styles.ts";
 import { Ribbon } from "./Ribbon.tsx";
@@ -44,6 +45,7 @@ export function VersionEditor({
   onClose: () => void;
 }) {
   const { t } = useTranslation();
+  const [picking, setPicking] = useState(false);
   const [current, setCurrent] = useState(version);
   const [title, setTitle] = useState(version.title);
   const [dirty, setDirty] = useState(false);
@@ -221,10 +223,32 @@ export function VersionEditor({
               editor.chain().focus().insertContent({ type: "image", attrs: { media, alt } }).run();
             });
           }}
+          onLibrary={() => {
+            setPicking(true);
+          }}
           onClipboardRefused={() => {
             setClipboardRefused(true);
           }}
         />
+        {picking && (
+          <MediaPicker
+            workspaceId={workspaceId}
+            onClose={() => {
+              setPicking(false);
+              editor.commands.focus();
+            }}
+            onPick={(media) => {
+              setPicking(false);
+              // A reference to the image of the médiathèque, never a copy; its description
+              // prefills the alternative text, which then belongs to the article (ADR-0040).
+              editor
+                .chain()
+                .focus()
+                .insertContent({ type: "image", attrs: { media: media.id, alt: media.description ?? "" } })
+                .run();
+            }}
+          />
+        )}
       </div>
       {conflict && (
         <p role="alert" className={styles.error}>

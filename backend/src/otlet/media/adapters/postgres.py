@@ -12,9 +12,9 @@ from otlet.platform.rls import here
 
 COLUMNS = (
     "id, sha256, mime, width, height, size, created_at, name, description, origin, in_bank,"
-    " credit, licence, source_url, thumbnail_sha256"
+    " credit, licence, source_url, thumbnail_sha256, tags"
 )
-SEARCHED = "lower(concat_ws(' ', name, description, credit, licence))"
+SEARCHED = "lower(concat_ws(' ', name, description, credit, licence, array_to_string(tags, ' ')))"
 LISTED = 1000  # a médiathèque larger than this is searched, not scrolled
 
 
@@ -35,6 +35,7 @@ def _media(row: sa.Row[Any]) -> Media:
         licence=row.licence,
         source_url=row.source_url,
         thumbnail_sha256=row.thumbnail_sha256,
+        tags=tuple(row.tags),
     )
 
 
@@ -94,16 +95,18 @@ class PostgresMediaStore:
             ).scalars()
             return set(found)
 
-    def search(self, workspace_id: UUID, query: str) -> list[Media]:
-        """The images whose name, description, credit or licence hold `query`, newest first."""
+    def search(self, workspace_id: UUID, query: str, tag: str | None = None) -> list[Media]:
+        """The images whose name, description, credit, licence or tags hold `query`, newest
+        first; with `tag`, those that bear it."""
         with workspace_transaction(self._engine, workspace_id) as connection:
             rows = connection.execute(
                 sa.text(
                     f"SELECT {COLUMNS} FROM media WHERE {here()}"
                     f" AND (:query = '' OR strpos({SEARCHED}, lower(:query)) > 0)"
+                    " AND (CAST(:tag AS text) IS NULL OR :tag = ANY(tags))"
                     " ORDER BY created_at DESC, id LIMIT :limit"
                 ),
-                {"query": query, "limit": LISTED},
+                {"query": query, "tag": tag, "limit": LISTED},
             ).all()
         return [_media(row) for row in rows]
 
@@ -140,6 +143,25 @@ class PostgresMediaStore:
                 ).scalar_one_or_none()
                 is not None
             )
+
+    def set_tags(self, workspace_id: UUID, media_id: UUID, tags: tuple[str, ...]) -> Media | None:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            row = connection.execute(
+                sa.text(
+                    f"UPDATE media SET tags = :tags WHERE id = :id AND {here()} RETURNING {COLUMNS}"
+                ),
+                {"id": media_id, "tags": list(tags)},
+            ).one_or_none()
+        return None if row is None else _media(row)
+
+    def tags(self, workspace_id: UUID) -> list[str]:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            found = connection.execute(
+                sa.text(
+                    f"SELECT DISTINCT unnest(tags) AS tag FROM media WHERE {here()} ORDER BY tag"
+                )
+            ).scalars()
+            return list(found)
 
     def set_thumbnail(self, workspace_id: UUID, media_id: UUID, sha256: str) -> None:
         with workspace_transaction(self._engine, workspace_id) as connection:

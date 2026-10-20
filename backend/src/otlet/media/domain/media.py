@@ -25,11 +25,14 @@ DESCRIPTION_MAX = 500  # it prefills the alternative text of an image block, whi
 CREDIT_MAX = 300
 LICENCE_MAX = 100
 URL_MAX = 2000
+# Tags as on the articles (ADR-0037 §5): free, no folders.
+TAG_MAX = 40
+TAGS_MAX = 20
 
 
 class MediaError(ValueError):
     """An image refused, with a code the interface names: too_large, not_an_image,
-    invalid_name, too_long, invalid_url."""
+    too_long, invalid_url, invalid_tags."""
 
     def __init__(self, code: str) -> None:
         super().__init__(code)
@@ -64,6 +67,7 @@ class Media:
     licence: str | None = None
     source_url: str | None = None
     thumbnail_sha256: str | None = None
+    tags: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -124,3 +128,19 @@ def cleaned(description: Description) -> Description:
         licence=_text(description.licence, LICENCE_MAX),
         source_url=url,
     )
+
+
+def cleaned_tags(tags: list[str] | tuple[str, ...]) -> tuple[str, ...]:
+    """Tags as kept: spaces folded, no empty one, no duplicate (whatever the case), in order."""
+    kept: list[str] = []
+    for tag in tags:
+        tag = " ".join(tag.split())
+        if not tag:
+            continue
+        if len(tag) > TAG_MAX:
+            raise MediaError("invalid_tags")
+        if tag.casefold() not in {k.casefold() for k in kept}:
+            kept.append(tag)
+    if len(kept) > TAGS_MAX:
+        raise MediaError("invalid_tags")
+    return tuple(kept)

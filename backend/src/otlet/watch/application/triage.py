@@ -27,7 +27,10 @@ from otlet.watch.domain.triage import (
 )
 from otlet.workspaces.domain.model import WorkspaceContext
 
-BULK_MAX = 200  # items of one bulk action
+# « Tout sélectionner » takes every item of the filters, not only the page shown (Joël,
+# 2026-10-20): one bulk action takes as many.
+SELECTION_MAX = 5000
+BULK_MAX = SELECTION_MAX  # items of one bulk action
 FEED_MAX = 200
 
 
@@ -80,6 +83,21 @@ class TriageStore(Protocol):
         """The groups of the feed and how many items each shows with these filters."""
         ...
 
+    def ids(
+        self,
+        workspace_id: UUID,
+        user_id: UUID,
+        *,
+        view: View,
+        source_id: UUID | None,
+        unread_only: bool,
+        topics: TopicFilter = NO_TOPIC_FILTER,
+        period: Period = ANY_TIME,
+        limit: int,
+    ) -> list[UUID]:
+        """The ids of the items the feed shows with these filters, every page and group."""
+        ...
+
     def triage(self, workspace_id: UUID, user_id: UUID, item_id: UUID) -> Triage | None:
         """The triage of an item of the workspace (the default for one never sorted), or None
         when the item does not exist."""
@@ -101,6 +119,28 @@ class TriageStore(Protocol):
 class Feed:
     def __init__(self, store: TriageStore) -> None:
         self._store = store
+
+    def ids(
+        self,
+        context: WorkspaceContext,
+        *,
+        view: View = View.TO_SORT,
+        source_id: UUID | None = None,
+        unread_only: bool = False,
+        topics: TopicFilter = NO_TOPIC_FILTER,
+        period: Period = ANY_TIME,
+    ) -> list[UUID]:
+        """« Tout sélectionner »: the ids of every item of the filters, SELECTION_MAX at most."""
+        return self._store.ids(
+            context.workspace_id,
+            context.user_id,
+            view=view,
+            source_id=source_id,
+            unread_only=unread_only,
+            topics=topics,
+            period=period,
+            limit=SELECTION_MAX,
+        )
 
     def feed(
         self,

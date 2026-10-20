@@ -204,6 +204,32 @@ class PostgresTriageStore:
             ).all()
         return [FeedItem(item_from_row(row), triage_of(row), topic_tags_of(row)) for row in rows]
 
+    def ids(
+        self,
+        workspace_id: UUID,
+        user_id: UUID,
+        *,
+        view: View,
+        source_id: UUID | None,
+        unread_only: bool,
+        topics: TopicFilter = NO_TOPIC_FILTER,
+        period: Period = ANY_TIME,
+        limit: int,
+    ) -> list[UUID]:
+        order_by = ", ".join(f"{key} DESC" for key in order_keys(view, Sort.DATE))
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            found = connection.execute(
+                sa.text(
+                    f"SELECT i.id FROM {ITEMS_FROM}{TRIAGE_JOIN}{MAIN_TOPIC}"
+                    f" WHERE {_filters(view, None)} ORDER BY {order_by} LIMIT :limit"
+                ),
+                {
+                    **_parameters(user_id, source_id, unread_only, topics, period, None),
+                    "limit": limit,
+                },
+            ).scalars()
+            return list(found)
+
     def groups(
         self,
         workspace_id: UUID,

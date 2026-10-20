@@ -246,6 +246,11 @@ def test_a_change_applies_to_several_items_at_once(setup: Setup) -> None:
     assert titles(feed, context) == ["Article 0", "Article 1", "Article 2"]
     other = context_for(setup.engine, "bob@example.org")
     assert feed.change_many(other, ids, Change(pinned=True)) == 0
+    # « Tout sélectionner » takes every item of the filters, not one page (Joël, 2026-10-20).
+    assert set(feed.ids(context, view=View.ALL)) == set(ids)
+    feed.change_many(context, [ids[2]], Change(decision=Decision.KEPT))
+    assert set(feed.ids(context)) == {ids[0], ids[1]}
+    assert feed.ids(other, view=View.ALL) == []
 
 
 def test_an_archived_item_leaves_the_current_views(setup: Setup) -> None:

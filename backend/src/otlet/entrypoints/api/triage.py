@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 from otlet.entrypoints.api.auth import same_origin
 from otlet.entrypoints.api.collection import ItemView
 from otlet.entrypoints.api.workspaces import PREFIX
-from otlet.watch.application.triage import Change, Feed
+from otlet.watch.application.triage import SELECTION_MAX, Change, Feed
 from otlet.watch.domain.triage import (
     Decision,
     Group,
@@ -80,7 +80,7 @@ class TriageChange(BaseModel):
 class BulkTriage(BaseModel):
     """One action of the feed for several items: keep, dismiss, archive, pin, or back to sort."""
 
-    item_ids: list[UUID] = Field(min_length=1, max_length=200)
+    item_ids: list[UUID] = Field(min_length=1, max_length=SELECTION_MAX)
     action: Literal["keep", "dismiss", "archive", "pin", "to_sort"]
 
 
@@ -157,6 +157,28 @@ def build_router(feed: Feed, workspace_context: Callable[..., WorkspaceContext])
             )
             for f in items
         ]
+
+    @router.get("/feed/ids")
+    def feed_ids(
+        context: Context,
+        view: View = View.TO_SORT,
+        source_id: UUID | None = None,
+        unread: bool = False,
+        topic_id: Annotated[list[UUID], Query(max_length=100)] = [],  # noqa: B006 (FastAPI copies it)
+        all_topics: bool = False,
+        since: datetime | None = None,
+        until: datetime | None = None,
+    ) -> list[UUID]:
+        """« Tout sélectionner »: the ids of every item the feed shows with these filters, over
+        all its pages and groups (5000 at most)."""
+        return feed.ids(
+            context,
+            view=view,
+            source_id=source_id,
+            unread_only=unread,
+            topics=TopicFilter(tuple(topic_id), all_topics),
+            period=period_of(since, until),
+        )
 
     @router.get("/feed/groups")
     def feed_groups(

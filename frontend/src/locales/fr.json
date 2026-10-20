@@ -373,7 +373,9 @@
         "dismiss": "{count, plural, one {# élément écarté.} other {# éléments écartés.}}",
         "to_sort": "{count, plural, one {# élément remis à trier.} other {# éléments remis à trier.}}"
       },
-      "brief": "Créer un brief"
+      "brief": "Créer un brief",
+      "gathering": "Sélection de tous les éléments…",
+      "briefMax": "Un brief prend {max} éléments au plus."
     },
     "period": {
       "label": "Période",

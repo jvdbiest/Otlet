@@ -10,6 +10,7 @@ import { useWorkspaceId } from "../../session.ts";
 import {
   ANY_TIME,
   FEED_PAGE_SIZE,
+  feedIds,
   feedQuery,
   groupsQuery,
   type FeedFilter,
@@ -146,7 +147,13 @@ function Items({ workspaceId }: { workspaceId: string }) {
           reset();
         }}
       />
-      <BulkBar workspaceId={workspaceId} visible={visible} selected={selected} onSelect={setSelected} />
+      <BulkBar
+        workspaceId={workspaceId}
+        visible={visible}
+        selected={selected}
+        onSelect={setSelected}
+        everything={query === "" ? () => feedIds(workspaceId, filter) : undefined}
+      />
       {query !== "" ? (
         <SearchResults
           workspaceId={workspaceId}

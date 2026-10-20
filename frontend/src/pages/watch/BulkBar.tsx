@@ -6,30 +6,42 @@ import { type BulkAction, useBulkTriage } from "../../triage.ts";
 import { styles } from "./styles.ts";
 
 const ACTIONS: readonly BulkAction[] = ["keep", "pin", "archive", "dismiss", "to_sort"];
+const BRIEF_MAX = 20; // the items of one brief
 
-/** Selection of the shown items, and the actions that apply to all of them at once (I1). */
+/** Selection of the items, and the actions that apply to all of them at once (I1). « Tout
+ * sélectionner » takes every item of the filters, over all pages, when `everything` gives them
+ * (Joël, 2026-10-20); otherwise the items shown (a search). */
 export function BulkBar({
   workspaceId,
   visible,
   selected,
   onSelect,
+  everything,
 }: {
   workspaceId: string;
   visible: string[];
   selected: string[];
   onSelect: (ids: string[]) => void;
+  everything?: (() => Promise<string[]>) | undefined;
 }) {
   const { t } = useTranslation();
   const triage = useBulkTriage(workspaceId);
   const [done, setDone] = useState<string | null>(null);
+  const [total, setTotal] = useState<number | null>(null);
+  const [gathering, setGathering] = useState(false);
+  const [failed, setFailed] = useState(false);
   const all = useRef<HTMLInputElement>(null);
-  const shown = selected.filter((id) => visible.includes(id));
-  const allSelected = visible.length > 0 && shown.length === visible.length;
+  // Without `everything`, the selection is that of the items shown.
+  const chosen = everything === undefined ? selected.filter((id) => visible.includes(id)) : selected;
+  const allSelected =
+    everything === undefined
+      ? visible.length > 0 && chosen.length === visible.length
+      : total !== null && chosen.length >= total && total > 0;
   useEffect(() => {
     if (all.current !== null) {
-      all.current.indeterminate = shown.length > 0 && !allSelected;
+      all.current.indeterminate = chosen.length > 0 && !allSelected;
     }
-  }, [shown.length, allSelected]);
+  }, [chosen.length, allSelected]);
   if (visible.length === 0) {
     // An action may empty the list: its result stays readable.
     return done === null ? null : (
@@ -38,9 +50,10 @@ export function BulkBar({
       </p>
     );
   }
-  const busy = triage.isPending;
+  const busy = triage.isPending || gathering;
   const finish = (message: string) => {
     setDone(message);
+    setTotal(null);
     onSelect([]);
   };
   return (
@@ -50,21 +63,49 @@ export function BulkBar({
           ref={all}
           type="checkbox"
           checked={allSelected}
+          disabled={gathering}
           onChange={(event) => {
-            onSelect(event.target.checked ? visible : []);
             setDone(null);
+            setFailed(false);
+            if (!event.target.checked) {
+              setTotal(null);
+              onSelect([]);
+            } else if (everything === undefined) {
+              onSelect(visible);
+            } else {
+              setGathering(true);
+              everything()
+                .then((ids) => {
+                  setTotal(ids.length);
+                  onSelect(ids);
+                })
+                .catch(() => {
+                  setFailed(true);
+                })
+                .finally(() => {
+                  setGathering(false);
+                });
+            }
           }}
         />{" "}
         {t("triage.bulk.all")}
       </label>
       <span className={styles.meta} aria-live="polite">
-        {shown.length > 0 ? t("triage.bulk.selected", { count: shown.length }) : done}
+        {gathering
+          ? t("triage.bulk.gathering")
+          : chosen.length > 0
+            ? t("triage.bulk.selected", { count: chosen.length })
+            : done}
       </span>
-      {shown.length > 0 && (
+      {chosen.length > 0 && (
         <div className={styles.row}>
-          <Link to="/redaction/nouveau" search={{ items: shown.join(",") }} className={styles.primary}>
-            {t("triage.bulk.brief")}
-          </Link>
+          {chosen.length <= BRIEF_MAX ? (
+            <Link to="/redaction/nouveau" search={{ items: chosen.join(",") }} className={styles.primary}>
+              {t("triage.bulk.brief")}
+            </Link>
+          ) : (
+            <span className={styles.meta}>{t("triage.bulk.briefMax", { max: BRIEF_MAX })}</span>
+          )}
           {ACTIONS.map((action) => (
             <button
               key={action}
@@ -73,7 +114,7 @@ export function BulkBar({
               disabled={busy}
               onClick={() => {
                 triage.mutate(
-                  { itemIds: shown, action },
+                  { itemIds: chosen, action },
                   {
                     onSuccess: (count) => {
                       finish(t(`triage.bulk.done.${action}`, { count }));
@@ -87,7 +128,7 @@ export function BulkBar({
           ))}
         </div>
       )}
-      {triage.error !== null && (
+      {(triage.error !== null || failed) && (
         <span role="alert" className={styles.error}>
           {t("errors.generic")}
         </span>

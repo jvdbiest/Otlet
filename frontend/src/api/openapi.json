@@ -551,7 +551,7 @@
               "format": "uuid",
               "type": "string"
             },
-            "maxItems": 200,
+            "maxItems": 5000,
             "minItems": 1,
             "title": "Item Ids",
             "type": "array"
@@ -6259,6 +6259,147 @@
           }
         },
         "summary": "Feed Groups"
+      }
+    },
+    "/api/workspaces/{workspace_id}/feed/ids": {
+      "get": {
+        "description": "« Tout sélectionner »: the ids of every item the feed shows with these filters, over\nall its pages and groups (5000 at most).",
+        "operationId": "feed_ids_api_workspaces__workspace_id__feed_ids_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "view",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/View",
+              "default": "to_sort"
+            }
+          },
+          {
+            "in": "query",
+            "name": "source_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "unread",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Unread",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "topic_id",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "maxItems": 100,
+              "title": "Topic Id",
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "all_topics",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "All Topics",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Since"
+            }
+          },
+          {
+            "in": "query",
+            "name": "until",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Until"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "format": "uuid",
+                    "type": "string"
+                  },
+                  "title": "Response Feed Ids Api Workspaces  Workspace Id  Feed Ids Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Feed Ids"
       }
     },
     "/api/workspaces/{workspace_id}/generations/{generation_id}": {

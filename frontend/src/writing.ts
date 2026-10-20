@@ -296,6 +296,42 @@ export const articleQuery = (workspaceId: string, articleId: string) =>
   });
 
 /** « Envoyer en Bibliothèque », or « Valider » a later version. */
+/** An article written by hand, without a brief: in the Library at once (Joël, 2026-10-20). */
+export function useCreateArticle(workspaceId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (title: string) => {
+      const { data, error, response } = await api.POST("/api/workspaces/{workspace_id}/articles", {
+        params: { path: { workspace_id: workspaceId } },
+        body: { title },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
+  });
+}
+
+/** « Dupliquer »: a new article, without a brief, from a copy of a version. */
+export function useDuplicateArticle(workspaceId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ articleId, number }: { articleId: string; number: number }) => {
+      const { data, error, response } = await api.POST(
+        "/api/workspaces/{workspace_id}/articles/{article_id}/duplicate",
+        { params: { path: { workspace_id: workspaceId, article_id: articleId } }, body: { number } },
+      );
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
+  });
+}
+
 export function useSendArticle(workspaceId: string) {
   const queryClient = useQueryClient();
   return useMutation({

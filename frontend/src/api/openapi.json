@@ -1693,6 +1693,21 @@
         "title": "ModelView",
         "type": "object"
       },
+      "NewArticleBody": {
+        "properties": {
+          "title": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "title": "NewArticleBody",
+        "type": "object"
+      },
       "NewLimit": {
         "properties": {
           "monthly_limit": {
@@ -4234,6 +4249,57 @@
         "summary": "Get Workspace"
       }
     },
+    "/api/workspaces/{workspace_id}/articles": {
+      "post": {
+        "description": "An article written by hand, without a brief: in the Library at once, as a draft.",
+        "operationId": "create_article_api_workspaces__workspace_id__articles_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewArticleBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Article"
+      }
+    },
     "/api/workspaces/{workspace_id}/articles/{article_id}": {
       "get": {
         "operationId": "get_article_api_workspaces__workspace_id__articles__article_id__get",
@@ -4342,6 +4408,67 @@
           }
         },
         "summary": "Archive Article"
+      }
+    },
+    "/api/workspaces/{workspace_id}/articles/{article_id}/duplicate": {
+      "post": {
+        "description": "« Dupliquer »: a new article, without a brief, from a copy of the version given.",
+        "operationId": "duplicate_article_api_workspaces__workspace_id__articles__article_id__duplicate_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Article Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Duplicate Article"
       }
     },
     "/api/workspaces/{workspace_id}/articles/{article_id}/send": {

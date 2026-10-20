@@ -1,10 +1,17 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { workspacesQuery } from "../../session.ts";
-import { articleQuery, useArchiveArticle, useSendArticle, useSetTags, type ArticleView } from "../../writing.ts";
+import {
+  articleQuery,
+  useArchiveArticle,
+  useDuplicateArticle,
+  useSendArticle,
+  useSetTags,
+  type ArticleView,
+} from "../../writing.ts";
 import { errorText, formatDate } from "../watch/labels.ts";
 import { styles } from "../watch/styles.ts";
 import { ArticleVersions } from "../writing/ArticleVersions.tsx";
@@ -53,6 +60,8 @@ export function ArticlePage({ articleId }: { articleId: string }) {
   const article = useQuery({ ...articleQuery(workspaceId, articleId), enabled: workspaceId !== "" });
   const send = useSendArticle(workspaceId);
   const archive = useArchiveArticle(workspaceId);
+  const duplicate = useDuplicateArticle(workspaceId);
+  const navigate = useNavigate();
   const [chosen, setChosen] = useState<number | null>(null);
   if (article.error !== null) {
     return <p role="alert">{errorText(t, article.error)}</p>;
@@ -127,22 +136,42 @@ export function ArticlePage({ articleId }: { articleId: string }) {
           article={data}
           chosen={chosen ?? data.validated_version}
           onChoose={setChosen}
-          actions={(shown) =>
-            shown.number !== data.validated_version ? (
+          actions={(shown) => (
+            <>
+              {shown.number !== data.validated_version ? (
+                <button
+                  type="button"
+                  className={styles.button}
+                  disabled={send.isPending}
+                  onClick={() => {
+                    send.mutate({ articleId: data.id, number: shown.number });
+                  }}
+                >
+                  {t("library.validateThis", { number: shown.number })}
+                </button>
+              ) : (
+                <span className={styles.meta}>{t("library.isValidated")}</span>
+              )}
               <button
                 type="button"
                 className={styles.button}
-                disabled={send.isPending}
+                disabled={duplicate.isPending}
                 onClick={() => {
-                  send.mutate({ articleId: data.id, number: shown.number });
+                  duplicate.mutate(
+                    { articleId: data.id, number: shown.number },
+                    {
+                      onSuccess: (made) => {
+                        setChosen(null);
+                        void navigate({ to: "/bibliotheque/articles/$articleId", params: { articleId: made.id } });
+                      },
+                    },
+                  );
                 }}
               >
-                {t("library.validateThis", { number: shown.number })}
+                {t("library.duplicate", { number: shown.number })}
               </button>
-            ) : (
-              <span className={styles.meta}>{t("library.isValidated")}</span>
-            )
-          }
+            </>
+          )}
         />
       </section>
     </section>

@@ -1,15 +1,64 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { workspacesQuery } from "../../session.ts";
-import { libraryQuery, libraryTagsQuery,
-  libraryTopicsQuery, type LibraryEntryView } from "../../writing.ts";
-import { formatDate } from "../watch/labels.ts";
+import {
+  libraryQuery,
+  libraryTagsQuery,
+  libraryTopicsQuery,
+  useCreateArticle,
+  type LibraryEntryView,
+} from "../../writing.ts";
+import { errorText, formatDate } from "../watch/labels.ts";
 import { styles } from "../watch/styles.ts";
 
 type Grouping = "none" | "date";
+
+/** « Nouvel article »: written by hand, without a brief, in the Library at once (Joël,
+ * 2026-10-20); its page opens on the editor's empty page. */
+function NewArticle({ workspaceId }: { workspaceId: string }) {
+  const { t } = useTranslation();
+  const create = useCreateArticle(workspaceId);
+  const navigate = useNavigate();
+  const [title, setTitle] = useState("");
+  return (
+    <details className={styles.panel}>
+      <summary>{t("library.new")}</summary>
+      <form
+        className={styles.row}
+        onSubmit={(event) => {
+          event.preventDefault();
+          create.mutate(title, {
+            onSuccess: (made) => {
+              void navigate({ to: "/bibliotheque/articles/$articleId", params: { articleId: made.id } });
+            },
+          });
+        }}
+      >
+        <label htmlFor="library-new-title">{t("library.newTitle")}</label>
+        <input
+          id="library-new-title"
+          required
+          maxLength={200}
+          value={title}
+          onChange={(event) => {
+            setTitle(event.target.value);
+          }}
+        />
+        <button type="submit" className={styles.primary} disabled={create.isPending || title.trim() === ""}>
+          {t("library.create")}
+        </button>
+        {create.error !== null && (
+          <span role="alert" className={styles.error}>
+            {errorText(t, create.error)}
+          </span>
+        )}
+      </form>
+    </details>
+  );
+}
 
 const DAY = 864e5;
 const MONTH = new Intl.DateTimeFormat("fr-BE", { month: "long", year: "numeric" });
@@ -108,6 +157,7 @@ export function LibraryPage() {
   return (
     <section>
       <h1>{t("library.title")}</h1>
+      <NewArticle workspaceId={workspaceId} />
       <p className={styles.help}>{t("library.help")}</p>
       <form
         className={styles.filter}

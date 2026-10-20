@@ -507,6 +507,50 @@ class PostgresArticleStore:
             _touch(connection, article_id, title)
         return _version(row)
 
+    def create_article(
+        self,
+        workspace_id: UUID,
+        user_id: UUID,
+        title: str,
+        document: dict[str, Any],
+        tags: Sequence[str] = (),
+    ) -> UUID:
+        """An article without a brief, in the Library at once (Joël, 2026-10-20): written by a
+        person, or a copy of another; its first version is theirs."""
+        article_id = uuid4()
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            connection.execute(
+                sa.text(
+                    "INSERT INTO articles (id, workspace_id, brief_id, created_by, title, status,"
+                    " sent_at, tags) VALUES (:id, :workspace, NULL, :user, :title, 'brouillon',"
+                    " now(), :tags)"
+                ),
+                {
+                    "id": article_id,
+                    "workspace": workspace_id,
+                    "user": user_id,
+                    "title": title,
+                    "tags": list(tags),
+                },
+            )
+            connection.execute(
+                sa.text(
+                    "INSERT INTO article_versions (workspace_id, article_id, number, title,"
+                    " document, origin, created_by, body_text)"
+                    " VALUES (:workspace, :article, 1, :title, CAST(:document AS jsonb), 'humain',"
+                    " :user, :body)"
+                ),
+                {
+                    "workspace": workspace_id,
+                    "article": article_id,
+                    "title": title,
+                    "document": json.dumps(document),
+                    "user": user_id,
+                    "body": body_text(document),
+                },
+            )
+        return article_id
+
     def discard_untouched(self, workspace_id: UUID, article_id: UUID, number: int) -> bool:
         with workspace_transaction(self._engine, workspace_id) as connection:
             removed = connection.execute(

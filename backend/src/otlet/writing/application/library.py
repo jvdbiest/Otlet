@@ -4,7 +4,7 @@
 article, several versions."""
 
 from collections.abc import Sequence
-from typing import Protocol
+from typing import Any, Protocol
 from uuid import UUID
 
 from otlet.workspaces.domain.model import WorkspaceContext
@@ -24,6 +24,15 @@ class LibraryStore(Protocol):
 
     def archive(self, workspace_id: UUID, article_id: UUID, archived: bool) -> bool: ...
 
+    def create_article(
+        self,
+        workspace_id: UUID,
+        user_id: UUID,
+        title: str,
+        document: dict[str, Any],
+        tags: Sequence[str] = (),
+    ) -> UUID: ...
+
     def set_tags(self, workspace_id: UUID, article_id: UUID, tags: Sequence[str]) -> bool: ...
 
     def library(
@@ -42,6 +51,13 @@ class LibraryStore(Protocol):
 
 class TagError(ValueError):
     pass
+
+
+class TitleError(ValueError):
+    pass
+
+
+TITLE_MAX = 200
 
 
 def clean_tags(tags: Sequence[str]) -> list[str]:
@@ -73,6 +89,41 @@ class Library:
         if not self._store.send(context.workspace_id, article_id, number):
             return None
         return self._store.article(context.workspace_id, article_id)
+
+    def create(self, context: WorkspaceContext, title: str) -> Article:
+        """An article written by hand, without a brief (Joël, 2026-10-20): in the Library at
+        once, as a draft, its first version an empty page."""
+        title = " ".join(title.split())
+        if not 1 <= len(title) <= TITLE_MAX:
+            raise TitleError(f"a title has 1 to {TITLE_MAX} characters")
+        document = {
+            "type": "doc",
+            "attrs": {"version_schema": 1, "langue": "fr", "sources": []},
+            "content": [{"type": "paragraph", "attrs": {"id": "b1", "origine": "humain"}}],
+        }
+        made = self._store.create_article(context.workspace_id, context.user_id, title, document)
+        article = self._store.article(context.workspace_id, made)
+        if article is None:  # just written, in the same workspace
+            raise RuntimeError("the article just written is missing")
+        return article
+
+    def duplicate(self, context: WorkspaceContext, article_id: UUID, number: int) -> Article | None:
+        """« Dupliquer » (Joël, 2026-10-20): a new article, without a brief, whose first version
+        is a copy of the version given, with its sources and images; its tags follow. None when
+        the article or the version does not exist."""
+        source = self._store.article(context.workspace_id, article_id)
+        version = (
+            None
+            if source is None
+            else next((v for v in source.versions if v.number == number), None)
+        )
+        if source is None or version is None:
+            return None
+        title = f"Copie de {version.title}"[:TITLE_MAX]
+        made = self._store.create_article(
+            context.workspace_id, context.user_id, title, version.document, source.tags
+        )
+        return self._store.article(context.workspace_id, made)
 
     def archive(
         self, context: WorkspaceContext, article_id: UUID, archived: bool

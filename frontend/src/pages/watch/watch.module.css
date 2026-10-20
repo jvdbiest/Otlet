@@ -394,6 +394,12 @@ a.primary {
   border-radius: 999px;
 }
 
+/* A chip without its remove button (a topic of an article): the text centred in it. */
+.chip:not(:has(button)) {
+  padding: var(--space-1) var(--space-3);
+  line-height: 1.2;
+}
+
 .chip button {
   font: inherit;
   border: none;

@@ -16,7 +16,7 @@ from otlet.writing.application.briefs import Briefs
 from otlet.writing.application.drafts import Drafts, MatterError
 from otlet.writing.application.editing import Editing
 from otlet.writing.application.exports import Exports
-from otlet.writing.application.library import Library, TagError
+from otlet.writing.application.library import Library, TagError, TitleError
 from otlet.writing.domain.article import Article, Generation, LibraryEntry, Version
 from otlet.writing.domain.brief import (
     ITEMS_MAX,
@@ -311,6 +311,10 @@ class TopicRefView(BaseModel):
     name: str
 
 
+class NewArticleBody(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+
+
 class SendBody(BaseModel):
     number: int  # the version validated
 
@@ -526,6 +530,22 @@ def build_router(
         article = library.article(context, article_id)
         if article is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "article_not_found")
+        return ArticleView.of(article)
+
+    @router.post("/articles", status_code=status.HTTP_201_CREATED)
+    def create_article(body: NewArticleBody, context: Context) -> ArticleView:
+        """An article written by hand, without a brief: in the Library at once, as a draft."""
+        try:
+            return ArticleView.of(library.create(context, body.title))
+        except TitleError as error:
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "invalid_title") from error
+
+    @router.post("/articles/{article_id}/duplicate", status_code=status.HTTP_201_CREATED)
+    def duplicate_article(article_id: UUID, body: SendBody, context: Context) -> ArticleView:
+        """« Dupliquer »: a new article, without a brief, from a copy of the version given."""
+        article = library.duplicate(context, article_id, body.number)
+        if article is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "version_not_found")
         return ArticleView.of(article)
 
     @router.post("/articles/{article_id}/send")

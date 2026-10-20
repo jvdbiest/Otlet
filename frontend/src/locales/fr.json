@@ -841,7 +841,11 @@
     "forked": "Vous avez retouché la version validée V{from} : vos modifications sont dans la nouvelle version V{to}. Laquelle doit partir en export et en publication ? L'autre reste dans l'historique.",
     "keepValidated": "Garder V{number} validée",
     "topic": "Sujet",
-    "allTopics": "Tous les sujets"
+    "allTopics": "Tous les sujets",
+    "new": "Nouvel article",
+    "newTitle": "Titre",
+    "create": "Créer l'article",
+    "duplicate": "Dupliquer la version {number}"
   },
   "compare": {
     "button": "Comparer",

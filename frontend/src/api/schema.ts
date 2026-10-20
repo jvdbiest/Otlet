@@ -396,6 +396,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/articles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Article
+         * @description An article written by hand, without a brief: in the Library at once, as a draft.
+         */
+        post: operations["create_article_api_workspaces__workspace_id__articles_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/articles/{article_id}": {
         parameters: {
             query?: never;
@@ -424,6 +444,26 @@ export interface paths {
         put?: never;
         /** Archive Article */
         post: operations["archive_article_api_workspaces__workspace_id__articles__article_id__archive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/articles/{article_id}/duplicate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Duplicate Article
+         * @description « Dupliquer »: a new article, without a brief, from a copy of the version given.
+         */
+        post: operations["duplicate_article_api_workspaces__workspace_id__articles__article_id__duplicate_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1917,6 +1957,11 @@ export interface components {
              */
             status: "tested" | "untested" | "blocked";
         };
+        /** NewArticleBody */
+        NewArticleBody: {
+            /** Title */
+            title: string;
+        };
         /** NewLimit */
         NewLimit: {
             /** Monthly Limit */
@@ -3327,6 +3372,41 @@ export interface operations {
             };
         };
     };
+    create_article_api_workspaces__workspace_id__articles_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewArticleBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_article_api_workspaces__workspace_id__articles__article_id__get: {
         parameters: {
             query?: never;
@@ -3377,6 +3457,42 @@ export interface operations {
         responses: {
             /** @description Successful Response */
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    duplicate_article_api_workspaces__workspace_id__articles__article_id__duplicate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };

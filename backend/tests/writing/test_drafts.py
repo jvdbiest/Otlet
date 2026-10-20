@@ -46,10 +46,11 @@ from otlet.writing.application.briefs import Briefs
 from otlet.writing.application.charter import Charter, CharterError, Charters
 from otlet.writing.application.drafts import GENERATE_DRAFT, Drafts, MatterError
 from otlet.writing.application.editing import Editing
-from otlet.writing.application.library import Library, TagError, clean_tags
+from otlet.writing.application.library import Library, TagError, TitleError, clean_tags
 from otlet.writing.domain.article import Version
 from otlet.writing.domain.brief import BriefFields, Length
 from otlet.writing.domain.charter import DEFAULT_CHARTER
+from otlet.writing.domain.document import check
 
 pytestmark = requires_database
 
@@ -537,6 +538,21 @@ def test_the_library_holds_the_articles_sent_to_it(world: World) -> None:
     assert len(library.entries(context, status="archive")) == 1
     restored = library.archive(context, article.id, False)
     assert restored is not None and restored.status == "valide"
+    # Duplicated (Joël, 2026-10-20): a new article without a brief, a copy of the version,
+    # its tags with it, in the Library as a draft.
+    copy = library.duplicate(context, article.id, article.versions[0].number)
+    assert copy is not None and copy.id != article.id and copy.brief_id is None
+    assert copy.title.startswith("Copie de ") and copy.tags == ("Formule 1", "Pilotes")
+    assert copy.versions[0].document == article.versions[0].document
+    assert copy.versions[0].origin == "humain" and copy.status == "brouillon"
+    assert library.duplicate(context, article.id, 999) is None
+    # Written by hand, without a brief: an empty page, in the Library at once.
+    blank = library.create(context, "  Mon billet  ")
+    assert (blank.title, blank.brief_id, blank.status) == ("Mon billet", None, "brouillon")
+    assert check(blank.versions[0].document, set()) == []
+    with pytest.raises(TitleError):
+        library.create(context, "   ")
+    assert {e.title for e in library.entries(context)} >= {"Mon billet", copy.title}
     # The validated version never changes: saving it adds a version, which goes once validated.
     model = restored.versions[0]
     edited = Editing(world.articles).save(

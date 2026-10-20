@@ -551,6 +551,28 @@ class PostgresArticleStore:
             )
         return article_id
 
+    def delete_archived(self, workspace_id: UUID, article_id: UUID) -> bool:
+        """Deletes an archived article and its versions for good (Joël, 2026-10-20: archived
+        first, deleted after). Its brief stays; its generations forget it."""
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            deleted = connection.execute(
+                sa.text(
+                    "DELETE FROM articles WHERE id = :id AND status = 'archive'"
+                    f" AND {here()} RETURNING id"
+                ),
+                {"id": article_id},
+            ).scalar_one_or_none()
+            if deleted is None:
+                return False
+            connection.execute(
+                sa.text(
+                    "UPDATE article_generations SET article_id = NULL"
+                    f" WHERE article_id = :id AND {here()}"
+                ),
+                {"id": article_id},
+            )
+            return True
+
     def discard_untouched(self, workspace_id: UUID, article_id: UUID, number: int) -> bool:
         with workspace_transaction(self._engine, workspace_id) as connection:
             removed = connection.execute(

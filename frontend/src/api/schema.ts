@@ -990,6 +990,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/library/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Archive Selection
+         * @description Archives (or brings back) the articles chosen.
+         */
+        post: operations["archive_selection_api_workspaces__workspace_id__library_archive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/library/delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Delete Selection
+         * @description Deletes the articles chosen for good: archived ones only (archive first).
+         */
+        post: operations["delete_selection_api_workspaces__workspace_id__library_delete_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/library/duplicate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Duplicate Selection
+         * @description A copy of each article chosen, from its validated version, else its latest.
+         */
+        post: operations["duplicate_selection_api_workspaces__workspace_id__library_duplicate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/library/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Export Selection
+         * @description The articles chosen in one ZIP, a file each: the validated version, else the latest.
+         */
+        post: operations["export_selection_api_workspaces__workspace_id__library_export_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/library/tags": {
         parameters: {
             query?: never;
@@ -1335,6 +1415,13 @@ export interface components {
         ArchiveBody: {
             /** Archived */
             archived: boolean;
+        };
+        /** ArchiveSelectionBody */
+        ArchiveSelectionBody: {
+            /** Archived */
+            archived: boolean;
+            /** Article Ids */
+            article_ids: string[];
         };
         /** ArticleView */
         ArticleView: {
@@ -1694,6 +1781,29 @@ export interface components {
             /** Url */
             url: string | null;
         };
+        /** ExportSelectionBody */
+        ExportSelectionBody: {
+            /** Article Ids */
+            article_ids: string[];
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "pdf" | "docx" | "html" | "md" | "txt";
+        };
+        /** FailedView */
+        FailedView: {
+            /**
+             * Article Id
+             * Format: uuid
+             */
+            article_id: string;
+            /**
+             * Reason
+             * @enum {string}
+             */
+            reason: "article_not_found" | "not_archived";
+        };
         /** FeedItemView */
         FeedItemView: {
             item: components["schemas"]["ItemView"];
@@ -2000,6 +2110,13 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** OutcomeView */
+        OutcomeView: {
+            /** Done */
+            done: string[];
+            /** Failed */
+            failed: components["schemas"]["FailedView"][];
+        };
         /** Password */
         Password: {
             /** Password */
@@ -2212,6 +2329,14 @@ export interface components {
             /** Score */
             score: number;
             triage: components["schemas"]["TriageView"];
+        };
+        /**
+         * SelectionBody
+         * @description The articles chosen in the Library (Joël, 2026-10-20).
+         */
+        SelectionBody: {
+            /** Article Ids */
+            article_ids: string[];
         };
         /** SendBody */
         SendBody: {
@@ -4613,6 +4738,146 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LibraryEntryView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    archive_selection_api_workspaces__workspace_id__library_archive_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ArchiveSelectionBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OutcomeView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_selection_api_workspaces__workspace_id__library_delete_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SelectionBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OutcomeView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    duplicate_selection_api_workspaces__workspace_id__library_duplicate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SelectionBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OutcomeView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_selection_api_workspaces__workspace_id__library_export_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExportSelectionBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/zip": unknown;
                 };
             };
             /** @description Validation Error */

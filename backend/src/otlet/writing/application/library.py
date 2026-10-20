@@ -4,6 +4,7 @@
 article, several versions."""
 
 from collections.abc import Sequence
+from dataclasses import dataclass
 from typing import Any, Protocol
 from uuid import UUID
 
@@ -33,6 +34,8 @@ class LibraryStore(Protocol):
         tags: Sequence[str] = (),
     ) -> UUID: ...
 
+    def delete_archived(self, workspace_id: UUID, article_id: UUID) -> bool: ...
+
     def set_tags(self, workspace_id: UUID, article_id: UUID, tags: Sequence[str]) -> bool: ...
 
     def library(
@@ -55,6 +58,14 @@ class TagError(ValueError):
 
 class TitleError(ValueError):
     pass
+
+
+@dataclass(frozen=True, slots=True)
+class Outcome:
+    """What an action on a selection did: the articles done, those failed and why."""
+
+    done: tuple[UUID, ...]
+    failed: tuple[tuple[UUID, str], ...]
 
 
 TITLE_MAX = 200
@@ -89,6 +100,51 @@ class Library:
         if not self._store.send(context.workspace_id, article_id, number):
             return None
         return self._store.article(context.workspace_id, article_id)
+
+    # The selection of the Library (Joël, 2026-10-20): each action takes the articles chosen,
+    # does what it can, and says what it could not and why.
+
+    def shown_version(self, context: WorkspaceContext, article_id: UUID) -> int | None:
+        """The version an action takes: the validated one, else the latest (a draft)."""
+        article = self._store.article(context.workspace_id, article_id)
+        if article is None or not article.versions:
+            return None
+        return article.validated_version or article.versions[-1].number
+
+    def archive_many(
+        self, context: WorkspaceContext, article_ids: Sequence[UUID], archived: bool
+    ) -> Outcome:
+        done, failed = [], []
+        for article_id in dict.fromkeys(article_ids):
+            if self._store.archive(context.workspace_id, article_id, archived):
+                done.append(article_id)
+            else:
+                failed.append((article_id, "article_not_found"))
+        return Outcome(tuple(done), tuple(failed))
+
+    def delete_many(self, context: WorkspaceContext, article_ids: Sequence[UUID]) -> Outcome:
+        """Deletes for good, the archived articles only (archive first, delete after)."""
+        done, failed = [], []
+        for article_id in dict.fromkeys(article_ids):
+            if self._store.delete_archived(context.workspace_id, article_id):
+                done.append(article_id)
+            elif self._store.article(context.workspace_id, article_id) is None:
+                failed.append((article_id, "article_not_found"))
+            else:
+                failed.append((article_id, "not_archived"))
+        return Outcome(tuple(done), tuple(failed))
+
+    def duplicate_many(self, context: WorkspaceContext, article_ids: Sequence[UUID]) -> Outcome:
+        """A copy of each, from its validated version, else its latest; `done` names the copies."""
+        done, failed = [], []
+        for article_id in dict.fromkeys(article_ids):
+            number = self.shown_version(context, article_id)
+            copy = None if number is None else self.duplicate(context, article_id, number)
+            if copy is None:
+                failed.append((article_id, "article_not_found"))
+            else:
+                done.append(copy.id)
+        return Outcome(tuple(done), tuple(failed))
 
     def create(self, context: WorkspaceContext, title: str) -> Article:
         """An article written by hand, without a brief (Joël, 2026-10-20): in the Library at

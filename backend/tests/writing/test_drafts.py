@@ -553,6 +553,23 @@ def test_the_library_holds_the_articles_sent_to_it(world: World) -> None:
     with pytest.raises(TitleError):
         library.create(context, "   ")
     assert {e.title for e in library.entries(context)} >= {"Mon billet", copy.title}
+    # A selection (Joël, 2026-10-20): deleted for good only once archived.
+    missing = uuid.uuid4()
+    refused = library.delete_many(context, [blank.id, missing])
+    assert refused.done == () and set(refused.failed) == {
+        (blank.id, "not_archived"),
+        (missing, "article_not_found"),
+    }
+    assert library.archive_many(context, [blank.id, copy.id, blank.id], True).done == (
+        blank.id,
+        copy.id,
+    )
+    assert library.delete_many(context, [blank.id]).done == (blank.id,)
+    assert library.article(context, blank.id) is None
+    assert library.archive_many(context, [copy.id], False).failed == ()
+    assert library.shown_version(context, article.id) == restored.validated_version
+    copies = library.duplicate_many(context, [article.id, missing])
+    assert len(copies.done) == 1 and copies.failed == ((missing, "article_not_found"),)
     # The validated version never changes: saving it adds a version, which goes once validated.
     model = restored.versions[0]
     edited = Editing(world.articles).save(

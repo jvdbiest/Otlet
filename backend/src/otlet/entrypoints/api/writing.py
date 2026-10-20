@@ -16,7 +16,7 @@ from otlet.writing.application.briefs import Briefs
 from otlet.writing.application.drafts import Drafts, MatterError
 from otlet.writing.application.editing import Editing
 from otlet.writing.application.exports import Exports
-from otlet.writing.application.library import Library, TagError, TitleError
+from otlet.writing.application.library import Library, Outcome, TagError, TitleError
 from otlet.writing.domain.article import Article, Generation, LibraryEntry, Version
 from otlet.writing.domain.brief import (
     ITEMS_MAX,
@@ -311,6 +311,39 @@ class TopicRefView(BaseModel):
     name: str
 
 
+class SelectionBody(BaseModel):
+    """The articles chosen in the Library (Joël, 2026-10-20)."""
+
+    article_ids: list[UUID] = Field(min_length=1, max_length=200)
+
+
+class ArchiveSelectionBody(SelectionBody):
+    archived: bool
+
+
+class ExportSelectionBody(SelectionBody):
+    kind: Literal["pdf", "docx", "html", "md", "txt"]
+
+
+class FailedView(BaseModel):
+    article_id: UUID
+    reason: Literal["article_not_found", "not_archived"]
+
+
+class OutcomeView(BaseModel):
+    done: list[UUID]  # the articles done; for a duplication, the copies made
+    failed: list[FailedView]
+
+    @classmethod
+    def of(cls, outcome: Outcome) -> "OutcomeView":
+        return cls(
+            done=list(outcome.done),
+            failed=[
+                FailedView(article_id=i, reason=cast(Any, reason)) for i, reason in outcome.failed
+            ],
+        )
+
+
 class NewArticleBody(BaseModel):
     title: str = Field(min_length=1, max_length=200)
 
@@ -515,6 +548,46 @@ def build_router(
         title and the text of the latest version; archived articles only with status=archive;
         `topic_id`: those whose brief has items of that topic (Joël, 2026-10-20)."""
         return [LibraryEntryView.of(e) for e in library.entries(context, q, status, tag, topic_id)]
+
+    @router.post("/library/archive")
+    def archive_selection(body: ArchiveSelectionBody, context: Context) -> OutcomeView:
+        """Archives (or brings back) the articles chosen."""
+        return OutcomeView.of(library.archive_many(context, body.article_ids, body.archived))
+
+    @router.post("/library/delete")
+    def delete_selection(body: SelectionBody, context: Context) -> OutcomeView:
+        """Deletes the articles chosen for good: archived ones only (archive first)."""
+        return OutcomeView.of(library.delete_many(context, body.article_ids))
+
+    @router.post("/library/duplicate")
+    def duplicate_selection(body: SelectionBody, context: Context) -> OutcomeView:
+        """A copy of each article chosen, from its validated version, else its latest."""
+        return OutcomeView.of(library.duplicate_many(context, body.article_ids))
+
+    @router.post(
+        "/library/export",
+        response_class=Response,
+        responses={200: {"content": {"application/zip": {}}}},
+    )
+    def export_selection(body: ExportSelectionBody, context: Context) -> Response:
+        """The articles chosen in one ZIP, a file each: the validated version, else the latest."""
+        picks = [
+            (article_id, number)
+            for article_id in dict.fromkeys(body.article_ids)
+            if (number := library.shown_version(context, article_id)) is not None
+        ]
+        exported = exports.export_many(context, picks, body.kind)
+        if exported is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "article_not_found")
+        return Response(
+            exported.data,
+            media_type=exported.mime,
+            headers={
+                "Content-Disposition": f'attachment; filename="{exported.filename}"',
+                "X-Content-Type-Options": "nosniff",
+                "Cache-Control": "no-store",
+            },
+        )
 
     @router.get("/library/topics")
     def list_library_topics(context: Context) -> list[TopicRefView]:

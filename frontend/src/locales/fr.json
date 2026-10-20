@@ -845,7 +845,33 @@
     "new": "Nouvel article",
     "newTitle": "Titre",
     "create": "Créer l'article",
-    "duplicate": "Dupliquer la version {number}"
+    "duplicate": "Dupliquer la version {number}",
+    "selection": {
+      "label": "Articles sélectionnés",
+      "all": "Tout sélectionner",
+      "select": "Sélectionner « {title} »",
+      "selected": "{count, plural, one {# article sélectionné} other {# articles sélectionnés}}",
+      "edit": "Modifier",
+      "editOne": "Un seul article à la fois",
+      "duplicate": "Dupliquer",
+      "export": "Exporter (ZIP)",
+      "archive": "Archiver",
+      "unarchive": "Désarchiver",
+      "delete": "Supprimer",
+      "deleteArchivedOnly": "Seuls les articles archivés peuvent être supprimés : archivez d'abord.",
+      "confirmDelete": "{count, plural, one {Supprimer définitivement # article archivé ? Cette action est irréversible.} other {Supprimer définitivement # articles archivés ? Cette action est irréversible.}}",
+      "notArchivedKept": "{count, plural, one {# article non archivé sera conservé.} other {# articles non archivés seront conservés.}}",
+      "deleteForGood": "Supprimer définitivement",
+      "cancel": "Annuler",
+      "none": "Tout désélectionner",
+      "failed": "{count, plural, one {# article n'a pas pu l'être.} other {# articles n'ont pas pu l'être.}}",
+      "done": {
+        "archive": "{count, plural, one {# article archivé.} other {# articles archivés.}}",
+        "unarchive": "{count, plural, one {# article désarchivé.} other {# articles désarchivés.}}",
+        "duplicate": "{count, plural, one {# copie créée.} other {# copies créées.}}",
+        "delete": "{count, plural, one {# article supprimé définitivement.} other {# articles supprimés définitivement.}}"
+      }
+    }
   },
   "compare": {
     "button": "Comparer",

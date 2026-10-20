@@ -14,6 +14,30 @@
         "title": "ArchiveBody",
         "type": "object"
       },
+      "ArchiveSelectionBody": {
+        "properties": {
+          "archived": {
+            "title": "Archived",
+            "type": "boolean"
+          },
+          "article_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 200,
+            "minItems": 1,
+            "title": "Article Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "article_ids",
+          "archived"
+        ],
+        "title": "ArchiveSelectionBody",
+        "type": "object"
+      },
       "ArticleView": {
         "properties": {
           "brief_id": {
@@ -951,6 +975,60 @@
         "title": "DuplicateView",
         "type": "object"
       },
+      "ExportSelectionBody": {
+        "properties": {
+          "article_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 200,
+            "minItems": 1,
+            "title": "Article Ids",
+            "type": "array"
+          },
+          "kind": {
+            "enum": [
+              "pdf",
+              "docx",
+              "html",
+              "md",
+              "txt"
+            ],
+            "title": "Kind",
+            "type": "string"
+          }
+        },
+        "required": [
+          "article_ids",
+          "kind"
+        ],
+        "title": "ExportSelectionBody",
+        "type": "object"
+      },
+      "FailedView": {
+        "properties": {
+          "article_id": {
+            "format": "uuid",
+            "title": "Article Id",
+            "type": "string"
+          },
+          "reason": {
+            "enum": [
+              "article_not_found",
+              "not_archived"
+            ],
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "article_id",
+          "reason"
+        ],
+        "title": "FailedView",
+        "type": "object"
+      },
       "FeedItemView": {
         "properties": {
           "item": {
@@ -1840,6 +1918,31 @@
         "title": "NewWorkspace",
         "type": "object"
       },
+      "OutcomeView": {
+        "properties": {
+          "done": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Done",
+            "type": "array"
+          },
+          "failed": {
+            "items": {
+              "$ref": "#/components/schemas/FailedView"
+            },
+            "title": "Failed",
+            "type": "array"
+          }
+        },
+        "required": [
+          "done",
+          "failed"
+        ],
+        "title": "OutcomeView",
+        "type": "object"
+      },
       "Password": {
         "properties": {
           "password": {
@@ -2344,6 +2447,26 @@
           "triage"
         ],
         "title": "ScoredItemView",
+        "type": "object"
+      },
+      "SelectionBody": {
+        "description": "The articles chosen in the Library (Joël, 2026-10-20).",
+        "properties": {
+          "article_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 200,
+            "minItems": 1,
+            "title": "Article Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "article_ids"
+        ],
+        "title": "SelectionBody",
         "type": "object"
       },
       "SendBody": {
@@ -6550,6 +6673,206 @@
           }
         },
         "summary": "List Library"
+      }
+    },
+    "/api/workspaces/{workspace_id}/library/archive": {
+      "post": {
+        "description": "Archives (or brings back) the articles chosen.",
+        "operationId": "archive_selection_api_workspaces__workspace_id__library_archive_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArchiveSelectionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutcomeView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Archive Selection"
+      }
+    },
+    "/api/workspaces/{workspace_id}/library/delete": {
+      "post": {
+        "description": "Deletes the articles chosen for good: archived ones only (archive first).",
+        "operationId": "delete_selection_api_workspaces__workspace_id__library_delete_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SelectionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutcomeView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Selection"
+      }
+    },
+    "/api/workspaces/{workspace_id}/library/duplicate": {
+      "post": {
+        "description": "A copy of each article chosen, from its validated version, else its latest.",
+        "operationId": "duplicate_selection_api_workspaces__workspace_id__library_duplicate_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SelectionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutcomeView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Duplicate Selection"
+      }
+    },
+    "/api/workspaces/{workspace_id}/library/export": {
+      "post": {
+        "description": "The articles chosen in one ZIP, a file each: the validated version, else the latest.",
+        "operationId": "export_selection_api_workspaces__workspace_id__library_export_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExportSelectionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/zip": {}
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Export Selection"
       }
     },
     "/api/workspaces/{workspace_id}/library/tags": {

@@ -366,6 +366,53 @@ export function useArchiveArticle(workspaceId: string) {
   });
 }
 
+export type LibraryAction = "archive" | "unarchive" | "duplicate" | "delete";
+export type ExportKind = "pdf" | "docx" | "html" | "md" | "txt";
+
+/** An action on the articles chosen in the Library (Joël, 2026-10-20): what was done, and what
+ * could not be, with why. Deleting takes archived articles only. */
+export function useLibraryAction(workspaceId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ action, articleIds }: { action: LibraryAction; articleIds: string[] }) => {
+      const path = { params: { path: { workspace_id: workspaceId } } };
+      const answer =
+        action === "archive" || action === "unarchive"
+          ? await api.POST("/api/workspaces/{workspace_id}/library/archive", {
+              ...path,
+              body: { article_ids: articleIds, archived: action === "archive" },
+            })
+          : action === "duplicate"
+            ? await api.POST("/api/workspaces/{workspace_id}/library/duplicate", {
+                ...path,
+                body: { article_ids: articleIds },
+              })
+            : await api.POST("/api/workspaces/{workspace_id}/library/delete", {
+                ...path,
+                body: { article_ids: articleIds },
+              });
+      if (answer.data === undefined) {
+        throw apiError(answer.response, answer.error);
+      }
+      return answer.data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
+  });
+}
+
+/** The articles chosen in one ZIP, a file each: the validated version, else the latest. */
+export async function exportSelection(workspaceId: string, articleIds: string[], kind: ExportKind): Promise<Blob> {
+  const { data, error, response } = await api.POST("/api/workspaces/{workspace_id}/library/export", {
+    params: { path: { workspace_id: workspaceId } },
+    body: { article_ids: articleIds, kind },
+    parseAs: "blob",
+  });
+  if (data === undefined) {
+    throw apiError(response, error);
+  }
+  return data;
+}
+
 export function useSetTags(workspaceId: string) {
   const queryClient = useQueryClient();
   return useMutation({

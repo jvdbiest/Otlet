@@ -95,3 +95,4 @@ date,heures,domaine,etape,tache,note
 2026-10-20,4,fonction,E1,U01,modification d'une source (adresse revérifiée) et déclaration d'accord pour toute une source (migration 0033) ; estimation grossière (Claude)
 2026-10-20,1.5,fonction,E1,X04,fusion de la pile (main ramené, conflits de documentation) et sujets hérités du brief dans la Bibliothèque ; estimation grossière (Claude)
 2026-10-20,2,fonction,E1,X04,dupliquer un article, créer un article sans brief, bulle de sujet centrée ; estimation grossière (Claude)
+2026-10-20,2.5,fonction,E1,X04,sélection dans la Bibliothèque : actions en masse, export ZIP, suppression des archivés ; estimation grossière (Claude)

@@ -39,3 +39,4 @@ La Bibliothèque est devenue un module : articles, archives, et bientôt la publ
 - **À l'image** : le fichier, le nom, la description, le crédit, la licence, la provenance et les étiquettes. Une correction vaut pour tous les articles qui la montrent ; les exports et la publication liront le crédit là.
 - **À l'article** : le texte alternatif, l'alignement, la largeur et l'habillage. La description préremplit le texte alternatif à l'insertion, qui reste ensuite propre à l'article.
 - Le fichier d'une image n'est jamais remplacé : une image retouchée devient une nouvelle image.
+- **Télécharger l'original** (fiche) et **Exporter les originaux** (sélection, un ZIP sans compression) livrent le fichier qu'Otlet stocke, tel quel : ni redimensionné, ni recompressé, ni converti. Ce fichier est celui de l'import, déjà réencodé sans métadonnées et borné à 4096 px (ADR-0036 §6) : Otlet ne garde jamais l'octet envoyé. Lecture seule, la référence n'en est pas touchée.

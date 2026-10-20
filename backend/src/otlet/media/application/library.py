@@ -3,6 +3,8 @@
 The médiathèque (ADR-0040): one image, two views (the images of the articles, the bank of
 images), its description, where it is used, and its deletion while no article shows it."""
 
+import io
+import zipfile
 from collections.abc import Iterable, Sequence
 from typing import Literal, Protocol
 from uuid import UUID
@@ -21,6 +23,7 @@ from otlet.media.domain.media import (
     Usage,
     cleaned,
     cleaned_tags,
+    file_name,
 )
 from otlet.workspaces.domain.model import WorkspaceContext
 
@@ -148,6 +151,29 @@ class MediaLibrary:
             return None
         data = self._files.get(media.sha256, FORMATS[media.mime])
         return None if data is None else (media, data)
+
+    def export_originals(
+        self, context: WorkspaceContext, media_ids: Sequence[UUID]
+    ) -> bytes | None:
+        """The files Otlet stores of the images chosen, in one ZIP, as they are: stored, not
+        compressed again, nor resized, nor converted (Joël, 2026-10-20). A name given twice gets
+        a number. None when none of them exists."""
+        buffer = io.BytesIO()
+        names: set[str] = set()
+        with zipfile.ZipFile(buffer, "w", zipfile.ZIP_STORED) as archive:
+            for media_id in dict.fromkeys(media_ids):
+                found = self.read(context, media_id)
+                if found is None:
+                    continue
+                media, data = found
+                stem, _, extension = file_name(media).rpartition(".")
+                name, n = f"{stem}.{extension}", 1
+                while name in names:
+                    n += 1
+                    name = f"{stem}-{n}.{extension}"
+                names.add(name)
+                archive.writestr(name, data)
+        return buffer.getvalue() if names else None
 
     def read_description(self, context: WorkspaceContext, media_id: UUID) -> Media | None:
         return self._store.get(context.workspace_id, media_id)

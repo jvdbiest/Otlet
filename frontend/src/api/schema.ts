@@ -1176,6 +1176,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/media/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Export Originals
+         * @description The files Otlet stores of the images chosen, in one ZIP, unchanged.
+         */
+        post: operations["export_originals_api_workspaces__workspace_id__media_export_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/media/tags": {
         parameters: {
             query?: never;
@@ -1232,6 +1252,26 @@ export interface paths {
          * @description An image, and the articles that show it, with their versions.
          */
         get: operations["media_details_api_workspaces__workspace_id__media__media_id__details_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/media/{media_id}/original": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download Original
+         * @description The file Otlet stores of an image, unchanged, to save: « Télécharger l'original ».
+         */
+        get: operations["download_original_api_workspaces__workspace_id__media__media_id__original_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -5365,6 +5405,41 @@ export interface operations {
             };
         };
     };
+    export_originals_api_workspaces__workspace_id__media_export_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MediaSelectionBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/zip": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     media_tags_api_workspaces__workspace_id__media_tags_get: {
         parameters: {
             query?: never;
@@ -5485,6 +5560,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MediaDetailsView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_original_api_workspaces__workspace_id__media__media_id__original_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                media_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/jpeg": unknown;
+                    "image/png": unknown;
+                    "image/webp": unknown;
                 };
             };
             /** @description Validation Error */

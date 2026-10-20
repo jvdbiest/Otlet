@@ -2,6 +2,8 @@
 """An image of a workspace (X03b, ADR-0036 §6; médiathèque, ADR-0040): what Otlet keeps of it,
 what it says of it, and its limits."""
 
+import re
+import unicodedata
 from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
@@ -144,3 +146,11 @@ def cleaned_tags(tags: list[str] | tuple[str, ...]) -> tuple[str, ...]:
     if len(kept) > TAGS_MAX:
         raise MediaError("invalid_tags")
     return tuple(kept)
+
+
+def file_name(media: Media) -> str:
+    """The name of the file of an image, from its name: « Carte du circuit » →
+    carte-du-circuit.png; the extension is that of the file Otlet stores."""
+    ascii_name = unicodedata.normalize("NFKD", media.name or "").encode("ascii", "ignore").decode()
+    slug = re.sub(r"[^a-z0-9]+", "-", ascii_name.lower()).strip("-")[:80] or "image"
+    return f"{slug}.{FORMATS[media.mime]}"

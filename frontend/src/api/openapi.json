@@ -7704,6 +7704,53 @@
         "summary": "Delete Selection"
       }
     },
+    "/api/workspaces/{workspace_id}/media/export": {
+      "post": {
+        "description": "The files Otlet stores of the images chosen, in one ZIP, unchanged.",
+        "operationId": "export_originals_api_workspaces__workspace_id__media_export_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MediaSelectionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/zip": {}
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Export Originals"
+      }
+    },
     "/api/workspaces/{workspace_id}/media/tags": {
       "get": {
         "description": "The tags of the images of the workspace, in order.",
@@ -7906,6 +7953,55 @@
           }
         },
         "summary": "Media Details"
+      }
+    },
+    "/api/workspaces/{workspace_id}/media/{media_id}/original": {
+      "get": {
+        "description": "The file Otlet stores of an image, unchanged, to save: « Télécharger l'original ».",
+        "operationId": "download_original_api_workspaces__workspace_id__media__media_id__original_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "media_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Media Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "image/jpeg": {},
+              "image/png": {},
+              "image/webp": {}
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Download Original"
       }
     },
     "/api/workspaces/{workspace_id}/media/{media_id}/tags": {

@@ -5,11 +5,13 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ApiError } from "../../api/client.ts";
 import {
+  exportOriginals,
   IMAGE_TYPES,
   mediaDetailsQuery,
   mediaListQuery,
   mediaTagsQuery,
   mediaUrl,
+  originalUrl,
   thumbnailUrl,
   uploadImage,
   useDescribeMedia,
@@ -217,6 +219,9 @@ function MediaSheet({ workspaceId, mediaId, onClose }: { workspaceId: string; me
             </ul>
           )}
           <p className={styles.row}>
+            <a className={styles.button} href={originalUrl(workspaceId, media.id)} download>
+              {t("media.sheet.download")}
+            </a>
             <button
               type="button"
               className={styles.button}
@@ -301,6 +306,8 @@ function MediaBar({
   const act = useMediaAction(workspaceId);
   const [done, setDone] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [exportFailed, setExportFailed] = useState(false);
   const all = useRef<HTMLInputElement>(null);
   const chosen = visible.filter((entry) => selected.includes(entry.id));
   const allSelected = visible.length > 0 && chosen.length === visible.length;
@@ -377,6 +384,33 @@ function MediaBar({
           <button
             type="button"
             className={styles.button}
+            disabled={exporting}
+            onClick={() => {
+              setExporting(true);
+              setExportFailed(false);
+              exportOriginals(workspaceId, ids)
+                .then((blob) => {
+                  const link = document.createElement("a");
+                  link.href = URL.createObjectURL(blob);
+                  link.download = "images.zip";
+                  link.click();
+                  window.setTimeout(() => {
+                    URL.revokeObjectURL(link.href);
+                  }, 60_000);
+                })
+                .catch(() => {
+                  setExportFailed(true);
+                })
+                .finally(() => {
+                  setExporting(false);
+                });
+            }}
+          >
+            {t("media.selection.export")}
+          </button>
+          <button
+            type="button"
+            className={styles.button}
             disabled={act.isPending}
             onClick={() => {
               setConfirming(true);
@@ -419,7 +453,7 @@ function MediaBar({
           </button>
         </div>
       )}
-      {act.error !== null && (
+      {(act.error !== null || exportFailed) && (
         <span role="alert" className={styles.error}>
           {t("errors.generic")}
         </span>

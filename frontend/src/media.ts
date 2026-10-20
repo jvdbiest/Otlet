@@ -166,3 +166,21 @@ export function useMediaAction(workspaceId: string) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
   });
 }
+
+/** The address of the file Otlet stores of an image, to save as it is. */
+export function originalUrl(workspaceId: string, mediaId: string): string {
+  return `${mediaUrl(workspaceId, mediaId)}/original`;
+}
+
+/** The files Otlet stores of the images chosen, in one ZIP, unchanged. */
+export async function exportOriginals(workspaceId: string, mediaIds: string[]): Promise<Blob> {
+  const { data, error, response } = await api.POST("/api/workspaces/{workspace_id}/media/export", {
+    params: { path: { workspace_id: workspaceId } },
+    body: { media_ids: mediaIds },
+    parseAs: "blob",
+  });
+  if (data === undefined) {
+    throw apiError(response, error);
+  }
+  return data;
+}

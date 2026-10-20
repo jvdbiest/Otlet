@@ -975,7 +975,8 @@
         "unkeep": "{count, plural, one {# image retirée de la banque.} other {# images retirées de la banque.}}",
         "delete": "{count, plural, one {# image supprimée.} other {# images supprimées.}}"
       },
-      "inUse": "{count, plural, one {# image est utilisée par un article et a été gardée.} other {# images sont utilisées par un article et ont été gardées.}}"
+      "inUse": "{count, plural, one {# image est utilisée par un article et a été gardée.} other {# images sont utilisées par un article et ont été gardées.}}",
+      "export": "Exporter les originaux (ZIP)"
     },
     "sheet": {
       "title": "Fiche de l'image",
@@ -993,7 +994,8 @@
       "usedIn": "Utilisée dans",
       "notUsed": "Aucun article ne montre cette image : elle peut être supprimée.",
       "versions": "{count, plural, one {version {list}} other {versions {list}}}",
-      "deleteBlocked": "Utilisée par un article : elle ne peut pas être supprimée."
+      "deleteBlocked": "Utilisée par un article : elle ne peut pas être supprimée.",
+      "download": "Télécharger l'original"
     },
     "errors": {
       "too_long": "Un des textes est trop long.",

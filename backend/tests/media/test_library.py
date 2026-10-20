@@ -3,9 +3,10 @@
 workspace; an article may show only the images of its workspace."""
 
 import io
+import zipfile
 from pathlib import Path
 from typing import Literal
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import pytest
 from PIL import Image as PilImage
@@ -118,6 +119,16 @@ def test_the_mediatheque_shows_two_views_of_the_same_images(
     with pytest.raises(MediaError) as error:
         library.describe(context, kept.id, Description(None, None, None, None, "ftp://x"))
     assert error.value.code == "invalid_url"
+    # The originals: the files stored, unchanged, one ZIP for a selection (Joël, 2026-10-20).
+    stored = library.read(context, kept.id)
+    assert stored is not None
+    exported = library.export_originals(context, [kept.id, pasted.id, uuid4()])
+    assert exported is not None
+    with zipfile.ZipFile(io.BytesIO(exported)) as bundle:
+        assert bundle.namelist() == ["carte.png", "image.png"]
+        assert bundle.read("carte.png") == stored[1]
+        assert bundle.getinfo("carte.png").compress_type == zipfile.ZIP_STORED
+    assert library.export_originals(context, [uuid4()]) is None
     # Shown by an article: refused; free: deleted.
     outcome = library.delete_many(context, [pasted.id, kept.id])
     assert outcome.done == (kept.id,) and outcome.failed == ((pasted.id, "in_use"),)

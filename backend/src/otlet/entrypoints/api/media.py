@@ -24,6 +24,7 @@ from otlet.media.domain.media import (
     MediaError,
     Outcome,
     Usage,
+    file_name,
 )
 from otlet.workspaces.domain.model import WorkspaceContext
 
@@ -198,6 +199,46 @@ def build_router(
         """The images of a view of the médiathèque, newest first: those of the articles, or
         those of the bank of images; `used` keeps those some article shows, or the others."""
         return [MediaEntryView.of_entry(e) for e in library.entries(context, view, q, used, tag)]
+
+    @router.post(
+        "/media/export",
+        response_class=Response,
+        responses={200: {"content": {"application/zip": {}}}},
+    )
+    def export_originals(body: MediaSelectionBody, context: Context) -> Response:
+        """The files Otlet stores of the images chosen, in one ZIP, unchanged."""
+        data = library.export_originals(context, body.media_ids)
+        if data is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "media_not_found")
+        return Response(
+            data,
+            media_type="application/zip",
+            headers={
+                "Content-Disposition": 'attachment; filename="images.zip"',
+                "X-Content-Type-Options": "nosniff",
+                "Cache-Control": "no-store",
+            },
+        )
+
+    @router.get(
+        "/media/{media_id}/original",
+        response_class=Response,
+        responses={200: {"content": {mime: {} for mime in FORMATS}}},
+    )
+    def download_original(media_id: UUID, context: Context) -> Response:
+        """The file Otlet stores of an image, unchanged, to save: « Télécharger l'original »."""
+        found = library.read(context, media_id)
+        if found is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "media_not_found")
+        media, data = found
+        return Response(
+            data,
+            media_type=media.mime,
+            headers={
+                **IMAGE_HEADERS,
+                "Content-Disposition": f'attachment; filename="{file_name(media)}"',
+            },
+        )
 
     @router.get("/media/tags")
     def media_tags(context: Context) -> list[str]:

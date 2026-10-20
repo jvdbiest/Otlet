@@ -189,6 +189,25 @@ def test_docx_keeps_formatting_images_and_sources() -> None:
     assert read.part.rels and any(r.reltype.endswith("/hyperlink") for r in read.part.rels.values())
 
 
+def test_a_selection_is_one_zip_a_file_each() -> None:
+    """Joël, 2026-10-20: the same title twice gets a suffix; Markdown keeps its images folder."""
+    one, two = uuid4(), uuid4()
+    exported = exports().export_many(CONTEXT, [(one, 1), (two, 1), (uuid4(), 2)], "html")
+    assert exported is not None and exported.mime == "application/zip"
+    with zipfile.ZipFile(io.BytesIO(exported.data)) as bundle:
+        assert sorted(bundle.namelist()) == [
+            "max-verstappen-un-pilote-2.html",
+            "max-verstappen-un-pilote.html",
+        ]
+    markdown = exports().export_many(CONTEXT, [(one, 1)], "md")
+    assert markdown is not None
+    with zipfile.ZipFile(io.BytesIO(markdown.data)) as bundle:
+        names = bundle.namelist()
+    assert "max-verstappen-un-pilote/max-verstappen-un-pilote.md" in names
+    assert f"max-verstappen-un-pilote/images/{IMAGE}.png" in names
+    assert exports().export_many(CONTEXT, [(one, 2)], "txt") is None
+
+
 def test_pdf_is_printed_from_the_html_page() -> None:
     seen: list[str] = []
 

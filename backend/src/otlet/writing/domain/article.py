@@ -56,6 +56,8 @@ class LibraryEntry:
     sent_at: datetime
     updated_at: datetime
     excerpt: str  # where the words searched for appear; the start of the text otherwise
+    # The topics of the items of its brief (Joël, 2026-10-20): computed, never copied.
+    topics: tuple[tuple[UUID, str], ...] = ()
 
 
 @dataclass(frozen=True, slots=True)

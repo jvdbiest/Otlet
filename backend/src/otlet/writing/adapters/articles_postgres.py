@@ -70,6 +70,17 @@ DETAILS = (
 )
 
 
+# The topics of an article are those of the items of its brief (Joël, 2026-10-20): read where
+# the watch keeps them, never copied, so that a topic renamed or removed follows.
+TOPICS_OF = (
+    "(SELECT coalesce(json_agg(DISTINCT jsonb_build_object('id', t.id, 'name', t.name)), '[]')"
+    " FROM brief_items AS bi JOIN topic_matches AS m"
+    " ON m.item_id = bi.item_id AND m.workspace_id = bi.workspace_id"
+    " JOIN topics AS t ON t.id = m.topic_id AND t.workspace_id = m.workspace_id"
+    " WHERE bi.brief_id = a.brief_id AND bi.workspace_id = a.workspace_id)"
+)
+
+
 class PostgresArticleStore:
     def __init__(self, engine: sa.Engine, enqueue: Enqueue) -> None:
         self._engine = engine
@@ -331,7 +342,12 @@ class PostgresArticleStore:
         return changed == 1
 
     def library(
-        self, workspace_id: UUID, query: str, status: str | None, tag: str | None
+        self,
+        workspace_id: UUID,
+        query: str,
+        status: str | None,
+        tag: str | None,
+        topic_id: UUID | None = None,
     ) -> list[LibraryEntry]:
         """The articles sent to the Library, the latest changed first; the archived ones only
         when asked for. `query` searches the title and the text of the latest version."""
@@ -344,6 +360,14 @@ class PostgresArticleStore:
             values["status"] = status
         if tag:
             conditions.append(":tag = ANY(a.tags)")
+        if topic_id is not None:
+            conditions.append(
+                "EXISTS (SELECT 1 FROM brief_items AS bi JOIN topic_matches AS m"
+                " ON m.item_id = bi.item_id AND m.workspace_id = bi.workspace_id"
+                " WHERE bi.brief_id = a.brief_id AND bi.workspace_id = a.workspace_id"
+                " AND m.topic_id = :topic)"
+            )
+            values["topic"] = topic_id
         search = "websearch_to_tsquery('french', :query)"
         if query.strip():
             conditions.append(f"to_tsvector('french', a.title || ' ' || v.body_text) @@ {search}")
@@ -355,7 +379,8 @@ class PostgresArticleStore:
             excerpt = "left(v.body_text, 220)"
         rows_sql = (
             "SELECT a.id, a.brief_id, a.title, a.status, a.validated_version, a.tags,"
-            f" a.sent_at, a.updated_at, v.number AS current_version, {excerpt} AS excerpt"
+            f" a.sent_at, a.updated_at, v.number AS current_version, {excerpt} AS excerpt,"
+            f" {TOPICS_OF} AS topics"
             " FROM articles AS a JOIN LATERAL (SELECT number, body_text FROM article_versions"
             " WHERE article_id = a.id AND workspace_id = a.workspace_id ORDER BY number DESC"
             f" LIMIT 1) AS v ON true WHERE {' AND '.join(conditions)}"
@@ -375,9 +400,28 @@ class PostgresArticleStore:
                 sent_at=r.sent_at,
                 updated_at=r.updated_at,
                 excerpt=" ".join(r.excerpt.split()),
+                topics=tuple(
+                    sorted(((UUID(t["id"]), t["name"]) for t in r.topics), key=lambda t: t[1])
+                ),
             )
             for r in rows
         ]
+
+    def library_topics(self, workspace_id: UUID) -> list[tuple[UUID, str]]:
+        """The topics the articles of the Library carry, by name."""
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            rows = connection.execute(
+                sa.text(
+                    "SELECT DISTINCT t.id, t.name FROM articles AS a"
+                    " JOIN brief_items AS bi ON bi.brief_id = a.brief_id"
+                    " AND bi.workspace_id = a.workspace_id"
+                    " JOIN topic_matches AS m ON m.item_id = bi.item_id"
+                    " AND m.workspace_id = bi.workspace_id"
+                    " JOIN topics AS t ON t.id = m.topic_id AND t.workspace_id = m.workspace_id"
+                    f" WHERE a.sent_at IS NOT NULL AND {here('a')} ORDER BY t.name"
+                )
+            ).all()
+        return [(r.id, r.name) for r in rows]
 
     def tags(self, workspace_id: UUID) -> list[str]:
         with workspace_transaction(self._engine, workspace_id) as connection:
@@ -462,6 +506,72 @@ class PostgresArticleStore:
             ).one()
             _touch(connection, article_id, title)
         return _version(row)
+
+    def create_article(
+        self,
+        workspace_id: UUID,
+        user_id: UUID,
+        title: str,
+        document: dict[str, Any],
+        tags: Sequence[str] = (),
+    ) -> UUID:
+        """An article without a brief, in the Library at once (Joël, 2026-10-20): written by a
+        person, or a copy of another; its first version is theirs."""
+        article_id = uuid4()
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            connection.execute(
+                sa.text(
+                    "INSERT INTO articles (id, workspace_id, brief_id, created_by, title, status,"
+                    " sent_at, tags) VALUES (:id, :workspace, NULL, :user, :title, 'brouillon',"
+                    " now(), :tags)"
+                ),
+                {
+                    "id": article_id,
+                    "workspace": workspace_id,
+                    "user": user_id,
+                    "title": title,
+                    "tags": list(tags),
+                },
+            )
+            connection.execute(
+                sa.text(
+                    "INSERT INTO article_versions (workspace_id, article_id, number, title,"
+                    " document, origin, created_by, body_text)"
+                    " VALUES (:workspace, :article, 1, :title, CAST(:document AS jsonb), 'humain',"
+                    " :user, :body)"
+                ),
+                {
+                    "workspace": workspace_id,
+                    "article": article_id,
+                    "title": title,
+                    "document": json.dumps(document),
+                    "user": user_id,
+                    "body": body_text(document),
+                },
+            )
+        return article_id
+
+    def delete_archived(self, workspace_id: UUID, article_id: UUID) -> bool:
+        """Deletes an archived article and its versions for good (Joël, 2026-10-20: archived
+        first, deleted after). Its brief stays; its generations forget it."""
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            deleted = connection.execute(
+                sa.text(
+                    "DELETE FROM articles WHERE id = :id AND status = 'archive'"
+                    f" AND {here()} RETURNING id"
+                ),
+                {"id": article_id},
+            ).scalar_one_or_none()
+            if deleted is None:
+                return False
+            connection.execute(
+                sa.text(
+                    "UPDATE article_generations SET article_id = NULL"
+                    f" WHERE article_id = :id AND {here()}"
+                ),
+                {"id": article_id},
+            )
+            return True
 
     def discard_untouched(self, workspace_id: UUID, article_id: UUID, number: int) -> bool:
         with workspace_transaction(self._engine, workspace_id) as connection:

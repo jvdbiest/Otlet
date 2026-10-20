@@ -4,7 +4,8 @@
 article, several versions."""
 
 from collections.abc import Sequence
-from typing import Protocol
+from dataclasses import dataclass
+from typing import Any, Protocol
 from uuid import UUID
 
 from otlet.workspaces.domain.model import WorkspaceContext
@@ -24,17 +25,50 @@ class LibraryStore(Protocol):
 
     def archive(self, workspace_id: UUID, article_id: UUID, archived: bool) -> bool: ...
 
+    def create_article(
+        self,
+        workspace_id: UUID,
+        user_id: UUID,
+        title: str,
+        document: dict[str, Any],
+        tags: Sequence[str] = (),
+    ) -> UUID: ...
+
+    def delete_archived(self, workspace_id: UUID, article_id: UUID) -> bool: ...
+
     def set_tags(self, workspace_id: UUID, article_id: UUID, tags: Sequence[str]) -> bool: ...
 
     def library(
-        self, workspace_id: UUID, query: str, status: str | None, tag: str | None
+        self,
+        workspace_id: UUID,
+        query: str,
+        status: str | None,
+        tag: str | None,
+        topic_id: UUID | None = None,
     ) -> list[LibraryEntry]: ...
 
     def tags(self, workspace_id: UUID) -> list[str]: ...
 
+    def library_topics(self, workspace_id: UUID) -> list[tuple[UUID, str]]: ...
+
 
 class TagError(ValueError):
     pass
+
+
+class TitleError(ValueError):
+    pass
+
+
+@dataclass(frozen=True, slots=True)
+class Outcome:
+    """What an action on a selection did: the articles done, those failed and why."""
+
+    done: tuple[UUID, ...]
+    failed: tuple[tuple[UUID, str], ...]
+
+
+TITLE_MAX = 200
 
 
 def clean_tags(tags: Sequence[str]) -> list[str]:
@@ -67,6 +101,86 @@ class Library:
             return None
         return self._store.article(context.workspace_id, article_id)
 
+    # The selection of the Library (Joël, 2026-10-20): each action takes the articles chosen,
+    # does what it can, and says what it could not and why.
+
+    def shown_version(self, context: WorkspaceContext, article_id: UUID) -> int | None:
+        """The version an action takes: the validated one, else the latest (a draft)."""
+        article = self._store.article(context.workspace_id, article_id)
+        if article is None or not article.versions:
+            return None
+        return article.validated_version or article.versions[-1].number
+
+    def archive_many(
+        self, context: WorkspaceContext, article_ids: Sequence[UUID], archived: bool
+    ) -> Outcome:
+        done, failed = [], []
+        for article_id in dict.fromkeys(article_ids):
+            if self._store.archive(context.workspace_id, article_id, archived):
+                done.append(article_id)
+            else:
+                failed.append((article_id, "article_not_found"))
+        return Outcome(tuple(done), tuple(failed))
+
+    def delete_many(self, context: WorkspaceContext, article_ids: Sequence[UUID]) -> Outcome:
+        """Deletes for good, the archived articles only (archive first, delete after)."""
+        done, failed = [], []
+        for article_id in dict.fromkeys(article_ids):
+            if self._store.delete_archived(context.workspace_id, article_id):
+                done.append(article_id)
+            elif self._store.article(context.workspace_id, article_id) is None:
+                failed.append((article_id, "article_not_found"))
+            else:
+                failed.append((article_id, "not_archived"))
+        return Outcome(tuple(done), tuple(failed))
+
+    def duplicate_many(self, context: WorkspaceContext, article_ids: Sequence[UUID]) -> Outcome:
+        """A copy of each, from its validated version, else its latest; `done` names the copies."""
+        done, failed = [], []
+        for article_id in dict.fromkeys(article_ids):
+            number = self.shown_version(context, article_id)
+            copy = None if number is None else self.duplicate(context, article_id, number)
+            if copy is None:
+                failed.append((article_id, "article_not_found"))
+            else:
+                done.append(copy.id)
+        return Outcome(tuple(done), tuple(failed))
+
+    def create(self, context: WorkspaceContext, title: str) -> Article:
+        """An article written by hand, without a brief (Joël, 2026-10-20): in the Library at
+        once, as a draft, its first version an empty page."""
+        title = " ".join(title.split())
+        if not 1 <= len(title) <= TITLE_MAX:
+            raise TitleError(f"a title has 1 to {TITLE_MAX} characters")
+        document = {
+            "type": "doc",
+            "attrs": {"version_schema": 1, "langue": "fr", "sources": []},
+            "content": [{"type": "paragraph", "attrs": {"id": "b1", "origine": "humain"}}],
+        }
+        made = self._store.create_article(context.workspace_id, context.user_id, title, document)
+        article = self._store.article(context.workspace_id, made)
+        if article is None:  # just written, in the same workspace
+            raise RuntimeError("the article just written is missing")
+        return article
+
+    def duplicate(self, context: WorkspaceContext, article_id: UUID, number: int) -> Article | None:
+        """« Dupliquer » (Joël, 2026-10-20): a new article, without a brief, whose first version
+        is a copy of the version given, with its sources and images; its tags follow. None when
+        the article or the version does not exist."""
+        source = self._store.article(context.workspace_id, article_id)
+        version = (
+            None
+            if source is None
+            else next((v for v in source.versions if v.number == number), None)
+        )
+        if source is None or version is None:
+            return None
+        title = f"Copie de {version.title}"[:TITLE_MAX]
+        made = self._store.create_article(
+            context.workspace_id, context.user_id, title, version.document, source.tags
+        )
+        return self._store.article(context.workspace_id, made)
+
     def archive(
         self, context: WorkspaceContext, article_id: UUID, archived: bool
     ) -> Article | None:
@@ -87,10 +201,15 @@ class Library:
         query: str = "",
         status: str | None = None,
         tag: str | None = None,
+        topic_id: UUID | None = None,
     ) -> list[LibraryEntry]:
         if status is not None and status not in STATUSES:
             status = None
-        return self._store.library(context.workspace_id, query[:200], status, tag or None)
+        return self._store.library(context.workspace_id, query[:200], status, tag or None, topic_id)
 
     def tags(self, context: WorkspaceContext) -> list[str]:
         return self._store.tags(context.workspace_id)
+
+    def topics(self, context: WorkspaceContext) -> list[tuple[UUID, str]]:
+        """The topics of the articles of the Library: those of the items of their briefs."""
+        return self._store.library_topics(context.workspace_id)

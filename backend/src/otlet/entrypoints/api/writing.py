@@ -16,7 +16,7 @@ from otlet.writing.application.briefs import Briefs
 from otlet.writing.application.drafts import Drafts, MatterError
 from otlet.writing.application.editing import Editing
 from otlet.writing.application.exports import Exports
-from otlet.writing.application.library import Library, TagError
+from otlet.writing.application.library import Library, Outcome, TagError, TitleError
 from otlet.writing.domain.article import Article, Generation, LibraryEntry, Version
 from otlet.writing.domain.brief import (
     ITEMS_MAX,
@@ -287,6 +287,7 @@ class LibraryEntryView(BaseModel):
     sent_at: datetime
     updated_at: datetime
     excerpt: str  # « words » searched for are between « and »
+    topics: list["TopicRefView"]  # those of the items of its brief
 
     @classmethod
     def of(cls, entry: LibraryEntry) -> "LibraryEntryView":
@@ -301,7 +302,50 @@ class LibraryEntryView(BaseModel):
             sent_at=entry.sent_at,
             updated_at=entry.updated_at,
             excerpt=entry.excerpt,
+            topics=[TopicRefView(id=i, name=n) for i, n in entry.topics],
         )
+
+
+class TopicRefView(BaseModel):
+    id: UUID
+    name: str
+
+
+class SelectionBody(BaseModel):
+    """The articles chosen in the Library (Joël, 2026-10-20)."""
+
+    article_ids: list[UUID] = Field(min_length=1, max_length=200)
+
+
+class ArchiveSelectionBody(SelectionBody):
+    archived: bool
+
+
+class ExportSelectionBody(SelectionBody):
+    kind: Literal["pdf", "docx", "html", "md", "txt"]
+
+
+class FailedView(BaseModel):
+    article_id: UUID
+    reason: Literal["article_not_found", "not_archived"]
+
+
+class OutcomeView(BaseModel):
+    done: list[UUID]  # the articles done; for a duplication, the copies made
+    failed: list[FailedView]
+
+    @classmethod
+    def of(cls, outcome: Outcome) -> "OutcomeView":
+        return cls(
+            done=list(outcome.done),
+            failed=[
+                FailedView(article_id=i, reason=cast(Any, reason)) for i, reason in outcome.failed
+            ],
+        )
+
+
+class NewArticleBody(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
 
 
 class SendBody(BaseModel):
@@ -498,10 +542,57 @@ def build_router(
         q: str = "",
         status: Literal["brouillon", "valide", "archive"] | None = None,
         tag: str | None = None,
+        topic_id: UUID | None = None,
     ) -> list[LibraryEntryView]:
         """The Library (X04): the articles sent to it, the latest changed first; `q` searches the
-        title and the text of the latest version; archived articles only with status=archive."""
-        return [LibraryEntryView.of(e) for e in library.entries(context, q, status, tag)]
+        title and the text of the latest version; archived articles only with status=archive;
+        `topic_id`: those whose brief has items of that topic (Joël, 2026-10-20)."""
+        return [LibraryEntryView.of(e) for e in library.entries(context, q, status, tag, topic_id)]
+
+    @router.post("/library/archive")
+    def archive_selection(body: ArchiveSelectionBody, context: Context) -> OutcomeView:
+        """Archives (or brings back) the articles chosen."""
+        return OutcomeView.of(library.archive_many(context, body.article_ids, body.archived))
+
+    @router.post("/library/delete")
+    def delete_selection(body: SelectionBody, context: Context) -> OutcomeView:
+        """Deletes the articles chosen for good: archived ones only (archive first)."""
+        return OutcomeView.of(library.delete_many(context, body.article_ids))
+
+    @router.post("/library/duplicate")
+    def duplicate_selection(body: SelectionBody, context: Context) -> OutcomeView:
+        """A copy of each article chosen, from its validated version, else its latest."""
+        return OutcomeView.of(library.duplicate_many(context, body.article_ids))
+
+    @router.post(
+        "/library/export",
+        response_class=Response,
+        responses={200: {"content": {"application/zip": {}}}},
+    )
+    def export_selection(body: ExportSelectionBody, context: Context) -> Response:
+        """The articles chosen in one ZIP, a file each: the validated version, else the latest."""
+        picks = [
+            (article_id, number)
+            for article_id in dict.fromkeys(body.article_ids)
+            if (number := library.shown_version(context, article_id)) is not None
+        ]
+        exported = exports.export_many(context, picks, body.kind)
+        if exported is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "article_not_found")
+        return Response(
+            exported.data,
+            media_type=exported.mime,
+            headers={
+                "Content-Disposition": f'attachment; filename="{exported.filename}"',
+                "X-Content-Type-Options": "nosniff",
+                "Cache-Control": "no-store",
+            },
+        )
+
+    @router.get("/library/topics")
+    def list_library_topics(context: Context) -> list[TopicRefView]:
+        """The topics of the articles of the Library: those of the items of their briefs."""
+        return [TopicRefView(id=i, name=n) for i, n in library.topics(context)]
 
     @router.get("/library/tags")
     def list_tags(context: Context) -> list[str]:
@@ -512,6 +603,22 @@ def build_router(
         article = library.article(context, article_id)
         if article is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "article_not_found")
+        return ArticleView.of(article)
+
+    @router.post("/articles", status_code=status.HTTP_201_CREATED)
+    def create_article(body: NewArticleBody, context: Context) -> ArticleView:
+        """An article written by hand, without a brief: in the Library at once, as a draft."""
+        try:
+            return ArticleView.of(library.create(context, body.title))
+        except TitleError as error:
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "invalid_title") from error
+
+    @router.post("/articles/{article_id}/duplicate", status_code=status.HTTP_201_CREATED)
+    def duplicate_article(article_id: UUID, body: SendBody, context: Context) -> ArticleView:
+        """« Dupliquer »: a new article, without a brief, from a copy of the version given."""
+        article = library.duplicate(context, article_id, body.number)
+        if article is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "version_not_found")
         return ArticleView.of(article)
 
     @router.post("/articles/{article_id}/send")

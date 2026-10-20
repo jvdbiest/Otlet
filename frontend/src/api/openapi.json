@@ -14,6 +14,30 @@
         "title": "ArchiveBody",
         "type": "object"
       },
+      "ArchiveSelectionBody": {
+        "properties": {
+          "archived": {
+            "title": "Archived",
+            "type": "boolean"
+          },
+          "article_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 200,
+            "minItems": 1,
+            "title": "Article Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "article_ids",
+          "archived"
+        ],
+        "title": "ArchiveSelectionBody",
+        "type": "object"
+      },
       "ArticleView": {
         "properties": {
           "brief_id": {
@@ -951,6 +975,60 @@
         "title": "DuplicateView",
         "type": "object"
       },
+      "ExportSelectionBody": {
+        "properties": {
+          "article_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 200,
+            "minItems": 1,
+            "title": "Article Ids",
+            "type": "array"
+          },
+          "kind": {
+            "enum": [
+              "pdf",
+              "docx",
+              "html",
+              "md",
+              "txt"
+            ],
+            "title": "Kind",
+            "type": "string"
+          }
+        },
+        "required": [
+          "article_ids",
+          "kind"
+        ],
+        "title": "ExportSelectionBody",
+        "type": "object"
+      },
+      "FailedView": {
+        "properties": {
+          "article_id": {
+            "format": "uuid",
+            "title": "Article Id",
+            "type": "string"
+          },
+          "reason": {
+            "enum": [
+              "article_not_found",
+              "not_archived"
+            ],
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "article_id",
+          "reason"
+        ],
+        "title": "FailedView",
+        "type": "object"
+      },
       "FeedItemView": {
         "properties": {
           "item": {
@@ -1499,6 +1577,13 @@
             "title": "Title",
             "type": "string"
           },
+          "topics": {
+            "items": {
+              "$ref": "#/components/schemas/TopicRefView"
+            },
+            "title": "Topics",
+            "type": "array"
+          },
           "updated_at": {
             "format": "date-time",
             "title": "Updated At",
@@ -1526,7 +1611,8 @@
           "tags",
           "sent_at",
           "updated_at",
-          "excerpt"
+          "excerpt",
+          "topics"
         ],
         "title": "LibraryEntryView",
         "type": "object"
@@ -1685,6 +1771,21 @@
         "title": "ModelView",
         "type": "object"
       },
+      "NewArticleBody": {
+        "properties": {
+          "title": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "title": "NewArticleBody",
+        "type": "object"
+      },
       "NewLimit": {
         "properties": {
           "monthly_limit": {
@@ -1815,6 +1916,31 @@
           "name"
         ],
         "title": "NewWorkspace",
+        "type": "object"
+      },
+      "OutcomeView": {
+        "properties": {
+          "done": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Done",
+            "type": "array"
+          },
+          "failed": {
+            "items": {
+              "$ref": "#/components/schemas/FailedView"
+            },
+            "title": "Failed",
+            "type": "array"
+          }
+        },
+        "required": [
+          "done",
+          "failed"
+        ],
+        "title": "OutcomeView",
         "type": "object"
       },
       "Password": {
@@ -2323,6 +2449,26 @@
         "title": "ScoredItemView",
         "type": "object"
       },
+      "SelectionBody": {
+        "description": "The articles chosen in the Library (Joël, 2026-10-20).",
+        "properties": {
+          "article_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 200,
+            "minItems": 1,
+            "title": "Article Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "article_ids"
+        ],
+        "title": "SelectionBody",
+        "type": "object"
+      },
       "SendBody": {
         "properties": {
           "number": {
@@ -2820,6 +2966,25 @@
           "name"
         ],
         "title": "TopicBody",
+        "type": "object"
+      },
+      "TopicRefView": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "TopicRefView",
         "type": "object"
       },
       "TopicTagView": {
@@ -4207,6 +4372,57 @@
         "summary": "Get Workspace"
       }
     },
+    "/api/workspaces/{workspace_id}/articles": {
+      "post": {
+        "description": "An article written by hand, without a brief: in the Library at once, as a draft.",
+        "operationId": "create_article_api_workspaces__workspace_id__articles_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewArticleBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Article"
+      }
+    },
     "/api/workspaces/{workspace_id}/articles/{article_id}": {
       "get": {
         "operationId": "get_article_api_workspaces__workspace_id__articles__article_id__get",
@@ -4315,6 +4531,67 @@
           }
         },
         "summary": "Archive Article"
+      }
+    },
+    "/api/workspaces/{workspace_id}/articles/{article_id}/duplicate": {
+      "post": {
+        "description": "« Dupliquer »: a new article, without a brief, from a copy of the version given.",
+        "operationId": "duplicate_article_api_workspaces__workspace_id__articles__article_id__duplicate_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Article Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Duplicate Article"
       }
     },
     "/api/workspaces/{workspace_id}/articles/{article_id}/send": {
@@ -6291,7 +6568,7 @@
     },
     "/api/workspaces/{workspace_id}/library": {
       "get": {
-        "description": "The Library (X04): the articles sent to it, the latest changed first; `q` searches the\ntitle and the text of the latest version; archived articles only with status=archive.",
+        "description": "The Library (X04): the articles sent to it, the latest changed first; `q` searches the\ntitle and the text of the latest version; archived articles only with status=archive;\n`topic_id`: those whose brief has items of that topic (Joël, 2026-10-20).",
         "operationId": "list_library_api_workspaces__workspace_id__library_get",
         "parameters": [
           {
@@ -6350,6 +6627,23 @@
               ],
               "title": "Tag"
             }
+          },
+          {
+            "in": "query",
+            "name": "topic_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Topic Id"
+            }
           }
         ],
         "responses": {
@@ -6379,6 +6673,206 @@
           }
         },
         "summary": "List Library"
+      }
+    },
+    "/api/workspaces/{workspace_id}/library/archive": {
+      "post": {
+        "description": "Archives (or brings back) the articles chosen.",
+        "operationId": "archive_selection_api_workspaces__workspace_id__library_archive_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArchiveSelectionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutcomeView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Archive Selection"
+      }
+    },
+    "/api/workspaces/{workspace_id}/library/delete": {
+      "post": {
+        "description": "Deletes the articles chosen for good: archived ones only (archive first).",
+        "operationId": "delete_selection_api_workspaces__workspace_id__library_delete_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SelectionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutcomeView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Selection"
+      }
+    },
+    "/api/workspaces/{workspace_id}/library/duplicate": {
+      "post": {
+        "description": "A copy of each article chosen, from its validated version, else its latest.",
+        "operationId": "duplicate_selection_api_workspaces__workspace_id__library_duplicate_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SelectionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutcomeView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Duplicate Selection"
+      }
+    },
+    "/api/workspaces/{workspace_id}/library/export": {
+      "post": {
+        "description": "The articles chosen in one ZIP, a file each: the validated version, else the latest.",
+        "operationId": "export_selection_api_workspaces__workspace_id__library_export_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExportSelectionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/zip": {}
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Export Selection"
       }
     },
     "/api/workspaces/{workspace_id}/library/tags": {
@@ -6423,6 +6917,51 @@
           }
         },
         "summary": "List Tags"
+      }
+    },
+    "/api/workspaces/{workspace_id}/library/topics": {
+      "get": {
+        "description": "The topics of the articles of the Library: those of the items of their briefs.",
+        "operationId": "list_library_topics_api_workspaces__workspace_id__library_topics_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TopicRefView"
+                  },
+                  "title": "Response List Library Topics Api Workspaces  Workspace Id  Library Topics Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Library Topics"
       }
     },
     "/api/workspaces/{workspace_id}/media": {

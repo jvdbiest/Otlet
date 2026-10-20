@@ -45,6 +45,37 @@ class Exports:
         self._docx = docx
         self._pdf = pdf
 
+    def export_many(
+        self, context: WorkspaceContext, picks: list[tuple[UUID, int]], kind: str
+    ) -> Exported | None:
+        """Several versions in one ZIP (Joël, 2026-10-20): a file each, in `kind`; a Markdown
+        with images keeps its folder. None when none of them exists."""
+        buffer = io.BytesIO()
+        names: set[str] = set()
+        written = 0
+        with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
+            for article_id, number in picks:
+                exported = self.export(context, article_id, number, kind)
+                if exported is None:
+                    continue
+                stem, _, extension = exported.filename.rpartition(".")
+                name, n = exported.filename, 1
+                while name in names:  # two articles of the same title
+                    n += 1
+                    name = f"{stem}-{n}.{extension}"
+                names.add(name)
+                if extension == "zip":
+                    folder = name.rpartition(".")[0]
+                    with zipfile.ZipFile(io.BytesIO(exported.data)) as inner:
+                        for entry in inner.namelist():
+                            archive.writestr(f"{folder}/{entry}", inner.read(entry))
+                else:
+                    archive.writestr(name, exported.data)
+                written += 1
+        if written == 0:
+            return None
+        return Exported(buffer.getvalue(), "application/zip", f"articles-{kind}.zip")
+
     def export(
         self, context: WorkspaceContext, article_id: UUID, number: int, kind: str
     ) -> Exported | None:

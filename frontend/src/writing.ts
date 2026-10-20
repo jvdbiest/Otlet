@@ -230,14 +230,19 @@ export type LibraryEntryView = components["schemas"]["LibraryEntryView"];
 export type ArticleStatus = ArticleView["status"];
 
 /** The Library (X04): the articles sent to it, searched and filtered. */
-export const libraryQuery = (workspaceId: string, q: string, archived: boolean, tag: string) =>
+export const libraryQuery = (workspaceId: string, q: string, archived: boolean, tag: string, topicId = "") =>
   queryOptions({
-    queryKey: ["workspaces", workspaceId, "library", q, archived, tag],
+    queryKey: ["workspaces", workspaceId, "library", q, archived, tag, topicId],
     queryFn: async (): Promise<LibraryEntryView[]> => {
       const { data, error, response } = await api.GET("/api/workspaces/{workspace_id}/library", {
         params: {
           path: { workspace_id: workspaceId },
-          query: { q, ...(archived ? { status: "archive" as const } : {}), ...(tag ? { tag } : {}) },
+          query: {
+            q,
+            ...(archived ? { status: "archive" as const } : {}),
+            ...(tag ? { tag } : {}),
+            ...(topicId ? { topic_id: topicId } : {}),
+          },
         },
       });
       if (data === undefined) {
@@ -252,6 +257,21 @@ export const libraryTagsQuery = (workspaceId: string) =>
     queryKey: ["workspaces", workspaceId, "library-tags"],
     queryFn: async (): Promise<string[]> => {
       const { data, error, response } = await api.GET("/api/workspaces/{workspace_id}/library/tags", {
+        params: { path: { workspace_id: workspaceId } },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+  });
+
+/** The topics of the Library's articles: those of the items of their briefs (Joël, 2026-10-20). */
+export const libraryTopicsQuery = (workspaceId: string) =>
+  queryOptions({
+    queryKey: ["workspaces", workspaceId, "library-topics"],
+    queryFn: async (): Promise<{ id: string; name: string }[]> => {
+      const { data, error, response } = await api.GET("/api/workspaces/{workspace_id}/library/topics", {
         params: { path: { workspace_id: workspaceId } },
       });
       if (data === undefined) {
@@ -276,6 +296,42 @@ export const articleQuery = (workspaceId: string, articleId: string) =>
   });
 
 /** « Envoyer en Bibliothèque », or « Valider » a later version. */
+/** An article written by hand, without a brief: in the Library at once (Joël, 2026-10-20). */
+export function useCreateArticle(workspaceId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (title: string) => {
+      const { data, error, response } = await api.POST("/api/workspaces/{workspace_id}/articles", {
+        params: { path: { workspace_id: workspaceId } },
+        body: { title },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
+  });
+}
+
+/** « Dupliquer »: a new article, without a brief, from a copy of a version. */
+export function useDuplicateArticle(workspaceId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ articleId, number }: { articleId: string; number: number }) => {
+      const { data, error, response } = await api.POST(
+        "/api/workspaces/{workspace_id}/articles/{article_id}/duplicate",
+        { params: { path: { workspace_id: workspaceId, article_id: articleId } }, body: { number } },
+      );
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
+  });
+}
+
 export function useSendArticle(workspaceId: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -308,6 +364,53 @@ export function useArchiveArticle(workspaceId: string) {
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
   });
+}
+
+export type LibraryAction = "archive" | "unarchive" | "duplicate" | "delete";
+export type ExportKind = "pdf" | "docx" | "html" | "md" | "txt";
+
+/** An action on the articles chosen in the Library (Joël, 2026-10-20): what was done, and what
+ * could not be, with why. Deleting takes archived articles only. */
+export function useLibraryAction(workspaceId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ action, articleIds }: { action: LibraryAction; articleIds: string[] }) => {
+      const path = { params: { path: { workspace_id: workspaceId } } };
+      const answer =
+        action === "archive" || action === "unarchive"
+          ? await api.POST("/api/workspaces/{workspace_id}/library/archive", {
+              ...path,
+              body: { article_ids: articleIds, archived: action === "archive" },
+            })
+          : action === "duplicate"
+            ? await api.POST("/api/workspaces/{workspace_id}/library/duplicate", {
+                ...path,
+                body: { article_ids: articleIds },
+              })
+            : await api.POST("/api/workspaces/{workspace_id}/library/delete", {
+                ...path,
+                body: { article_ids: articleIds },
+              });
+      if (answer.data === undefined) {
+        throw apiError(answer.response, answer.error);
+      }
+      return answer.data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
+  });
+}
+
+/** The articles chosen in one ZIP, a file each: the validated version, else the latest. */
+export async function exportSelection(workspaceId: string, articleIds: string[], kind: ExportKind): Promise<Blob> {
+  const { data, error, response } = await api.POST("/api/workspaces/{workspace_id}/library/export", {
+    params: { path: { workspace_id: workspaceId } },
+    body: { article_ids: articleIds, kind },
+    parseAs: "blob",
+  });
+  if (data === undefined) {
+    throw apiError(response, error);
+  }
+  return data;
 }
 
 export function useSetTags(workspaceId: string) {

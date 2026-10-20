@@ -46,10 +46,11 @@ from otlet.writing.application.briefs import Briefs
 from otlet.writing.application.charter import Charter, CharterError, Charters
 from otlet.writing.application.drafts import GENERATE_DRAFT, Drafts, MatterError
 from otlet.writing.application.editing import Editing
-from otlet.writing.application.library import Library, TagError, clean_tags
+from otlet.writing.application.library import Library, TagError, TitleError, clean_tags
 from otlet.writing.domain.article import Version
 from otlet.writing.domain.brief import BriefFields, Length
 from otlet.writing.domain.charter import DEFAULT_CHARTER
+from otlet.writing.domain.document import check
 
 pytestmark = requires_database
 
@@ -511,12 +512,64 @@ def test_the_library_holds_the_articles_sent_to_it(world: World) -> None:
     assert library.tags(context) == ["Formule 1", "Pilotes"]
     assert len(library.entries(context, tag="Pilotes")) == 1
     assert library.entries(context, tag="Autre") == []
+    # Topics: those of the items of its brief, read in the watch (Joël, 2026-10-20).
+    with db.workspace_transaction(world.engine, context.workspace_id) as connection:
+        topic = connection.execute(
+            sa.text(
+                "INSERT INTO topics (workspace_id, name, keywords) VALUES (:w, 'Moto', '{moto}')"
+                " RETURNING id"
+            ),
+            {"w": context.workspace_id},
+        ).scalar_one()
+        connection.execute(
+            sa.text(
+                "INSERT INTO topic_matches (workspace_id, topic_id, item_id, score, contributions)"
+                " SELECT :w, :t, item_id, 3, '[]' FROM brief_items WHERE brief_id = :b"
+            ),
+            {"w": context.workspace_id, "t": topic, "b": article.brief_id},
+        )
+    (entry,) = library.entries(context, topic_id=topic)
+    assert entry.topics == ((topic, "Moto"),)
+    assert library.topics(context) == [(topic, "Moto")]
+    assert library.entries(context, topic_id=uuid.uuid4()) == []
     archived = library.archive(context, article.id, True)
     assert archived is not None and archived.status == "archive"
     assert library.entries(context) == []
     assert len(library.entries(context, status="archive")) == 1
     restored = library.archive(context, article.id, False)
     assert restored is not None and restored.status == "valide"
+    # Duplicated (Joël, 2026-10-20): a new article without a brief, a copy of the version,
+    # its tags with it, in the Library as a draft.
+    copy = library.duplicate(context, article.id, article.versions[0].number)
+    assert copy is not None and copy.id != article.id and copy.brief_id is None
+    assert copy.title.startswith("Copie de ") and copy.tags == ("Formule 1", "Pilotes")
+    assert copy.versions[0].document == article.versions[0].document
+    assert copy.versions[0].origin == "humain" and copy.status == "brouillon"
+    assert library.duplicate(context, article.id, 999) is None
+    # Written by hand, without a brief: an empty page, in the Library at once.
+    blank = library.create(context, "  Mon billet  ")
+    assert (blank.title, blank.brief_id, blank.status) == ("Mon billet", None, "brouillon")
+    assert check(blank.versions[0].document, set()) == []
+    with pytest.raises(TitleError):
+        library.create(context, "   ")
+    assert {e.title for e in library.entries(context)} >= {"Mon billet", copy.title}
+    # A selection (Joël, 2026-10-20): deleted for good only once archived.
+    missing = uuid.uuid4()
+    refused = library.delete_many(context, [blank.id, missing])
+    assert refused.done == () and set(refused.failed) == {
+        (blank.id, "not_archived"),
+        (missing, "article_not_found"),
+    }
+    assert library.archive_many(context, [blank.id, copy.id, blank.id], True).done == (
+        blank.id,
+        copy.id,
+    )
+    assert library.delete_many(context, [blank.id]).done == (blank.id,)
+    assert library.article(context, blank.id) is None
+    assert library.archive_many(context, [copy.id], False).failed == ()
+    assert library.shown_version(context, article.id) == restored.validated_version
+    copies = library.duplicate_many(context, [article.id, missing])
+    assert len(copies.done) == 1 and copies.failed == ((missing, "article_not_found"),)
     # The validated version never changes: saving it adds a version, which goes once validated.
     model = restored.versions[0]
     edited = Editing(world.articles).save(

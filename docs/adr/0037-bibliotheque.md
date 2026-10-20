@@ -18,3 +18,11 @@
 6. **Recherche** sur le titre et le texte de la dernière version (texte brut gardé à chaque version) ; pas dans les anciennes versions en É1.
 7. **Images** : elles appartiennent à l'espace ; la médiathèque séparée (réutilisation, usages, OCR) viendra plus tard.
 8. **Exports** faits à la demande, jamais stockés (X03c).
+
+## Révision (Joël, 2026-10-20) : la Bibliothèque gère son contenu
+
+- **Sujets** : ceux des éléments du brief de l'article, lus dans la Veille ; filtre par sujet et pastilles sur chaque carte.
+- **Dupliquer** une version donne un nouvel article sans brief, avec ses sources, ses images et ses étiquettes. **Nouvel article** : écrit à la main, sans brief, directement dans la Bibliothèque.
+- **Sélection** : une case par article, « Tout sélectionner » sur la liste affichée, une barre d'actions : Modifier (un seul article), Dupliquer, Exporter (un ZIP, un fichier par article, au format choisi), Archiver ou Désarchiver, Supprimer. Publier viendra avec la publication.
+- **Suppression définitive des seuls articles archivés** : on archive d'abord, puis on supprime, après confirmation. Les versions partent avec l'article ; le brief reste.
+- **Export et duplication d'une sélection** prennent la version validée et, faute de version validée, la version courante (précise le point 4 pour les articles encore en brouillon).

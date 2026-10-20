@@ -556,3 +556,57 @@ def test_a_source_moves_to_another_address(world: World) -> None:
     with pytest.raises(CollectionError) as taken:
         world.collection.update_source(world.context, second.id, url=SITE + "/news.xml")
     assert taken.value.code == "already_followed"
+
+
+def test_an_agreement_covers_the_new_articles_of_a_source(world: World) -> None:
+    open_site(world.web, "a")
+    world.web.pages[SITE + "/.well-known/tdmrep.json"] = (
+        200,
+        {},
+        b'[{"location": "/", "tdm-reservation": 1}]',
+    )
+    source = world.collection.add_source(world.context, FEED)
+    world.run_jobs()
+    (old,) = world.collection.list_items(world.context)
+    assert old.text_reason == "tdm_reserved_file"
+    # An agreement or a licence only, for a whole site (Joël, 2026-10-20).
+    with pytest.raises(RightsError) as refused:
+        world.collection.declare_source_rights(
+            world.context, source.id, basis="own_content", certified=True
+        )
+    assert refused.value.code == "invalid_basis"
+    declared = world.collection.declare_source_rights(
+        world.context,
+        source.id,
+        basis="publisher_agreement",
+        reference="Accord 2026",
+        certified=True,
+    )
+    assert declared is not None and declared.commitment.startswith("Je certifie disposer d'un")
+    assert (
+        world.collection.declare_source_rights(
+            world.context, source.id, basis="licence", certified=True
+        )
+        is None
+    )  # one in force at a time
+    # A new article, collected after the declaration, is read under it; the old one is not.
+    world.clock[0] = world.clock[0] + timedelta(hours=2)
+    open_site(world.web, "a", "b")
+    world.collection.collect_now(world.context, source.id)
+    world.run_jobs()
+    items = {item.title: item for item in world.collection.list_items(world.context)}
+    assert (items["Article b"].text_status, items["Article b"].text_reason) == (
+        TextStatus.MANUAL,
+        "declared_rights",
+    )
+    assert items["Article a"].text_reason == "tdm_reserved_file"
+    # Withdrawn: the texts read under it go, the reservation comes back.
+    assert world.collection.withdraw_source_rights(world.context, source.id)
+    back = world.collection.get_item(world.context, items["Article b"].id)
+    assert back is not None
+    assert (back.text_status, back.text_reason, back.text) == (
+        TextStatus.SUMMARY_ONLY,
+        "tdm_reserved_file",
+        None,
+    )
+    assert world.collection.source_rights(world.context, source.id) is None

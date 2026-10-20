@@ -5,7 +5,7 @@ import re
 import unicodedata
 from collections import Counter
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from enum import StrEnum
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from uuid import UUID
@@ -138,6 +138,12 @@ RIGHTS_COMMITMENT = (
     "Je certifie disposer des droits ou autorisations nécessaires pour importer et exploiter ce"
     " contenu dans Otlet. J'assume l'entière responsabilité de son utilisation."
 )
+SOURCE_RIGHTS_BASES = ("publisher_agreement", "licence")  # a whole site: nothing else
+SOURCE_RIGHTS_COMMITMENT = (
+    "Je certifie disposer d'un accord de l'éditeur ou d'une licence couvrant l'import et"
+    " l'exploitation des articles de cette source dans Otlet. J'assume l'entière responsabilité"
+    " de leur utilisation."
+)
 DECLARED_RIGHTS = "declared_rights"  # the text reason of a text read under a declaration
 RIGHTS_DETAIL_MAX = 500
 
@@ -145,6 +151,21 @@ RIGHTS_DETAIL_MAX = 500
 def reserved(reason: str | None) -> bool:
     """A text the publisher reserves from text mining: only a declaration of rights opens it."""
     return reason is not None and reason.startswith("tdm_reserved")
+
+
+@dataclass(frozen=True, slots=True)
+class SourceRights:
+    """A declaration covering a source: the articles collected from `declared_at` on, until
+    `ends_on` (a licence that ends) when given."""
+
+    id: UUID
+    source_id: UUID
+    declared_by: UUID
+    basis: str
+    reference: str
+    commitment: str
+    declared_at: datetime
+    ends_on: date | None
 
 
 @dataclass(frozen=True, slots=True)

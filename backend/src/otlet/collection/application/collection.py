@@ -8,7 +8,7 @@ fetches, then writes the outcome in one transaction.
 import logging
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from urllib.parse import urlsplit
 from uuid import UUID, uuid4
 
@@ -309,6 +309,55 @@ class Collection:
             return None
         return self._store.get_item(context.workspace_id, item_id)
 
+    def declare_source_rights(
+        self,
+        context: WorkspaceContext,
+        source_id: UUID,
+        *,
+        basis: str,
+        reference: str = "",
+        ends_on: date | None = None,
+        certified: bool,
+    ) -> model.SourceRights | None:
+        """An agreement or a licence covering a whole source (Joël, 2026-10-20): the articles
+        collected from now on are read under it, within robots.txt and the limits of the site,
+        until `ends_on` when given. None when the source is unknown or already covered."""
+        if not self._declarations:
+            raise RightsError("declarations_disabled", "this instance does not allow declarations")
+        if not certified:
+            raise RightsError("not_certified", "the commitment must be accepted")
+        if basis not in model.SOURCE_RIGHTS_BASES:
+            raise RightsError("invalid_basis", f"a basis is one of {model.SOURCE_RIGHTS_BASES}")
+        reference = reference.strip()
+        if len(reference) > model.RIGHTS_DETAIL_MAX:
+            raise RightsError("detail_too_long", f"{model.RIGHTS_DETAIL_MAX} characters at most")
+        now = self._clock()
+        if ends_on is not None and ends_on < now.date():
+            raise RightsError("ended", "the end date is past")
+        declaration = model.SourceRights(
+            id=uuid4(),
+            source_id=source_id,
+            declared_by=context.user_id,
+            basis=basis,
+            reference=reference,
+            commitment=model.SOURCE_RIGHTS_COMMITMENT,
+            declared_at=now,
+            ends_on=ends_on,
+        )
+        if not self._store.declare_source_rights(context.workspace_id, declaration):
+            return None
+        return declaration
+
+    def source_rights(
+        self, context: WorkspaceContext, source_id: UUID
+    ) -> model.SourceRights | None:
+        return self._store.source_rights(context.workspace_id, source_id)
+
+    def withdraw_source_rights(self, context: WorkspaceContext, source_id: UUID) -> bool:
+        """Withdraws the declaration of a source: the texts read under it are erased, its items
+        reserved again; the declaration stays in the record, marked withdrawn."""
+        return self._store.withdraw_source_rights(context.workspace_id, source_id, self._clock())
+
     def rights_declaration(
         self, context: WorkspaceContext, item_id: UUID
     ) -> model.RightsDeclaration | None:
@@ -432,7 +481,10 @@ class Collection:
         feed_mining = compliance.mining(source.feed_url, policy.tdm_rules, dict(result.headers))
         legal = self._source_decision(workspace_id, feed, feed_mining)
         self._note(workspace_id, source, source.feed_url, legal[1], legal[0])
-        items = [self._new_item(entry, feed_mining) for entry in feed.entries]
+        covered = not feed_mining.allowed and self._store.source_covered(
+            workspace_id, source_id, now.date()
+        )
+        items = [self._new_item(entry, feed_mining, covered) for entry in feed.entries]
         new = self._store.finish_collection(
             workspace_id,
             source_id,
@@ -469,8 +521,8 @@ class Collection:
         return LegalStatus.FULL_TEXT, page_file or feed_mining
 
     @staticmethod
-    def _new_item(entry: model.FeedEntry, feed_mining: Decision) -> NewItem:
-        if not feed_mining.allowed:
+    def _new_item(entry: model.FeedEntry, feed_mining: Decision, covered: bool = False) -> NewItem:
+        if not feed_mining.allowed and not (covered and entry.url is not None):
             return NewItem(entry, TextStatus.SUMMARY_ONLY, feed_mining.reason)
         if entry.url is None:
             # Nothing more to read: the feed is all there is.
@@ -529,6 +581,11 @@ class Collection:
         if url is None:
             return
         reading = self._read_page(workspace_id, url)
+        if model.reserved(reading.reason) and self._store.covered_by_source_rights(
+            workspace_id, item_id, self._clock().date()
+        ):
+            # Collected while the source's declaration was in force (Joël, 2026-10-20).
+            reading = self._read_page(workspace_id, url, declared=True)
         self._store.set_item_text(
             workspace_id,
             item_id,

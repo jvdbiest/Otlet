@@ -3,7 +3,7 @@
 depend on its context (F03); errors carry the stable code of CollectionError as `detail`."""
 
 from collections.abc import Callable
-from datetime import datetime
+from datetime import date, datetime
 from typing import Annotated, Any, Literal, cast
 from uuid import UUID
 
@@ -140,6 +140,39 @@ class DeclarationView(BaseModel):
             declared_by=found.declared_by,
             declared_at=found.declared_at,
         )
+
+
+class SourceRightsView(BaseModel):
+    allowed: bool  # the instance allows declarations (OTLET_RIGHTS_DECLARATIONS)
+    commitment: str  # what the person certifies for a whole source
+    declaration: "SourceDeclarationView | None"
+
+
+class SourceDeclarationView(BaseModel):
+    basis: Literal["publisher_agreement", "licence"]
+    reference: str
+    commitment: str
+    declared_by: UUID
+    declared_at: datetime
+    ends_on: date | None
+
+    @classmethod
+    def of(cls, found: model.SourceRights) -> "SourceDeclarationView":
+        return cls(
+            basis=cast(Any, found.basis),
+            reference=found.reference,
+            commitment=found.commitment,
+            declared_by=found.declared_by,
+            declared_at=found.declared_at,
+            ends_on=found.ends_on,
+        )
+
+
+class SourceRightsBody(BaseModel):
+    basis: Literal["publisher_agreement", "licence"]
+    reference: str = Field(default="", max_length=500)
+    ends_on: date | None = None  # a licence that ends
+    certified: bool
 
 
 class RightsView(BaseModel):
@@ -285,6 +318,51 @@ def build_router(
         feed leaves its address behind, so that the collection does not bring it back."""
         if not collection.remove_item(context, item_id):
             raise HTTPException(status.HTTP_404_NOT_FOUND, "item_not_found")
+
+    @router.get("/sources/{source_id}/rights")
+    def get_source_rights(source_id: UUID, context: Context) -> SourceRightsView:
+        """The declaration covering a source, if any (Joël, 2026-10-20)."""
+        if collection.get_source(context, source_id) is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "source_not_found")
+        found = collection.source_rights(context, source_id)
+        return SourceRightsView(
+            allowed=collection.declarations_allowed,
+            commitment=model.SOURCE_RIGHTS_COMMITMENT,
+            declaration=None if found is None else SourceDeclarationView.of(found),
+        )
+
+    @router.post("/sources/{source_id}/rights", status_code=status.HTTP_201_CREATED)
+    def declare_source_rights(
+        source_id: UUID, body: SourceRightsBody, context: Context
+    ) -> SourceDeclarationView:
+        """An agreement or a licence covering the source: the articles collected from now on
+        are read under it, within robots.txt and the limits of the site."""
+        if collection.get_source(context, source_id) is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "source_not_found")
+        try:
+            found = collection.declare_source_rights(
+                context,
+                source_id,
+                basis=body.basis,
+                reference=body.reference,
+                ends_on=body.ends_on,
+                certified=body.certified,
+            )
+        except RightsError as error:
+            code = (
+                status.HTTP_403_FORBIDDEN
+                if error.code == "declarations_disabled"
+                else status.HTTP_422_UNPROCESSABLE_CONTENT
+            )
+            raise HTTPException(code, error.code) from error
+        if found is None:
+            raise HTTPException(status.HTTP_409_CONFLICT, "already_declared")
+        return SourceDeclarationView.of(found)
+
+    @router.delete("/sources/{source_id}/rights", status_code=status.HTTP_204_NO_CONTENT)
+    def withdraw_source_rights(source_id: UUID, context: Context) -> None:
+        if not collection.withdraw_source_rights(context, source_id):
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "declaration_not_found")
 
     @router.get("/items/{item_id}/rights")
     def get_rights(item_id: UUID, context: Context) -> RightsView:

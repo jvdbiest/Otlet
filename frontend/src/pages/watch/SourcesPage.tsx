@@ -23,6 +23,7 @@ import {
   matchesFilter,
   reasonText,
 } from "./labels.ts";
+import { SourceRights } from "./SourceRights.tsx";
 import { emptyStyles, styles } from "./styles.ts";
 
 /** The sources of the workspace: adding one, their legal status and health (U01, M-08). */
@@ -354,6 +355,11 @@ function SourceCard({ workspaceId, source }: { workspaceId: string; source: Sour
           {t("sources.actionFailed")}
         </p>
       )}
+      <SourceRights
+        workspaceId={workspaceId}
+        sourceId={source.id}
+        reserved={source.legal_reason?.startsWith("tdm_reserved") === true}
+      />
       {editing && (
         <SourceEdit
           workspaceId={workspaceId}

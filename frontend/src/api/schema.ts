@@ -1146,6 +1146,32 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/sources/{source_id}/rights": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Source Rights
+         * @description The declaration covering a source, if any (Joël, 2026-10-20).
+         */
+        get: operations["get_source_rights_api_workspaces__workspace_id__sources__source_id__rights_get"];
+        put?: never;
+        /**
+         * Declare Source Rights
+         * @description An agreement or a licence covering the source: the articles collected from now on
+         *     are read under it, within robots.txt and the limits of the site.
+         */
+        post: operations["declare_source_rights_api_workspaces__workspace_id__sources__source_id__rights_post"];
+        /** Withdraw Source Rights */
+        delete: operations["withdraw_source_rights_api_workspaces__workspace_id__sources__source_id__rights_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/topics": {
         parameters: {
             query?: never;
@@ -2146,6 +2172,55 @@ export interface components {
             name?: string | null;
             /** Url */
             url?: string | null;
+        };
+        /** SourceDeclarationView */
+        SourceDeclarationView: {
+            /**
+             * Basis
+             * @enum {string}
+             */
+            basis: "publisher_agreement" | "licence";
+            /** Commitment */
+            commitment: string;
+            /**
+             * Declared At
+             * Format: date-time
+             */
+            declared_at: string;
+            /**
+             * Declared By
+             * Format: uuid
+             */
+            declared_by: string;
+            /** Ends On */
+            ends_on: string | null;
+            /** Reference */
+            reference: string;
+        };
+        /** SourceRightsBody */
+        SourceRightsBody: {
+            /**
+             * Basis
+             * @enum {string}
+             */
+            basis: "publisher_agreement" | "licence";
+            /** Certified */
+            certified: boolean;
+            /** Ends On */
+            ends_on?: string | null;
+            /**
+             * Reference
+             * @default
+             */
+            reference: string;
+        };
+        /** SourceRightsView */
+        SourceRightsView: {
+            /** Allowed */
+            allowed: boolean;
+            /** Commitment */
+            commitment: string;
+            declaration: components["schemas"]["SourceDeclarationView"] | null;
         };
         /**
          * SourceTextView
@@ -4820,6 +4895,104 @@ export interface operations {
                 content: {
                     "application/json": unknown;
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_source_rights_api_workspaces__workspace_id__sources__source_id__rights_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceRightsView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    declare_source_rights_api_workspaces__workspace_id__sources__source_id__rights_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SourceRightsBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceDeclarationView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    withdraw_source_rights_api_workspaces__workspace_id__sources__source_id__rights_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

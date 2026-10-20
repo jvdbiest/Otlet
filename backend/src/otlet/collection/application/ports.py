@@ -3,7 +3,7 @@
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 from typing import Protocol
 from uuid import UUID
 
@@ -18,6 +18,7 @@ from otlet.collection.domain.model import (
     ParsedFeed,
     RightsDeclaration,
     Source,
+    SourceRights,
     TextStatus,
 )
 from otlet.platform.http import FetchResult
@@ -176,6 +177,27 @@ class CollectionStore(Protocol):
 
     def withdraw_rights(self, workspace_id: UUID, item_id: UUID, at: datetime) -> bool:
         """Withdraws the declaration in force: its text is erased, the reservation comes back."""
+        ...
+
+    def declare_source_rights(self, workspace_id: UUID, declaration: SourceRights) -> bool:
+        """Keeps a declaration covering a source; False when the source is unknown or already
+        covered by one in force."""
+        ...
+
+    def source_rights(self, workspace_id: UUID, source_id: UUID) -> SourceRights | None:
+        """The declaration in force on a source, if any (ended ones included: `ends_on` says)."""
+        ...
+
+    def withdraw_source_rights(self, workspace_id: UUID, source_id: UUID, at: datetime) -> bool:
+        """Withdraws it: the texts read under it are erased, the items reserved again."""
+        ...
+
+    def covered_by_source_rights(self, workspace_id: UUID, item_id: UUID, today: date) -> bool:
+        """The item was collected while a declaration of its source was in force."""
+        ...
+
+    def source_covered(self, workspace_id: UUID, source_id: UUID, today: date) -> bool:
+        """A declaration in force covers the source today."""
         ...
 
     def retry_text(self, workspace_id: UUID, item_id: UUID) -> bool:

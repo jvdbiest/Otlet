@@ -26,3 +26,7 @@ La réserve de fouille de textes et de données (directive (UE) 2019/790, articl
 
 - À faire valider par un juriste avant d'ouvrir une plateforme hébergée à d'autres personnes : la déclaration protège surtout en auto-hébergement.
 - Plus tard, si le besoin vient : une déclaration par source, pour les accords permanents avec un éditeur.
+
+## Révision du 2026-10-20 : une déclaration pour toute une source
+
+Quand un accord couvre tout un site, une déclaration se fait sur la source (migration 0033). Bases limitées à l'accord de l'éditeur et à la licence ; une date de fin facultative (une licence expire). Elle ne vaut que pour les articles collectés à partir de la déclaration ; ceux d'avant se déclarent un par un. Une seule en vigueur par source, conservée comme les autres, avec les mots exacts de l'engagement. La retirer efface les textes lus sous elle (sauf ceux qu'une déclaration d'élément couvre) et rend la réserve. Les mêmes limites techniques valent : robots.txt, ni connexion ni paywall.

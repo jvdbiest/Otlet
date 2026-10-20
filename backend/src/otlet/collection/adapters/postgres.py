@@ -4,7 +4,7 @@ row-level security filters what a query would forget; only `claim_due_sources` c
 workspaces, through the owner function of the same name (migration 0005)."""
 
 import json
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 from uuid import UUID
 
@@ -33,6 +33,7 @@ from otlet.collection.domain.model import (
     Origin,
     RightsDeclaration,
     Source,
+    SourceRights,
     TextStatus,
 )
 from otlet.jobs.application.registry import Enqueue
@@ -637,6 +638,126 @@ class PostgresCollectionStore:
                 {"id": item_id, "reason": previous},
             )
             return True
+
+    def declare_source_rights(self, workspace_id: UUID, declaration: SourceRights) -> bool:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            source = connection.execute(
+                sa.text(f"SELECT legal_reason FROM sources WHERE id = :id AND {here()} FOR UPDATE"),
+                {"id": declaration.source_id},
+            ).first()
+            if source is None:
+                return False
+            in_force = connection.execute(
+                sa.text(
+                    "SELECT 1 FROM rights_declarations WHERE source_id = :id"
+                    f" AND withdrawn_at IS NULL AND {here()}"
+                ),
+                {"id": declaration.source_id},
+            ).first()
+            if in_force is not None:
+                return False
+            connection.execute(
+                sa.text(
+                    "INSERT INTO rights_declarations (id, workspace_id, source_id, declared_by,"
+                    " basis, detail, reference, commitment, previous_reason, declared_at, ends_on)"
+                    " VALUES (:id, :workspace, :source, :user, :basis, '', :reference,"
+                    " :commitment, :previous, :at, :ends)"
+                ),
+                {
+                    "id": declaration.id,
+                    "workspace": workspace_id,
+                    "source": declaration.source_id,
+                    "user": declaration.declared_by,
+                    "basis": declaration.basis,
+                    "reference": declaration.reference,
+                    "commitment": declaration.commitment,
+                    # The reason its items were out of reach, given back on withdrawal.
+                    "previous": source.legal_reason or "tdm_reserved_file",
+                    "at": declaration.declared_at,
+                    "ends": declaration.ends_on,
+                },
+            )
+            return True
+
+    def source_rights(self, workspace_id: UUID, source_id: UUID) -> SourceRights | None:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            row = connection.execute(
+                sa.text(
+                    "SELECT id, source_id, declared_by, basis, reference, commitment,"
+                    " declared_at, ends_on FROM rights_declarations"
+                    f" WHERE source_id = :id AND withdrawn_at IS NULL AND {here()}"
+                ),
+                {"id": source_id},
+            ).first()
+        if row is None:
+            return None
+        return SourceRights(
+            id=row.id,
+            source_id=row.source_id,
+            declared_by=row.declared_by,
+            basis=row.basis,
+            reference=row.reference,
+            commitment=row.commitment,
+            declared_at=row.declared_at,
+            ends_on=row.ends_on,
+        )
+
+    def withdraw_source_rights(self, workspace_id: UUID, source_id: UUID, at: datetime) -> bool:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            withdrawn = connection.execute(
+                sa.text(
+                    "UPDATE rights_declarations SET withdrawn_at = :at"
+                    f" WHERE source_id = :id AND withdrawn_at IS NULL AND {here()}"
+                    " RETURNING previous_reason, declared_at"
+                ),
+                {"id": source_id, "at": at},
+            ).first()
+            if withdrawn is None:
+                return False
+            # The texts read under it go; those an item's own declaration covers stay.
+            connection.execute(
+                sa.text(
+                    "UPDATE source_items AS i SET text_status = 'summary_only',"
+                    " text_reason = :reason, text = NULL"
+                    " WHERE i.source_id = :id AND i.text_reason = 'declared_rights'"
+                    " AND i.collected_at >= :since AND NOT EXISTS (SELECT 1 FROM"
+                    " rights_declarations AS d WHERE d.item_id = i.id AND d.withdrawn_at IS NULL"
+                    f" AND {here('d')}) AND {here('i')}"
+                ),
+                {
+                    "id": source_id,
+                    "reason": withdrawn.previous_reason,
+                    "since": withdrawn.declared_at,
+                },
+            )
+            return True
+
+    def covered_by_source_rights(self, workspace_id: UUID, item_id: UUID, today: date) -> bool:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            found = connection.execute(
+                sa.text(
+                    "SELECT 1 FROM source_items AS i JOIN rights_declarations AS d"
+                    " ON d.source_id = i.source_id AND d.workspace_id = i.workspace_id"
+                    " WHERE i.id = :id AND d.withdrawn_at IS NULL"
+                    " AND i.collected_at >= d.declared_at"
+                    " AND (d.ends_on IS NULL OR d.ends_on >= :today)"
+                    f" AND {here('i')}"
+                ),
+                {"id": item_id, "today": today},
+            ).first()
+        return found is not None
+
+    def source_covered(self, workspace_id: UUID, source_id: UUID, today: date) -> bool:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            found = connection.execute(
+                sa.text(
+                    "SELECT 1 FROM rights_declarations WHERE source_id = :id"
+                    " AND withdrawn_at IS NULL AND (ends_on IS NULL OR ends_on >= :today)"
+                    f" AND {here()}"
+                ),
+                {"id": source_id, "today": today},
+            ).first()
+        return found is not None
 
     def retry_text(self, workspace_id: UUID, item_id: UUID) -> bool:
         with workspace_transaction(self._engine, workspace_id) as connection:

@@ -34,6 +34,8 @@ const REASONS = [
 ] as const;
 const ERRORS = [
   "not_retryable",
+  "already_declared",
+  "ended",
   "not_reserved",
   "not_certified",
   "detail_required",

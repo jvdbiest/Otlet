@@ -249,7 +249,9 @@
     "invalid_basis": "Choisissez la base de vos droits.",
     "detail_too_long": "500 caractères au plus.",
     "declarations_disabled": "L'administrateur de cette instance n'autorise pas les déclarations de droits.",
-    "declaration_not_found": "Aucune déclaration en cours sur cet élément."
+    "declaration_not_found": "Aucune déclaration en cours sur cet élément.",
+    "already_declared": "Un accord est déjà déclaré pour cette source.",
+    "ended": "La date de fin est déjà passée."
   },
   "manual": {
     "title": "Ajouter à la main",
@@ -877,5 +879,16 @@
     "commitmentKept": "Engagement accepté",
     "withdraw": "Retirer ma déclaration",
     "withdrawConfirm": "Le texte récupéré sera effacé et l'élément redeviendra réservé. Votre déclaration reste dans l'historique."
+  },
+  "sourceRights": {
+    "open": "J'ai un accord ou une licence pour toute cette source…",
+    "help": "Si un accord de l'éditeur ou une licence couvre tout ce site, déclarez-le : les articles collectés à partir de maintenant seront lus sous votre responsabilité, sans jamais passer outre le robots.txt du site, une connexion ou un paywall. Les articles déjà collectés ne changent pas : vous pouvez les déclarer un par un. Votre déclaration est conservée.",
+    "endsOn": "Fin de l'accord ou de la licence (facultatif)",
+    "submit": "Déclarer l'accord pour cette source",
+    "inForce": "Accord déclaré pour cette source",
+    "ended": "Accord déclaré, arrivé à son terme",
+    "declared": "Déclaré le {date} :",
+    "until": "jusqu'au {date}",
+    "withdrawConfirm": "Les textes lus sous cet accord seront effacés et les articles redeviendront réservés. La déclaration reste dans l'historique."
   }
 }

@@ -182,6 +182,55 @@ export function useAddManualUrl(workspaceId: string) {
 }
 
 export type RightsView = components["schemas"]["RightsView"];
+export type SourceRightsView = components["schemas"]["SourceRightsView"];
+export type SourceRightsBasis = components["schemas"]["SourceRightsBody"]["basis"];
+
+/** The agreement or licence covering a source, if any (Joël, 2026-10-20). */
+export const sourceRightsQuery = (workspaceId: string, sourceId: string) =>
+  queryOptions({
+    queryKey: ["workspaces", workspaceId, "sources", sourceId, "rights"],
+    queryFn: async (): Promise<SourceRightsView> => {
+      const { data, error, response } = await api.GET("/api/workspaces/{workspace_id}/sources/{source_id}/rights", {
+        params: { path: { workspace_id: workspaceId, source_id: sourceId } },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+  });
+
+export function useDeclareSourceRights(workspaceId: string, sourceId: string) {
+  const refresh = useRefresh(workspaceId);
+  return useMutation({
+    mutationFn: async (body: { basis: SourceRightsBasis; reference: string; ends_on: string | null; certified: boolean }) => {
+      const { data, error, response } = await api.POST("/api/workspaces/{workspace_id}/sources/{source_id}/rights", {
+        params: { path: { workspace_id: workspaceId, source_id: sourceId } },
+        body,
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: refresh,
+  });
+}
+
+export function useWithdrawSourceRights(workspaceId: string, sourceId: string) {
+  const refresh = useRefresh(workspaceId);
+  return useMutation({
+    mutationFn: async () => {
+      const { error, response } = await api.DELETE("/api/workspaces/{workspace_id}/sources/{source_id}/rights", {
+        params: { path: { workspace_id: workspaceId, source_id: sourceId } },
+      });
+      if (!response.ok) {
+        throw apiError(response, error);
+      }
+    },
+    onSuccess: refresh,
+  });
+}
 export type RightsBasis = components["schemas"]["RightsBody"]["basis"];
 
 /** Whether rights may be declared on an item, and the declaration in force (Joël, 2026-10-20). */

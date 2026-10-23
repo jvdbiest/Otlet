@@ -102,3 +102,4 @@ date,heures,domaine,etape,tache,note
 2026-10-20,1,fonction,E1,I1,Veille : « Tout sélectionner » sur tous les éléments des filtres ; estimation grossière (Claude)
 2026-10-20,1.5,fonction,E1,I1,Veille : supprimer définitivement des éléments archivés (propriétaire, briefs conservés) ; estimation grossière (Claude)
 2026-10-23,4,conception,E1,A1a,assistant de brief et évaluateur documentaire : propositions, maquettes, cas réels, règle hybride, ADR-0041 ; estimation grossière (Claude)
+2026-10-23,1.5,conception,E1,F08,sauvegarde et restauration : analyse, document partagé, ADR-0042 ; estimation grossière (Claude)

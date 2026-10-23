@@ -49,3 +49,4 @@ La numérotation continue celle de l'architecture.
 | [0039](0039-declarations-de-droits.md) | Déclaration de droits sur un texte réservé par son éditeur | Accepté (U01) |
 | [0040](0040-mediatheque.md) | Médiathèque : une image, deux vues | Accepté (X04) |
 | [0041](0041-evaluateur-documentaire.md) | Évaluateur documentaire : juger la matière d'un brief sur cinq critères | Accepté (A1a) |
+| [0042](0042-sauvegarde-et-restauration.md) | Sauvegarde et restauration : un dossier choisi, des copies complètes, restaurer sans écraser | Accepté (F08) |

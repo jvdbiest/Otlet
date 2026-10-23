@@ -11,7 +11,9 @@ import {
 } from "@tanstack/react-router";
 import { AppLayout } from "./layout/AppLayout.tsx";
 import { ArticlePage } from "./pages/library/ArticlePage.tsx";
+import { LibraryLayout } from "./pages/library/LibraryLayout.tsx";
 import { LibraryPage } from "./pages/library/LibraryPage.tsx";
+import { MediaPage } from "./pages/library/MediaPage.tsx";
 import { LoginPage } from "./pages/LoginPage.tsx";
 import { NotFoundPage } from "./pages/NotFoundPage.tsx";
 import { ItemPage } from "./pages/watch/ItemPage.tsx";
@@ -96,7 +98,22 @@ const briefRoute = createRoute({
 });
 
 // The Library (X04): the validated articles, and one article.
-const libraryRoute = createRoute({ getParentRoute: () => appRoute, path: "/bibliotheque", component: LibraryPage });
+const libraryRoute = createRoute({ getParentRoute: () => appRoute, path: "/bibliotheque", component: LibraryLayout });
+const articlesRoute = createRoute({
+  getParentRoute: () => libraryRoute,
+  path: "/",
+  component: function Articles() {
+    return <LibraryPage archived={false} />;
+  },
+});
+const mediaRoute = createRoute({ getParentRoute: () => libraryRoute, path: "medias", component: MediaPage });
+const archivesRoute = createRoute({
+  getParentRoute: () => libraryRoute,
+  path: "archives",
+  component: function Archives() {
+    return <LibraryPage archived />;
+  },
+});
 const articleRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/bibliotheque/articles/$articleId",
@@ -142,7 +159,7 @@ const routeTree = rootRoute.addChildren([
     briefsRoute,
     newBriefRoute,
     briefRoute,
-    libraryRoute,
+    libraryRoute.addChildren([articlesRoute, mediaRoute, archivesRoute]),
     articleRoute,
     settingsRoute,
   ]),

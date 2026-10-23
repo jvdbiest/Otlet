@@ -6,10 +6,11 @@ import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import { Button, Form, Input, Label, TextField } from "react-aria-components";
 import { sourcesQuery, type ItemView } from "../../collection.ts";
-import { useWorkspaceId } from "../../session.ts";
+import { useWorkspaceId, workspacesQuery } from "../../session.ts";
 import {
   ANY_TIME,
   FEED_PAGE_SIZE,
+  feedIds,
   feedQuery,
   groupsQuery,
   type FeedFilter,
@@ -80,6 +81,7 @@ function Items({ workspaceId }: { workspaceId: string }) {
   });
   const [groupBy, setGroupBy] = useState<GroupBy | null>(() => remembered(GROUP_KEY, GROUPS));
   const sources = useQuery(sourcesQuery(workspaceId));
+  const role = useQuery(workspacesQuery).data?.find((workspace) => workspace.id === workspaceId)?.role;
   const [draft, setDraft] = useState("");
   const [query, setQuery] = useState("");
   // The selection of the bulk actions, and the items each page or the search shows.
@@ -146,7 +148,14 @@ function Items({ workspaceId }: { workspaceId: string }) {
           reset();
         }}
       />
-      <BulkBar workspaceId={workspaceId} visible={visible} selected={selected} onSelect={setSelected} />
+      <BulkBar
+        workspaceId={workspaceId}
+        visible={visible}
+        selected={selected}
+        onSelect={setSelected}
+        everything={query === "" ? () => feedIds(workspaceId, filter) : undefined}
+        purge={filter.view === "archived" && role === "owner"}
+      />
       {query !== "" ? (
         <SearchResults
           workspaceId={workspaceId}

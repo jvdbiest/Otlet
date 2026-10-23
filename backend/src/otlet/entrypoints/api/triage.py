@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 from otlet.entrypoints.api.auth import same_origin
 from otlet.entrypoints.api.collection import ItemView
 from otlet.entrypoints.api.workspaces import PREFIX
-from otlet.watch.application.triage import Change, Feed
+from otlet.watch.application.triage import SELECTION_MAX, Change, Feed
 from otlet.watch.domain.triage import (
     Decision,
     Group,
@@ -80,12 +80,21 @@ class TriageChange(BaseModel):
 class BulkTriage(BaseModel):
     """One action of the feed for several items: keep, dismiss, archive, pin, or back to sort."""
 
-    item_ids: list[UUID] = Field(min_length=1, max_length=200)
+    item_ids: list[UUID] = Field(min_length=1, max_length=SELECTION_MAX)
     action: Literal["keep", "dismiss", "archive", "pin", "to_sort"]
 
 
 class BulkResult(BaseModel):
     changed: int
+
+
+class PurgeBody(BaseModel):
+    item_ids: list[UUID] = Field(min_length=1, max_length=SELECTION_MAX)
+
+
+class PurgeResult(BaseModel):
+    deleted: int
+    kept: int  # archived, but held by a brief (and so by an article)
 
 
 BULK_CHANGES = {
@@ -158,6 +167,28 @@ def build_router(feed: Feed, workspace_context: Callable[..., WorkspaceContext])
             for f in items
         ]
 
+    @router.get("/feed/ids")
+    def feed_ids(
+        context: Context,
+        view: View = View.TO_SORT,
+        source_id: UUID | None = None,
+        unread: bool = False,
+        topic_id: Annotated[list[UUID], Query(max_length=100)] = [],  # noqa: B006 (FastAPI copies it)
+        all_topics: bool = False,
+        since: datetime | None = None,
+        until: datetime | None = None,
+    ) -> list[UUID]:
+        """« Tout sélectionner »: the ids of every item the feed shows with these filters, over
+        all its pages and groups (5000 at most)."""
+        return feed.ids(
+            context,
+            view=view,
+            source_id=source_id,
+            unread_only=unread,
+            topics=TopicFilter(tuple(topic_id), all_topics),
+            period=period_of(since, until),
+        )
+
     @router.get("/feed/groups")
     def feed_groups(
         context: Context,
@@ -188,6 +219,17 @@ def build_router(feed: Feed, workspace_context: Callable[..., WorkspaceContext])
         return BulkResult(
             changed=feed.change_many(context, body.item_ids, BULK_CHANGES[body.action])
         )
+
+    @router.post("/items/purge")
+    def purge_archived(body: PurgeBody, context: Context) -> PurgeResult:
+        """« Supprimer définitivement » in Archivés: deletes for good the items chosen that the
+        user archived, except those a brief holds; each leaves its address so that its feed
+        does not bring it back. The owner of the workspace only (403 owner_only)."""
+        try:
+            purged = feed.purge_archived(context, body.item_ids)
+        except PermissionError as error:
+            raise HTTPException(status.HTTP_403_FORBIDDEN, "owner_only") from error
+        return PurgeResult(deleted=purged.deleted, kept=purged.kept)
 
     @router.get("/items/{item_id}/triage")
     def get_triage(item_id: UUID, context: Context) -> TriageView:

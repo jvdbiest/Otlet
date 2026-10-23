@@ -75,6 +75,17 @@ export const feedQuery = (workspaceId: string, filter: FeedFilter, before: strin
     refetchInterval: 60_000,
   });
 
+/** « Tout sélectionner »: the ids of every item of the filters, over all pages and groups. */
+export async function feedIds(workspaceId: string, filter: FeedFilter): Promise<string[]> {
+  const { data, error, response } = await api.GET("/api/workspaces/{workspace_id}/feed/ids", {
+    params: { path: { workspace_id: workspaceId }, query: filterParameters(filter) },
+  });
+  if (data === undefined) {
+    throw apiError(response, error);
+  }
+  return data;
+}
+
 /** The groups of the feed with these filters, and how many items each holds. */
 export const groupsQuery = (workspaceId: string, filter: FeedFilter, by: GroupBy) =>
   queryOptions({
@@ -157,6 +168,25 @@ export function useBulkTriage(workspaceId: string) {
         throw apiError(response, error);
       }
       return data.changed;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
+  });
+}
+
+/** « Supprimer définitivement » in Archivés (Joël, 2026-10-20): the items archived that no brief
+ * holds; how many were deleted, and how many kept for a brief or an article. */
+export function usePurgeArchived(workspaceId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (itemIds: string[]) => {
+      const { data, error, response } = await api.POST("/api/workspaces/{workspace_id}/items/purge", {
+        params: { path: { workspace_id: workspaceId } },
+        body: { item_ids: itemIds },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
   });

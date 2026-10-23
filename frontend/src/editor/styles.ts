@@ -8,6 +8,7 @@ export const editorStyles = css as Record<
   | "editor"
   | "group"
   | "letter"
+  | "menu"
   | "noColor"
   | "page"
   | "paper"

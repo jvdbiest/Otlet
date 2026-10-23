@@ -121,6 +121,30 @@
         "title": "ArticleView",
         "type": "object"
       },
+      "BankSelectionBody": {
+        "properties": {
+          "in_bank": {
+            "title": "In Bank",
+            "type": "boolean"
+          },
+          "media_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 200,
+            "minItems": 1,
+            "title": "Media Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "media_ids",
+          "in_bank"
+        ],
+        "title": "BankSelectionBody",
+        "type": "object"
+      },
       "BriefBody": {
         "properties": {
           "angle": {
@@ -527,7 +551,7 @@
               "format": "uuid",
               "type": "string"
             },
-            "maxItems": 200,
+            "maxItems": 5000,
             "minItems": 1,
             "title": "Item Ids",
             "type": "array"
@@ -900,6 +924,73 @@
           "declared_at"
         ],
         "title": "DeclarationView",
+        "type": "object"
+      },
+      "DescriptionBody": {
+        "description": "What a person says of an image; an empty text clears it.",
+        "properties": {
+          "credit": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Credit"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "licence": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Licence"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "maxLength": 4000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          }
+        },
+        "title": "DescriptionBody",
         "type": "object"
       },
       "DraftView": {
@@ -1678,12 +1769,58 @@
         "title": "ManualUrl",
         "type": "object"
       },
-      "MediaView": {
+      "MediaDetailsView": {
         "properties": {
+          "media": {
+            "$ref": "#/components/schemas/MediaView"
+          },
+          "usages": {
+            "items": {
+              "$ref": "#/components/schemas/UsageView"
+            },
+            "title": "Usages",
+            "type": "array"
+          }
+        },
+        "required": [
+          "media",
+          "usages"
+        ],
+        "title": "MediaDetailsView",
+        "type": "object"
+      },
+      "MediaEntryView": {
+        "properties": {
+          "articles": {
+            "title": "Articles",
+            "type": "integer"
+          },
           "created_at": {
             "format": "date-time",
             "title": "Created At",
             "type": "string"
+          },
+          "credit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Credit"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
           },
           "height": {
             "title": "Height",
@@ -1694,13 +1831,67 @@
             "title": "Id",
             "type": "string"
           },
+          "in_bank": {
+            "title": "In Bank",
+            "type": "boolean"
+          },
+          "licence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Licence"
+          },
           "mime": {
             "title": "Mime",
+            "type": "string"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "origin": {
+            "enum": [
+              "editor",
+              "library",
+              "source",
+              "generated"
+            ],
+            "title": "Origin",
             "type": "string"
           },
           "size": {
             "title": "Size",
             "type": "integer"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
           },
           "width": {
             "title": "Width",
@@ -1713,7 +1904,224 @@
           "width",
           "height",
           "size",
-          "created_at"
+          "created_at",
+          "name",
+          "description",
+          "origin",
+          "in_bank",
+          "credit",
+          "licence",
+          "source_url",
+          "tags",
+          "articles"
+        ],
+        "title": "MediaEntryView",
+        "type": "object"
+      },
+      "MediaFailedView": {
+        "properties": {
+          "media_id": {
+            "format": "uuid",
+            "title": "Media Id",
+            "type": "string"
+          },
+          "reason": {
+            "enum": [
+              "media_not_found",
+              "in_use"
+            ],
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "media_id",
+          "reason"
+        ],
+        "title": "MediaFailedView",
+        "type": "object"
+      },
+      "MediaOutcomeView": {
+        "properties": {
+          "done": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Done",
+            "type": "array"
+          },
+          "failed": {
+            "items": {
+              "$ref": "#/components/schemas/MediaFailedView"
+            },
+            "title": "Failed",
+            "type": "array"
+          }
+        },
+        "required": [
+          "done",
+          "failed"
+        ],
+        "title": "MediaOutcomeView",
+        "type": "object"
+      },
+      "MediaSelectionBody": {
+        "properties": {
+          "media_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 200,
+            "minItems": 1,
+            "title": "Media Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "media_ids"
+        ],
+        "title": "MediaSelectionBody",
+        "type": "object"
+      },
+      "MediaTagsBody": {
+        "properties": {
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Tags",
+            "type": "array"
+          }
+        },
+        "required": [
+          "tags"
+        ],
+        "title": "MediaTagsBody",
+        "type": "object"
+      },
+      "MediaView": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "credit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Credit"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "height": {
+            "title": "Height",
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "in_bank": {
+            "title": "In Bank",
+            "type": "boolean"
+          },
+          "licence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Licence"
+          },
+          "mime": {
+            "title": "Mime",
+            "type": "string"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "origin": {
+            "enum": [
+              "editor",
+              "library",
+              "source",
+              "generated"
+            ],
+            "title": "Origin",
+            "type": "string"
+          },
+          "size": {
+            "title": "Size",
+            "type": "integer"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "width": {
+            "title": "Width",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "mime",
+          "width",
+          "height",
+          "size",
+          "created_at",
+          "name",
+          "description",
+          "origin",
+          "in_bank",
+          "credit",
+          "licence",
+          "source_url",
+          "tags"
         ],
         "title": "MediaView",
         "type": "object"
@@ -2293,6 +2701,43 @@
           "finished_at"
         ],
         "title": "PullView",
+        "type": "object"
+      },
+      "PurgeBody": {
+        "properties": {
+          "item_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 5000,
+            "minItems": 1,
+            "title": "Item Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "item_ids"
+        ],
+        "title": "PurgeBody",
+        "type": "object"
+      },
+      "PurgeResult": {
+        "properties": {
+          "deleted": {
+            "title": "Deleted",
+            "type": "integer"
+          },
+          "kept": {
+            "title": "Kept",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "deleted",
+          "kept"
+        ],
+        "title": "PurgeResult",
         "type": "object"
       },
       "RefreshView": {
@@ -3188,6 +3633,38 @@
           "read_at"
         ],
         "title": "TriageView",
+        "type": "object"
+      },
+      "UsageView": {
+        "properties": {
+          "article_id": {
+            "format": "uuid",
+            "title": "Article Id",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "versions": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Versions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "article_id",
+          "title",
+          "status",
+          "versions"
+        ],
+        "title": "UsageView",
         "type": "object"
       },
       "UserView": {
@@ -5821,6 +6298,147 @@
         "summary": "Feed Groups"
       }
     },
+    "/api/workspaces/{workspace_id}/feed/ids": {
+      "get": {
+        "description": "« Tout sélectionner »: the ids of every item the feed shows with these filters, over\nall its pages and groups (5000 at most).",
+        "operationId": "feed_ids_api_workspaces__workspace_id__feed_ids_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "view",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/View",
+              "default": "to_sort"
+            }
+          },
+          {
+            "in": "query",
+            "name": "source_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "unread",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Unread",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "topic_id",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "maxItems": 100,
+              "title": "Topic Id",
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "all_topics",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "All Topics",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Since"
+            }
+          },
+          {
+            "in": "query",
+            "name": "until",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Until"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "format": "uuid",
+                    "type": "string"
+                  },
+                  "title": "Response Feed Ids Api Workspaces  Workspace Id  Feed Ids Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Feed Ids"
+      }
+    },
     "/api/workspaces/{workspace_id}/generations/{generation_id}": {
       "get": {
         "operationId": "get_generation_api_workspaces__workspace_id__generations__generation_id__get",
@@ -6060,6 +6678,57 @@
           }
         },
         "summary": "Add Manual Url"
+      }
+    },
+    "/api/workspaces/{workspace_id}/items/purge": {
+      "post": {
+        "description": "« Supprimer définitivement » in Archivés: deletes for good the items chosen that the\nuser archived, except those a brief holds; each leaves its address so that its feed\ndoes not bring it back. The owner of the workspace only (403 owner_only).",
+        "operationId": "purge_archived_api_workspaces__workspace_id__items_purge_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PurgeBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurgeResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Purge Archived"
       }
     },
     "/api/workspaces/{workspace_id}/items/triage": {
@@ -6965,8 +7634,109 @@
       }
     },
     "/api/workspaces/{workspace_id}/media": {
+      "get": {
+        "description": "The images of a view of the médiathèque, newest first: those of the articles, or\nthose of the bank of images; `used` keeps those some article shows, or the others.",
+        "operationId": "list_media_api_workspaces__workspace_id__media_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "view",
+            "required": false,
+            "schema": {
+              "default": "articles",
+              "enum": [
+                "articles",
+                "bank"
+              ],
+              "title": "View",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "default": "",
+              "maxLength": 200,
+              "title": "Q",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "used",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Used"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tag",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 100,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tag"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MediaEntryView"
+                  },
+                  "title": "Response List Media Api Workspaces  Workspace Id  Media Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Media"
+      },
       "post": {
-        "description": "Imports an image into the workspace: decoded, re-encoded without its metadata (GPS\nposition, camera, author), no larger than 4096 pixels a side. 413 above 15 MB; 422 when\nit is not a JPEG, PNG, WebP or GIF image.",
+        "description": "Imports an image into the workspace: decoded, re-encoded without its metadata (GPS\nposition, camera, author), no larger than 4096 pixels a side. 413 above 15 MB; 422 when\nit is not a JPEG, PNG, WebP or GIF image. `name`: the file's; `bank`: imported into the\nbank of images of the médiathèque.",
         "operationId": "import_image_api_workspaces__workspace_id__media_post",
         "parameters": [
           {
@@ -6977,6 +7747,33 @@
               "format": "uuid",
               "title": "Workspace Id",
               "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "name",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 500,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Name"
+            }
+          },
+          {
+            "in": "query",
+            "name": "bank",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Bank",
+              "type": "boolean"
             }
           }
         ],
@@ -7034,6 +7831,200 @@
         "summary": "Import Image"
       }
     },
+    "/api/workspaces/{workspace_id}/media/bank": {
+      "post": {
+        "description": "Adds the images chosen to the bank of images, or takes them out of it.",
+        "operationId": "keep_selection_api_workspaces__workspace_id__media_bank_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BankSelectionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaOutcomeView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Keep Selection"
+      }
+    },
+    "/api/workspaces/{workspace_id}/media/delete": {
+      "post": {
+        "description": "Deletes the images chosen that no article shows, in any version; the others are\nrefused (in_use).",
+        "operationId": "delete_selection_api_workspaces__workspace_id__media_delete_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MediaSelectionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaOutcomeView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Selection"
+      }
+    },
+    "/api/workspaces/{workspace_id}/media/export": {
+      "post": {
+        "description": "The files Otlet stores of the images chosen, in one ZIP, unchanged.",
+        "operationId": "export_originals_api_workspaces__workspace_id__media_export_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MediaSelectionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/zip": {}
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Export Originals"
+      }
+    },
+    "/api/workspaces/{workspace_id}/media/tags": {
+      "get": {
+        "description": "The tags of the images of the workspace, in order.",
+        "operationId": "media_tags_api_workspaces__workspace_id__media_tags_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "Response Media Tags Api Workspaces  Workspace Id  Media Tags Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Media Tags"
+      }
+    },
     "/api/workspaces/{workspace_id}/media/{media_id}": {
       "get": {
         "description": "The file of an image of the workspace; never shown to anyone outside it.",
@@ -7081,6 +8072,273 @@
           }
         },
         "summary": "Read Image"
+      },
+      "patch": {
+        "description": "Names, describes, credits an image. 422 too_long or invalid_url.",
+        "operationId": "describe_media_api_workspaces__workspace_id__media__media_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "media_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Media Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DescriptionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Describe Media"
+      }
+    },
+    "/api/workspaces/{workspace_id}/media/{media_id}/details": {
+      "get": {
+        "description": "An image, and the articles that show it, with their versions.",
+        "operationId": "media_details_api_workspaces__workspace_id__media__media_id__details_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "media_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Media Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaDetailsView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Media Details"
+      }
+    },
+    "/api/workspaces/{workspace_id}/media/{media_id}/original": {
+      "get": {
+        "description": "The file Otlet stores of an image, unchanged, to save: « Télécharger l'original ».",
+        "operationId": "download_original_api_workspaces__workspace_id__media__media_id__original_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "media_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Media Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "image/jpeg": {},
+              "image/png": {},
+              "image/webp": {}
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Download Original"
+      }
+    },
+    "/api/workspaces/{workspace_id}/media/{media_id}/tags": {
+      "put": {
+        "description": "Tags an image (40 characters, 20 tags at most: 422 invalid_tags).",
+        "operationId": "set_media_tags_api_workspaces__workspace_id__media__media_id__tags_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "media_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Media Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MediaTagsBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Media Tags"
+      }
+    },
+    "/api/workspaces/{workspace_id}/media/{media_id}/thumbnail": {
+      "get": {
+        "description": "The small image the médiathèque shows, never the original.",
+        "operationId": "read_thumbnail_api_workspaces__workspace_id__media__media_id__thumbnail_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "media_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Media Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "image/webp": {}
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Read Thumbnail"
       }
     },
     "/api/workspaces/{workspace_id}/progress": {

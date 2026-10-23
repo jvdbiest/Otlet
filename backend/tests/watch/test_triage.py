@@ -21,7 +21,7 @@ from otlet.watch.application.triage import Change, Feed
 from otlet.watch.domain.triage import Decision, View
 from otlet.workspaces.adapters.postgres import PostgresWorkspaceStore
 from otlet.workspaces.application.workspaces import Workspaces
-from otlet.workspaces.domain.model import WorkspaceContext
+from otlet.workspaces.domain.model import Role, WorkspaceContext
 
 pytestmark = requires_database
 
@@ -246,6 +246,11 @@ def test_a_change_applies_to_several_items_at_once(setup: Setup) -> None:
     assert titles(feed, context) == ["Article 0", "Article 1", "Article 2"]
     other = context_for(setup.engine, "bob@example.org")
     assert feed.change_many(other, ids, Change(pinned=True)) == 0
+    # « Tout sélectionner » takes every item of the filters, not one page (Joël, 2026-10-20).
+    assert set(feed.ids(context, view=View.ALL)) == set(ids)
+    feed.change_many(context, [ids[2]], Change(decision=Decision.KEPT))
+    assert set(feed.ids(context)) == {ids[0], ids[1]}
+    assert feed.ids(other, view=View.ALL) == []
 
 
 def test_an_archived_item_leaves_the_current_views(setup: Setup) -> None:
@@ -344,3 +349,34 @@ def test_the_feed_sorts_and_groups_by_score_topic_and_source(setup: Setup) -> No
     assert titles(feed, context, view=View.ALL, group=alone) == ["Dépêche 9"]
     journal = InGroup(GroupBy.SOURCE, sources[1].key)
     assert titles(feed, context, group=journal) == ["Article 2", "Article 1"]
+
+
+def test_the_owner_purges_the_archived_items_no_brief_holds(setup: Setup) -> None:
+    """Joël, 2026-10-20: « Supprimer définitivement » in Archivés; an item a brief holds stays,
+    an item not archived stays, and a deleted item of a feed is not collected again."""
+    feed, context, ids = setup.feed, setup.context, setup.ids
+    feed.change_many(context, ids[:2], Change(decision=Decision.ARCHIVED))
+    with db.workspace_transaction(setup.engine, context.workspace_id) as connection:
+        brief = connection.execute(
+            sa.text(
+                "INSERT INTO briefs (id, workspace_id, created_by, title)"
+                " VALUES (gen_random_uuid(), :w, :u, 'Brief') RETURNING id"
+            ),
+            {"w": context.workspace_id, "u": context.user_id},
+        ).scalar_one()
+        connection.execute(
+            sa.text(
+                "INSERT INTO brief_items (workspace_id, brief_id, item_id, position)"
+                " VALUES (:w, :b, :i, 0)"
+            ),
+            {"w": context.workspace_id, "b": brief, "i": ids[1]},
+        )
+    guest = WorkspaceContext(context.user_id, context.workspace_id, Role.EDITOR)
+    with pytest.raises(PermissionError):
+        feed.purge_archived(guest, ids)
+    purged = feed.purge_archived(context, ids)
+    assert (purged.deleted, purged.kept) == (1, 1)
+    assert set(feed.ids(context, view=View.ALL)) == {ids[1], ids[2]}
+    with db.workspace_transaction(setup.engine, context.workspace_id) as connection:
+        removed = connection.execute(sa.text("SELECT count(*) FROM removed_items")).scalar_one()
+    assert removed == 1

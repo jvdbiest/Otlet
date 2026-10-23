@@ -204,6 +204,75 @@ class PostgresTriageStore:
             ).all()
         return [FeedItem(item_from_row(row), triage_of(row), topic_tags_of(row)) for row in rows]
 
+    def ids(
+        self,
+        workspace_id: UUID,
+        user_id: UUID,
+        *,
+        view: View,
+        source_id: UUID | None,
+        unread_only: bool,
+        topics: TopicFilter = NO_TOPIC_FILTER,
+        period: Period = ANY_TIME,
+        limit: int,
+    ) -> list[UUID]:
+        order_by = ", ".join(f"{key} DESC" for key in order_keys(view, Sort.DATE))
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            found = connection.execute(
+                sa.text(
+                    f"SELECT i.id FROM {ITEMS_FROM}{TRIAGE_JOIN}{MAIN_TOPIC}"
+                    f" WHERE {_filters(view, None)} ORDER BY {order_by} LIMIT :limit"
+                ),
+                {
+                    **_parameters(user_id, source_id, unread_only, topics, period, None),
+                    "limit": limit,
+                },
+            ).scalars()
+            return list(found)
+
+    def purge_archived(
+        self, workspace_id: UUID, user_id: UUID, item_ids: list[UUID]
+    ) -> tuple[int, int]:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            archived = (
+                connection.execute(
+                    sa.text(
+                        "SELECT i.id FROM source_items AS i JOIN item_triage AS tr"
+                        " ON tr.item_id = i.id AND tr.workspace_id = i.workspace_id"
+                        " AND tr.user_id = :user AND tr.decision = 'archived'"
+                        f" WHERE i.id = ANY(:ids) AND {here('i')}"
+                    ),
+                    {"ids": item_ids, "user": user_id},
+                )
+                .scalars()
+                .all()
+            )
+            # A brief holds it: its article cites it, « Comparer » shows its text.
+            kept = set(
+                connection.execute(
+                    sa.text(
+                        f"SELECT DISTINCT item_id FROM brief_items WHERE item_id = ANY(:ids)"
+                        f" AND {here()}"
+                    ),
+                    {"ids": list(archived)},
+                ).scalars()
+            )
+            gone = [item for item in archived if item not in kept]
+            connection.execute(
+                sa.text(
+                    "INSERT INTO removed_items (workspace_id, source_id, guid, normalized_url)"
+                    " SELECT workspace_id, source_id, guid, normalized_url FROM source_items"
+                    f" WHERE id = ANY(:ids) AND origin = 'feed' AND {here()}"
+                    " ON CONFLICT (source_id, guid) DO NOTHING"
+                ),
+                {"ids": gone},
+            )
+            deleted = connection.execute(
+                sa.text(f"DELETE FROM source_items WHERE id = ANY(:ids) AND {here()}"),
+                {"ids": gone},
+            ).rowcount
+        return deleted, len(kept)
+
     def groups(
         self,
         workspace_id: UUID,

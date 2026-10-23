@@ -769,6 +769,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/feed/ids": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Feed Ids
+         * @description « Tout sélectionner »: the ids of every item the feed shows with these filters, over
+         *     all its pages and groups (5000 at most).
+         */
+        get: operations["feed_ids_api_workspaces__workspace_id__feed_ids_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/generations/{generation_id}": {
         parameters: {
             query?: never;
@@ -835,6 +856,28 @@ export interface paths {
         put?: never;
         /** Add Manual Url */
         post: operations["add_manual_url_api_workspaces__workspace_id__items_manual_url_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/items/purge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Purge Archived
+         * @description « Supprimer définitivement » in Archivés: deletes for good the items chosen that the
+         *     user archived, except those a brief holds; each leaves its address so that its feed
+         *     does not bring it back. The owner of the workspace only (403 owner_only).
+         */
+        post: operations["purge_archived_api_workspaces__workspace_id__items_purge_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1114,15 +1157,102 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * List Media
+         * @description The images of a view of the médiathèque, newest first: those of the articles, or
+         *     those of the bank of images; `used` keeps those some article shows, or the others.
+         */
+        get: operations["list_media_api_workspaces__workspace_id__media_get"];
         put?: never;
         /**
          * Import Image
          * @description Imports an image into the workspace: decoded, re-encoded without its metadata (GPS
          *     position, camera, author), no larger than 4096 pixels a side. 413 above 15 MB; 422 when
-         *     it is not a JPEG, PNG, WebP or GIF image.
+         *     it is not a JPEG, PNG, WebP or GIF image. `name`: the file's; `bank`: imported into the
+         *     bank of images of the médiathèque.
          */
         post: operations["import_image_api_workspaces__workspace_id__media_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/media/bank": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Keep Selection
+         * @description Adds the images chosen to the bank of images, or takes them out of it.
+         */
+        post: operations["keep_selection_api_workspaces__workspace_id__media_bank_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/media/delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Delete Selection
+         * @description Deletes the images chosen that no article shows, in any version; the others are
+         *     refused (in_use).
+         */
+        post: operations["delete_selection_api_workspaces__workspace_id__media_delete_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/media/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Export Originals
+         * @description The files Otlet stores of the images chosen, in one ZIP, unchanged.
+         */
+        post: operations["export_originals_api_workspaces__workspace_id__media_export_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/media/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Media Tags
+         * @description The tags of the images of the workspace, in order.
+         */
+        get: operations["media_tags_api_workspaces__workspace_id__media_tags_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1141,6 +1271,90 @@ export interface paths {
          * @description The file of an image of the workspace; never shown to anyone outside it.
          */
         get: operations["read_image_api_workspaces__workspace_id__media__media_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Describe Media
+         * @description Names, describes, credits an image. 422 too_long or invalid_url.
+         */
+        patch: operations["describe_media_api_workspaces__workspace_id__media__media_id__patch"];
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/media/{media_id}/details": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Media Details
+         * @description An image, and the articles that show it, with their versions.
+         */
+        get: operations["media_details_api_workspaces__workspace_id__media__media_id__details_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/media/{media_id}/original": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download Original
+         * @description The file Otlet stores of an image, unchanged, to save: « Télécharger l'original ».
+         */
+        get: operations["download_original_api_workspaces__workspace_id__media__media_id__original_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/media/{media_id}/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Media Tags
+         * @description Tags an image (40 characters, 20 tags at most: 422 invalid_tags).
+         */
+        put: operations["set_media_tags_api_workspaces__workspace_id__media__media_id__tags_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/media/{media_id}/thumbnail": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read Thumbnail
+         * @description The small image the médiathèque shows, never the original.
+         */
+        get: operations["read_thumbnail_api_workspaces__workspace_id__media__media_id__thumbnail_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1447,6 +1661,13 @@ export interface components {
             validated_version: number | null;
             /** Versions */
             versions: components["schemas"]["VersionView"][];
+        };
+        /** BankSelectionBody */
+        BankSelectionBody: {
+            /** In Bank */
+            in_bank: boolean;
+            /** Media Ids */
+            media_ids: string[];
         };
         /** BriefBody */
         BriefBody: {
@@ -1763,6 +1984,22 @@ export interface components {
             reference: string;
         };
         /**
+         * DescriptionBody
+         * @description What a person says of an image; an empty text clears it.
+         */
+        DescriptionBody: {
+            /** Credit */
+            credit?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Licence */
+            licence?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Source Url */
+            source_url?: string | null;
+        };
+        /**
          * DraftView
          * @description The article of a brief, if any, and its latest generation, if any.
          */
@@ -2024,13 +2261,25 @@ export interface components {
             /** Url */
             url: string;
         };
-        /** MediaView */
-        MediaView: {
+        /** MediaDetailsView */
+        MediaDetailsView: {
+            media: components["schemas"]["MediaView"];
+            /** Usages */
+            usages: components["schemas"]["UsageView"][];
+        };
+        /** MediaEntryView */
+        MediaEntryView: {
+            /** Articles */
+            articles: number;
             /**
              * Created At
              * Format: date-time
              */
             created_at: string;
+            /** Credit */
+            credit: string | null;
+            /** Description */
+            description: string | null;
             /** Height */
             height: number;
             /**
@@ -2038,10 +2287,95 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /** In Bank */
+            in_bank: boolean;
+            /** Licence */
+            licence: string | null;
             /** Mime */
             mime: string;
+            /** Name */
+            name: string | null;
+            /**
+             * Origin
+             * @enum {string}
+             */
+            origin: "editor" | "library" | "source" | "generated";
             /** Size */
             size: number;
+            /** Source Url */
+            source_url: string | null;
+            /** Tags */
+            tags: string[];
+            /** Width */
+            width: number;
+        };
+        /** MediaFailedView */
+        MediaFailedView: {
+            /**
+             * Media Id
+             * Format: uuid
+             */
+            media_id: string;
+            /**
+             * Reason
+             * @enum {string}
+             */
+            reason: "media_not_found" | "in_use";
+        };
+        /** MediaOutcomeView */
+        MediaOutcomeView: {
+            /** Done */
+            done: string[];
+            /** Failed */
+            failed: components["schemas"]["MediaFailedView"][];
+        };
+        /** MediaSelectionBody */
+        MediaSelectionBody: {
+            /** Media Ids */
+            media_ids: string[];
+        };
+        /** MediaTagsBody */
+        MediaTagsBody: {
+            /** Tags */
+            tags: string[];
+        };
+        /** MediaView */
+        MediaView: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Credit */
+            credit: string | null;
+            /** Description */
+            description: string | null;
+            /** Height */
+            height: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** In Bank */
+            in_bank: boolean;
+            /** Licence */
+            licence: string | null;
+            /** Mime */
+            mime: string;
+            /** Name */
+            name: string | null;
+            /**
+             * Origin
+             * @enum {string}
+             */
+            origin: "editor" | "library" | "source" | "generated";
+            /** Size */
+            size: number;
+            /** Source Url */
+            source_url: string | null;
+            /** Tags */
+            tags: string[];
             /** Width */
             width: number;
         };
@@ -2259,6 +2593,18 @@ export interface components {
             step: string;
             /** Total */
             total: number;
+        };
+        /** PurgeBody */
+        PurgeBody: {
+            /** Item Ids */
+            item_ids: string[];
+        };
+        /** PurgeResult */
+        PurgeResult: {
+            /** Deleted */
+            deleted: number;
+            /** Kept */
+            kept: number;
         };
         /** RefreshView */
         RefreshView: {
@@ -2575,6 +2921,20 @@ export interface components {
             pinned: boolean;
             /** Read At */
             read_at: string | null;
+        };
+        /** UsageView */
+        UsageView: {
+            /**
+             * Article Id
+             * Format: uuid
+             */
+            article_id: string;
+            /** Status */
+            status: string;
+            /** Title */
+            title: string;
+            /** Versions */
+            versions: number[];
         };
         /** UserView */
         UserView: {
@@ -4251,6 +4611,45 @@ export interface operations {
             };
         };
     };
+    feed_ids_api_workspaces__workspace_id__feed_ids_get: {
+        parameters: {
+            query?: {
+                view?: components["schemas"]["View"];
+                source_id?: string | null;
+                unread?: boolean;
+                topic_id?: string[];
+                all_topics?: boolean;
+                since?: string | null;
+                until?: string | null;
+            };
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_generation_api_workspaces__workspace_id__generations__generation_id__get: {
         parameters: {
             query?: never;
@@ -4375,6 +4774,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ItemView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    purge_archived_api_workspaces__workspace_id__items_purge_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PurgeBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurgeResult"];
                 };
             };
             /** @description Validation Error */
@@ -4953,9 +5387,48 @@ export interface operations {
             };
         };
     };
+    list_media_api_workspaces__workspace_id__media_get: {
+        parameters: {
+            query?: {
+                view?: "articles" | "bank";
+                q?: string;
+                used?: boolean | null;
+                tag?: string | null;
+            };
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaEntryView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     import_image_api_workspaces__workspace_id__media_post: {
         parameters: {
-            query?: never;
+            query?: {
+                name?: string | null;
+                bank?: boolean;
+            };
             header?: never;
             path: {
                 workspace_id: string;
@@ -4991,6 +5464,142 @@ export interface operations {
             };
         };
     };
+    keep_selection_api_workspaces__workspace_id__media_bank_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BankSelectionBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaOutcomeView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_selection_api_workspaces__workspace_id__media_delete_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MediaSelectionBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaOutcomeView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_originals_api_workspaces__workspace_id__media_export_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MediaSelectionBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/zip": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    media_tags_api_workspaces__workspace_id__media_tags_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     read_image_api_workspaces__workspace_id__media__media_id__get: {
         parameters: {
             query?: never;
@@ -5011,6 +5620,176 @@ export interface operations {
                 content: {
                     "image/jpeg": unknown;
                     "image/png": unknown;
+                    "image/webp": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    describe_media_api_workspaces__workspace_id__media__media_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                media_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DescriptionBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    media_details_api_workspaces__workspace_id__media__media_id__details_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                media_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaDetailsView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_original_api_workspaces__workspace_id__media__media_id__original_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                media_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/jpeg": unknown;
+                    "image/png": unknown;
+                    "image/webp": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_media_tags_api_workspaces__workspace_id__media__media_id__tags_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                media_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MediaTagsBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_thumbnail_api_workspaces__workspace_id__media__media_id__thumbnail_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                media_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
                     "image/webp": unknown;
                 };
             };

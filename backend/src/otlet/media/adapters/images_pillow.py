@@ -9,7 +9,7 @@ import warnings
 from PIL import Image as PilImage
 from PIL import ImageOps, UnidentifiedImageError
 
-from otlet.media.domain.media import MAX_PIXELS, MAX_SIDE, Image, MediaError
+from otlet.media.domain.media import MAX_PIXELS, MAX_SIDE, THUMBNAIL_SIDE, Image, MediaError
 
 # Formats Otlet accepts, and the one each is stored in. A GIF keeps its first image only.
 STORED = {"JPEG": "JPEG", "PNG": "PNG", "WEBP": "WEBP", "GIF": "PNG"}
@@ -66,3 +66,12 @@ class PillowImages:
         image.info = {}
         image.save(out, stored, **options)
         return Image(out.getvalue(), MIMES[stored], image.width, image.height)
+
+    def thumbnail(self, data: bytes) -> bytes:
+        """A WebP no larger than THUMBNAIL_SIDE, of an image Otlet stored (so already clean)."""
+        with PilImage.open(io.BytesIO(data)) as opened:
+            image = opened.convert("RGBA" if "A" in opened.getbands() else "RGB")
+        image.thumbnail((THUMBNAIL_SIDE, THUMBNAIL_SIDE))
+        out = io.BytesIO()
+        image.save(out, "WEBP", quality=80)
+        return out.getvalue()

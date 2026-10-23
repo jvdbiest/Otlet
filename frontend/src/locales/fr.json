@@ -373,7 +373,15 @@
         "dismiss": "{count, plural, one {# élément écarté.} other {# éléments écartés.}}",
         "to_sort": "{count, plural, one {# élément remis à trier.} other {# éléments remis à trier.}}"
       },
-      "brief": "Créer un brief"
+      "brief": "Créer un brief",
+      "gathering": "Sélection de tous les éléments…",
+      "briefMax": "Un brief prend {max} éléments au plus.",
+      "purge": "Supprimer définitivement",
+      "purgeForGood": "Supprimer définitivement",
+      "cancel": "Annuler",
+      "confirmPurge": "{count, plural, one {Supprimer définitivement # élément archivé ? S'il est utilisé par un brief ou un article, il sera conservé. Cette action est irréversible.} other {Supprimer définitivement # éléments archivés ? Ceux qu'utilise un brief ou un article seront conservés. Cette action est irréversible.}}",
+      "purged": "{count, plural, one {# élément supprimé définitivement.} other {# éléments supprimés définitivement.}}",
+      "purgeKept": "{count, plural, one {# élément conservé car utilisé par un brief ou un article.} other {# éléments conservés car utilisés par un brief ou un article.}}"
     },
     "period": {
       "label": "Période",
@@ -768,7 +776,7 @@
       "center": "Centrer",
       "right": "Aligner à droite",
       "justify": "Justifier",
-      "image": "Insérer une image (ou la coller, ou la glisser dans le texte ; cliquez-la ensuite pour la redimensionner ou l'aligner)"
+      "image": "Insérer une image : depuis l'ordinateur ou depuis la médiathèque (on peut aussi la coller ou la glisser dans le texte ; cliquez-la ensuite pour la redimensionner ou l'aligner)"
     },
     "blocks": {
       "p": "Paragraphe",
@@ -797,7 +805,9 @@
     "imageHandle": "Largeur de l'image : tirez la poignée, ou utilisez les flèches",
     "imageOwn": "Taille d'origine",
     "imageWrap": "Habiller le texte",
-    "validatedVersion": "Version {number}, validée : « Enregistrer » créera une nouvelle version, sans toucher à celle qui part en export et en publication."
+    "validatedVersion": "Version {number}, validée : « Enregistrer » créera une nouvelle version, sans toucher à celle qui part en export et en publication.",
+    "imageFromComputer": "Depuis l'ordinateur",
+    "imageFromLibrary": "Depuis la médiathèque"
   },
   "library": {
     "title": "Bibliothèque",
@@ -809,7 +819,6 @@
     "groupBy": "Grouper par",
     "groupDate": "Grouper par date",
     "groupNone": "Sans regroupement",
-    "archived": "Articles archivés",
     "empty": "La Bibliothèque est vide : envoyez-y un article depuis son brief, avec « Envoyer en Bibliothèque ».",
     "noMatch": "Aucun article ne correspond.",
     "today": "Aujourd'hui",
@@ -858,7 +867,6 @@
       "archive": "Archiver",
       "unarchive": "Désarchiver",
       "delete": "Supprimer",
-      "deleteArchivedOnly": "Seuls les articles archivés peuvent être supprimés : archivez d'abord.",
       "confirmDelete": "{count, plural, one {Supprimer définitivement # article archivé ? Cette action est irréversible.} other {Supprimer définitivement # articles archivés ? Cette action est irréversible.}}",
       "notArchivedKept": "{count, plural, one {# article non archivé sera conservé.} other {# articles non archivés seront conservés.}}",
       "deleteForGood": "Supprimer définitivement",
@@ -871,7 +879,15 @@
         "duplicate": "{count, plural, one {# copie créée.} other {# copies créées.}}",
         "delete": "{count, plural, one {# article supprimé définitivement.} other {# articles supprimés définitivement.}}"
       }
-    }
+    },
+    "tabs": {
+      "label": "Sections de la Bibliothèque",
+      "articles": "Articles",
+      "media": "Médias",
+      "archives": "Archives"
+    },
+    "archivesHelp": "Les articles archivés. Ils peuvent revenir dans les Articles, ou être supprimés définitivement d'ici.",
+    "noArchives": "Aucun article archivé."
   },
   "compare": {
     "button": "Comparer",
@@ -922,5 +938,89 @@
     "declared": "Déclaré le {date} :",
     "until": "jusqu'au {date}",
     "withdrawConfirm": "Les textes lus sous cet accord seront effacés et les articles redeviendront réservés. La déclaration reste dans l'historique."
+  },
+  "media": {
+    "sections": "Sections de la médiathèque",
+    "articles": "Images des articles",
+    "bank": "Banque d'images",
+    "articlesHelp": "Les images importées, collées ou produites en travaillant un article. Une image gardée dans la banque y reste visible.",
+    "bankHelp": "Les images gardées pour être réutilisées. Les ajouter ou les retirer ne les déplace pas : c'est la même image.",
+    "import": "Importer des images dans la banque",
+    "importing": "{count, plural, one {Import de # image…} other {Import de # images…}}",
+    "search": "Chercher dans les noms, descriptions et crédits",
+    "searchButton": "Chercher",
+    "usage": "Utilisation",
+    "usageAll": "Toutes les images",
+    "usageUsed": "Utilisées dans un article",
+    "usageUnused": "Inutilisées",
+    "empty": "Aucune image ici pour l'instant.",
+    "noMatch": "Aucune image ne correspond.",
+    "unnamed": "Image sans nom",
+    "inBank": "Banque",
+    "usedIn": "{count, plural, one {Utilisée dans # article} other {Utilisée dans # articles}}",
+    "unused": "Inutilisée",
+    "open": "Ouvrir la fiche de « {name} »",
+    "select": "Sélectionner « {name} »",
+    "origins": {
+      "editor": "Importée ou collée dans l'éditeur",
+      "library": "Importée dans la banque d'images",
+      "source": "Récupérée depuis une source",
+      "generated": "Générée par un modèle"
+    },
+    "selection": {
+      "label": "Images sélectionnées",
+      "all": "Tout sélectionner",
+      "selected": "{count, plural, one {# image sélectionnée} other {# images sélectionnées}}",
+      "keep": "Ajouter à la banque",
+      "unkeep": "Retirer de la banque",
+      "delete": "Supprimer",
+      "none": "Tout désélectionner",
+      "confirmDelete": "{count, plural, one {Supprimer définitivement # image ? Une image utilisée par un article est refusée.} other {Supprimer définitivement # images ? Celles qu'un article utilise sont refusées.}}",
+      "deleteForGood": "Supprimer définitivement",
+      "cancel": "Annuler",
+      "done": {
+        "keep": "{count, plural, one {# image ajoutée à la banque.} other {# images ajoutées à la banque.}}",
+        "unkeep": "{count, plural, one {# image retirée de la banque.} other {# images retirées de la banque.}}",
+        "delete": "{count, plural, one {# image supprimée.} other {# images supprimées.}}"
+      },
+      "inUse": "{count, plural, one {# image est utilisée par un article et a été gardée.} other {# images sont utilisées par un article et ont été gardées.}}",
+      "export": "Exporter les originaux (ZIP)"
+    },
+    "sheet": {
+      "title": "Fiche de l'image",
+      "close": "Fermer la fiche",
+      "name": "Nom",
+      "description": "Description",
+      "descriptionHelp": "Elle préremplira le texte alternatif quand l'image sera insérée.",
+      "credit": "Auteur ou crédit",
+      "licence": "Licence",
+      "licenceHelp": "Facultatif. La publication avertira s'il manque le crédit ou la licence.",
+      "sourceUrl": "Adresse d'origine",
+      "save": "Enregistrer",
+      "saved": "Enregistré.",
+      "facts": "{width} × {height} px · {size} · ajoutée le {date}",
+      "usedIn": "Utilisée dans",
+      "notUsed": "Aucun article ne montre cette image : elle peut être supprimée.",
+      "versions": "{count, plural, one {version {list}} other {versions {list}}}",
+      "deleteBlocked": "Utilisée par un article : elle ne peut pas être supprimée.",
+      "download": "Télécharger l'original"
+    },
+    "errors": {
+      "too_long": "Un des textes est trop long.",
+      "invalid_url": "L'adresse d'origine doit commencer par https:// ou http://.",
+      "invalid_tags": "Une étiquette a 40 caractères au plus, et une image 20 étiquettes au plus."
+    },
+    "tag": "Étiquette",
+    "tags": "Étiquettes",
+    "allTags": "Toutes les étiquettes",
+    "picker": {
+      "title": "Choisir une image dans la médiathèque",
+      "empty": "Aucune image ici. Importez-en dans Bibliothèque › Médias, ou depuis l'ordinateur.",
+      "choose": "Choisir « {name} »",
+      "details": "Image choisie",
+      "missing": "non indiqué",
+      "insert": "Insérer",
+      "cancel": "Annuler"
+    }
   }
 }

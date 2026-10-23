@@ -9,35 +9,12 @@ from pathlib import Path
 
 import pytest
 
+from backup_support import FakeDatabase
 from otlet.backup.adapters.crypto import CHUNK, Cipher, WrongPassphrase
 from otlet.backup.application.backups import BackupError, Backups
 from otlet.backup.domain.backup import Manifest, kept, moment_of, name_of
 
 SHA = "a" * 64
-
-
-class FakeDatabase:
-    """A database whose dump is its current content, a few bytes."""
-
-    def __init__(self) -> None:
-        self.content = b"PGDMP database v1"
-        self.restored: list[bytes] = []
-
-    def dump(self, target: Path) -> None:
-        target.write_bytes(self.content)
-
-    def check(self, dump: Path) -> bool:
-        return dump.read_bytes().startswith(b"PGDMP")
-
-    def restore(self, dump: Path) -> None:
-        self.restored.append(dump.read_bytes())
-        self.content = dump.read_bytes()
-
-    def schema_revision(self) -> str:
-        return "0035"
-
-    def counts(self) -> dict[str, dict[str, int]]:
-        return {"briefs": {"w1": 3}}
 
 
 def media(root: Path, data: bytes, extension: str = "png") -> Path:

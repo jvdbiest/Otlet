@@ -4,6 +4,88 @@
  */
 
 export interface paths {
+    "/api/admin/backups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Overview
+         * @description The backups of the instance, the state of their destination, their schedule.
+         */
+        get: operations["overview_api_admin_backups_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/backups/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Run Now
+         * @description « Sauvegarder maintenant »: the backup service takes it within half a minute. 409
+         *     `already_running` while one is waiting or running.
+         */
+        post: operations["run_now_api_admin_backups_run_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/backups/schedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Schedule
+         * @description When the daily backup runs, and how many are kept.
+         */
+        put: operations["set_schedule_api_admin_backups_schedule_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/backups/{name}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download
+         * @description A backup as one .tar file, written as it is sent. Encrypted backups stay encrypted:
+         *     only their passphrase opens them.
+         */
+        get: operations["download_api_admin_backups__name__download_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/ai/budget": {
         parameters: {
             query?: never;
@@ -1662,6 +1744,45 @@ export interface components {
             /** Versions */
             versions: components["schemas"]["VersionView"][];
         };
+        /** BackupView */
+        BackupView: {
+            /** Created At */
+            created_at: string;
+            /** Database Bytes */
+            database_bytes: number;
+            /** Encrypted */
+            encrypted: boolean;
+            /** Files */
+            files: number;
+            /** Files Bytes */
+            files_bytes: number;
+            /** Files New */
+            files_new: number;
+            /** Name */
+            name: string;
+            /** Problems */
+            problems: string[];
+            /** Reason */
+            reason: string;
+            /** Schema Revision */
+            schema_revision: string;
+            /** Secrets */
+            secrets: boolean;
+            /** Totals */
+            totals: {
+                [key: string]: number;
+            };
+            /** Verified */
+            verified: boolean;
+        };
+        /** BackupsView */
+        BackupsView: {
+            /** Backups */
+            backups: components["schemas"]["BackupView"][];
+            request: components["schemas"]["RequestView"] | null;
+            schedule: components["schemas"]["ScheduleView"];
+            state: components["schemas"]["StateView"];
+        };
         /** BankSelectionBody */
         BankSelectionBody: {
             /** In Bank */
@@ -2613,6 +2734,20 @@ export interface components {
             /** Topics */
             topics: number;
         };
+        /** RequestView */
+        RequestView: {
+            /** Error */
+            error: string | null;
+            /** Name */
+            name: string | null;
+            /** Requested At */
+            requested_at: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "running" | "done" | "failed";
+        };
         /** RightsBody */
         RightsBody: {
             /**
@@ -2664,6 +2799,17 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+        };
+        /** ScheduleView */
+        ScheduleView: {
+            /** Daily */
+            daily: number;
+            /** Enabled */
+            enabled: boolean;
+            /** Hour Utc */
+            hour_utc: number;
+            /** Weekly */
+            weekly: number;
         };
         /** ScoredItemView */
         ScoredItemView: {
@@ -2820,6 +2966,29 @@ export interface components {
             site_url: string | null;
             /** Url */
             url: string;
+        };
+        /** StateView */
+        StateView: {
+            /** Checked At */
+            checked_at: string | null;
+            /** Configured */
+            configured: boolean;
+            /** Encrypted */
+            encrypted: boolean;
+            /** Error */
+            error: string | null;
+            /** Free Bytes */
+            free_bytes: number | null;
+            /** Last Error */
+            last_error: string | null;
+            /** Last Name */
+            last_name: string | null;
+            /** Running */
+            running: boolean;
+            /** Total Bytes */
+            total_bytes: number | null;
+            /** Writable */
+            writable: boolean;
         };
         /** TagsBody */
         TagsBody: {
@@ -3050,6 +3219,110 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    overview_api_admin_backups_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BackupsView"];
+                };
+            };
+        };
+    };
+    run_now_api_admin_backups_run_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RequestView"];
+                };
+            };
+        };
+    };
+    set_schedule_api_admin_backups_schedule_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScheduleView"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScheduleView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_api_admin_backups__name__download_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/x-tar": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_budget_api_ai_budget_get: {
         parameters: {
             query?: never;

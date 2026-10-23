@@ -121,6 +121,120 @@
         "title": "ArticleView",
         "type": "object"
       },
+      "BackupView": {
+        "properties": {
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "database_bytes": {
+            "title": "Database Bytes",
+            "type": "integer"
+          },
+          "encrypted": {
+            "title": "Encrypted",
+            "type": "boolean"
+          },
+          "files": {
+            "title": "Files",
+            "type": "integer"
+          },
+          "files_bytes": {
+            "title": "Files Bytes",
+            "type": "integer"
+          },
+          "files_new": {
+            "title": "Files New",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "problems": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Problems",
+            "type": "array"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "schema_revision": {
+            "title": "Schema Revision",
+            "type": "string"
+          },
+          "secrets": {
+            "title": "Secrets",
+            "type": "boolean"
+          },
+          "totals": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Totals",
+            "type": "object"
+          },
+          "verified": {
+            "title": "Verified",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "created_at",
+          "reason",
+          "verified",
+          "problems",
+          "encrypted",
+          "secrets",
+          "database_bytes",
+          "files",
+          "files_bytes",
+          "files_new",
+          "schema_revision",
+          "totals"
+        ],
+        "title": "BackupView",
+        "type": "object"
+      },
+      "BackupsView": {
+        "properties": {
+          "backups": {
+            "items": {
+              "$ref": "#/components/schemas/BackupView"
+            },
+            "title": "Backups",
+            "type": "array"
+          },
+          "request": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RequestView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "schedule": {
+            "$ref": "#/components/schemas/ScheduleView"
+          },
+          "state": {
+            "$ref": "#/components/schemas/StateView"
+          }
+        },
+        "required": [
+          "schedule",
+          "state",
+          "request",
+          "backups"
+        ],
+        "title": "BackupsView",
+        "type": "object"
+      },
       "BankSelectionBody": {
         "properties": {
           "in_bank": {
@@ -2758,6 +2872,54 @@
         "title": "RefreshView",
         "type": "object"
       },
+      "RequestView": {
+        "properties": {
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "requested_at": {
+            "title": "Requested At",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "running",
+              "done",
+              "failed"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "requested_at",
+          "status",
+          "name",
+          "error"
+        ],
+        "title": "RequestView",
+        "type": "object"
+      },
       "RightsBody": {
         "properties": {
           "basis": {
@@ -2858,6 +3020,40 @@
           "updated_at"
         ],
         "title": "SaveBody",
+        "type": "object"
+      },
+      "ScheduleView": {
+        "properties": {
+          "daily": {
+            "maximum": 60.0,
+            "minimum": 1.0,
+            "title": "Daily",
+            "type": "integer"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "hour_utc": {
+            "maximum": 23.0,
+            "minimum": 0.0,
+            "title": "Hour Utc",
+            "type": "integer"
+          },
+          "weekly": {
+            "maximum": 52.0,
+            "minimum": 0.0,
+            "title": "Weekly",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "enabled",
+          "hour_utc",
+          "daily",
+          "weekly"
+        ],
+        "title": "ScheduleView",
         "type": "object"
       },
       "ScoredItemView": {
@@ -3335,6 +3531,106 @@
           "item_count"
         ],
         "title": "SourceView",
+        "type": "object"
+      },
+      "StateView": {
+        "properties": {
+          "checked_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checked At"
+          },
+          "configured": {
+            "title": "Configured",
+            "type": "boolean"
+          },
+          "encrypted": {
+            "title": "Encrypted",
+            "type": "boolean"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "free_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Free Bytes"
+          },
+          "last_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Error"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Name"
+          },
+          "running": {
+            "title": "Running",
+            "type": "boolean"
+          },
+          "total_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Bytes"
+          },
+          "writable": {
+            "title": "Writable",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "configured",
+          "checked_at",
+          "writable",
+          "free_bytes",
+          "total_bytes",
+          "error",
+          "running",
+          "last_name",
+          "last_error",
+          "encrypted"
+        ],
+        "title": "StateView",
         "type": "object"
       },
       "TagsBody": {
@@ -3956,6 +4252,119 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/admin/backups": {
+      "get": {
+        "description": "The backups of the instance, the state of their destination, their schedule.",
+        "operationId": "overview_api_admin_backups_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackupsView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Overview"
+      }
+    },
+    "/api/admin/backups/run": {
+      "post": {
+        "description": "« Sauvegarder maintenant »: the backup service takes it within half a minute. 409\n`already_running` while one is waiting or running.",
+        "operationId": "run_now_api_admin_backups_run_post",
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Run Now"
+      }
+    },
+    "/api/admin/backups/schedule": {
+      "put": {
+        "description": "When the daily backup runs, and how many are kept.",
+        "operationId": "set_schedule_api_admin_backups_schedule_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleView"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Schedule"
+      }
+    },
+    "/api/admin/backups/{name}/download": {
+      "get": {
+        "description": "A backup as one .tar file, written as it is sent. Encrypted backups stay encrypted:\nonly their passphrase opens them.",
+        "operationId": "download_api_admin_backups__name__download_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "title": "Name",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/x-tar": {}
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Download"
+      }
+    },
     "/api/ai/budget": {
       "get": {
         "operationId": "get_budget_api_ai_budget_get",

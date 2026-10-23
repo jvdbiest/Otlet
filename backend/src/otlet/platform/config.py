@@ -25,6 +25,9 @@ class Settings:
     # Declarations of rights on texts reserved by their publisher (Joël, 2026-10-20): on unless
     # OTLET_RIGHTS_DECLARATIONS says off (the administrator of a hosted instance decides).
     rights_declarations: bool = True
+    # The destination of the backups, read only by the API (F08, ADR-0042): None when the
+    # installation mounts none.
+    backup_dir: Path | None = None
 
     @classmethod
     def from_env(cls, environ: Mapping[str, str] | None = None) -> "Settings":
@@ -45,6 +48,7 @@ class Settings:
             files_dir=path("OTLET_FILES_DIR") or Path(run_dir) / "files",
             rights_declarations=env.get("OTLET_RIGHTS_DECLARATIONS", "on").strip().lower()
             not in ("off", "0", "false", "no"),
+            backup_dir=path("OTLET_BACKUP_DIR"),
         )
 
     def require_database_url(self) -> str:

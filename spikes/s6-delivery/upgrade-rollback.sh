@@ -12,7 +12,7 @@ set -eu
 cd "$(dirname "$0")/../.."
 spike=spikes/s6-delivery
 mkdir -p "$spike/results" "$spike/data/backups"
-rm -f "$spike"/data/backups/*.dump
+rm -rf "$spike"/data/backups/*
 
 export COMPOSE_PROJECT_NAME=otlet-s6
 export OTLET_IMAGE=otlet-s6
@@ -66,6 +66,8 @@ rm -rf "$spike/data/keys"
 mkdir -p "$spike/data/keys"
 openssl genpkey -algorithm X25519 -out "$spike/data/keys/secrets-private.pem"
 openssl pkey -in "$spike/data/keys/secrets-private.pem" -pubout     -out "$spike/data/keys/secrets-public.pem"
+# The passphrase of the backups (ADR-0042), as deploy/configure.sh makes it.
+head -c 18 /dev/urandom | od -An -tx1 | tr -d ' \n' > "$spike/data/keys/backup-passphrase"
 
 # Version N is the current code, at the head of backend/migrations; N+1 adds one migration on
 # top of it (next/settings_note.py.in).
@@ -96,7 +98,8 @@ record install-n "$ok" $(($(now) - t))
 # before the API.
 t=$(now)
 up n1
-pre_upgrade_dump=$(ls -1t "$spike"/data/backups/otlet-*.dump | head -n 1)
+# The backup taken at the start of N+1, before its migration (ADR-0042: a folder per backup).
+pre_upgrade_backup=$(ls -1 "$spike"/data/backups | grep -E '^[0-9]{4}-' | sort | tail -n 1)
 [ "$(revision)" = s6_next ] && [ "$(fingerprint)" = "$reference" ] && [ "$(has_note_column)" = 1 ] \
     && ok=true || ok=false
 record upgrade-n-to-n1 "$ok" $(($(now) - t))
@@ -114,10 +117,7 @@ record rollback-n1-to-n "$ok" $(($(now) - t))
 up n1
 t=$(now)
 compose stop api worker scheduler caddy >/dev/null 2>&1
-compose run --rm --no-deps backup \
-    "psql -v ON_ERROR_STOP=1 -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;' \
-     && pg_restore --no-owner --exit-on-error -d otlet /backups/$(basename "$pre_upgrade_dump")" \
-    >/dev/null 2>&1
+compose exec -T backups otlet backup restore "$pre_upgrade_backup" --yes >/dev/null 2>&1
 up n
 [ "$(revision)" = "$schema_n" ] && [ "$(fingerprint)" = "$reference" ] && [ "$(has_note_column)" = 0 ] \
     && ok=true || ok=false

@@ -10,13 +10,18 @@ import os
 import sys
 import urllib.request
 from collections.abc import Sequence
+from pathlib import Path
+from typing import TYPE_CHECKING
 
 from otlet import __version__
 from otlet.platform import logging as otlet_logging
 from otlet.platform import process
 from otlet.platform.config import Settings
 
-LOOP_ROLES = ("worker", "scheduler")
+if TYPE_CHECKING:
+    from otlet.backup.application.backups import Backups
+
+LOOP_ROLES = ("worker", "scheduler", "backup")
 # Loop roles beat every 5 s; three missed beats mean the role is stuck.
 HEARTBEAT_MAX_AGE_SECONDS = 15.0
 DEFAULT_WORKSPACE_NAME = "Mon espace"
@@ -79,6 +84,9 @@ def build_parser() -> argparse.ArgumentParser:
     run = backup_actions.add_parser("run", help="faire une sauvegarde complète et la vérifier")
     run.add_argument("--reason", default="manual", choices=("manual", "scheduled", "startup"))
     backup_actions.add_parser("list", help="lister les sauvegardes, les plus récentes d'abord")
+    backup_actions.add_parser(
+        "serve", help="service de sauvegarde : planification, demandes, état (Réglages)"
+    )
     check = backup_actions.add_parser("verify", help="vérifier toute une sauvegarde")
     check.add_argument("name")
     backup_actions.add_parser("prune", help="supprimer les sauvegardes qui ne sont plus gardées")
@@ -275,8 +283,6 @@ def backup_command(args: argparse.Namespace) -> int:
     """Backups of the instance (ADR-0042), with the owner role (OTLET_BACKUP_DATABASE_URL, libpq
     form) into OTLET_BACKUP_DIR; encrypted with the passphrase of
     OTLET_BACKUP_PASSPHRASE_FILE when there is one."""
-    from pathlib import Path
-
     from otlet.backup.adapters.crypto import Cipher
     from otlet.backup.adapters.postgres import PostgresDatabase
     from otlet.backup.application.backups import BackupError, Backups
@@ -306,16 +312,14 @@ def backup_command(args: argparse.Namespace) -> int:
         secrets,
         __version__,
     )
+    if args.action == "serve":
+        return backup_serve(backups, destination, url, sealer is not None)
     try:
         if args.action == "run":
             if sealer is None:
                 print("otlet backup: not encrypted (no passphrase file)", file=sys.stderr)
             name = backups.run(args.reason)
-            manifest = backups.manifest(name)
-            backups.prune(
-                int(os.environ.get("OTLET_BACKUP_DAILY", "7")),
-                int(os.environ.get("OTLET_BACKUP_WEEKLY", "4")),
-            )
+            manifest = backups.manifest(name)  # what is kept is the service's to decide
             print(f"{name} verified={manifest.verified} files_new={manifest.files_new}")
             return 0 if manifest.verified else 1
         if args.action == "list":
@@ -351,3 +355,25 @@ def backup_command(args: argparse.Namespace) -> int:
     except BackupError as error:
         print(f"otlet backup: {error}", file=sys.stderr)
         return 1
+
+
+SERVE_EVERY_SECONDS = 30.0
+
+
+def backup_serve(backups: "Backups", destination: Path, url: str, encrypted: bool) -> int:
+    """The backup service (ADR-0042): checks its destination, backs up when due or asked, and
+    beats like the other loop roles."""
+    import sqlalchemy as sa
+
+    from otlet.backup.adapters.control import PostgresControl
+    from otlet.backup.application.service import BackupService
+
+    settings = Settings.from_env()
+    engine = sa.create_engine(url.replace("postgresql://", "postgresql+psycopg://", 1))
+    service = BackupService(backups, destination, PostgresControl(engine), encrypted)
+    stop = process.stop_on_signals()
+    while not stop.is_set():
+        process.beat(settings.run_dir, "backup")
+        service.step()
+        stop.wait(SERVE_EVERY_SECONDS)
+    return 0

@@ -77,26 +77,11 @@ def _files(root: Path) -> Iterator[Path]:
                 yield path.relative_to(root)
 
 
-class Backups:
-    def __init__(
-        self,
-        destination: Path,
-        database: Database,
-        files_dir: Path,
-        sealer: Sealer | None,
-        secrets: tuple[Path, ...] = (),
-        otlet_version: str = "dev",
-        clock: Callable[[], datetime] | None = None,
-    ) -> None:
-        self._destination = destination
-        self._database = database
-        self._files_dir = files_dir
-        self._sealer = sealer
-        self._secrets = secrets
-        self._version = otlet_version
-        self._clock = clock
+class Catalog:
+    """The backups of a destination, read only: what the administration screen lists."""
 
-    # -- Reading ---------------------------------------------------------------------------
+    def __init__(self, destination: Path) -> None:
+        self._destination = destination
 
     def names(self) -> list[str]:
         """The complete backups, most recent first."""
@@ -110,15 +95,35 @@ class Backups:
         return sorted(found, reverse=True)
 
     def manifest(self, name: str) -> Manifest:
-        return Manifest.from_json((self._folder(name) / MANIFEST).read_text("utf-8"))
+        return Manifest.from_json((self.folder(name) / MANIFEST).read_text("utf-8"))
 
-    def _folder(self, name: str) -> Path:
+    def folder(self, name: str) -> Path:
         if moment_of(name) is None:
             raise BackupError(f"not a backup name: {name}")
         folder = self._destination / name
         if not (folder / MANIFEST).exists():
             raise BackupError(f"no such backup: {name}")
         return folder
+
+
+class Backups(Catalog):
+    def __init__(
+        self,
+        destination: Path,
+        database: Database,
+        files_dir: Path,
+        sealer: Sealer | None,
+        secrets: tuple[Path, ...] = (),
+        otlet_version: str = "dev",
+        clock: Callable[[], datetime] | None = None,
+    ) -> None:
+        super().__init__(destination)
+        self._database = database
+        self._files_dir = files_dir
+        self._sealer = sealer
+        self._secrets = secrets
+        self._version = otlet_version
+        self._clock = clock
 
     # -- Taking ----------------------------------------------------------------------------
 
@@ -132,6 +137,7 @@ class Backups:
             moment += timedelta(seconds=1)  # two in the same second: a restore's own backup
         name = name_of(moment)
         partial = Path(tempfile.mkdtemp(prefix=f".partial-{name}-", dir=self._destination))
+        partial.chmod(0o755)  # readable by the API, which lists and downloads the backups
         try:
             suffix = ENCRYPTED if self._sealer else ""
             with tempfile.TemporaryDirectory(dir=self._destination, prefix=".dump-") as scratch:
@@ -223,7 +229,7 @@ class Backups:
 
     def verify(self, name: str) -> list[str]:
         """Checks a whole backup again: what is wrong with it, if anything."""
-        folder = self._folder(name)
+        folder = self.folder(name)
         return self._check(folder, self.manifest(name), only_new=False)
 
     def _check(self, folder: Path, manifest: Manifest, only_new: bool) -> list[str]:
@@ -287,11 +293,23 @@ class Backups:
 
     # -- Restoring -------------------------------------------------------------------------
 
+    def _give_back(self, target: Path) -> None:
+        """A restored file belongs to the owner of the médiathèque, like the others: the
+        backup service may run as another user (root, to reach any destination)."""
+        euid, chown = getattr(os, "geteuid", None), getattr(os, "chown", None)
+        if euid is None or chown is None or euid() != 0:
+            return
+        owner = self._files_dir.stat()
+        for path in (target, *target.relative_to(self._files_dir).parents):
+            full = path if path.is_absolute() else self._files_dir / path
+            if full != self._files_dir:
+                chown(full, owner.st_uid, owner.st_gid)
+
     def restore(self, name: str, secrets_to: Path | None = None) -> str:
         """Replaces the database and adds back the missing or damaged files of the
         médiathèque, after a backup of the current state (ADR-0042): the name of that one.
         The secrets are written to `secrets_to` only when asked."""
-        folder = self._folder(name)
+        folder = self.folder(name)
         manifest = self.manifest(name)
         problems = self._check(folder, manifest, only_new=False)
         if problems:
@@ -313,6 +331,7 @@ class Backups:
                 continue
             target.parent.mkdir(parents=True, exist_ok=True)
             self._open(path, target, manifest)
+            self._give_back(target)
         if secrets_to is not None and manifest.secrets:
             secrets_to.mkdir(parents=True, exist_ok=True)
             for path in sorted((folder / SECRETS).iterdir()):

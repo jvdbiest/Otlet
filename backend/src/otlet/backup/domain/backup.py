@@ -3,7 +3,7 @@
 
 import json
 from dataclasses import asdict, dataclass, field
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 # A backup is a folder named after its moment, in UTC: they sort by name.
@@ -86,3 +86,26 @@ class Manifest:
         data["problems"] = tuple(data.get("problems", ()))
         known = set(cls.__dataclass_fields__)
         return cls(**{key: value for key, value in data.items() if key in known})
+
+
+@dataclass(frozen=True, slots=True)
+class Schedule:
+    """When the instance backs itself up (Réglages › Sauvegardes): once a day, at an hour in
+    UTC (the interface shows it in the administrator's time), and how many are kept."""
+
+    enabled: bool = True
+    hour_utc: int = 2
+    daily: int = DAILY
+    weekly: int = WEEKLY
+
+
+def due(now: datetime, last: datetime | None, schedule: Schedule) -> bool:
+    """Whether the daily backup is due: past its hour, and none taken since that hour today.
+    A day missed while Otlet was stopped is caught up once, at the next check."""
+    if not schedule.enabled:
+        return False
+    now = now.astimezone(UTC)
+    slot = now.replace(hour=schedule.hour_utc, minute=0, second=0, microsecond=0)
+    if now < slot:
+        slot -= timedelta(days=1)
+    return last is None or last.astimezone(UTC) < slot

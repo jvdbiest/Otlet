@@ -74,6 +74,25 @@ def build_parser() -> argparse.ArgumentParser:
         "openapi", help="afficher la spécification OpenAPI de l'API (client de l'interface)"
     )
 
+    backup = commands.add_parser("backup", help="sauvegardes de l'instance (F08, ADR-0042)")
+    backup_actions = backup.add_subparsers(dest="action", required=True)
+    run = backup_actions.add_parser("run", help="faire une sauvegarde complète et la vérifier")
+    run.add_argument("--reason", default="manual", choices=("manual", "scheduled", "startup"))
+    backup_actions.add_parser("list", help="lister les sauvegardes, les plus récentes d'abord")
+    check = backup_actions.add_parser("verify", help="vérifier toute une sauvegarde")
+    check.add_argument("name")
+    backup_actions.add_parser("prune", help="supprimer les sauvegardes qui ne sont plus gardées")
+    restore = backup_actions.add_parser(
+        "restore",
+        help="remplacer la base et rétablir les fichiers depuis une sauvegarde, après une"
+        " sauvegarde de l'état actuel ; arrêter d'abord api, worker et scheduler",
+    )
+    restore.add_argument("name")
+    restore.add_argument("--yes", action="store_true", help="confirmer le remplacement")
+    restore.add_argument(
+        "--secrets-to", help="dossier où écrire les secrets de l'instance de la sauvegarde"
+    )
+
     health = commands.add_parser("healthcheck", help="contrôle de santé d'un rôle (conteneurs)")
     health.add_argument("role", choices=("api", *LOOP_ROLES))
     health.add_argument("--port", type=int, default=port)
@@ -130,6 +149,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return create_admin_command(args.login, args.name, settings)
     elif args.command == "openapi":
         print(openapi_document())
+    elif args.command == "backup":
+        return backup_command(args)
     return 0
 
 
@@ -248,3 +269,85 @@ def secrets_command(action: str, name: str, settings: Settings) -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+
+
+def backup_command(args: argparse.Namespace) -> int:
+    """Backups of the instance (ADR-0042), with the owner role (OTLET_BACKUP_DATABASE_URL, libpq
+    form) into OTLET_BACKUP_DIR; encrypted with the passphrase of
+    OTLET_BACKUP_PASSPHRASE_FILE when there is one."""
+    from pathlib import Path
+
+    from otlet.backup.adapters.crypto import Cipher
+    from otlet.backup.adapters.postgres import PostgresDatabase
+    from otlet.backup.application.backups import BackupError, Backups
+
+    url = os.environ.get("OTLET_BACKUP_DATABASE_URL", "")
+    if not url:
+        print("otlet backup: OTLET_BACKUP_DATABASE_URL is required", file=sys.stderr)
+        return 2
+    destination = Path(os.environ.get("OTLET_BACKUP_DIR", "/backups"))
+    destination.mkdir(parents=True, exist_ok=True)
+    passphrase_file = os.environ.get("OTLET_BACKUP_PASSPHRASE_FILE", "")
+    passphrase = Path(passphrase_file).read_text("utf-8").strip() if passphrase_file else ""
+    sealer = Cipher.for_destination(destination, passphrase) if passphrase else None
+    secrets = tuple(
+        Path(value)
+        for value in (
+            os.environ.get("OTLET_SECRETS_PUBLIC_KEY_FILE", ""),
+            os.environ.get("OTLET_SECRETS_PRIVATE_KEY_FILE", ""),
+        )
+        if value
+    )
+    backups = Backups(
+        destination,
+        PostgresDatabase(url),
+        Path(os.environ.get("OTLET_FILES_DIR", "/var/lib/otlet/files")),
+        sealer,
+        secrets,
+        __version__,
+    )
+    try:
+        if args.action == "run":
+            if sealer is None:
+                print("otlet backup: not encrypted (no passphrase file)", file=sys.stderr)
+            name = backups.run(args.reason)
+            manifest = backups.manifest(name)
+            backups.prune(
+                int(os.environ.get("OTLET_BACKUP_DAILY", "7")),
+                int(os.environ.get("OTLET_BACKUP_WEEKLY", "4")),
+            )
+            print(f"{name} verified={manifest.verified} files_new={manifest.files_new}")
+            return 0 if manifest.verified else 1
+        if args.action == "list":
+            for name in backups.names():
+                manifest = backups.manifest(name)
+                print(
+                    f"{name} {manifest.reason} verified={manifest.verified}"
+                    f" encrypted={manifest.encrypted} files={manifest.files}"
+                )
+            return 0
+        if args.action == "verify":
+            problems = backups.verify(args.name)
+            for problem in problems:
+                print(problem)
+            return 1 if problems else 0
+        if args.action == "prune":
+            for name in backups.prune(
+                int(os.environ.get("OTLET_BACKUP_DAILY", "7")),
+                int(os.environ.get("OTLET_BACKUP_WEEKLY", "4")),
+            ):
+                print(f"removed {name}")
+            return 0
+        if not args.yes:
+            print(
+                "otlet backup restore: replaces the whole database; add --yes to confirm",
+                file=sys.stderr,
+            )
+            return 2
+        secrets_to = Path(args.secrets_to) if args.secrets_to else None
+        safety = backups.restore(args.name, secrets_to)
+        print(f"restored {args.name}; the state before is kept as {safety}")
+        return 0
+    except BackupError as error:
+        print(f"otlet backup: {error}", file=sys.stderr)
+        return 1

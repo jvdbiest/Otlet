@@ -62,6 +62,7 @@ Mis à jour le 2026-10-17. Une page : ce qu'il faut savoir pour reprendre le tra
 - Écrire un nettoyeur de collage Word et Google Docs pour Tiptap (ADR-0023).
 - ASVS V12.3 : chiffrer ou non les liaisons internes de la pile Compose (`docs/security/asvs-l2.md`).
 - Volet lexical du garde-fou : remplacer les 5-grammes par la plus longue séquence commune, seuil à fixer avant mesure (ADR-0024).
+- **Avant de relancer le banc WordPress (S3, S7) sur la VM .252** : faille PHP « PHP2Shell » (CVE-2026-109618 et CVE-2026-109619, octobre 2026). Les images `wordpress:7.1.3-php8.4-apache` et `wordpress:cli-php8.4` ont PHP 8.4.26, `wordpress:6-php8.4-apache` PHP 8.4.21 : prendre des images avec PHP 8.4.27 ou plus. Conteneurs arrêtés, réseau local seulement ; Otlet lui-même n'utilise pas PHP. À faire plus tard (Joël, 2026-10-23).
 - S7 : test court de connexion et de publication sur un hébergement mutualisé réel, pendant É1 ou dès qu'il y en aura un ; aucune dépense d'ici là (ADR-0026).
 - Mesurer la mémoire de la pile entière quand le worker chargera potion (S5b §5).
 - Remesurer les seuils de similarité sur un corpus réel à la tranche verticale d'É1 (ADR-0024).

@@ -35,3 +35,7 @@ Joël a testé des sources complètes de 300 à 350 mots (Honda, DeepSeek) : bro
 - **insuffisante** (moins de 150 mots, ou seulement des résumés trop courts pour un article court) : la génération demande confirmation, « Générer quand même ».
 
 Le nombre de mots s'affiche partout où il aide à juger la matière : Veille, éléments du brief, sources d'un brouillon, versions, éditeur.
+
+## Révision du 2026-10-23 : le niveau de matière passe à ADR-0041
+
+Le niveau de matière ne dépend plus du seul nombre de mots. Les mots deviennent l'un des cinq critères de l'évaluateur documentaire (sources, diversité, mots, fraîcheur, corroboration), combinés par une règle hybride selon la Nature du brief (Actualité ou Dossier de fond) et son mode : voir ADR-0041. Ce qui reste ici : la longueur plafonnée à 80 % des mots des sources, le plancher de 150 mots, les trois niveaux et « Générer quand même ».

@@ -93,7 +93,12 @@ function TopicCard({ workspaceId, topic, onEdit }: { workspaceId: string; topic:
       {topic.exclusions.length > 0 && (
         <p className={styles.meta}>{t("topics.exclusionsLabel", { terms: topic.exclusions.join(", ") })}</p>
       )}
-      <p className={styles.meta}>{t("topics.count", { count: topic.item_count })}</p>
+      <p className={styles.meta}>
+        {/* The count opens its items in Veille › Éléments, filtered on the topic (Joël, 2026-10-24). */}
+        <Link to="/veille" search={{ topic: topic.id }} title={t("topics.showItems")}>
+          {t("topics.count", { count: topic.item_count })}
+        </Link>
+      </p>
       <RescoreStatus workspaceId={workspaceId} topic={topic} />
       <div className={styles.row}>
         <Button className={styles.button} onPress={onEdit}>

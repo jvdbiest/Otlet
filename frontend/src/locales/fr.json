@@ -334,7 +334,8 @@
       "es": "Espagnol",
       "it": "Italien",
       "pt": "Portugais"
-    }
+    },
+    "showItems": "Voir les éléments de ce sujet"
   },
   "triage": {
     "views": {

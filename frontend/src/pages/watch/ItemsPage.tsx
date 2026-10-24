@@ -64,18 +64,21 @@ function remember(key: string, value: string | null) {
  * (X02, F-VEI-04, F-VEI-05). */
 export function ItemsPage() {
   const workspaceId = useWorkspaceId();
-  const { source } = useSearch({ strict: false });
-  return workspaceId === undefined ? null : <Items key={source ?? ""} workspaceId={workspaceId} source={source ?? null} />;
+  const { source, topic } = useSearch({ strict: false });
+  return workspaceId === undefined ? null : (
+    <Items key={`${source ?? ""}|${topic ?? ""}`} workspaceId={workspaceId} source={source ?? null} topic={topic ?? null} />
+  );
 }
 
-/** `source`: opened from the count of a source, its items in every view (Joël, 2026-10-24). */
-function Items({ workspaceId, source }: { workspaceId: string; source: string | null }) {
+/** `source`, `topic`: opened from the count of a source or a topic, its items in every view
+ * (Joël, 2026-10-24). */
+function Items({ workspaceId, source, topic }: { workspaceId: string; source: string | null; topic: string | null }) {
   const { t } = useTranslation();
   const [filter, setFilter] = useState<FeedFilter>({
-    view: source === null ? "to_sort" : "all",
+    view: source === null && topic === null ? "to_sort" : "all",
     sourceId: source,
     unread: false,
-    topicIds: [],
+    topicIds: topic === null ? [] : [topic],
     allTopics: false,
     period: ANY_TIME,
     sort: remembered(SORT_KEY, SORTS) ?? "date",

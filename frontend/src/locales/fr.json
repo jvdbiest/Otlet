@@ -1147,5 +1147,13 @@
       "limited": "Vous pouvez générer : l'article reposera sur une matière limitée, relisez-le avec attention.",
       "insufficient": "Vous pouvez générer, sous votre responsabilité : avec cette matière, l'article risque de reprendre la couverture d'une seule source ou de combler les manques. Complétez le brief si vous le pouvez."
     }
+  },
+  "textSearch": {
+    "label": "Rechercher dans le texte",
+    "placeholder": "Rechercher (Ctrl+F)",
+    "previous": "Occurrence précédente",
+    "next": "Occurrence suivante",
+    "none": "Aucun résultat",
+    "count": "{current} sur {count}"
   }
 }

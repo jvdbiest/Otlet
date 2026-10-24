@@ -80,3 +80,15 @@ a {
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* « Rechercher » in a draft or an article (pages/writing/TextSearch.tsx): every occurrence, and
+   the one « suivant » reached; not the yellow of the passages copied from a source. */
+::highlight(otlet-search) {
+  background-color: #b3d7ff;
+  color: #000;
+}
+
+::highlight(otlet-search-current) {
+  background-color: #ff9632;
+  color: #000;
+}

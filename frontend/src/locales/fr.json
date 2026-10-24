@@ -1142,6 +1142,10 @@
       "wordsFail": "Ajoutez des textes complets, ou déclarez vos droits sur un texte réservé depuis sa page.",
       "freshness": "Chercher des éléments récents dans la Veille",
       "corroboration": ""
+    },
+    "generate": {
+      "limited": "Vous pouvez générer : l'article reposera sur une matière limitée, relisez-le avec attention.",
+      "insufficient": "Vous pouvez générer, sous votre responsabilité : avec cette matière, l'article risque de reprendre la couverture d'une seule source ou de combler les manques. Complétez le brief si vous le pouvez."
     }
   }
 }

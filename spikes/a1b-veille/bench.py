@@ -179,6 +179,22 @@ QUALIFY_SYSTEM = (
     "d'après son titre et son résumé seulement : ne déduis ni pays, ni date, ni auteur qu'ils ne "
     "donnent pas. Réponds pour chaque numéro reçu, et seulement pour eux."
 )
+# Second pass (Joël, 2026-10-25), after the first: the angle filtered (Belgian items set
+# aside for not saying « Belgique »), and reasons made links the items do not write.
+QUALIFY_SYSTEM_2 = QUALIFY_SYSTEM + (
+    "\nL'angle départage « traite » et « proche », il n'écarte jamais : un élément qui porte sur "
+    "le sujet sans dire l'angle est au moins « proche ». Le pays de l'éditeur est donné entre "
+    "crochets : un éditeur belge parle en général de la Belgique. Ne relie jamais l'élément au "
+    "sujet par un fait qu'il n'écrit pas (une date, un événement, un lieu, un produit) : si le "
+    "lien n'est pas écrit, l'élément est au plus « proche », et la raison le dit."
+)
+# The country of a publisher, from the address of the item: no model.
+COUNTRIES = {".be": "Belgique", ".fr": "France", ".nl": "Pays-Bas", ".ch": "Suisse", ".lu": "Luxembourg"}
+
+
+def country(url: str | None) -> str:
+    host = (url or "").split("/")[2] if (url or "").count("/") >= 2 else ""
+    return next((name for tld, name in COUNTRIES.items() if host.endswith(tld)), "pays inconnu")
 QUALIFY_SCHEMA = {
     "type": "object",
     "properties": {"verdicts": {"type": "array", "items": {
@@ -191,30 +207,43 @@ QUALIFY_SCHEMA = {
 }
 
 
-def qualify() -> None:
+def qualify(second: bool = False) -> None:
+    """The verdicts of the model on G. `second`: the corrections of the second pass, the
+    country of the publisher, the items without a summary set aside « à vérifier » without
+    asking the model, and the rules of QUALIFY_SYSTEM_2."""
     data = load("candidates.json")
+    system = QUALIFY_SYSTEM_2 if second else QUALIFY_SYSTEM
     out = {}
     for key, entry in data.items():
         s = entry["subject"]
         broad = [i for i in entry["candidates"] if i["id"] in set(entry["G"])]
         verdicts, usages = {}, []
+        if second:
+            for i in broad:
+                if not i["summary"].strip():
+                    verdicts[i["id"]] = {"verdict": "proche", "raison": "Pas de résumé : à juger sur l'élément."}
+            broad = [i for i in broad if i["id"] not in verdicts]
         for start in range(0, len(broad), BATCH):
             batch = broad[start:start + BATCH]
-            lines = [f"{n}. [{i['language']}] {i['title']} — {i['summary'][:300]}" for n, i in enumerate(batch, 1)]
+            lines = [
+                f"{n}. [{i['language']} · {i['publisher']} · {country(i.get('url'))}] {i['title']} — {i['summary'][:300]}"
+                if second else f"{n}. [{i['language']}] {i['title']} — {i['summary'][:300]}"
+                for n, i in enumerate(batch, 1)
+            ]
             user = f"Sujet : {s['subject']}\nAngle : {s['angle'] or '(aucun)'}\n\nÉléments :\n" + "\n".join(lines)
-            answer, usage = chat(QUALIFY_SYSTEM, user, QUALIFY_SCHEMA)
+            answer, usage = chat(system, user, QUALIFY_SCHEMA)
             usages.append(usage)
             for v in answer["verdicts"]:
                 if 1 <= v["n"] <= len(batch):  # an invented number is dropped, as the server would
                     verdicts[batch[v["n"] - 1]["id"]] = {"verdict": v["verdict"], "raison": v["raison"]}
-        missing = [i["id"] for i in broad if i["id"] not in verdicts]
+        missing = [i["id"] for i in entry["candidates"] if i["id"] in set(entry["G"]) and i["id"] not in verdicts]
         out[key] = {"verdicts": verdicts, "missing": missing, "usage": usages}
         print(key, len(verdicts), "verdicts,", len(missing), "missing,", usages)
-    save("qualify.json", out)
+    save("qualify2.json" if second else "qualify.json", out)
 
 
-def score() -> None:
-    data, qualified = load("candidates.json"), load("qualify.json")
+def score(name: str = "qualify.json") -> None:
+    data, qualified = load("candidates.json"), load(name)
     reference = load("reference.json")  # {key: {item id: traite | proche | hors_sujet}}
     report = {}
     for key, entry in data.items():
@@ -237,8 +266,15 @@ def score() -> None:
         wrongly_out = [i for i in relevant if verdicts.get(i, {}).get("verdict") == "hors_sujet"]
         report[key] = {"relevant": len(relevant), "methods": rows, "relevant_set_aside_by_C": wrongly_out}
         print(key, json.dumps(report[key], ensure_ascii=False))
-    save("score.json", report)
+    save(name.replace("qualify", "score"), report)
 
 
 if __name__ == "__main__":
-    {"expand": expand, "collect": collect, "qualify": qualify, "score": score}[sys.argv[1]]()
+    {
+        "expand": expand,
+        "collect": collect,
+        "qualify": qualify,
+        "qualify2": lambda: qualify(second=True),
+        "score": score,
+        "score2": lambda: score("qualify2.json"),
+    }[sys.argv[1]]()

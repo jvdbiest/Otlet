@@ -46,6 +46,18 @@ Otlet ne copie aujourd'hui que la base, à chaque démarrage, dans `deploy/backu
 
     Ordre : F08 V1, A1a-1 (ADR-0041), F08 V2, corbeille, V3.
 
+## Un seul assistant de restauration (Joël, 2026-10-23)
+
+La restauration est une fonctionnalité du produit, pas un outil technique. Les V2 et V3 ne sont pas deux systèmes, mais deux niveaux d'un même assistant, dans Réglages › Sauvegardes, ouvert par « Restaurer » sur une sauvegarde :
+
+1. **Portée** : toute l'instance, ou un espace (plus tard, un sous-ensemble).
+2. **Ce que l'on restaure** : tout, ou des blocs (Briefs, Articles et Bibliothèque, Médiathèque, Veille, Réglages).
+3. **Résumé** : ce qui sera réintroduit, ignoré, restauré à côté ou remplacé, compté avant d'agir.
+4. **Confirmation forte** : saisie de « RESTAURER », puis ré-authentification.
+5. **Exécution suivie**, après la sauvegarde automatique de l'état actuel.
+
+La V2 livre cet assistant avec un seul choix possible : toute l'instance, remplacée. Les choix de la V3 (un espace, des blocs, réintroduire) y apparaissent dès la V2, grisés avec la mention « bientôt », puis s'activent sans changer l'écran. Côté serveur, une **demande de restauration** porte dès la V2 la portée, les blocs et le mode (`replace` ou `reintroduce`). L'exécutant séparé la traite : en V2, il refuse ce qu'il ne sait pas encore faire. La commande de la V1 passe par le même exécutant. Il n'y a ainsi qu'un seul chemin de restauration, de la commande à l'assistant.
+
 ## Conséquences
 
 - La copie au démarrage (service `backup`) reste, comme filet avant une migration. Elle écrira au même format, dans un sous-dossier de la destination.

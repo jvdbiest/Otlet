@@ -2983,6 +2983,8 @@ export interface components {
             last_error: string | null;
             /** Last Name */
             last_name: string | null;
+            /** Location */
+            location: string | null;
             /** Running */
             running: boolean;
             /** Total Bytes */

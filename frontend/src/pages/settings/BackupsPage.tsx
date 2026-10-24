@@ -42,6 +42,11 @@ function Destination({ view }: { view: BackupsView }) {
   return (
     <section className={styles.panel} aria-labelledby="backups-destination">
       <h2 id="backups-destination">{t("backups.destination.title")}</h2>
+      {state.location !== null && (
+        <p>
+          {t("backups.destination.folder")} <code>{state.location}</code>
+        </p>
+      )}
       {!state.configured ? (
         <p className={styles.warning}>{t("backups.destination.none")}</p>
       ) : state.checked_at === null ? (
@@ -56,9 +61,12 @@ function Destination({ view }: { view: BackupsView }) {
           <p className={styles.meta}>{t("backups.destination.checked", { date: formatDate(state.checked_at) })}</p>
         </>
       )}
-      <p className={state.encrypted ? styles.meta : styles.warning}>
-        {state.encrypted ? t("backups.encrypted") : t("backups.notEncrypted")}
-      </p>
+      <div className={styles.warning} role="note">
+        <p>
+          <strong>{state.encrypted ? t("backups.encryptedTitle") : t("backups.notEncryptedTitle")}</strong>
+        </p>
+        <p>{state.encrypted ? t("backups.encrypted") : t("backups.notEncrypted")}</p>
+      </div>
     </section>
   );
 }
@@ -175,11 +183,12 @@ function BackupRow({ backup }: { backup: BackupView }) {
         )}
       </td>
       <td>
-        {t("backups.contents", {
-          briefs: totals.briefs ?? 0,
-          articles: totals.articles ?? 0,
-          media: totals.media ?? 0,
-        })}
+        <ul className={styles.contents}>
+          <li>{t("backups.blocks.briefs", { count: totals.briefs ?? 0 })}</li>
+          <li>{t("backups.blocks.articles", { count: totals.articles ?? 0 })}</li>
+          <li>{t("backups.blocks.media", { count: totals.media ?? 0 })}</li>
+          <li>{t("backups.blocks.items", { count: totals.items ?? 0 })}</li>
+        </ul>
       </td>
       <td>
         {size(backup.database_bytes + backup.files_bytes)}

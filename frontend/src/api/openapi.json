@@ -3598,6 +3598,17 @@
             ],
             "title": "Last Name"
           },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
           "running": {
             "title": "Running",
             "type": "boolean"
@@ -3620,6 +3631,7 @@
         },
         "required": [
           "configured",
+          "location",
           "checked_at",
           "writable",
           "free_bytes",

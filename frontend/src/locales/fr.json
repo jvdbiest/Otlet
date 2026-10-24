@@ -1040,9 +1040,10 @@
       "noService": "Le service de sauvegarde n'a pas encore signalé son état : il démarre, ou il ne tourne pas.",
       "ok": "Le dossier de sauvegarde est accessible : {free} libres sur {total}.",
       "ko": "Le dossier de sauvegarde n'est pas accessible en écriture : {error}",
-      "checked": "Vérifié le {date}."
+      "checked": "Vérifié le {date}.",
+      "folder": "Dossier de sauvegarde sur le serveur :"
     },
-    "encrypted": "Les sauvegardes sont chiffrées. Gardez une copie de la phrase de passe hors de cette machine : sans elle, une sauvegarde ne peut pas être restaurée.",
+    "encrypted": "Sans la phrase de passe, aucune restauration n'est possible, par personne. Gardez-en une copie hors de cette machine, par exemple dans un gestionnaire de mots de passe.",
     "notEncrypted": "Les sauvegardes ne sont pas chiffrées, et les secrets de l'instance n'y figurent pas. Ajoutez une phrase de passe à l'installation pour les chiffrer.",
     "schedule": {
       "title": "Planification",
@@ -1071,7 +1072,6 @@
     },
     "verified": "Vérifiée",
     "problems": "{count, plural, one {# problème} other {# problèmes}}",
-    "contents": "{briefs} briefs, {articles} articles, {media} images",
     "newFiles": "{count, plural, =0 {aucun fichier nouveau} one {# fichier nouveau} other {# fichiers nouveaux}}",
     "download": "Télécharger",
     "now": "Sauvegarder maintenant",
@@ -1079,6 +1079,14 @@
     "done": "Sauvegarde demandée le {date} : terminée.",
     "failed": "La dernière sauvegarde demandée a échoué : {error}",
     "lastError": "Dernier problème : {error}",
-    "restore": "La restauration se fait pour l'instant par une commande sur le serveur, décrite dans la documentation d'exploitation (Sauvegarde et restauration). Une sauvegarde de l'état actuel est toujours prise juste avant."
+    "restore": "La restauration se fait pour l'instant par une commande sur le serveur, décrite dans la documentation d'exploitation (Sauvegarde et restauration). Une sauvegarde de l'état actuel est toujours prise juste avant.",
+    "encryptedTitle": "🔒 Sauvegardes chiffrées : gardez la phrase de passe en lieu sûr",
+    "notEncryptedTitle": "⚠ Sauvegardes non chiffrées",
+    "blocks": {
+      "briefs": "{count, plural, one {# brief} other {# briefs}}",
+      "articles": "{count, plural, one {# article} other {# articles}}",
+      "media": "{count, plural, one {# image} other {# images}}",
+      "items": "{count, plural, one {# élément de veille} other {# éléments de veille}}"
+    }
   }
 }

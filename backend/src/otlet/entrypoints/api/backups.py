@@ -33,6 +33,7 @@ class ScheduleView(BaseModel):
 
 class StateView(BaseModel):
     configured: bool  # a destination is mounted for the API to read
+    location: str | None  # the folder on the host, as the installation names it
     checked_at: str | None
     writable: bool
     free_bytes: int | None
@@ -97,6 +98,7 @@ def build_router(
     destination: Path | None,
     auth: Authentication,
     current_session: Callable[..., Session],
+    location: str | None = None,
 ) -> APIRouter:
     CurrentSession = Annotated[Session, Depends(current_session)]
     router = APIRouter(prefix=PREFIX, dependencies=[Depends(same_origin)])
@@ -132,6 +134,7 @@ def build_router(
             ),
             state=StateView(
                 configured=destination is not None,
+                location=location,
                 checked_at=state.checked_at,
                 writable=state.writable,
                 free_bytes=state.free_bytes,

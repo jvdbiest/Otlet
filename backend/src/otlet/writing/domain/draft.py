@@ -23,7 +23,7 @@ from typing import Any
 from otlet.writing.domain.brief import BriefFields, Length, Mode
 from otlet.writing.domain.vocabulary import choice
 
-PROMPT_VERSION = "redaction-12"
+PROMPT_VERSION = "redaction-13"
 SCHEMA_NAME = "article_draft"
 # Up to 15: a selection of ten films is ten sections (Joël, 2026-10-18; six cut his top 10).
 SECTIONS = (2, 15)
@@ -119,6 +119,10 @@ SYSTEM = (
     "- Build on the author's angle and own contribution: it is the point of the article.\n"
     "- Every paragraph lists in source_ids the sources that support it, using only the ids "
     "given (S1, S2…). Do not invent facts that no source supports.\n"
+    "- Never place a fact somewhere (a country, a region, a city) unless its source or the "
+    "brief says so: translating or rewording a place they give is fine (« sur le territoire "
+    "français » may become « en France »), guessing it from the publisher or the context is "
+    "not.\n"
     "- Never write these ids in the title, the lead, a heading or a paragraph: no « Selon S2 », "
     "no « S3 confirme », no « (S1) », no « comme le souligne S2 », no source_ids in the text. "
     "Otlet adds numbered references after each paragraph from source_ids: write the facts "

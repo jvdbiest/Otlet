@@ -639,6 +639,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/assistant/find": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Find
+         * @description The items of the Veille holding a term of every concept, the concepts widened by the
+         *     glossary. No model is called: what is searched is what is shown.
+         */
+        post: operations["find_api_workspaces__workspace_id__assistant_find_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/brief-vocabulary": {
         parameters: {
             query?: never;
@@ -905,6 +926,48 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/glossary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Glossary
+         * @description The entries of the glossary of the workspace, by their first term.
+         */
+        get: operations["list_glossary_api_workspaces__workspace_id__glossary_get"];
+        put?: never;
+        /**
+         * Add Entry
+         * @description Adds terms that mean the same thing (2 to 30).
+         */
+        post: operations["add_entry_api_workspaces__workspace_id__glossary_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/glossary/{entry_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Entry */
+        put: operations["update_entry_api_workspaces__workspace_id__glossary__entry_id__put"];
+        post?: never;
+        /** Delete Entry */
+        delete: operations["delete_entry_api_workspaces__workspace_id__glossary__entry_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2022,6 +2085,31 @@ export interface components {
             /** Usage */
             usage: string;
         };
+        /** CandidateView */
+        CandidateView: {
+            /** Country */
+            country: string | null;
+            /**
+             * Dated
+             * Format: date-time
+             */
+            dated: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Language */
+            language: string | null;
+            /** Publisher */
+            publisher: string | null;
+            /** Summary */
+            summary: string;
+            /** Title */
+            title: string;
+            /** Url */
+            url: string | null;
+        };
         /** CatalogueView */
         CatalogueView: {
             /** Currency */
@@ -2085,6 +2173,22 @@ export interface components {
             label: string;
             /** Length Max */
             length_max: ("short" | "medium" | "long") | null;
+        };
+        /** ConceptBody */
+        ConceptBody: {
+            /** Name */
+            name: string;
+            /** Terms */
+            terms: string[];
+        };
+        /** ConceptView */
+        ConceptView: {
+            /** Added */
+            added: string[];
+            /** Name */
+            name: string;
+            /** Terms */
+            terms: string[];
         };
         /**
          * ContextWindowBody
@@ -2187,6 +2291,26 @@ export interface components {
             /** Url */
             url: string | null;
         };
+        /** EntryBody */
+        EntryBody: {
+            /** Terms */
+            terms: string[];
+        };
+        /** EntryView */
+        EntryView: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Terms */
+            terms: string[];
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
         /** ExportSelectionBody */
         ExportSelectionBody: {
             /** Article Ids */
@@ -2217,6 +2341,16 @@ export interface components {
             topics: components["schemas"]["TopicTagView"][];
             triage: components["schemas"]["TriageView"];
         };
+        /** FindBody */
+        FindBody: {
+            /** Concepts */
+            concepts: components["schemas"]["ConceptBody"][];
+            /**
+             * Days
+             * @default 30
+             */
+            days: number | null;
+        };
         /** FoundItemView */
         FoundItemView: {
             item: components["schemas"]["ItemView"];
@@ -2225,6 +2359,13 @@ export interface components {
             /** Topics */
             topics: components["schemas"]["TopicTagView"][];
             triage: components["schemas"]["TriageView"];
+        };
+        /** FoundView */
+        FoundView: {
+            /** Candidates */
+            candidates: components["schemas"]["CandidateView"][];
+            /** Concepts */
+            concepts: components["schemas"]["ConceptView"][];
         };
         /** GenerateBody */
         GenerateBody: {
@@ -4531,6 +4672,41 @@ export interface operations {
             };
         };
     };
+    find_api_workspaces__workspace_id__assistant_find_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FindBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FoundView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     brief_vocabulary_api_workspaces__workspace_id__brief_vocabulary_get: {
         parameters: {
             query?: never;
@@ -5066,6 +5242,138 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["GenerationView"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_glossary_api_workspaces__workspace_id__glossary_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntryView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_entry_api_workspaces__workspace_id__glossary_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EntryBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntryView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_entry_api_workspaces__workspace_id__glossary__entry_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entry_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EntryBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntryView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_entry_api_workspaces__workspace_id__glossary__entry_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entry_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

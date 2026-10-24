@@ -755,6 +755,84 @@
         "title": "CallView",
         "type": "object"
       },
+      "CandidateView": {
+        "properties": {
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          },
+          "dated": {
+            "format": "date-time",
+            "title": "Dated",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          },
+          "publisher": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publisher"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "summary",
+          "url",
+          "language",
+          "publisher",
+          "country",
+          "dated"
+        ],
+        "title": "CandidateView",
+        "type": "object"
+      },
       "CatalogueView": {
         "properties": {
           "currency": {
@@ -942,6 +1020,58 @@
           "length_max"
         ],
         "title": "ChoiceView",
+        "type": "object"
+      },
+      "ConceptBody": {
+        "properties": {
+          "name": {
+            "maxLength": 200,
+            "title": "Name",
+            "type": "string"
+          },
+          "terms": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 40,
+            "title": "Terms",
+            "type": "array"
+          }
+        },
+        "required": [
+          "name",
+          "terms"
+        ],
+        "title": "ConceptBody",
+        "type": "object"
+      },
+      "ConceptView": {
+        "properties": {
+          "added": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Added",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "terms": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Terms",
+            "type": "array"
+          }
+        },
+        "required": [
+          "name",
+          "terms",
+          "added"
+        ],
+        "title": "ConceptView",
         "type": "object"
       },
       "ContextWindowBody": {
@@ -1269,6 +1399,51 @@
         "title": "DuplicateView",
         "type": "object"
       },
+      "EntryBody": {
+        "properties": {
+          "terms": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 60,
+            "title": "Terms",
+            "type": "array"
+          }
+        },
+        "required": [
+          "terms"
+        ],
+        "title": "EntryBody",
+        "type": "object"
+      },
+      "EntryView": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "terms": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Terms",
+            "type": "array"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "terms",
+          "updated_at"
+        ],
+        "title": "EntryView",
+        "type": "object"
+      },
       "ExportSelectionBody": {
         "properties": {
           "article_ids": {
@@ -1347,6 +1522,38 @@
         "title": "FeedItemView",
         "type": "object"
       },
+      "FindBody": {
+        "properties": {
+          "concepts": {
+            "items": {
+              "$ref": "#/components/schemas/ConceptBody"
+            },
+            "maxItems": 4,
+            "minItems": 1,
+            "title": "Concepts",
+            "type": "array"
+          },
+          "days": {
+            "anyOf": [
+              {
+                "maximum": 3650.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": 30,
+            "title": "Days"
+          }
+        },
+        "required": [
+          "concepts"
+        ],
+        "title": "FindBody",
+        "type": "object"
+      },
       "FoundItemView": {
         "properties": {
           "item": {
@@ -1374,6 +1581,30 @@
           "topics"
         ],
         "title": "FoundItemView",
+        "type": "object"
+      },
+      "FoundView": {
+        "properties": {
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/CandidateView"
+            },
+            "title": "Candidates",
+            "type": "array"
+          },
+          "concepts": {
+            "items": {
+              "$ref": "#/components/schemas/ConceptView"
+            },
+            "title": "Concepts",
+            "type": "array"
+          }
+        },
+        "required": [
+          "concepts",
+          "candidates"
+        ],
+        "title": "FoundView",
         "type": "object"
       },
       "GenerateBody": {
@@ -5988,6 +6219,57 @@
         "summary": "Export Version"
       }
     },
+    "/api/workspaces/{workspace_id}/assistant/find": {
+      "post": {
+        "description": "The items of the Veille holding a term of every concept, the concepts widened by the\nglossary. No model is called: what is searched is what is shown.",
+        "operationId": "find_api_workspaces__workspace_id__assistant_find_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FindBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FoundView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Find"
+      }
+    },
     "/api/workspaces/{workspace_id}/brief-vocabulary": {
       "get": {
         "description": "The same for every workspace in phase 1; each workspace edits its own in phase 2.",
@@ -7140,6 +7422,201 @@
           }
         },
         "summary": "Get Generation"
+      }
+    },
+    "/api/workspaces/{workspace_id}/glossary": {
+      "get": {
+        "description": "The entries of the glossary of the workspace, by their first term.",
+        "operationId": "list_glossary_api_workspaces__workspace_id__glossary_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EntryView"
+                  },
+                  "title": "Response List Glossary Api Workspaces  Workspace Id  Glossary Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Glossary"
+      },
+      "post": {
+        "description": "Adds terms that mean the same thing (2 to 30).",
+        "operationId": "add_entry_api_workspaces__workspace_id__glossary_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntryBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Entry"
+      }
+    },
+    "/api/workspaces/{workspace_id}/glossary/{entry_id}": {
+      "delete": {
+        "operationId": "delete_entry_api_workspaces__workspace_id__glossary__entry_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "entry_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Entry Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Entry"
+      },
+      "put": {
+        "operationId": "update_entry_api_workspaces__workspace_id__glossary__entry_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "entry_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Entry Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntryBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Entry"
       }
     },
     "/api/workspaces/{workspace_id}/items": {

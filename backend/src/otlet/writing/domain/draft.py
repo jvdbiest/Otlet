@@ -23,7 +23,7 @@ from typing import Any
 from otlet.writing.domain.brief import BriefFields, Length, Mode
 from otlet.writing.domain.vocabulary import choice
 
-PROMPT_VERSION = "redaction-11"
+PROMPT_VERSION = "redaction-12"
 SCHEMA_NAME = "article_draft"
 # Up to 15: a selection of ten films is ten sections (Joël, 2026-10-18; six cut his top 10).
 SECTIONS = (2, 15)
@@ -118,8 +118,11 @@ SYSTEM = (
     "- Write in your own words: never copy a sentence of a source.\n"
     "- Build on the author's angle and own contribution: it is the point of the article.\n"
     "- Every paragraph lists in source_ids the sources that support it, using only the ids "
-    "given (S1, S2…). Do not write these ids in the text itself. Do not invent facts that no "
-    "source supports.\n"
+    "given (S1, S2…). Do not invent facts that no source supports.\n"
+    "- Never write these ids in the title, the lead, a heading or a paragraph: no « Selon S2 », "
+    "no « S3 confirme », no « (S1) », no « comme le souligne S2 », no source_ids in the text. "
+    "Otlet adds numbered references after each paragraph from source_ids: write the facts "
+    "plainly, without saying which source gives them.\n"
     "- When a source is a list (a top 10, a selection, a ranking), keep every item of it, in "
     "its order: never drop one.\n"
     "- When a source is a selection, a ranking, a review or an opinion, say who made it "
@@ -262,6 +265,52 @@ def output_schema(keys: list[str]) -> dict[str, Any]:
 # Ids a model writes in its prose despite the prompt, « (S1) » or « [S1, S2] »: the references
 # are added by Otlet, numbered, after the paragraph.
 INLINE_IDS = re.compile(r"\s*[\[(]\s*S\d+(?:\s*[,;]\s*S\d+)*\s*[\])]")
+# An id of a source anywhere in a text, and its field copied from the JSON (Joël, 2026-10-24:
+# an id never belongs to the text; the references [n] carry the traceability).
+SOURCE_ID = re.compile(r"\bS\d+\b")
+LEAKED_FIELD = re.compile(r"\s*\"?source_ids\"?\s*:\s*\[[^\]]*\]")
+_ID = r"S\d+"
+_IDS = rf"{_ID}(?:\s*(?:,|et|and|&)\s*{_ID})*"
+_SAYS = r"(?:selon|d'après|d’après|according to)"
+# « Selon S2 et S3, ces mesures… » at the start of a sentence: the clause goes.
+LEADING_ATTRIBUTION = re.compile(rf"(^|(?<=[.!?…]\s)){_SAYS}\s+{_IDS}\s*,\s*(\w)", re.IGNORECASE)
+# « …, selon S2. », « …, comme le souligne S2. »: the clause goes.
+TRAILING_ATTRIBUTION = re.compile(
+    rf",?\s*(?:{_SAYS}|comme\s+(?:le|l['’])\s*\w+)\s+{_IDS}(?=\s*[,.;:!?…]|$)",
+    re.IGNORECASE,
+)
+LIST_OF_IDS = re.compile(rf"\b{_IDS}\b")
+
+
+def ids_in_text(text: str, keys: list[str]) -> list[str]:
+    """The ids of the brief's sources a text holds, and « source_ids » copied from the JSON."""
+    found = [key for key in dict.fromkeys(SOURCE_ID.findall(text)) if key in keys]
+    return found + (["source_ids"] if "source_ids" in text else [])
+
+
+def without_ids(text: str, names: dict[str, str], language: str = "fr") -> str:
+    """A text of the model rid of the ids of its sources, as a last resort when it wrote them
+    despite the prompt and the request to rewrite (Joël, 2026-10-24). An id goes when the
+    sentence stands without it: the references [n] after the paragraph say where the facts
+    come from. Otherwise, as the subject of a verb (« S3 confirme »), it becomes the name of
+    its publisher, and several ids « les sources ». `names`: the name of each source, by id."""
+    text = LEAKED_FIELD.sub("", text)
+    text = INLINE_IDS.sub("", text)
+    text = LEADING_ATTRIBUTION.sub(lambda m: m.group(1) + m.group(2).upper(), text)
+    text = TRAILING_ATTRIBUTION.sub("", text)
+    several = "les sources" if language == "fr" else "the sources"
+
+    def named(match: re.Match[str]) -> str:
+        # Several ids, a plural subject (« S2 et S3 soulignent »): « les sources », which keeps
+        # the verb right even when two sources share a publisher.
+        keys: list[str] = SOURCE_ID.findall(match.group(0))
+        if len(keys) == 1:
+            return names.get(keys[0], keys[0])
+        start = match.start() == 0 or text[: match.start()].rstrip()[-1:] in ".!?…"
+        return several[0].upper() + several[1:] if start else several
+
+    text = LIST_OF_IDS.sub(named, text)
+    return re.sub(r"\s+([,.;:!?])", r"\1", re.sub(r"[ \t]{2,}", " ", text)).strip()
 
 
 def _text(value: Any, minimum: int) -> bool:
@@ -275,13 +324,15 @@ def check_answer(
     crossing: bool = False,
     words: int | None = None,
     repeats: bool = False,
+    in_text: bool = False,
 ) -> list[str]:
     """The errors of an answer, in words a model can act on; empty when it is usable. With
     `every_source`, a source of the brief no paragraph cites is an error too; with `crossing`
     (a synthesis of several sources), so is a section that draws on one source only. With
     `words`, these two errors ask to keep the length: a model asked to fix them otherwise
     tends to merge and cut (Joël's v28 and v29, 2026-10-18). With `repeats`, so is a
-    paragraph that repeats another: a model short of matter pads the length with copies."""
+    paragraph that repeats another: a model short of matter pads the length with copies.
+    With `in_text`, so is an id of a source written in a text (title, lead, heading, paragraph)."""
     try:
         data = json.loads(raw)
     except json.JSONDecodeError as error:
@@ -299,6 +350,18 @@ def check_answer(
         sections = []
     unknown: set[str] = set()
     cited: set[str] = set()
+    written: list[str] = []
+    if in_text:
+        texts = [data.get("title"), data.get("lead")]
+        for section in sections:
+            if isinstance(section, dict):
+                texts.append(section.get("heading"))
+                for paragraph in section.get("paragraphs") or []:
+                    if isinstance(paragraph, dict):
+                        texts.append(paragraph.get("text"))
+        for text in texts:
+            if isinstance(text, str):
+                written += [key for key in ids_in_text(text, keys) if key not in written]
     lone: list[str] = []
     seen: list[tuple[str, set[str]]] = []
     repeated: list[str] = []
@@ -353,6 +416,13 @@ def check_answer(
             f"sections drawing on one source: {', '.join(lone)}; this is a synthesis, every"
             " section must draw on two sources or more: rebuild these sections around an idea"
             " the sources share" + keep
+        )
+    if written:
+        errors.append(
+            f"source ids written in the text: {', '.join(written)}; never write an id in the"
+            " title, the lead, a heading or a paragraph: write the facts plainly, Otlet adds the"
+            " numbered references from source_ids; name the publisher only for an opinion, a"
+            " ranking or a statement that must be attributed" + keep
         )
     if repeats and repeated:
         errors.append(
@@ -410,6 +480,10 @@ def to_document(raw: str, sources: list[PromptSource], language: str) -> tuple[s
         key=lambda key: int(key[1:]),
     )
     number = {key: n for n, key in enumerate(used, start=1)}
+    names = {source.key: source.source.publisher or source.source.title for source in sources}
+
+    def clean(text: str) -> str:
+        return without_ids(text, names, language)
 
     def block(kind: str, content: list[dict[str, Any]], **attrs: Any) -> dict[str, Any]:
         return {
@@ -419,7 +493,7 @@ def to_document(raw: str, sources: list[PromptSource], language: str) -> tuple[s
         }
 
     def paragraph(text: str, ids: list[str]) -> dict[str, Any]:
-        content: list[dict[str, Any]] = [{"type": "text", "text": INLINE_IDS.sub("", text).strip()}]
+        content: list[dict[str, Any]] = [{"type": "text", "text": clean(text)}]
         for key in sorted(set(ids), key=lambda k: number[k]):
             content.append({"type": "text", "text": " "})
             content.append(
@@ -431,10 +505,10 @@ def to_document(raw: str, sources: list[PromptSource], language: str) -> tuple[s
             )
         return block("paragraph", content)
 
-    blocks = [block("paragraph", [{"type": "text", "text": data["lead"].strip()}])]
+    blocks = [block("paragraph", [{"type": "text", "text": clean(data["lead"])}])]
     for section in data["sections"]:
         blocks.append(
-            block("heading", [{"type": "text", "text": section["heading"].strip()}], level=2)
+            block("heading", [{"type": "text", "text": clean(section["heading"])}], level=2)
         )
         blocks.extend(paragraph(p["text"], p["source_ids"]) for p in section["paragraphs"])
     by_key = {s.key: s for s in sources}
@@ -447,7 +521,7 @@ def to_document(raw: str, sources: list[PromptSource], language: str) -> tuple[s
         },
         "content": blocks,
     }
-    return data["title"].strip(), document
+    return clean(data["title"]), document
 
 
 def _source(key: str, prompt_source: PromptSource) -> dict[str, Any]:

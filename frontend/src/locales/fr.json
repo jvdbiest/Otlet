@@ -1059,9 +1059,7 @@
       "title": "Sauvegardes",
       "empty": "Aucune sauvegarde pour l'instant.",
       "date": "Date",
-      "reason": "Origine",
       "check": "Vérification",
-      "contents": "Contenu",
       "size": "Taille"
     },
     "reasons": {
@@ -1087,6 +1085,8 @@
       "articles": "{count, plural, one {# article} other {# articles}}",
       "media": "{count, plural, one {# image} other {# images}}",
       "items": "{count, plural, one {# élément de veille} other {# éléments de veille}}"
-    }
+    },
+    "details": "Détails",
+    "origin": "Origine : {reason}"
   }
 }

@@ -13,7 +13,6 @@ export const styles = css as Record<
   | "cardHead"
   | "choices"
   | "choicesTools"
-  | "contents"
   | "chip"
   | "chips"
   | "chipsMode"

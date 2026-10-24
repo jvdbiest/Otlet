@@ -531,11 +531,3 @@ a.primary {
 .pick:has(> span:first-child) {
   grid-template-columns: 1fr auto;
 }
-
-/* What a backup holds (Réglages › Sauvegardes): one line per block. */
-.contents {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  white-space: nowrap;
-}

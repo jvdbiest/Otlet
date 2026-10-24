@@ -166,13 +166,17 @@ function Schedule({ schedule }: { schedule: ScheduleView }) {
   );
 }
 
+/** One backup: what is needed at a glance (date, check, size, download); the rest behind
+ * « Détails » (Joël, 2026-10-24: the list must stay light). */
 function BackupRow({ backup }: { backup: BackupView }) {
   const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
   const totals = backup.totals;
+  const detailsId = `backup-details-${backup.name}`;
   return (
+    <>
     <tr>
       <td>{formatDate(backup.created_at)}</td>
-      <td>{t(`backups.reasons.${backup.reason as "manual" | "scheduled" | "startup" | "before-restore"}`)}</td>
       <td>
         {backup.verified ? (
           <span className={styles.success}>{t("backups.verified")}</span>
@@ -182,25 +186,47 @@ function BackupRow({ backup }: { backup: BackupView }) {
           </span>
         )}
       </td>
+      <td>{size(backup.database_bytes + backup.files_bytes)}</td>
       <td>
-        <ul className={styles.contents}>
-          <li>{t("backups.blocks.briefs", { count: totals.briefs ?? 0 })}</li>
-          <li>{t("backups.blocks.articles", { count: totals.articles ?? 0 })}</li>
-          <li>{t("backups.blocks.media", { count: totals.media ?? 0 })}</li>
-          <li>{t("backups.blocks.items", { count: totals.items ?? 0 })}</li>
-        </ul>
-      </td>
-      <td>
-        {size(backup.database_bytes + backup.files_bytes)}
-        <br />
-        <span className={styles.meta}>{t("backups.newFiles", { count: backup.files_new })}</span>
-      </td>
-      <td>
-        <a href={downloadUrl(backup.name)} download>
-          {t("backups.download")}
-        </a>
+        <span className={styles.row}>
+          <a href={downloadUrl(backup.name)} download>
+            {t("backups.download")}
+          </a>
+          <button
+            type="button"
+            className={styles.button}
+            aria-expanded={open}
+            aria-controls={detailsId}
+            onClick={() => {
+              setOpen(!open);
+            }}
+          >
+            {t("backups.details")}
+          </button>
+        </span>
       </td>
     </tr>
+    {open && (
+      <tr id={detailsId}>
+        <td colSpan={4} className={styles.meta}>
+          <p>
+            {t("backups.origin", {
+              reason: t(`backups.reasons.${backup.reason as "manual" | "scheduled" | "startup" | "before-restore"}`),
+            })}
+          </p>
+          <p>
+            {[
+              t("backups.blocks.briefs", { count: totals.briefs ?? 0 }),
+              t("backups.blocks.articles", { count: totals.articles ?? 0 }),
+              t("backups.blocks.media", { count: totals.media ?? 0 }),
+              t("backups.blocks.items", { count: totals.items ?? 0 }),
+            ].join(" · ")}
+          </p>
+          <p>{t("backups.newFiles", { count: backup.files_new })}</p>
+        </td>
+      </tr>
+    )}
+    </>
   );
 }
 
@@ -265,9 +291,7 @@ export function BackupsPage() {
             <thead>
               <tr>
                 <th>{t("backups.list.date")}</th>
-                <th>{t("backups.list.reason")}</th>
                 <th>{t("backups.list.check")}</th>
-                <th>{t("backups.list.contents")}</th>
                 <th>{t("backups.list.size")}</th>
                 <th>
                   <span className="visually-hidden">{t("backups.download")}</span>

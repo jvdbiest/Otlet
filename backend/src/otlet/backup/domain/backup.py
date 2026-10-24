@@ -33,9 +33,9 @@ def moment_of(name: str) -> datetime | None:
 
 
 def kept(moments: list[datetime], daily: int = DAILY, weekly: int = WEEKLY) -> set[datetime]:
-    """The backups to keep: the latest of each of the `daily` most recent days that have one,
-    and the latest of each of the `weekly` most recent ISO weeks that have one. The latest
-    backup is always kept."""
+    """The backups to keep: all those of the last 24 hours, the latest of each of the `daily`
+    most recent days that have one, and the latest of each of the `weekly` most recent ISO
+    weeks that have one."""
     keep: set[datetime] = set()
     days: dict[tuple[int, int, int], datetime] = {}
     weeks: dict[tuple[int, int], datetime] = {}
@@ -48,7 +48,10 @@ def kept(moments: list[datetime], daily: int = DAILY, weekly: int = WEEKLY) -> s
             weeks[week] = moment
     keep.update(days.values(), weeks.values())
     if moments:
-        keep.add(max(moments))
+        latest = max(moments)
+        # The last 24 hours are kept whole: « Sauvegarder maintenant » never removes the backup
+        # taken this morning, nor the one taken before a migration.
+        keep.update(moment for moment in moments if latest - moment < timedelta(days=1))
     return keep
 
 

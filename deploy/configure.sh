@@ -28,7 +28,7 @@ backup_passphrase() {
         echo "Write it down and keep it apart from this machine: without it, an encrypted"
         echo "backup cannot be restored."
     fi
-    mkdir -p backups
+    mkdir -p backups && chmod 755 backups  # read by the API (uid 10001), read only
 }
 
 # Settings added after the first installation: generated if missing, never replaced.

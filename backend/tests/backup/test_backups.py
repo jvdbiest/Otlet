@@ -64,7 +64,9 @@ def test_names_and_what_is_kept() -> None:
     days = [datetime(2026, 10, 23, tzinfo=UTC) - timedelta(days=n) for n in range(40)]
     later = days[0] + timedelta(hours=2)  # two the same day: the latest is kept
     keep = kept([*days, later], daily=7, weekly=4)
-    assert later in keep and set(days[1:7]) <= keep and days[0] not in keep
+    assert later in keep and set(days[:7]) <= keep  # the last 24 hours are kept whole
+    newer = days[3] + timedelta(hours=2)  # two the same day, days ago: only the latest stays
+    assert days[3] not in kept([*days, newer], daily=7, weekly=4)
     assert len(keep) <= 7 + 4 and days[-1] not in keep
     assert kept([days[-1]], 0, 0) == {days[-1]}  # the latest always stays
 

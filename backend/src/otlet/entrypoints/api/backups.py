@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
-from otlet.backup.adapters.archive import tar_stream
+from otlet.backup.adapters.archive import zip_stream
 from otlet.backup.application.backups import BackupError, Catalog
 from otlet.backup.application.service import Control, Request
 from otlet.backup.domain.backup import Manifest, Schedule
@@ -181,10 +181,10 @@ def build_router(
     @router.get(
         "/{name}/download",
         response_class=StreamingResponse,
-        responses={200: {"content": {"application/x-tar": {}}}},
+        responses={200: {"content": {"application/zip": {}}}},
     )
     def download(name: str, session: CurrentSession) -> StreamingResponse:
-        """A backup as one .tar file, written as it is sent. Encrypted backups stay encrypted:
+        """A backup as one .zip file, written as it is sent. Encrypted backups stay encrypted:
         only their passphrase opens them."""
         admin(session)
         found = catalog()
@@ -195,10 +195,10 @@ def build_router(
         except BackupError as error:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "backup_not_found") from error
         return StreamingResponse(
-            tar_stream(folder),
-            media_type="application/x-tar",
+            zip_stream(folder),
+            media_type="application/zip",
             headers={
-                "Content-Disposition": f'attachment; filename="otlet-{name}.tar"',
+                "Content-Disposition": f'attachment; filename="otlet-sauvegarde-{name}.zip"',
                 "X-Content-Type-Options": "nosniff",
                 "Cache-Control": "no-store",
             },

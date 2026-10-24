@@ -3,7 +3,7 @@
 destination it cannot write to; and Réglages › Sauvegardes for the administrator only."""
 
 import io
-import tarfile
+import zipfile
 from collections.abc import Iterator
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
@@ -14,7 +14,7 @@ from fastapi.testclient import TestClient
 
 from backup_support import FakeDatabase
 from integration_support import TestDatabase, requires_database
-from otlet.backup.adapters.archive import tar_stream
+from otlet.backup.adapters.archive import zip_stream
 from otlet.backup.application.backups import Backups
 from otlet.backup.application.service import BackupService, Request, State
 from otlet.backup.domain.backup import Schedule, due
@@ -93,18 +93,19 @@ def test_a_destination_it_cannot_write_to_is_reported(tmp_path: Path) -> None:
     assert control.saved_request is not None and control.saved_request.status == "failed"
 
 
-def test_a_backup_downloads_as_one_tar(tmp_path: Path) -> None:
+def test_a_backup_downloads_as_one_zip(tmp_path: Path) -> None:
     folder = tmp_path / "2026-10-23T020000Z"
     (folder / "files" / "ab").mkdir(parents=True)
     (folder / "manifest.json").write_text("{}")
-    (folder / "files" / "ab" / "x.png").write_bytes(b"x" * 1000)
-    archive = tarfile.open(fileobj=io.BytesIO(b"".join(tar_stream(folder))))
-    assert sorted(archive.getnames()) == [
+    (folder / "files" / "ab" / "x.png").write_bytes(b"x" * (3 * 1024 * 1024 + 7))
+    archive = zipfile.ZipFile(io.BytesIO(b"".join(zip_stream(folder))))
+    assert sorted(archive.namelist()) == [
+        "2026-10-23T020000Z/LISEZMOI.txt",
         "2026-10-23T020000Z/files/ab/x.png",
         "2026-10-23T020000Z/manifest.json",
     ]
-    member = archive.extractfile("2026-10-23T020000Z/files/ab/x.png")
-    assert member is not None and member.read() == b"x" * 1000
+    assert archive.read("2026-10-23T020000Z/files/ab/x.png") == b"x" * (3 * 1024 * 1024 + 7)
+    assert archive.testzip() is None
 
 
 LOGIN = "admin@example.org"
@@ -148,7 +149,7 @@ def test_the_administrator_sees_schedules_and_asks_for_backups(
     assert client.post("/api/admin/backups/run", headers=headers).status_code == 409
     download = client.get(f"/api/admin/backups/{backup['name']}/download")
     assert download.status_code == 200
-    assert tarfile.open(fileobj=io.BytesIO(download.content)).getnames()
+    assert zipfile.ZipFile(io.BytesIO(download.content)).namelist()
     assert client.get("/api/admin/backups/../etc/download").status_code == 404
     assert client.get("/api/admin/backups/not-a-name/download").status_code == 404
     # Anyone else is refused.

@@ -4331,7 +4331,7 @@
     },
     "/api/admin/backups/{name}/download": {
       "get": {
-        "description": "A backup as one .tar file, written as it is sent. Encrypted backups stay encrypted:\nonly their passphrase opens them.",
+        "description": "A backup as one .zip file, written as it is sent. Encrypted backups stay encrypted:\nonly their passphrase opens them.",
         "operationId": "download_api_admin_backups__name__download_get",
         "parameters": [
           {
@@ -4347,7 +4347,7 @@
         "responses": {
           "200": {
             "content": {
-              "application/x-tar": {}
+              "application/zip": {}
             },
             "description": "Successful Response"
           },

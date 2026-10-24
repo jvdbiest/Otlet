@@ -74,7 +74,7 @@ export interface paths {
         };
         /**
          * Download
-         * @description A backup as one .tar file, written as it is sent. Encrypted backups stay encrypted:
+         * @description A backup as one .zip file, written as it is sent. Encrypted backups stay encrypted:
          *     only their passphrase opens them.
          */
         get: operations["download_api_admin_backups__name__download_get"];
@@ -3309,7 +3309,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/x-tar": unknown;
+                    "application/zip": unknown;
                 };
             };
             /** @description Validation Error */

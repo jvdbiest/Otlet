@@ -201,7 +201,11 @@ def create_app(settings: Settings) -> FastAPI:
             current_session,
         )
         backups_router = backups.build_router(
-            PostgresControl(engine), settings.backup_dir, authentication, current_session
+            PostgresControl(engine),
+            settings.backup_dir,
+            authentication,
+            current_session,
+            settings.backup_location,
         )
         routers = [
             backups_router,

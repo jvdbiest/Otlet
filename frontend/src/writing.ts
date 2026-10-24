@@ -7,6 +7,9 @@ export type BriefView = components["schemas"]["BriefView"];
 export type BriefBody = components["schemas"]["BriefBody"];
 export type BriefLength = BriefView["length"];
 export type BriefMode = BriefView["mode"];
+export type BriefNature = BriefView["nature"];
+export type MatterBody = components["schemas"]["MatterBody"];
+export type MatterView = components["schemas"]["MatterView"];
 export type BriefItemView = BriefView["items"][number];
 export type SourceTextView = components["schemas"]["SourceTextView"];
 
@@ -76,6 +79,23 @@ function useRefresh(workspaceId: string) {
   const queryClient = useQueryClient();
   return () => queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId] });
 }
+
+/** The matter of a brief as it is being written (ADR-0041): computed by the server at each
+ * change of its items, length, mode or nature; never stored. */
+export const matterQuery = (workspaceId: string, body: MatterBody) =>
+  queryOptions({
+    queryKey: ["workspaces", workspaceId, "brief-matter", body],
+    queryFn: async (): Promise<MatterView> => {
+      const { data, error, response } = await api.POST("/api/workspaces/{workspace_id}/briefs/matter", {
+        params: { path: { workspace_id: workspaceId } },
+        body,
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+  });
 
 export function useSaveBrief(workspaceId: string) {
   const refresh = useRefresh(workspaceId);

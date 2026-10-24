@@ -70,6 +70,7 @@ services:
       <<: *app-environment
       OTLET_SECRETS_PUBLIC_KEY_FILE: /run/secrets/secrets_public_key
       OTLET_BACKUP_DIR: /backups
+      OTLET_BACKUP_LOCATION: ${OTLET_BACKUP_DIR:-./backups}
     secrets:
       - secrets_public_key
     healthcheck:

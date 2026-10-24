@@ -28,6 +28,8 @@ class Settings:
     # The destination of the backups, read only by the API (F08, ADR-0042): None when the
     # installation mounts none.
     backup_dir: Path | None = None
+    # Where the backups are on the host, as the installation names it: shown, never used.
+    backup_location: str | None = None
 
     @classmethod
     def from_env(cls, environ: Mapping[str, str] | None = None) -> "Settings":
@@ -49,6 +51,7 @@ class Settings:
             rights_declarations=env.get("OTLET_RIGHTS_DECLARATIONS", "on").strip().lower()
             not in ("off", "0", "false", "no"),
             backup_dir=path("OTLET_BACKUP_DIR"),
+            backup_location=env.get("OTLET_BACKUP_LOCATION") or None,
         )
 
     def require_database_url(self) -> str:

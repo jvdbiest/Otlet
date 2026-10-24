@@ -39,6 +39,19 @@ En préparant un assistant de brief (« Partir d'une idée »), les cas réels d
 8. **Actions.** Chaque critère en défaut propose une action concrète : chercher dans la Veille, voir d'autres éditeurs, déclarer ses droits (ADR-0039), choisir une longueur plus courte, créer un sujet de veille. Changer de Nature n'est jamais proposé comme correction : la Nature décrit ce que l'on écrit.
 9. **Découpage prudent** (Joël) : A1a-1, le diagnostic et le panneau avec des liens simples, puis une validation en usage réel. A1a-2, les actions sur place (listes de suggestions, ajout direct), seulement si l'usage montre qu'elles apportent une vraie valeur. Puis A1b, l'assistant « Partir d'une idée », qui réutilise l'évaluateur. Ordre dans le backlog : F08 (sauvegarde), puis A1a-1, puis A1b.
 
+## Perspective : un pilote automatique (Joël, 2026-10-24)
+
+À terme, certains contenus pourront suivre le flux Veille, Brief, Article, Publication sans intervention humaine au moment de la génération ou de la publication. Ce mode reste à activer explicitement par l'utilisateur, étape par étape, comme toute automatisation d'Otlet.
+
+L'évaluateur est donc un système de qualification et d'aide à la décision, jamais un mécanisme d'interdiction :
+
+- il attribue un niveau ;
+- il explique pourquoi ;
+- il recommande des actions ;
+- il n'empêche ni un utilisateur ni un processus automatisé d'avancer.
+
+Le niveau de matière pourra devenir un critère des automatisations, par exemple « ne publier seul que si la matière est suffisante ». Ce critère sera choisi par l'utilisateur dans le réglage de l'automatisation, sans devenir une règle de l'évaluateur. Toute évolution de cet ADR et des développements futurs (A1a-2, A1b) garde ce principe. Le niveau est déjà exposé par l'API (`POST …/briefs/matter`), sans dépendre de l'interface.
+
 ## Conséquences
 
 - ADR-0038 garde la longueur liée à la matière et les trois niveaux. Le calcul du niveau passe ici (voir sa révision du 2026-10-23).

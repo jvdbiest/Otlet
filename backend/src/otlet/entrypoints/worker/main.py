@@ -26,6 +26,7 @@ JOB_MODULES = (
     "otlet.watch.adapters.jobs",
     "otlet.ai.adapters.jobs",
     "otlet.writing.adapters.jobs",
+    "otlet.assistant.adapters.jobs",
 )
 
 

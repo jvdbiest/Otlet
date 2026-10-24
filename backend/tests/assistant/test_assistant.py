@@ -155,3 +155,88 @@ def test_the_glossary_is_kept_and_edited(
         service.add_entry(context, ["seul"])
     assert service.delete_entry(context, entry.id) is True
     assert service.glossary(context) == []
+
+
+class FakeModel:
+    """Proposes the concepts of the budget, then judges by a word of the title."""
+
+    def __init__(self, fail: bool = False) -> None:
+        self.fail = fail
+        self.asked: list[str] = []
+
+    def ask(self, user_id, system, user, schema, validate, max_output_tokens):  # type: ignore[no-untyped-def]
+        import json
+
+        from otlet.assistant.application.dossiers import Asked
+
+        self.asked.append(user)
+        if self.fail:
+            return Asked(None, "no model", None, ({"result": "error"},))
+        if "Éléments :" not in user:
+            concepts = [
+                {"name": "budget", "terms": ["budget"]},
+                {"name": "Bruxelles", "terms": ["bruxelloise"]},
+            ]
+            return Asked(json.dumps({"concepts": concepts}), None, "fake", ())
+        lines = [line for line in user.splitlines() if line[:1].isdigit()]
+        verdicts = [
+            {"n": n, "verdict": "traite" if "Région" in line else "hors_sujet", "raison": "r"}
+            for n, line in enumerate(lines, 1)
+        ] + [{"n": 99, "verdict": "traite", "raison": "inventé"}]
+        return Asked(json.dumps({"verdicts": verdicts}), None, "fake", ())
+
+
+def test_a_dossier_finds_without_a_model_then_orders(
+    assistant: tuple[Assistant, WorkspaceContext, sa.Engine],
+) -> None:
+    from otlet.assistant.application.dossiers import Dossiers
+    from otlet.assistant.domain.qualify import Verdict
+
+    service, context, engine = assistant
+    service.add_entry(context, ["bruxelloise", "Brusselse"])
+    service.add_entry(context, ["budget", "begroting"])
+    enqueued: list[str] = []
+
+    def enqueue(connection: sa.Connection, name: str, **kwargs: object) -> int:
+        enqueued.append(name)
+        return 1
+
+    store = PostgresAssistantStore(engine, enqueue)
+    model = FakeModel()
+    dossiers = Dossiers(store, store, model)
+    started = dossiers.start(context, "  Budget de la Région de Bruxelles-Capitale ", days=7)
+    assert (started.status, started.subject, enqueued) == (
+        "pending",
+        "Budget de la Région de Bruxelles-Capitale",
+        ["assistant.qualify_dossier"],
+    )
+    dossiers.run(context.workspace_id, context.user_id, started.id)
+    done = dossiers.get(context, started.id)
+    assert done is not None and done.status == "done" and done.model == "fake"
+    # The model's concepts, widened by the glossary: the Dutch item is found.
+    assert done.concepts[1].added == ("Brusselse",)
+    by_title = {c.title: done.verdicts[c.id].verdict for c in done.candidates}
+    assert by_title == {
+        "Le budget de la Région bruxelloise sous pression": Verdict.TRAITE,
+        "Brusselse begroting: besparingen op bibliotheken": Verdict.HORS_SUJET,
+    }
+    assert "pays inconnu" not in model.asked[-1] and "Belgique" in model.asked[-1]
+    assert [d.id for d in dossiers.recent(context)] == [started.id]
+
+
+def test_a_dossier_whose_model_fails_still_shows_every_candidate(
+    assistant: tuple[Assistant, WorkspaceContext, sa.Engine],
+) -> None:
+    from otlet.assistant.application.dossiers import Dossiers
+    from otlet.assistant.domain.qualify import NOT_JUDGED
+
+    service, context, engine = assistant
+    store = PostgresAssistantStore(engine, lambda connection, name, **kwargs: 1)
+    dossiers = Dossiers(store, store, FakeModel(fail=True))
+    started = dossiers.start(
+        context, "Budget", days=None, concepts=[Concept("budget", ("budget",))]
+    )
+    dossiers.run(context.workspace_id, context.user_id, started.id)
+    done = dossiers.get(context, started.id)
+    assert done is not None and done.error == "no model" and len(done.candidates) == 3
+    assert all(done.verdicts[c.id] == NOT_JUDGED for c in done.candidates)

@@ -639,6 +639,48 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/assistant/dossiers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Dossiers
+         * @description The recent dossiers of the user, the newest first.
+         */
+        get: operations["list_dossiers_api_workspaces__workspace_id__assistant_dossiers_get"];
+        put?: never;
+        /**
+         * Start Dossier
+         * @description Starts a dossier: the worker finds the candidates, without a model, then the model
+         *     of the author judges them. Read it again until its status is « done ».
+         */
+        post: operations["start_dossier_api_workspaces__workspace_id__assistant_dossiers_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/assistant/dossiers/{dossier_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Dossier */
+        get: operations["get_dossier_api_workspaces__workspace_id__assistant_dossiers__dossier_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/assistant/find": {
         parameters: {
             query?: never;
@@ -2272,6 +2314,102 @@ export interface components {
             /** Source Url */
             source_url?: string | null;
         };
+        /** DossierBody */
+        DossierBody: {
+            /**
+             * Angle
+             * @default
+             */
+            angle: string;
+            /**
+             * Concepts
+             * @default []
+             */
+            concepts: components["schemas"]["ConceptBody"][];
+            /**
+             * Days
+             * @default 30
+             */
+            days: number | null;
+            /** Subject */
+            subject: string;
+        };
+        /** DossierCandidateView */
+        DossierCandidateView: {
+            /** Country */
+            country: string | null;
+            /**
+             * Dated
+             * Format: date-time
+             */
+            dated: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            judged: components["schemas"]["JudgedView"] | null;
+            /** Language */
+            language: string | null;
+            /** Publisher */
+            publisher: string | null;
+            /** Summary */
+            summary: string;
+            /** Title */
+            title: string;
+            /** Url */
+            url: string | null;
+        };
+        /** DossierSummaryView */
+        DossierSummaryView: {
+            /** Candidates */
+            candidates: number;
+            /** Created At */
+            created_at: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "qualifying" | "done";
+            /** Subject */
+            subject: string;
+        };
+        /** DossierView */
+        DossierView: {
+            /** Angle */
+            angle: string;
+            /** Candidates */
+            candidates: components["schemas"]["DossierCandidateView"][];
+            /** Concepts */
+            concepts: components["schemas"]["ConceptView"][];
+            /** Created At */
+            created_at: string | null;
+            /** Days */
+            days: number | null;
+            /** Error */
+            error: string | null;
+            /** Finished At */
+            finished_at: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Model */
+            model: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "qualifying" | "done";
+            /** Subject */
+            subject: string;
+        };
         /**
          * DraftView
          * @description The article of a brief, if any, and its latest generation, if any.
@@ -2502,6 +2640,18 @@ export interface components {
             duplicates: components["schemas"]["DuplicateView"][];
             /** Topics */
             topics: components["schemas"]["ItemTopicView"][];
+        };
+        /** JudgedView */
+        JudgedView: {
+            /** By Model */
+            by_model: boolean;
+            /** Reason */
+            reason: string;
+            /**
+             * Verdict
+             * @enum {string}
+             */
+            verdict: "traite" | "proche" | "hors_sujet";
         };
         /** KindView */
         KindView: {
@@ -4659,6 +4809,104 @@ export interface operations {
                 };
                 content: {
                     "application/octet-stream": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_dossiers_api_workspaces__workspace_id__assistant_dossiers_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DossierSummaryView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    start_dossier_api_workspaces__workspace_id__assistant_dossiers_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DossierBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DossierView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_dossier_api_workspaces__workspace_id__assistant_dossiers__dossier_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dossier_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DossierView"];
                 };
             };
             /** @description Validation Error */

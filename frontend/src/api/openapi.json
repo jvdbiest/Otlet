@@ -1326,6 +1326,297 @@
         "title": "DescriptionBody",
         "type": "object"
       },
+      "DossierBody": {
+        "properties": {
+          "angle": {
+            "default": "",
+            "maxLength": 1000,
+            "title": "Angle",
+            "type": "string"
+          },
+          "concepts": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/ConceptBody"
+            },
+            "maxItems": 4,
+            "title": "Concepts",
+            "type": "array"
+          },
+          "days": {
+            "anyOf": [
+              {
+                "maximum": 3650.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": 30,
+            "title": "Days"
+          },
+          "subject": {
+            "maxLength": 400,
+            "title": "Subject",
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject"
+        ],
+        "title": "DossierBody",
+        "type": "object"
+      },
+      "DossierCandidateView": {
+        "properties": {
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          },
+          "dated": {
+            "format": "date-time",
+            "title": "Dated",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "judged": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JudgedView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          },
+          "publisher": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publisher"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "summary",
+          "url",
+          "language",
+          "publisher",
+          "country",
+          "dated",
+          "judged"
+        ],
+        "title": "DossierCandidateView",
+        "type": "object"
+      },
+      "DossierSummaryView": {
+        "properties": {
+          "candidates": {
+            "title": "Candidates",
+            "type": "integer"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "qualifying",
+              "done"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "subject": {
+            "title": "Subject",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "subject",
+          "status",
+          "candidates",
+          "created_at"
+        ],
+        "title": "DossierSummaryView",
+        "type": "object"
+      },
+      "DossierView": {
+        "properties": {
+          "angle": {
+            "title": "Angle",
+            "type": "string"
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/DossierCandidateView"
+            },
+            "title": "Candidates",
+            "type": "array"
+          },
+          "concepts": {
+            "items": {
+              "$ref": "#/components/schemas/ConceptView"
+            },
+            "title": "Concepts",
+            "type": "array"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "qualifying",
+              "done"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "subject": {
+            "title": "Subject",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "subject",
+          "angle",
+          "days",
+          "status",
+          "concepts",
+          "candidates",
+          "error",
+          "model",
+          "created_at",
+          "finished_at"
+        ],
+        "title": "DossierView",
+        "type": "object"
+      },
       "DraftView": {
         "description": "The article of a brief, if any, and its latest generation, if any.",
         "properties": {
@@ -2015,6 +2306,34 @@
           "duplicates"
         ],
         "title": "ItemWatchView",
+        "type": "object"
+      },
+      "JudgedView": {
+        "properties": {
+          "by_model": {
+            "title": "By Model",
+            "type": "boolean"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "verdict": {
+            "enum": [
+              "traite",
+              "proche",
+              "hors_sujet"
+            ],
+            "title": "Verdict",
+            "type": "string"
+          }
+        },
+        "required": [
+          "verdict",
+          "reason",
+          "by_model"
+        ],
+        "title": "JudgedView",
         "type": "object"
       },
       "KindView": {
@@ -6217,6 +6536,150 @@
           }
         },
         "summary": "Export Version"
+      }
+    },
+    "/api/workspaces/{workspace_id}/assistant/dossiers": {
+      "get": {
+        "description": "The recent dossiers of the user, the newest first.",
+        "operationId": "list_dossiers_api_workspaces__workspace_id__assistant_dossiers_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DossierSummaryView"
+                  },
+                  "title": "Response List Dossiers Api Workspaces  Workspace Id  Assistant Dossiers Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Dossiers"
+      },
+      "post": {
+        "description": "Starts a dossier: the worker finds the candidates, without a model, then the model\nof the author judges them. Read it again until its status is « done ».",
+        "operationId": "start_dossier_api_workspaces__workspace_id__assistant_dossiers_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DossierBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DossierView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Start Dossier"
+      }
+    },
+    "/api/workspaces/{workspace_id}/assistant/dossiers/{dossier_id}": {
+      "get": {
+        "operationId": "get_dossier_api_workspaces__workspace_id__assistant_dossiers__dossier_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "dossier_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Dossier Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DossierView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Dossier"
       }
     },
     "/api/workspaces/{workspace_id}/assistant/find": {

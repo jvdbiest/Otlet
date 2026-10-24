@@ -29,6 +29,7 @@ from otlet.ai.application.settings import AiSettings
 from otlet.ai.domain.settings import ProfileEntry, SettingsError
 from otlet.assistant.adapters.postgres import PostgresAssistantStore
 from otlet.assistant.application.assistant import Assistant
+from otlet.assistant.application.dossiers import Dossiers
 from otlet.backup.adapters.control import PostgresControl
 from otlet.collection.adapters.parsing import FeedparserReader, ReadabilityReader
 from otlet.collection.adapters.postgres import PostgresCollectionStore
@@ -190,8 +191,11 @@ def create_app(settings: Settings) -> FastAPI:
             workspace_context,
         )
         media_router = media.build_router(library, workspace_context)
+        assistant_store = PostgresAssistantStore(engine, enqueue)
         assistant_router = assistant.build_router(
-            Assistant(PostgresAssistantStore(engine)), workspace_context
+            Assistant(assistant_store),
+            Dossiers(assistant_store, assistant_store),
+            workspace_context,
         )
         ai_router = ai.build_router(
             ai_settings,

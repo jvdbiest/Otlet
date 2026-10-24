@@ -25,7 +25,7 @@ from otlet.workspaces.application.workspaces import Workspaces
 from otlet.workspaces.domain.model import WorkspaceContext
 from otlet.writing.adapters.postgres import PostgresBriefStore
 from otlet.writing.application.briefs import Briefs
-from otlet.writing.domain.brief import BriefError, BriefFields, Length, ModelChoice
+from otlet.writing.domain.brief import BriefError, BriefFields, Length, Mode, ModelChoice, Nature
 
 pytestmark = requires_database
 
@@ -191,3 +191,24 @@ def test_a_brief_belongs_to_its_workspace(setup: Setup) -> None:
     with pytest.raises(BriefError) as caught:  # an item of another workspace
         briefs.create(other, BriefFields(title="T", item_ids=(ids["Article A"],)))
     assert caught.value.code == "unknown_item"
+
+
+def test_the_matter_of_a_brief_being_written(setup: Setup) -> None:
+    """Judged on the items of the workspace, saved or not (ADR-0041); the nature is kept."""
+    briefs, context, ids = setup.briefs, setup.context, setup.ids
+    stranger = context_for(setup.engine, "bob@example.org")
+    collect(setup.engine, stranger, "ailleurs", ["Autre E"])
+    other = next(iter(setup.feed.feed(stranger, view=View.ALL))).item.id
+    chosen = [ids["Article A"], ids["Article B"], ids["Dépêche C"], other]
+    evaluation = briefs.matter(context, chosen, Length.SHORT, Mode.SYNTHESIS, Nature.NEWS)
+    values = {c.name: c.value for c in evaluation.criteria}
+    # The item of another workspace is not found; two feeds, two publishers.
+    assert (values["sources"], values["publishers"], values["freshness"]) == (3, 2, 0)
+    assert (evaluation.level, evaluation.reason) == ("insufficient", "words")  # titles only
+    brief = briefs.create(
+        context,
+        BriefFields(title="Fond", item_ids=(ids["Article A"],), nature=Nature.BACKGROUND),
+    )
+    assert brief.fields.nature is Nature.BACKGROUND
+    loaded = briefs.get(context, brief.id)
+    assert loaded is not None and loaded.fields.nature is Nature.BACKGROUND

@@ -17,12 +17,14 @@ from otlet.writing.domain.brief import (
     Length,
     Mode,
     ModelChoice,
+    Nature,
 )
+from otlet.writing.domain.matter import MatterItem, publisher
 from otlet.writing.domain.vocabulary import settled
 
 BRIEF_COLUMNS = (
     "b.id, b.workspace_id, b.created_by, b.title, b.angle, b.instructions, b.audience, b.tone,"
-    " b.length, b.mode,"
+    " b.length, b.mode, b.nature,"
     " b.language, b.channel, b.provider_id, b.model, b.created_at, b.updated_at"
 )
 # The items of the brief, in order, with what the brief shows of them.
@@ -77,6 +79,7 @@ def _brief(row: sa.Row[Any]) -> Brief:
                 tone=row.tone,
                 length=Length(row.length),
                 mode=Mode(row.mode),
+                nature=Nature(row.nature),
                 language=row.language,
                 channel=row.channel,
                 model=model,
@@ -97,6 +100,7 @@ def _values(fields: BriefFields) -> dict[str, object]:
         "tone": fields.tone,
         "length": fields.length.value,
         "mode": fields.mode.value,
+        "nature": fields.nature.value,
         "language": fields.language,
         "channel": fields.channel,
         "provider": None if fields.model is None else fields.model.provider_id,
@@ -129,9 +133,9 @@ class PostgresBriefStore:
             self._write(
                 connection,
                 "INSERT INTO briefs (id, workspace_id, created_by, title, angle, instructions,"
-                " audience, tone, length, mode, language, channel, provider_id, model)"
+                " audience, tone, length, mode, nature, language, channel, provider_id, model)"
                 " VALUES (:id, :workspace, :user, :title, :angle, :instructions, :audience, :tone,"
-                " :length, :mode, :language, :channel, :provider, :model) RETURNING id",
+                " :length, :mode, :nature, :language, :channel, :provider, :model) RETURNING id",
                 {"id": brief_id, "workspace": workspace_id, "user": user_id, **_values(fields)},
             )
             self._set_items(connection, workspace_id, brief_id, fields)
@@ -140,6 +144,37 @@ class PostgresBriefStore:
                 raise LookupError(brief_id)
             return brief
 
+    def matter_items(self, workspace_id: UUID, item_ids: list[UUID]) -> list[MatterItem]:
+        """The items of the workspace among `item_ids`, in that order, as the matter counts
+        them (ADR-0041): words as the drafts count them (BRIEF_ITEMS), date of publication
+        else of collection; an item of another workspace is not found."""
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            rows = connection.execute(
+                sa.text(
+                    "SELECT i.id, i.duplicate_of, i.source_id, i.declared_origin, i.url,"
+                    " coalesce(i.published_at, i.collected_at) AS dated,"
+                    " i.text_status IN ('full_text', 'manual') AS full_text,"
+                    " coalesce(cardinality(regexp_split_to_array(nullif(btrim(coalesce("
+                    "CASE WHEN i.text_status IN ('full_text', 'manual')"
+                    " THEN coalesce(i.text, i.feed_content) END,"
+                    " i.summary, i.title)), ''), '\\s+')), 0) AS words"
+                    f" FROM source_items AS i WHERE i.id = ANY(:ids) AND {here('i')}"
+                ),
+                {"ids": item_ids},
+            ).all()
+        found = {
+            row.id: MatterItem(
+                id=row.id,
+                duplicate_of=row.duplicate_of,
+                publisher=publisher(row.source_id, row.declared_origin, row.url, row.id),
+                dated=row.dated,
+                words=row.words,
+                full_text=row.full_text,
+            )
+            for row in rows
+        }
+        return [found[item_id] for item_id in dict.fromkeys(item_ids) if item_id in found]
+
     def update_brief(self, workspace_id: UUID, brief_id: UUID, fields: BriefFields) -> Brief | None:
         with workspace_transaction(self._engine, workspace_id) as connection:
             self._check_items(connection, fields)
@@ -147,7 +182,8 @@ class PostgresBriefStore:
                 connection,
                 "UPDATE briefs SET title = :title, angle = :angle, instructions = :instructions,"
                 " audience = :audience,"
-                " tone = :tone, length = :length, mode = :mode, language = :language,"
+                " tone = :tone, length = :length, mode = :mode, nature = :nature,"
+                " language = :language,"
                 " channel = :channel,"
                 " provider_id = :provider, model = :model, updated_at = now()"
                 f" WHERE id = :id AND {here()} RETURNING id",

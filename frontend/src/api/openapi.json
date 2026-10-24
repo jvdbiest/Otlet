@@ -326,6 +326,15 @@
             ],
             "title": "Model"
           },
+          "nature": {
+            "default": "news",
+            "enum": [
+              "news",
+              "background"
+            ],
+            "title": "Nature",
+            "type": "string"
+          },
           "provider_id": {
             "anyOf": [
               {
@@ -535,6 +544,14 @@
             ],
             "title": "Model"
           },
+          "nature": {
+            "enum": [
+              "news",
+              "background"
+            ],
+            "title": "Nature",
+            "type": "string"
+          },
           "provider_id": {
             "anyOf": [
               {
@@ -578,6 +595,7 @@
           "tone",
           "length",
           "mode",
+          "nature",
           "language",
           "channel",
           "provider_id",
@@ -992,6 +1010,77 @@
           "password"
         ],
         "title": "Credentials",
+        "type": "object"
+      },
+      "CriterionView": {
+        "properties": {
+          "informative": {
+            "title": "Informative",
+            "type": "boolean"
+          },
+          "longest": {
+            "anyOf": [
+              {
+                "enum": [
+                  "short",
+                  "medium",
+                  "long"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Longest"
+          },
+          "mark": {
+            "anyOf": [
+              {
+                "enum": [
+                  "ok",
+                  "warn",
+                  "fail"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mark"
+          },
+          "name": {
+            "enum": [
+              "sources",
+              "publishers",
+              "words",
+              "freshness",
+              "corroboration"
+            ],
+            "title": "Name",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "name",
+          "mark",
+          "value",
+          "informative",
+          "longest"
+        ],
+        "title": "CriterionView",
         "type": "object"
       },
       "DeclarationView": {
@@ -1881,6 +1970,98 @@
           "url"
         ],
         "title": "ManualUrl",
+        "type": "object"
+      },
+      "MatterBody": {
+        "description": "A brief as it is being written: what its matter is judged on.",
+        "properties": {
+          "item_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Item Ids",
+            "type": "array"
+          },
+          "length": {
+            "default": "medium",
+            "enum": [
+              "short",
+              "medium",
+              "long"
+            ],
+            "title": "Length",
+            "type": "string"
+          },
+          "mode": {
+            "default": "synthesis",
+            "enum": [
+              "synthesis",
+              "panorama"
+            ],
+            "title": "Mode",
+            "type": "string"
+          },
+          "nature": {
+            "default": "news",
+            "enum": [
+              "news",
+              "background"
+            ],
+            "title": "Nature",
+            "type": "string"
+          }
+        },
+        "required": [
+          "item_ids"
+        ],
+        "title": "MatterBody",
+        "type": "object"
+      },
+      "MatterView": {
+        "properties": {
+          "criteria": {
+            "items": {
+              "$ref": "#/components/schemas/CriterionView"
+            },
+            "title": "Criteria",
+            "type": "array"
+          },
+          "level": {
+            "enum": [
+              "enough",
+              "limited",
+              "insufficient"
+            ],
+            "title": "Level",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "enum": [
+                  "sources",
+                  "publishers",
+                  "words",
+                  "freshness",
+                  "corroboration"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "required": [
+          "level",
+          "reason",
+          "criteria"
+        ],
+        "title": "MatterView",
         "type": "object"
       },
       "MediaDetailsView": {
@@ -5940,6 +6121,57 @@
           }
         },
         "summary": "Create Brief"
+      }
+    },
+    "/api/workspaces/{workspace_id}/briefs/matter": {
+      "post": {
+        "description": "The matter of a brief as it is being written (ADR-0041): five criteria, a level and\nthe criterion that decides it. Computed, never stored; no model is called.",
+        "operationId": "brief_matter_api_workspaces__workspace_id__briefs_matter_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MatterBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatterView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Brief Matter"
       }
     },
     "/api/workspaces/{workspace_id}/briefs/{brief_id}": {

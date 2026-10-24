@@ -614,7 +614,6 @@
     "title": "Titre de travail",
     "items": "{count, plural, =0 {Éléments} one {Élément (#)} other {Éléments (#)}}",
     "removeItem": "Retirer « {title} » du brief",
-    "singleSource": "Une seule source : un article d'actualité en croise d'habitude au moins deux. Le brief reste possible.",
     "audience": "Public",
     "tone": "Ton",
     "length": "Longueur",
@@ -667,16 +666,19 @@
     "lengthCapped": "Ce canal ne porte pas d'article plus long.",
     "words": "{count, plural, one {# mot} other {# mots}}",
     "summaryOnly": "{count, plural, one {résumé seulement, # mot} other {résumé seulement, # mots}}",
-    "matter": "{count, plural, one {Matière disponible : # mot de sources.} other {Matière disponible : # mots de sources.}}",
     "lengthMatter": "{count, plural, one {Avec # mot de sources, un article plus long serait du remplissage.} other {Avec # mots de sources, un article plus long serait du remplissage.}}",
-    "matterLimited": "Matière limitée : le brouillon sera court. Relisez-le avec soin.",
-    "matterInsufficient": "Matière insuffisante : un résumé de quelques lignes ou moins de 150 mots de sources. Otlet demandera confirmation avant de générer.",
     "angleSet": "✓ Angle défini",
     "angleUnset": "○ Angle non défini : le brouillon restituera les sources, sans point de vue de votre part.",
     "pickItem": "Choisir un élément retenu…",
     "itemLine": "Élément {number}",
     "addLine": "Ajouter un élément",
-    "noKept": "Aucun élément retenu : retenez-en dans la Veille pour les choisir ici."
+    "noKept": "Aucun élément retenu : retenez-en dans la Veille pour les choisir ici.",
+    "nature": "Nature",
+    "natures": {
+      "news": "Actualité",
+      "background": "Dossier de fond"
+    },
+    "natureHelp": "Ne change que la façon de juger la matière : un dossier de fond n'a pas besoin d'éléments récents."
   },
   "draft": {
     "title": "Brouillon",
@@ -1088,5 +1090,56 @@
     },
     "details": "Détails",
     "origin": "Origine : {reason}"
+  },
+  "matter": {
+    "levels": {
+      "enough": "Matière suffisante",
+      "limited": "Matière limitée",
+      "insufficient": "Matière insuffisante"
+    },
+    "intro": "Otlet juge ici ce que les éléments du brief permettent d'écrire, à partir de leur nombre, de leurs éditeurs, de leurs mots et de leur date. Rien n'est bloqué : vous pouvez toujours enregistrer le brief.",
+    "understood": "Compris",
+    "criteria": {
+      "sources": "Sources",
+      "publishers": "Diversité",
+      "words": "Mots",
+      "freshness": "Fraîcheur",
+      "corroboration": "Corroboration"
+    },
+    "values": {
+      "sources": "{count, plural, =0 {aucun élément} one {# élément} other {# éléments}}",
+      "publishers": "{count, plural, =0 {aucun éditeur} one {# éditeur} other {# éditeurs}}",
+      "words": "{count, plural, =0 {aucun mot utilisable} one {# mot utilisable} other {# mots utilisables}}",
+      "wordsUpTo": "{count, plural, one {# mot utilisable} other {# mots utilisables}}, de quoi écrire un article {length} au plus",
+      "freshness": "{count, plural, =0 {le plus récent date d'aujourd'hui} one {le plus récent a # jour} other {le plus récent a # jours}}",
+      "corroboration": "pas encore évaluée par Otlet"
+    },
+    "lengths": {
+      "short": "court",
+      "medium": "moyen",
+      "long": "long"
+    },
+    "reasons": {
+      "fail": {
+        "sources": "aucun élément",
+        "publishers": "un seul éditeur, dont l'article reprendrait la couverture",
+        "words": "trop peu de mots dans les sources"
+      },
+      "warn": {
+        "sources": "{count, plural, one {un seul élément} other {# éléments seulement}}",
+        "publishers": "deux éditeurs seulement",
+        "words": "pas assez de mots pour la longueur demandée"
+      },
+      "freshness": "des éléments de plus d'une semaine",
+      "freshnessOld": "des éléments de plus d'un mois"
+    },
+    "actions": {
+      "sources": "Ajouter des éléments depuis la Veille",
+      "publishers": "Chercher d'autres éditeurs dans la Veille",
+      "words": "Choisissez une longueur plus courte, ou ajoutez des éléments.",
+      "wordsFail": "Ajoutez des textes complets, ou déclarez vos droits sur un texte réservé depuis sa page.",
+      "freshness": "Chercher des éléments récents dans la Veille",
+      "corroboration": ""
+    }
   }
 }

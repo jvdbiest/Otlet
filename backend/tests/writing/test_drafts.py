@@ -252,7 +252,7 @@ def test_a_draft_becomes_a_version_of_the_article_of_the_brief(world: World) -> 
     version = article.versions[0]
     assert (version.origin, version.provider_kind, version.model) == ("ia", "ollama", "llama3.1")
     assert (
-        version.prompt_version == "redaction-14"
+        version.prompt_version == "redaction-15"
         and version.cut_sources == () == version.unused_sources
         and not version.context_overflow
     )
@@ -364,8 +364,9 @@ def test_a_draft_that_leaves_a_source_out_is_sent_back_then_says_so(world: World
     assert "sources not used: S2" in repair
     # A section on one source is no longer sent back (Joël, 2026-10-19): only a warning.
     assert "sections drawing on one source" not in repair
-    # The sources are summaries of a few words: the draft is held to « short » (the audit).
-    assert "about 300 words: rewrite, do not shorten" in repair
+    # The source left out is used once, the rest left as it is (Joël, 2026-10-24): no « keep
+    # the length », which made a model spread the one fact of a short source.
+    assert "use each of them once" in repair and "do not shorten" not in repair
     article = world.drafts.article(context, brief.id)
     assert article is not None
     assert article.versions[0].unused_sources == ("Article de agence",)

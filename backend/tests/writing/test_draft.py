@@ -202,8 +202,9 @@ def test_every_source_of_the_brief_must_be_cited() -> None:
     keys = ["S1", "S2", "S3"]
     errors = check_answer(answer(), keys)
     assert errors == [
-        "sources not used: S3; every source of the brief must be cited by at least one paragraph:"
-        " connect them in the article"
+        "sources not used: S3; use each of them once, in the one paragraph where it brings"
+        " something the other sources do not: add that fact there, never repeat a fact the"
+        " article already gives, and leave the rest of the article as it is"
     ]
     # After a repair, the answer is kept even if it still leaves a source out.
     assert check_answer(answer(), keys, every_source=False) == []

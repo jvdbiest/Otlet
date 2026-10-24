@@ -23,7 +23,7 @@ from typing import Any
 from otlet.writing.domain.brief import BriefFields, Length, Mode
 from otlet.writing.domain.vocabulary import choice
 
-PROMPT_VERSION = "redaction-14"
+PROMPT_VERSION = "redaction-15"
 SCHEMA_NAME = "article_draft"
 # Up to 15: a selection of ten films is ten sections (Joël, 2026-10-18; six cut his top 10).
 SECTIONS = (2, 15)
@@ -418,9 +418,12 @@ def check_answer(
     )
     missing = [key for key in keys if key not in cited]
     if every_source and sections and not unknown and missing:
+        # Once, where it adds something (Joël, 2026-10-24): « connect them » and « keep the
+        # length » made a model spread the one fact of a short source over three paragraphs.
         errors.append(
-            f"sources not used: {', '.join(missing)}; every source of the brief must be cited"
-            " by at least one paragraph: connect them in the article" + keep
+            f"sources not used: {', '.join(missing)}; use each of them once, in the one paragraph"
+            " where it brings something the other sources do not: add that fact there, never"
+            " repeat a fact the article already gives, and leave the rest of the article as it is"
         )
     if crossing and len(keys) > 1 and sections and not unknown and lone:
         errors.append(

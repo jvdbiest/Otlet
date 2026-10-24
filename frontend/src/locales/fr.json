@@ -165,7 +165,8 @@
       "urlHelp": "Une nouvelle adresse est vérifiée comme à l'ajout : Otlet y cherche le flux, puis relit les règles du site (robots.txt, réserve de fouille) à la collecte suivante, lancée aussitôt. Les éléments déjà collectés restent.",
       "save": "Enregistrer",
       "saving": "Vérification…"
-    }
+    },
+    "showItems": "Voir les éléments de cette source"
   },
   "legal": {
     "full_text": "Texte intégral utilisable",

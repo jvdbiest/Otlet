@@ -135,7 +135,14 @@ const watchRoute = createRoute({
   component: WatchLayout,
 });
 
-const itemsRoute = createRoute({ getParentRoute: () => watchRoute, path: "/", component: ItemsPage });
+// `source`: opened from the count of a source (Veille › Sources), filtered on it.
+const itemsRoute = createRoute({
+  getParentRoute: () => watchRoute,
+  path: "/",
+  component: ItemsPage,
+  validateSearch: (search: Record<string, unknown>): { source?: string } =>
+    typeof search.source === "string" ? { source: search.source } : {},
+});
 const sourcesRoute = createRoute({ getParentRoute: () => watchRoute, path: "sources", component: SourcesPage });
 const topicsRoute = createRoute({ getParentRoute: () => watchRoute, path: "sujets", component: TopicsPage });
 const topicRoute = createRoute({

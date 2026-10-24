@@ -105,6 +105,8 @@ export function ArticleVersions({
   const lone = listed(shown.details, "lone_sections");
   const repeated = listed(shown.details, "repeated_paragraphs");
   const guard = guardrails(shown.details);
+  // The passages copied from a source, by the draft of the model this version comes from.
+  const copied = guardrails(origin(shown, versions).details).passages.map((p) => p.excerpt);
   const anchor = (type: string, start: string, skip = 0): string | undefined => {
     const id = findBlock(shown.document as unknown as PlatformDocument, type, start, skip);
     return id === undefined ? undefined : blockAnchor(prefix, id);
@@ -254,7 +256,7 @@ export function ArticleVersions({
             versions={versions}
             current={shown.number}
             documentSources={(shown.document as unknown as PlatformDocument).attrs.sources}
-            copied={guardrails(origin(shown, versions).details).passages.map((p) => p.excerpt)}
+            copied={copied}
           />
         }
       >
@@ -272,6 +274,7 @@ export function ArticleVersions({
             onChoose(number);
           }}
           copiedFrom={copiedFrom}
+          copied={comparing ? copied : []}
           validated={article.validated_version}
           onClose={() => {
             setEditing(false);
@@ -330,6 +333,7 @@ export function ArticleVersions({
             title={shown.title}
             prefix={prefix}
             mediaUrl={(id) => mediaUrl(workspaceId, id)}
+            copied={comparing ? copied : []}
           />
         </>
       )}

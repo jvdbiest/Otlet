@@ -24,6 +24,7 @@ import { TopicItemsPage } from "./pages/watch/TopicItemsPage.tsx";
 import { TopicsPage } from "./pages/watch/TopicsPage.tsx";
 import { WatchLayout } from "./pages/watch/WatchLayout.tsx";
 import { AiSettingsPage } from "./pages/settings/AiSettingsPage.tsx";
+import { BackupsPage } from "./pages/settings/BackupsPage.tsx";
 import { BriefPage, BriefsPage, NewBriefPage } from "./pages/writing/BriefsPage.tsx";
 import { sessionQuery } from "./session.ts";
 
@@ -124,6 +125,8 @@ const articleRoute = createRoute({
 
 // Settings (F05): the AI settings of the user.
 const settingsRoute = createRoute({ getParentRoute: () => appRoute, path: "/reglages", component: AiSettingsPage });
+// Réglages › Sauvegardes (F08, ADR-0042): the administrator of the instance only.
+const backupsRoute = createRoute({ getParentRoute: () => appRoute, path: "/reglages/sauvegardes", component: BackupsPage });
 
 // The watch section (U01): items, sources, manual entry, and one item.
 const watchRoute = createRoute({
@@ -162,6 +165,7 @@ const routeTree = rootRoute.addChildren([
     libraryRoute.addChildren([articlesRoute, mediaRoute, archivesRoute]),
     articleRoute,
     settingsRoute,
+    backupsRoute,
   ]),
 ]);
 

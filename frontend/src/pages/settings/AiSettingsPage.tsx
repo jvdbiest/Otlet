@@ -32,6 +32,7 @@ import { ApiError } from "../../api/client.ts";
 import { sessionQuery } from "../../session.ts";
 import { errorText, formatDate } from "../watch/labels.ts";
 import { styles } from "../watch/styles.ts";
+import { SettingsTabs } from "./SettingsTabs.tsx";
 
 /** Réglages > IA (F05, ADR-0027): the user chooses providers and models, sets a budget, tests
  * the profile; the administrator of the instance allows or blocks. */
@@ -45,6 +46,7 @@ export function AiSettingsPage() {
   return (
     <div className={styles.article}>
       <h1>{t("ai.title")}</h1>
+      <SettingsTabs />
       <p className={styles.help}>{t("ai.intro")}</p>
       <Providers catalogue={catalogue.data} />
       <Profile catalogue={catalogue.data} />

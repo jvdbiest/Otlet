@@ -45,6 +45,7 @@ openssl genpkey -algorithm X25519 -out "$keys/secrets-private.pem"
 openssl pkey -in "$keys/secrets-private.pem" -pubout -out "$keys/secrets-public.pem"
 chmod 600 "$keys/secrets-private.pem"
 chmod 644 "$keys/secrets-public.pem"
+echo "s6-backup-passphrase" > "$keys/backup-passphrase"  # the stack needs one (ADR-0042)
 # Read before handing the private key to the container user: the runner can no longer read it.
 body=$(sed -n '2p' "$keys/secrets-private.pem")
 if [ "$(uname -s)" = Linux ] && [ "$(id -u)" != 0 ]; then
@@ -90,7 +91,9 @@ else
     record private-key-absent-from-api true '""'
 fi
 
-# 5. In the resolved Compose configuration, only the worker receives the private key.
+# 5. In the resolved Compose configuration, only the worker receives the private key to open
+# secrets; the backup services receive it too, only to copy it into the encrypted backups
+# (ADR-0042). Never the API.
 holders=$(compose config --format json | docker run --rm -i --entrypoint python otlet-s6:secrets -c '
 import json, sys
 config = json.load(sys.stdin)
@@ -98,7 +101,7 @@ print(",".join(sorted(
     name for name, service in config["services"].items()
     if any(s.get("source") == "secrets_private_key" for s in service.get("secrets", []))
 )))')
-[ "$holders" = worker ] && ok=true || ok=false
+[ "$holders" = backup,backups,worker ] && ok=true || ok=false
 record only-worker-mounts-private-key "$ok" "\"$holders\""
 
 # 6. The worker opens the secret sealed by the API.

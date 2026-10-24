@@ -1022,5 +1022,63 @@
       "insert": "Insérer",
       "cancel": "Annuler"
     }
+  },
+  "settings": {
+    "title": "Réglages",
+    "tabs": {
+      "label": "Sections des réglages",
+      "ai": "Intelligence artificielle",
+      "backups": "Sauvegardes"
+    }
+  },
+  "backups": {
+    "adminOnly": "Les sauvegardes sont réservées à l'administrateur de l'instance.",
+    "intro": "Otlet sauvegarde toute l'instance (la base, les fichiers de la médiathèque et, si elle est chiffrée, les secrets) dans le dossier choisi à l'installation : disque, partage réseau ou dossier synchronisé. Chaque sauvegarde est vérifiée.",
+    "destination": {
+      "title": "Destination",
+      "none": "Aucune destination n'est configurée pour cette instance. Voir la documentation d'installation (configure.sh).",
+      "noService": "Le service de sauvegarde n'a pas encore signalé son état : il démarre, ou il ne tourne pas.",
+      "ok": "Le dossier de sauvegarde est accessible : {free} libres sur {total}.",
+      "ko": "Le dossier de sauvegarde n'est pas accessible en écriture : {error}",
+      "checked": "Vérifié le {date}."
+    },
+    "encrypted": "Les sauvegardes sont chiffrées. Gardez une copie de la phrase de passe hors de cette machine : sans elle, une sauvegarde ne peut pas être restaurée.",
+    "notEncrypted": "Les sauvegardes ne sont pas chiffrées, et les secrets de l'instance n'y figurent pas. Ajoutez une phrase de passe à l'installation pour les chiffrer.",
+    "schedule": {
+      "title": "Planification",
+      "enabled": "Sauvegarder automatiquement chaque jour",
+      "hour": "Heure",
+      "at": "vers {hour} h",
+      "daily": "Sauvegardes quotidiennes gardées",
+      "weekly": "Sauvegardes hebdomadaires gardées",
+      "save": "Enregistrer",
+      "saved": "Enregistré."
+    },
+    "list": {
+      "title": "Sauvegardes",
+      "empty": "Aucune sauvegarde pour l'instant.",
+      "date": "Date",
+      "reason": "Origine",
+      "check": "Vérification",
+      "contents": "Contenu",
+      "size": "Taille"
+    },
+    "reasons": {
+      "manual": "Manuelle",
+      "scheduled": "Planifiée",
+      "startup": "Au démarrage",
+      "before-restore": "Avant une restauration"
+    },
+    "verified": "Vérifiée",
+    "problems": "{count, plural, one {# problème} other {# problèmes}}",
+    "contents": "{briefs} briefs, {articles} articles, {media} images",
+    "newFiles": "{count, plural, =0 {aucun fichier nouveau} one {# fichier nouveau} other {# fichiers nouveaux}}",
+    "download": "Télécharger",
+    "now": "Sauvegarder maintenant",
+    "running": "Sauvegarde en cours…",
+    "done": "Sauvegarde demandée le {date} : terminée.",
+    "failed": "La dernière sauvegarde demandée a échoué : {error}",
+    "lastError": "Dernier problème : {error}",
+    "restore": "La restauration se fait pour l'instant par une commande sur le serveur, décrite dans la documentation d'exploitation (Sauvegarde et restauration). Une sauvegarde de l'état actuel est toujours prise juste avant."
   }
 }

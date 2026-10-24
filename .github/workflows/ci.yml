@@ -117,10 +117,18 @@ jobs:
           restore-keys: uv-${{ runner.os }}-py3.13-
       - name: Installer les dépendances (verrou exact)
         run: uv sync --locked
-      - name: Tests avec PostgreSQL réel (rôles M-12, migrations), aucun ignoré faute de base
+      - name: Outils clients PostgreSQL 18 (sauvegarde et restauration, F08)
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSo /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client-18
+          echo "/usr/lib/postgresql/18/bin" >> "$GITHUB_PATH"
+      - name: Tests avec PostgreSQL réel (rôles M-12, migrations, restauration), aucun ignoré
         run: |
           uv run pytest -rs | tee "$RUNNER_TEMP/pytest.txt"
           ! grep -q "OTLET_TEST_ADMIN_URL not set" "$RUNNER_TEMP/pytest.txt"
+          ! grep -q "PostgreSQL client tools missing" "$RUNNER_TEMP/pytest.txt"
 
   audit:
     name: Audit des dépendances

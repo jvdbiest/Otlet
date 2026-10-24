@@ -27,10 +27,21 @@ from otlet.ai.application.budget import Budget
 from otlet.ai.application.models import Models
 from otlet.ai.application.settings import AiSettings
 from otlet.ai.domain.settings import ProfileEntry, SettingsError
+from otlet.backup.adapters.control import PostgresControl
 from otlet.collection.adapters.parsing import FeedparserReader, ReadabilityReader
 from otlet.collection.adapters.postgres import PostgresCollectionStore
 from otlet.collection.application.collection import Collection
-from otlet.entrypoints.api import ai, auth, collection, media, triage, watch, workspaces, writing
+from otlet.entrypoints.api import (
+    ai,
+    auth,
+    backups,
+    collection,
+    media,
+    triage,
+    watch,
+    workspaces,
+    writing,
+)
 from otlet.identity.adapters.argon2_hasher import Argon2Hasher
 from otlet.identity.adapters.postgres import PostgresIdentityStore
 from otlet.identity.application.authentication import Authentication
@@ -189,7 +200,11 @@ def create_app(settings: Settings) -> FastAPI:
             authentication,
             current_session,
         )
+        backups_router = backups.build_router(
+            PostgresControl(engine), settings.backup_dir, authentication, current_session
+        )
         routers = [
+            backups_router,
             auth_router,
             workspace_router,
             collection_router,

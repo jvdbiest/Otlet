@@ -1,0 +1,174 @@
+{
+ "budget-bxl": {
+  "concepts": [
+   {
+    "name": "budget",
+    "terms": [
+     "budget",
+     "budgets",
+     "begroting",
+     "begrotingen",
+     "budget"
+    ]
+   },
+   {
+    "name": "Région de Bruxelles-Capitale",
+    "terms": [
+     "Région de Bruxelles-Capitale",
+     "Brussels-Capital Region",
+     "Brussel-Capitale-Regio",
+     "Région de Bruxelles-Capitale",
+     "Brussels-Capital Region",
+     "Brussel-Capitale-Regio"
+    ]
+   }
+  ],
+  "usage": {
+   "seconds": 6.5,
+   "tokens_in": 272,
+   "tokens_out": 132
+  }
+ },
+ "austen": {
+  "concepts": [
+   {
+    "name": "tempête",
+    "terms": [
+     "tempête",
+     "tempêtes",
+     "storm",
+     "stormen",
+     "storm",
+     "stormloop"
+    ]
+   },
+   {
+    "name": "Austen",
+    "terms": [
+     "Austen",
+     "Austen",
+     "Austen",
+     "Austen",
+     "Austen"
+    ]
+   }
+  ],
+  "usage": {
+   "seconds": 3.3,
+   "tokens_in": 266,
+   "tokens_out": 85
+  }
+ },
+ "piratage-ia": {
+  "concepts": [
+   {
+    "name": "piratage",
+    "terms": [
+     "piratage",
+     "hacking",
+     "hacken",
+     "piraterie",
+     "cyberattaque",
+     "cyber hacking",
+     "data breach"
+    ]
+   },
+   {
+    "name": "intelligence artificielle",
+    "terms": [
+     "intelligence artificielle",
+     "artificial intelligence",
+     "kunstmatige intelligentie",
+     "IA",
+     "AI",
+     "machine learning",
+     "deep learning"
+    ]
+   }
+  ],
+  "usage": {
+   "seconds": 4.1,
+   "tokens_in": 270,
+   "tokens_out": 105
+  }
+ },
+ "verstappen": {
+  "concepts": [
+   {
+    "name": "Max Verstappen",
+    "terms": [
+     "Max Verstappen",
+     "Max Verstappen",
+     "Max Verstappen"
+    ]
+   }
+  ],
+  "usage": {
+   "seconds": 1.7,
+   "tokens_in": 262,
+   "tokens_out": 43
+  }
+ },
+ "apple": {
+  "concepts": [
+   {
+    "name": "Apple",
+    "terms": [
+     "Apple",
+     "Apple Inc.",
+     "Apple Computer",
+     "Apple Inc"
+    ]
+   },
+   {
+    "name": "présentation",
+    "terms": [
+     "présentation",
+     "conférence",
+     "annonce",
+     "lancement",
+     "presentation",
+     "presentatie",
+     "uitgave",
+     "launch",
+     "presentation",
+     "presentatie",
+     "unveiling"
+    ]
+   }
+  ],
+  "usage": {
+   "seconds": 3.5,
+   "tokens_in": 268,
+   "tokens_out": 90
+  }
+ },
+ "actiris-creches": {
+  "concepts": [
+   {
+    "name": "Actiris",
+    "terms": [
+     "Actiris",
+     "Actiris",
+     "Actiris"
+    ]
+   },
+   {
+    "name": "crèche",
+    "terms": [
+     "crèche",
+     "crèches",
+     "kinderopvang",
+     "kinderopvangen",
+     "childcare",
+     "childcare centres"
+    ]
+   }
+  ],
+  "usage": {
+   "seconds": 3.1,
+   "tokens_in": 269,
+   "tokens_out": 78
+  }
+ }
+}

@@ -373,3 +373,20 @@ def test_ids_left_in_the_text_go_or_become_the_publisher() -> None:
     title, document = to_document(json.dumps(raw), sources, "fr")
     assert title == "Ce que dit Journal"
     assert document["content"][1]["content"][0]["text"] == "Le bilan"
+
+
+def test_the_instructions_of_the_author_decide_the_plan() -> None:
+    """« Tempête Austen » (Joël, 2026-10-24): asked in the order of events, it came out by
+    themes; the plan of the mode is now a default the author's instructions override."""
+    sources = prompt_sources([source("A", "a"), source("B", "b")], 9000)
+    fields = BriefFields(
+        title="Tempête Austen - Son déroulement",
+        item_ids=(),
+        instructions="Présenter les événements dans leur ordre chronologique.",
+    )
+    (_, system), (_, user) = messages(fields, sources)
+    assert "This plan is a default" in user
+    assert "prevails over the plan of the mode" in system
+    for mode in (Mode.SYNTHESIS, Mode.PANORAMA):
+        plain = messages(BriefFields(title="T", item_ids=(), mode=mode), sources)[1][1]
+        assert "{default}" not in plain and "This plan is a default" in plain

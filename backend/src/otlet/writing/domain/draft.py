@@ -23,7 +23,7 @@ from typing import Any
 from otlet.writing.domain.brief import BriefFields, Length, Mode
 from otlet.writing.domain.vocabulary import choice
 
-PROMPT_VERSION = "redaction-13"
+PROMPT_VERSION = "redaction-14"
 SCHEMA_NAME = "article_draft"
 # Up to 15: a selection of ten films is ten sections (Joël, 2026-10-18; six cut his top 10).
 SECTIONS = (2, 15)
@@ -162,7 +162,7 @@ def messages(
             brief.append(f"{name}: {found.label}. {found.definition}")
     if len(sources) > 1:
         keys = ", ".join(source.key for source in sources)
-        brief.append(MODES[fields.mode].format(keys=keys))
+        brief.append(MODES[fields.mode].format(keys=keys, default=PLAN_DEFAULT))
     data = []
     for source in sources:
         head = f"[{source.key}] {source.source.title}"
@@ -186,7 +186,8 @@ def messages(
             " rules above):\n"
             + charter.strip()
             + "\n\nThe charter prevails over the brief. The tone, audience, channel and writing"
-            " instructions of the brief only adjust the style and the readers; where they"
+            " instructions of the brief only adjust the style, the readers and the plan; where"
+            " they"
             " conflict with the charter (accuracy, neutrality, nothing invented, no unattributed"
             " superlatives or judgements), follow the charter."
         )
@@ -197,8 +198,8 @@ def messages(
             "\n\nWriting instructions from the author for this article (follow them, within"
             " the rules above"
             + (" and the charter" if charter.strip() else "")
-            + "):\n"
-            + fields.instructions
+            + "). They decide the plan and the order of the article: a structure they ask for"
+            " prevails over the plan of the mode.\n" + fields.instructions
         )
     return [("system", system), ("user", user)]
 
@@ -213,14 +214,20 @@ MODES = {
         "them: sections about an idea, a question or a consequence they share, saying how they "
         "agree, differ or complete each other. Never invent a link the sources do not make: a "
         "source that shares nothing with the others gets its own section. Every source ({keys}) "
-        "is cited at least once."
+        "is cited at least once." + "{default}"
     ),
     Mode.PANORAMA: (
         "Mode: overview. After a lead that says what links the sources, present them one after "
         "the other, a section for each; end with a short section that draws them together. Every "
-        "source ({keys}) is cited at least once."
+        "source ({keys}) is cited at least once." + "{default}"
     ),
 }
+# The plan of a mode is a default (Joël, 2026-10-24): « Tempête Austen », asked in the order of
+# events and « not by themes », came out by themes, the synthesis asking for sections about ideas.
+PLAN_DEFAULT = (
+    " This plan is a default: when the author's angle or writing instructions ask for another"
+    " order or structure (a chronology, a list, questions and answers…), follow theirs."
+)
 
 
 def output_schema(keys: list[str]) -> dict[str, Any]:

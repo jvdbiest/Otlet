@@ -45,9 +45,10 @@ revision() {
 psql_value() {
     compose exec -T db psql -U otlet -d otlet -tA -c "$1"
 }
+# The control data only: the backup service writes its own state there too (ADR-0042).
 fingerprint() {
     psql_value "SELECT md5(string_agg(key || '=' || value::text, ',' ORDER BY key))
-                FROM instance_settings"
+                FROM instance_settings WHERE key NOT LIKE 'backup.%'"
 }
 has_note_column() {
     psql_value "SELECT count(*) FROM information_schema.columns

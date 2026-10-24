@@ -16,6 +16,7 @@ import {
   vocabularyQuery,
   type BriefLength,
   type BriefMode,
+  type BriefNature,
   type BriefItemView,
   type BriefView,
   type ChoiceView,
@@ -24,9 +25,11 @@ import {
 import { errorText, formatDate } from "../watch/labels.ts";
 import { styles } from "../watch/styles.ts";
 import { DraftPanel } from "./DraftPanel.tsx";
+import { MatterPanel } from "./MatterPanel.tsx";
 
 const LENGTHS: readonly BriefLength[] = ["short", "medium", "long"];
 const MODES: readonly BriefMode[] = ["synthesis", "panorama"];
+const NATURES: readonly BriefNature[] = ["news", "background"];
 const LANGUAGES = ["fr", "en", "de", "nl", "es", "it", "pt"] as const;
 const BRIEF_ERRORS = [
   "invalid_title",
@@ -144,6 +147,7 @@ function BriefForm({
   const vocabulary = useQuery(vocabularyQuery(workspaceId));
   const [length, setLength] = useState<BriefLength>(brief?.length ?? "medium");
   const [mode, setMode] = useState<BriefMode>(brief?.mode ?? "synthesis");
+  const [nature, setNature] = useState<BriefNature>(brief?.nature ?? "news");
   const [language, setLanguage] = useState(brief?.language ?? "fr");
   const [channel, setChannel] = useState(brief?.channel ?? "");
   const [model, setModel] = useState(brief?.provider_id ? `${brief.provider_id}|${brief.model ?? ""}` : "");
@@ -182,6 +186,7 @@ function BriefForm({
                 tone,
                 length,
                 mode,
+                nature,
                 language,
                 channel,
                 item_ids: itemIds,
@@ -215,6 +220,9 @@ function BriefForm({
             }
           }}
         />
+        {/* Under the items, the matter they hold (ADR-0041), judged with the length, the mode
+            and the nature chosen below. */}
+        <MatterPanel workspaceId={workspaceId} itemIds={itemIds} length={length} mode={mode} nature={nature} />
         <div className={styles.field}>
           <label htmlFor="brief-title">{t("brief.title")}</label>
           <input
@@ -291,6 +299,23 @@ function BriefForm({
             <span className={styles.help}>{t(`brief.modeHelp.${mode}`)}</span>
           </div>
         )}
+        <div className={styles.field}>
+          <label htmlFor="brief-nature">{t("brief.nature")}</label>
+          <select
+            id="brief-nature"
+            value={nature}
+            onChange={(event) => {
+              setNature(NATURES.find((choice) => choice === event.target.value) ?? "news");
+            }}
+          >
+            {NATURES.map((choice) => (
+              <option key={choice} value={choice}>
+                {t(`brief.natures.${choice}`)}
+              </option>
+            ))}
+          </select>
+          <span className={styles.help}>{t("brief.natureHelp")}</span>
+        </div>
         <div className={styles.search}>
           <div className={styles.field}>
             <label htmlFor="brief-length">{t("brief.length")}</label>
@@ -363,6 +388,17 @@ function BriefForm({
           {save.isSuccess && brief !== null && <span className={styles.meta}>{t("brief.saved")}</span>}
         </p>
       </form>
+      {brief !== null && (
+        // The matter of the brief as saved, read-only, next to « Générer » (ADR-0041).
+        <MatterPanel
+          workspaceId={workspaceId}
+          itemIds={brief.items.map((item) => item.id)}
+          length={brief.length}
+          mode={brief.mode}
+          nature={brief.nature}
+          compact
+        />
+      )}
       {brief !== null && <DraftPanel workspaceId={workspaceId} briefId={brief.id} />}
       {brief !== null && (
         <div className={styles.dangerZone}>
@@ -436,22 +472,6 @@ function useBriefItems(workspaceId: string, brief: BriefView | null, itemIds: st
   return known;
 }
 
-/** How much the sources hold (draft.py, matter_level): nothing said, a notice, or a warning. */
-function matterLevel(
-  matter: number,
-  fullText: boolean,
-  vocabulary: VocabularyView | undefined,
-): "enough" | "limited" | "insufficient" {
-  if (vocabulary === undefined) {
-    return "enough";
-  }
-  const longest = longestFor(matter, vocabulary);
-  if (matter < vocabulary.matter_floor || (!fullText && longest === null)) {
-    return "insufficient";
-  }
-  return longest === null ? "limited" : "enough";
-}
-
 /** The longest article the words of the sources can carry (draft.py, longest_for); null: thin. */
 function longestFor(matter: number, vocabulary: VocabularyView | undefined): BriefLength | null {
   if (vocabulary === undefined) {
@@ -478,13 +498,6 @@ function BriefItems({
 }) {
   const { t } = useTranslation();
   const known = useBriefItems(workspaceId, brief, itemIds);
-  const matter = itemIds.reduce((sum, id) => sum + (known.get(id)?.words ?? 0), 0);
-  const vocabulary = useQuery(vocabularyQuery(workspaceId));
-  const level = matterLevel(
-    matter,
-    itemIds.some((id) => known.get(id)?.full_text === true),
-    vocabulary.data,
-  );
   // The kept items, the most recent first (by date of publication).
   const kept = useQuery(
     feedQuery(
@@ -506,7 +519,6 @@ function BriefItems({
   const [empty, setEmpty] = useState(itemIds.length === 0);
   // Always one line at least: removing the last item leaves an empty one (Joël, 2026-10-19).
   const rows = empty || itemIds.length === 0 ? [...itemIds, ""] : itemIds;
-  const sources = new Set(itemIds.map((id) => known.get(id)?.source_id ?? id));
   const label = (title: string, source: string | null, words: number): string =>
     `${title.length > 90 ? `${title.slice(0, 89)}…` : title} · ${source ?? t("watch.manualOrigin")} · ${t("watch.words", { count: words })}`;
   const choose = (index: number, id: string) => {
@@ -593,10 +605,6 @@ function BriefItems({
       })}
       <div style={{ width: "100%" }}>
       {itemIds.length === 0 && (kept.data ?? []).length === 0 && <p className={styles.meta}>{t("brief.noKept")}</p>}
-      {itemIds.length > 0 && sources.size < 2 && <p className={styles.notice}>{t("brief.singleSource")}</p>}
-      {itemIds.length > 0 && <p className={styles.meta}>{t("brief.matter", { count: matter })}</p>}
-      {itemIds.length > 0 && level === "limited" && <p className={styles.notice}>{t("brief.matterLimited")}</p>}
-      {itemIds.length > 0 && level === "insufficient" && <p className={styles.warning}>{t("brief.matterInsufficient")}</p>}
       </div>
     </fieldset>
   );

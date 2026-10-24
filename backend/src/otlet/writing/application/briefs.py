@@ -7,11 +7,13 @@ watch module owns the triage; the composition of the application passes how to m
 """
 
 from collections.abc import Callable, Sequence
+from datetime import UTC, date, datetime
 from typing import Protocol
 from uuid import UUID
 
 from otlet.workspaces.domain.model import WorkspaceContext
-from otlet.writing.domain.brief import Brief, BriefFields, ModelChoice
+from otlet.writing.domain.brief import Brief, BriefFields, Length, Mode, ModelChoice, Nature
+from otlet.writing.domain.matter import Evaluation, MatterItem, evaluate
 
 # Moves items to drafting in the triage of the user of the context.
 MarkWriting = Callable[[WorkspaceContext, Sequence[UUID]], object]
@@ -37,6 +39,10 @@ class BriefStore(Protocol):
 
     def delete_brief(self, workspace_id: UUID, brief_id: UUID) -> bool: ...
 
+    def matter_items(self, workspace_id: UUID, item_ids: list[UUID]) -> list[MatterItem]:
+        """The items of the workspace among `item_ids`, in that order; others are left out."""
+        ...
+
 
 class Briefs:
     def __init__(
@@ -51,6 +57,19 @@ class Briefs:
 
     def get(self, context: WorkspaceContext, brief_id: UUID) -> Brief | None:
         return self._store.get_brief(context.workspace_id, brief_id)
+
+    def matter(
+        self,
+        context: WorkspaceContext,
+        item_ids: Sequence[UUID],
+        length: Length,
+        mode: Mode,
+        nature: Nature,
+        today: date | None = None,
+    ) -> Evaluation:
+        """The matter of a brief as it is being written, saved or not (ADR-0041)."""
+        items = self._store.matter_items(context.workspace_id, [*item_ids])
+        return evaluate(items, length, mode, nature, today or datetime.now(UTC).date())
 
     def create(self, context: WorkspaceContext, fields: BriefFields) -> Brief:
         checked = self._checked(context, fields)

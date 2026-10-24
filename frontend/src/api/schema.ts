@@ -683,6 +683,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/briefs/matter": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Brief Matter
+         * @description The matter of a brief as it is being written (ADR-0041): five criteria, a level and
+         *     the criterion that decides it. Computed, never stored; no model is called.
+         */
+        post: operations["brief_matter_api_workspaces__workspace_id__briefs_matter_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/briefs/{brief_id}": {
         parameters: {
             query?: never;
@@ -1833,6 +1854,12 @@ export interface components {
             mode: "synthesis" | "panorama";
             /** Model */
             model?: string | null;
+            /**
+             * Nature
+             * @default news
+             * @enum {string}
+             */
+            nature: "news" | "background";
             /** Provider Id */
             provider_id?: string | null;
             /** Title */
@@ -1912,6 +1939,11 @@ export interface components {
             mode: "synthesis" | "panorama";
             /** Model */
             model: string | null;
+            /**
+             * Nature
+             * @enum {string}
+             */
+            nature: "news" | "background";
             /** Provider Id */
             provider_id: string | null;
             /** Single Source */
@@ -2079,6 +2111,22 @@ export interface components {
             login: string;
             /** Password */
             password: string;
+        };
+        /** CriterionView */
+        CriterionView: {
+            /** Informative */
+            informative: boolean;
+            /** Longest */
+            longest: ("short" | "medium" | "long") | null;
+            /** Mark */
+            mark: ("ok" | "warn" | "fail") | null;
+            /**
+             * Name
+             * @enum {string}
+             */
+            name: "sources" | "publishers" | "words" | "freshness" | "corroboration";
+            /** Value */
+            value: number | null;
         };
         /** DeclarationView */
         DeclarationView: {
@@ -2381,6 +2429,44 @@ export interface components {
         ManualUrl: {
             /** Url */
             url: string;
+        };
+        /**
+         * MatterBody
+         * @description A brief as it is being written: what its matter is judged on.
+         */
+        MatterBody: {
+            /** Item Ids */
+            item_ids: string[];
+            /**
+             * Length
+             * @default medium
+             * @enum {string}
+             */
+            length: "short" | "medium" | "long";
+            /**
+             * Mode
+             * @default synthesis
+             * @enum {string}
+             */
+            mode: "synthesis" | "panorama";
+            /**
+             * Nature
+             * @default news
+             * @enum {string}
+             */
+            nature: "news" | "background";
+        };
+        /** MatterView */
+        MatterView: {
+            /** Criteria */
+            criteria: components["schemas"]["CriterionView"][];
+            /**
+             * Level
+             * @enum {string}
+             */
+            level: "enough" | "limited" | "insufficient";
+            /** Reason */
+            reason: ("sources" | "publishers" | "words" | "freshness" | "corroboration") | null;
         };
         /** MediaDetailsView */
         MediaDetailsView: {
@@ -4529,6 +4615,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BriefView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    brief_matter_api_workspaces__workspace_id__briefs_matter_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MatterBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MatterView"];
                 };
             };
             /** @description Validation Error */

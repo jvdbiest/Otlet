@@ -27,6 +27,7 @@ from otlet.writing.domain.brief import (
     Length,
     Mode,
     ModelChoice,
+    Nature,
 )
 from otlet.writing.domain.document import body_text
 from otlet.writing.domain.draft import (
@@ -36,7 +37,12 @@ from otlet.writing.domain.draft import (
     longest_for,
     matter_level,
 )
+from otlet.writing.domain.matter import Evaluation
 from otlet.writing.domain.vocabulary import TONE_DEFAULT, VOCABULARY
+
+LengthKey = Literal["short", "medium", "long"]
+ModeKey = Literal["synthesis", "panorama"]
+NatureKey = Literal["news", "background"]
 
 
 class BriefItemView(BaseModel):
@@ -74,6 +80,7 @@ class BriefView(BaseModel):
     tone: str
     length: Literal["short", "medium", "long"]
     mode: Literal["synthesis", "panorama"]
+    nature: NatureKey
     language: str
     channel: str
     provider_id: UUID | None  # None: the profile of the author
@@ -101,6 +108,7 @@ class BriefView(BaseModel):
             tone=fields.tone,
             length=fields.length.value,
             mode=fields.mode.value,
+            nature=fields.nature.value,
             language=fields.language,
             channel=fields.channel,
             provider_id=None if fields.model is None else fields.model.provider_id,
@@ -165,6 +173,7 @@ class BriefBody(BaseModel):
     tone: str = "neutral"
     length: Literal["short", "medium", "long"] = "medium"
     mode: Literal["synthesis", "panorama"] = "synthesis"
+    nature: NatureKey = "news"
     language: str = "fr"
     channel: str = ""
     provider_id: UUID | None = None  # with `model`; none for the profile of the author
@@ -180,6 +189,7 @@ class BriefBody(BaseModel):
             tone=self.tone,
             length=Length(self.length),
             mode=Mode(self.mode),
+            nature=Nature(self.nature),
             language=self.language,
             channel=self.channel,
             model=None
@@ -379,6 +389,49 @@ class SaveBody(BaseModel):
     as_new: bool = False  # « Enregistrer comme nouvelle version »
 
 
+class MatterBody(BaseModel):
+    """A brief as it is being written: what its matter is judged on."""
+
+    item_ids: list[UUID] = Field(max_length=ITEMS_MAX)
+    length: LengthKey = "medium"
+    mode: ModeKey = "synthesis"
+    nature: NatureKey = "news"
+
+
+class CriterionView(BaseModel):
+    name: Literal["sources", "publishers", "words", "freshness", "corroboration"]
+    mark: Literal["ok", "warn", "fail"] | None  # None: not evaluated yet
+    # A count of items or publishers, the words, the age in days of the newest item.
+    value: int | None
+    informative: bool  # shown, no effect on the level
+    longest: LengthKey | None  # words: the longest article the matter carries
+
+
+class MatterView(BaseModel):
+    level: Literal["enough", "limited", "insufficient"]
+    reason: Literal["sources", "publishers", "words", "freshness", "corroboration"] | None
+    criteria: list[CriterionView]
+
+    @classmethod
+    def of(cls, evaluation: Evaluation) -> "MatterView":
+        return cls.model_validate(
+            {
+                "level": evaluation.level,
+                "reason": evaluation.reason,
+                "criteria": [
+                    {
+                        "name": c.name,
+                        "mark": None if c.mark is None else c.mark.value,
+                        "value": c.value,
+                        "informative": c.informative,
+                        "longest": None if c.longest is None else c.longest.value,
+                    }
+                    for c in evaluation.criteria
+                ],
+            }
+        )
+
+
 def _refused(error: BriefError) -> HTTPException:
     return HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, error.code)
 
@@ -416,6 +469,15 @@ def build_router(
             matter_share=MATTER_SHARE,
             matter_floor=MATTER_FLOOR,
         )
+
+    @router.post("/briefs/matter")
+    def brief_matter(body: MatterBody, context: Context) -> MatterView:
+        """The matter of a brief as it is being written (ADR-0041): five criteria, a level and
+        the criterion that decides it. Computed, never stored; no model is called."""
+        evaluation = briefs.matter(
+            context, body.item_ids, Length(body.length), Mode(body.mode), Nature(body.nature)
+        )
+        return MatterView.of(evaluation)
 
     @router.get("/briefs")
     def list_briefs(context: Context) -> list[BriefView]:

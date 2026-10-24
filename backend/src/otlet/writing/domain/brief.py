@@ -27,6 +27,14 @@ class Mode(StrEnum):
     PANORAMA = "panorama"  # the sources one after the other, then what links them
 
 
+class Nature(StrEnum):
+    """What the author writes (ADR-0041): it only changes how the matter is judged (matter.py),
+    neither the length, nor the tone, nor the prompt."""
+
+    NEWS = "news"  # Actualité: the default, and the value of the briefs made before it
+    BACKGROUND = "background"  # Dossier de fond
+
+
 class Length(StrEnum):
     SHORT = "short"  # about 300 words
     MEDIUM = "medium"  # about 600 words
@@ -63,6 +71,7 @@ class BriefFields:
     tone: str = "neutral"
     length: Length = Length.MEDIUM
     mode: Mode = Mode.SYNTHESIS
+    nature: Nature = Nature.NEWS
     language: str = "fr"
     channel: str = ""
     model: ModelChoice | None = None
@@ -107,6 +116,7 @@ class BriefFields:
             tone=self.tone,
             length=capped(self.length, self.channel),
             mode=self.mode,
+            nature=self.nature,
             language=self.language,
             channel=self.channel,
             model=model,

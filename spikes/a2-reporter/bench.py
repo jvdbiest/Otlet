@@ -99,6 +99,60 @@ def fold(text: str) -> str:
     return " ".join("".join(c for c in text if not unicodedata.combining(c)).split())
 
 
+UNSPECIFIED = {"", "non precise", "non precisee", "inconnu"}
+MEASURE_STOP = set("nombre total personnes selon dans pour avec sans des les une aux".split())
+
+
+def concordance(lines: list[dict], glossary: list) -> tuple[str, list[tuple[str, str, str]]]:
+    """The agreement of the sources, from the kept lines and without a model (ADR-0043 §10).
+
+    Two lines from different sources are compared when they measure the same thing (a word of
+    their « mesure » in common), at the same moment (one « quand » holds the other) and at the
+    same place (the same « où » once the glossary has made Brussel and Bruxelles one; a narrower
+    place, « centre de Bruxelles », is a part and is not compared). « Non précisé » matches
+    anything. Same figure: they agree; another figure: they diverge, and the pair is shown.
+    When the figure is the moment itself (a date asked for), the moments are not compared.
+    Lines from one source only: « une source », nothing to agree with."""
+    def place(text: str) -> str:
+        text = fold(text)
+        for entry in glossary:
+            if text in {fold(t) for t in entry.terms}:
+                return fold(entry.terms[0])
+        return text
+
+    def words(text: str) -> set[str]:
+        return {w for w in fold(text).replace("'", " ").split() if len(w) > 3 and w not in MEASURE_STOP}
+
+    def figure(text: str) -> str:
+        return "".join(ch for ch in text if ch.isdigit()) or fold(text)
+
+    if not lines:
+        return "absent", []
+    if len({line["source"] for line in lines}) == 1:
+        return "une source", []
+    agree, differ = False, []
+    for i, a in enumerate(lines):
+        for b in lines[i + 1:]:
+            if a["source"] == b["source"] or not words(a["mesure"]) & words(b["mesure"]):
+                continue
+            ta, tb = (("" if fold(x["quand"]) == fold(x["chiffre"]) else fold(x["quand"])) for x in (a, b))
+            pa, pb = place(a["ou"]), place(b["ou"])
+            if not (ta in UNSPECIFIED or tb in UNSPECIFIED or ta in tb or tb in ta):
+                continue
+            if not (pa in UNSPECIFIED or pb in UNSPECIFIED or pa == pb):
+                continue
+            # A vague figure (« la semaine prochaine ») is not set against a precise one.
+            if any(ch.isdigit() for ch in a["chiffre"]) != any(ch.isdigit() for ch in b["chiffre"]):
+                continue
+            if figure(a["chiffre"]) == figure(b["chiffre"]):
+                agree = True
+            else:
+                differ.append((a["mesure"], f"{a['chiffre']} ({a['source']})", f"{b['chiffre']} ({b['source']})"))
+    if differ:
+        return "divergent", differ
+    return ("concordent" if agree else "partiel"), []
+
+
 def bench(workspace: UUID) -> None:
     engine = db.create_engine(Settings.from_env().require_database_url())
     store = PostgresAssistantStore(engine)
@@ -129,8 +183,10 @@ def bench(workspace: UUID) -> None:
                 "Conversation :\n" + "\n".join(history) + f"\nConcepts de l'ensemble courant : {current}"
                 f"\nLangue : {model_language or 'toutes'}\n\nDernière question : {question}"
             )
-            answer, seconds = chat(OPERATION_SYSTEM, user, OPERATION_SCHEMA)
             history.append(f"Auteur : {question}")
+            if os.environ.get("FACTS_ONLY") and kind != "fait":
+                continue
+            answer, seconds = chat(OPERATION_SYSTEM, user, OPERATION_SCHEMA)
             operation = answer.get("operation")
             proposed = [Concept(c.get("name") or c["terms"][0], tuple(c["terms"]))
                         for c in answer.get("concepts", []) if c.get("terms")]
@@ -179,7 +235,7 @@ def bench(workspace: UUID) -> None:
                 FACT_SCHEMA,
             )
             print(f"    fait ({seconds} s, {len(articles)} articles) : {fact.get('concordance')} — {fact.get('conclusion')}")
-            dropped = 0
+            dropped, kept = 0, []
             for row in fact.get("lignes", []):
                 n = row.get("article", 0)
                 text = texts[n - 1] if 1 <= n <= len(texts) else ""
@@ -192,10 +248,15 @@ def bench(workspace: UUID) -> None:
                     dropped += 1
                     continue
                 source = rows[articles[n - 1].id].publisher if 1 <= n <= len(articles) else "?"
+                kept.append({**{k: str(row.get(k, "")) for k in ("chiffre", "mesure", "quand", "ou")}, "source": source})
                 print(f"      [{n}] {source} | {row.get('chiffre')} | {row.get('mesure')} | {row.get('quand', '')} | {row.get('ou', '')}"
                       f" | chiffre {'OK' if figure_ok else 'HORS EXTRAIT'}")
             if dropped:
                 print(f"      ({dropped} ligne(s) retirée(s) : extrait absent de l'article)")
+            computed, pairs = concordance(kept, glossary)
+            print(f"    concordance calculée : {computed} (modèle : {fact.get('concordance')})")
+            for measure, first, second in pairs:
+                print(f"      divergence sur « {measure} » : {first} contre {second}")
 
 
 bench(UUID(sys.argv[1]))

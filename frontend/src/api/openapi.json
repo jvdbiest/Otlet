@@ -1022,6 +1022,29 @@
         "title": "ChoiceView",
         "type": "object"
       },
+      "ComparedView": {
+        "properties": {
+          "first": {
+            "title": "First",
+            "type": "integer"
+          },
+          "same": {
+            "title": "Same",
+            "type": "boolean"
+          },
+          "second": {
+            "title": "Second",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "first",
+          "second",
+          "same"
+        ],
+        "title": "ComparedView",
+        "type": "object"
+      },
       "ConceptBody": {
         "properties": {
           "name": {
@@ -1134,6 +1157,90 @@
           "points"
         ],
         "title": "ContributionView",
+        "type": "object"
+      },
+      "ConversationSummaryView": {
+        "properties": {
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "created_at"
+        ],
+        "title": "ConversationSummaryView",
+        "type": "object"
+      },
+      "ConversationView": {
+        "properties": {
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "turns": {
+            "items": {
+              "$ref": "#/components/schemas/TurnView"
+            },
+            "title": "Turns",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "days",
+          "created_at",
+          "turns"
+        ],
+        "title": "ConversationView",
         "type": "object"
       },
       "Credentials": {
@@ -1780,6 +1887,110 @@
           "kind"
         ],
         "title": "ExportSelectionBody",
+        "type": "object"
+      },
+      "FactLineView": {
+        "properties": {
+          "figure": {
+            "title": "Figure",
+            "type": "string"
+          },
+          "figure_in_passage": {
+            "title": "Figure In Passage",
+            "type": "boolean"
+          },
+          "item_id": {
+            "format": "uuid",
+            "title": "Item Id",
+            "type": "string"
+          },
+          "measure": {
+            "title": "Measure",
+            "type": "string"
+          },
+          "passage": {
+            "title": "Passage",
+            "type": "string"
+          },
+          "publisher": {
+            "title": "Publisher",
+            "type": "string"
+          },
+          "when": {
+            "title": "When",
+            "type": "string"
+          },
+          "where": {
+            "title": "Where",
+            "type": "string"
+          }
+        },
+        "required": [
+          "item_id",
+          "publisher",
+          "figure",
+          "measure",
+          "when",
+          "where",
+          "passage",
+          "figure_in_passage"
+        ],
+        "title": "FactLineView",
+        "type": "object"
+      },
+      "FactView": {
+        "properties": {
+          "agreement": {
+            "enum": [
+              "concordent",
+              "divergent",
+              "partiel",
+              "une source",
+              "absent"
+            ],
+            "title": "Agreement",
+            "type": "string"
+          },
+          "compared": {
+            "items": {
+              "$ref": "#/components/schemas/ComparedView"
+            },
+            "title": "Compared",
+            "type": "array"
+          },
+          "conclusion": {
+            "title": "Conclusion",
+            "type": "string"
+          },
+          "dropped": {
+            "title": "Dropped",
+            "type": "integer"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/FactLineView"
+            },
+            "title": "Lines",
+            "type": "array"
+          },
+          "read": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Read",
+            "type": "array"
+          }
+        },
+        "required": [
+          "lines",
+          "agreement",
+          "compared",
+          "conclusion",
+          "dropped",
+          "read"
+        ],
+        "title": "FactView",
         "type": "object"
       },
       "FailedView": {
@@ -3601,6 +3812,20 @@
         "title": "PurgeResult",
         "type": "object"
       },
+      "QuestionBody": {
+        "properties": {
+          "question": {
+            "maxLength": 1000,
+            "title": "Question",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question"
+        ],
+        "title": "QuestionBody",
+        "type": "object"
+      },
       "RefreshView": {
         "properties": {
           "sources": {
@@ -4409,6 +4634,24 @@
         "title": "TagsBody",
         "type": "object"
       },
+      "TermsBody": {
+        "properties": {
+          "concepts": {
+            "items": {
+              "$ref": "#/components/schemas/ConceptBody"
+            },
+            "maxItems": 4,
+            "minItems": 1,
+            "title": "Concepts",
+            "type": "array"
+          }
+        },
+        "required": [
+          "concepts"
+        ],
+        "title": "TermsBody",
+        "type": "object"
+      },
       "TopicBody": {
         "properties": {
           "description": {
@@ -4688,6 +4931,238 @@
           "read_at"
         ],
         "title": "TriageView",
+        "type": "object"
+      },
+      "TurnCandidateView": {
+        "properties": {
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          },
+          "dated": {
+            "format": "date-time",
+            "title": "Dated",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "judged": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JudgedView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          },
+          "publisher": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publisher"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "summary",
+          "url",
+          "language",
+          "publisher",
+          "country",
+          "dated",
+          "judged"
+        ],
+        "title": "TurnCandidateView",
+        "type": "object"
+      },
+      "TurnView": {
+        "properties": {
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/TurnCandidateView"
+            },
+            "title": "Candidates",
+            "type": "array"
+          },
+          "concepts": {
+            "items": {
+              "$ref": "#/components/schemas/ConceptView"
+            },
+            "title": "Concepts",
+            "type": "array"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "fact": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FactView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "operation": {
+            "anyOf": [
+              {
+                "enum": [
+                  "chercher",
+                  "restreindre",
+                  "élargir",
+                  "trier",
+                  "fait",
+                  "agir"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Operation"
+          },
+          "position": {
+            "title": "Position",
+            "type": "integer"
+          },
+          "question": {
+            "title": "Question",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "done",
+              "failed"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "position",
+          "question",
+          "status",
+          "operation",
+          "language",
+          "concepts",
+          "candidates",
+          "fact",
+          "error",
+          "model",
+          "created_at",
+          "finished_at"
+        ],
+        "title": "TurnView",
         "type": "object"
       },
       "UsageView": {
@@ -10030,6 +10505,282 @@
           }
         },
         "summary": "Refresh"
+      }
+    },
+    "/api/workspaces/{workspace_id}/reporter/conversations": {
+      "get": {
+        "description": "The recent conversations of the user, the newest first.",
+        "operationId": "recent_api_workspaces__workspace_id__reporter_conversations_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ConversationSummaryView"
+                  },
+                  "title": "Response Recent Api Workspaces  Workspace Id  Reporter Conversations Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Recent"
+      },
+      "post": {
+        "description": "Starts a conversation with its first question; the worker answers it.",
+        "operationId": "start_api_workspaces__workspace_id__reporter_conversations_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuestionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Start"
+      }
+    },
+    "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}": {
+      "get": {
+        "operationId": "get_api_workspaces__workspace_id__reporter_conversations__conversation_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conversation Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get"
+      }
+    },
+    "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/turns": {
+      "post": {
+        "description": "A new question; refused while the previous one is being answered.",
+        "operationId": "ask_api_workspaces__workspace_id__reporter_conversations__conversation_id__turns_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conversation Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuestionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TurnView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Ask"
+      }
+    },
+    "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/turns/{turn_id}/terms": {
+      "put": {
+        "description": "The author's terms for the last set: found again at once, without a model.",
+        "operationId": "set_terms_api_workspaces__workspace_id__reporter_conversations__conversation_id__turns__turn_id__terms_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conversation Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "turn_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Turn Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TermsBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TurnView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Terms"
       }
     },
     "/api/workspaces/{workspace_id}/search": {

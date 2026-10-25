@@ -24,6 +24,7 @@ from otlet.writing.domain.draft import (
     asks_dates,
     check_answer,
     cited_keys,
+    dated_headings,
     lone_sections,
     longest_for,
     matter_level,
@@ -319,6 +320,9 @@ class Drafts:
             return
         # A section the model copied is taken out; the details say what was (Joël, 2026-10-25).
         answer = without_repeats(written.text)
+        if dated:
+            # Asked dates the model left out: the date of the source, without a model.
+            answer = dated_headings(answer, sources, fields.language)
         title, document = to_document(answer, sources, fields.language)
         cut = [source.source.title for source in sources if source.cut]
         cited = cited_keys(answer)

@@ -518,6 +518,37 @@ def without_repeats(raw: str) -> str:
     return json.dumps({**data, "sections": sections}, ensure_ascii=False)
 
 
+MONTH_NAMES = {
+    "fr": "janvier février mars avril mai juin juillet août septembre octobre novembre décembre",
+    "nl": "januari februari maart april mei juni juli augustus september oktober november december",
+    "en": "January February March April May June July August September October November December",
+}
+# A month alone, « Octobre 2026 : », at the start of a heading: not a date of the day.
+VAGUE_DATE = re.compile(rf"^\s*({MONTHS})\s+\d{{4}}\s*[:–-]\s*", re.IGNORECASE)
+
+
+def dated_headings(raw: str, sources: list[PromptSource], language: str) -> str:
+    """A checked answer whose headings all start with a date of the day, when the author asked
+    for dates. A heading without one gets the date of publication of the most recent source its
+    paragraphs cite, as the author decided (Joël, 2026-10-25): the date of the event when the
+    sources give it, otherwise that of the source. The V5 of « actualités de piratage » had
+    thirteen headings dated « Octobre 2026 » only: the model, sent back once, wrote the month."""
+    data = json.loads(raw)
+    dates = {s.key: s.source.published_at for s in sources if s.source.published_at is not None}
+    months = MONTH_NAMES.get(language, MONTH_NAMES["fr"]).split()
+    sections = []
+    for section in data["sections"]:
+        heading = str(section["heading"])
+        if not A_DATE.search(heading):
+            cited = [dates[i] for p in section["paragraphs"] for i in p["source_ids"] if i in dates]
+            if cited:
+                day = max(cited)
+                prefix = f"{day.day} {months[day.month - 1]} {day.year}"
+                heading = f"{prefix} : {VAGUE_DATE.sub('', heading)}"
+        sections.append({**section, "heading": heading})
+    return json.dumps({**data, "sections": sections}, ensure_ascii=False)
+
+
 def repeated_paragraphs(raw: str) -> list[str]:
     """The paragraphs of a checked answer that repeat an earlier one, by their first words."""
     data = json.loads(raw)

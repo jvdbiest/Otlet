@@ -14,6 +14,7 @@ from otlet.writing.domain.draft import (
     SourceText,
     asks_dates,
     check_answer,
+    dated_headings,
     lone_sections,
     messages,
     output_schema,
@@ -420,3 +421,16 @@ def test_a_repeated_section_is_taken_out() -> None:
     data["sections"] += [copy, copy]
     cleaned = json.loads(without_repeats(json.dumps(data)))
     assert [s["heading"] for s in cleaned["sections"]] == ["Les annonces", "Mon expérience"]
+
+
+def test_a_heading_without_its_day_gets_the_date_of_its_source() -> None:
+    """V5 of « actualités de piratage »: « Octobre 2026 : … » (Joël, 2026-10-25)."""
+    sources = prompt_sources([source("A", "un texte"), source("B", "un autre texte")], 10_000)
+    data = json.loads(answer())
+    data["sections"][0]["heading"] = "Octobre 2026: Les annonces"
+    data["sections"][1]["heading"] = "19 octobre 2026 : Mon expérience"
+    dated = json.loads(dated_headings(json.dumps(data), sources, "fr"))
+    assert [s["heading"] for s in dated["sections"]] == [
+        "17 octobre 2026 : Les annonces",
+        "19 octobre 2026 : Mon expérience",
+    ]

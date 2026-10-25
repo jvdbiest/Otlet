@@ -94,3 +94,16 @@ def test_a_period_named_is_a_filter() -> None:
     )
     assert translated.days == 7
     assert next_state(State(), translated) == State((concept,), None, 7)
+
+
+def test_a_period_names_no_concept_and_a_named_subject_is_searched() -> None:
+    """« Quel sont les dernières actualités des jeux vidéo cette semaine ? » (Joël, 2026-10-25):
+    a concept « semaine, week », then « jeux vidéo » searched by « console, PC, mobile »."""
+    question = "Quel sont les dernières actualités des jeux vidéo cette semaine ?"
+    week = Concept("semaine", ("semaine", "week"))
+    games = Concept("jeux vidéo", ("nouveau jeu", "console", "PC"))
+    kept = guarded(question, Translated(Operation.CHERCHER, (week, games), None))
+    assert kept.concepts == (Concept("jeux vidéo", ("jeux vidéo", "nouveau jeu", "console", "PC")),)
+    assert kept.days == 7
+    only_week = guarded(question, Translated(Operation.CHERCHER, (week,), None))
+    assert only_week.concepts == () and only_week.days == 7

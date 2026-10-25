@@ -117,6 +117,30 @@ def asked_period(question: str) -> int | None:
     return next((days for words, days in PERIOD_WORDS if f" {words} " in asked), None)
 
 
+PERIOD_TERMS = {
+    "jour",
+    "jours",
+    "aujourd'hui",
+    "semaine",
+    "semaines",
+    "week",
+    "weekend",
+    "week-end",
+    "mois",
+    "hier",
+    "dag",
+    "vandaag",
+    "deze week",
+    "today",
+    "month",
+    "maand",
+}
+
+
+def _of_period(concept: Concept) -> bool:
+    return all(folded(t) in PERIOD_TERMS for t in (concept.name, *concept.terms))
+
+
 def operation_message(history: list[str], state: State, question: str) -> str:
     current = " ; ".join(f"{c.name}: {', '.join(c.terms)}" for c in state.concepts) or "(aucun)"
     return (
@@ -173,20 +197,31 @@ def guarded(question: str, translated: Translated) -> Translated:
     - a concept is kept only when the question names it, by its name or one of its terms;
       when none is named, the first stays, so that a search always has something;
     - a language the question names is a filter, never a concept: « Et en néerlandais ? »
-      restricts the set to Dutch, whatever the model answered."""
+      restricts the set to Dutch, whatever the model answered;
+    - so is a period: its words name no concept (« cette semaine » gave a concept « semaine,
+      week », which found every week-end of the Veille);
+    - a concept the question names by its name searches that name first: « jeux vidéo » came
+      with « console, PC, mobile » and not « jeux vidéo » itself (Joël, 2026-10-25)."""
     asked = f" {folded(question).replace('?', ' ').replace(',', ' ')} "
+    for words_of_period, _ in PERIOD_WORDS:
+        asked = asked.replace(f" {words_of_period} ", " ")
     words = set(asked.split())
 
-    def named(concept: Concept) -> bool:
-        return any(
-            f" {folded(w)} " in asked or folded(w) in words
-            for w in (concept.name, *concept.terms)
-            if len(w) > 2
-        )
+    def said(w: str) -> bool:
+        return len(w) > 2 and (f" {folded(w)} " in asked or folded(w) in words)
 
-    anchored = tuple(c for c in translated.concepts if named(c))
+    def anchored(concept: Concept) -> Concept | None:
+        if not any(said(w) for w in (concept.name, *concept.terms)):
+            return None
+        if said(concept.name) and folded(concept.name) not in {folded(t) for t in concept.terms}:
+            return Concept(concept.name, _clean([concept.name, *concept.terms]))
+        return concept
+
+    kept_concepts = tuple(c for c in map(anchored, translated.concepts) if c is not None)
     period = asked_period(question)
-    kept = replace(translated, concepts=anchored or translated.concepts[:1], days=period)
+    # None named: the first stays, unless it is made of the words of a period.
+    fallback = tuple(c for c in translated.concepts[:1] if not _of_period(c))
+    kept = replace(translated, concepts=kept_concepts or fallback, days=period)
     for code, names in LANGUAGE_WORDS.items():
         if words & set(names):
             return Translated(Operation.RESTREINDRE, (), code, period)

@@ -1238,6 +1238,7 @@
     "back": "Revenir au Reporter",
     "pending": "Je cherche…",
     "failed": "Je n'ai pas pu traduire cette question ({error}). Reformulez-la, ou modifiez les termes de l'ensemble précédent.",
+    "failedRoom": "Votre modèle s'est perdu dans sa réflexion, deux fois, sans traduire la question. Reposez-la : une seconde tentative réussit souvent.",
     "operation": {
       "chercher": "Recherche",
       "restreindre": "Restriction",

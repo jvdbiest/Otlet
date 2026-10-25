@@ -122,7 +122,13 @@ function Turn({
           {t("reporter.pending")}
         </p>
       )}
-      {turn.status === "failed" && <p className={styles.warning}>{t("reporter.failed", { error: turn.error ?? "" })}</p>}
+      {turn.status === "failed" && (
+        <p className={styles.warning}>
+          {turn.error?.includes("out_of_room") === true
+            ? t("reporter.failedRoom")
+            : t("reporter.failed", { error: turn.error ?? "" })}
+        </p>
+      )}
       {turn.status === "done" && (
         <>
           <p className={styles.meta}>

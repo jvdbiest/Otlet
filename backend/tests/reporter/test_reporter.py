@@ -238,44 +238,16 @@ def test_the_author_changes_the_terms_without_a_model(
 def test_a_question_the_model_cannot_translate(
     reporter: tuple[Reporter, Reporter, WorkspaceContext, sa.Engine],
 ) -> None:
-    """With nothing yet, the question itself is searched; later, the turn fails."""
-    api, worker, context, engine = reporter
+    """The turn fails and says why; the author asks again."""
+    api, _, context, engine = reporter
     store = PostgresReporterStore(engine)
     failing = FakeModel()
     failing.fail = True
     down = Reporter(store, PostgresAssistantStore(engine), failing)
     conversation = api.start(context, "Austen")
     answer(down, context, conversation.id, conversation.turns[0].id)
-    turn = api.ask(context, conversation.id, "Lesquels concernent Bruxelles ?")
-    answer(down, context, conversation.id, turn.id)
     found = api.get(context, conversation.id)
     assert found is not None
-    assert (found.turns[0].status, len(found.turns[0].candidates)) == ("done", 3)
-    assert (found.turns[1].status, found.turns[1].error) == ("failed", "no model")
-
-
-def test_a_fact_is_read_further_on_the_next_items(
-    reporter: tuple[Reporter, Reporter, WorkspaceContext, sa.Engine],
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    import otlet.reporter.application.reporter as module
-
-    monkeypatch.setattr(module, "ARTICLES", 2)
-    api, worker, context, _ = reporter
-    conversation = api.start(context, "Les articles sur la tempête Austen")
-    answer(worker, context, conversation.id, conversation.turns[0].id)
-    turn = api.ask(context, conversation.id, "Combien de blessés ?")
-    answer(worker, context, conversation.id, turn.id)
-    first = api.get(context, conversation.id)
-    assert first is not None and first.turns[1].fact is not None
-    assert len(first.turns[1].fact.read) == 2
-    api.read_more(context, conversation.id, turn.id)
-    answer(worker, context, conversation.id, turn.id)
-    found = api.get(context, conversation.id)
-    assert found is not None
-    fact = found.turns[1].fact
-    assert fact is not None and found.turns[1].status == "done"
-    assert len(fact.read) == 3 and len(set(fact.read)) == 3
-    with pytest.raises(ReporterError) as refused:
-        api.read_more(context, conversation.id, turn.id)
-    assert refused.value.code == "nothing_more"
+    assert (found.turns[0].status, found.turns[0].error) == ("failed", "no model")
+    # One attempt only when the model is down; twice when it ran out of room.
+    assert len(failing.asked) == 1

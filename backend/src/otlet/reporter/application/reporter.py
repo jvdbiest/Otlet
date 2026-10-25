@@ -58,7 +58,6 @@ from otlet.reporter.domain.questions import (
     TERMS_MAX,
     Operation,
     State,
-    Translated,
     changes_set,
     check_operation,
     guarded,
@@ -255,23 +254,26 @@ class Reporter:
         errors: list[str] = []
         state = previous.state if previous else State()
 
-        raw = self._ask(
-            user_id,
-            OPERATION_SYSTEM,
-            operation_message(history, state, turn.question),
-            OPERATION_SCHEMA,
-            check_operation,
-            OPERATION_OUTPUT_TOKENS,
-            (attempts, models, errors),
-        )
+        raw = None
+        # A thinking model may spend its whole answer reasoning (« out_of_room »): asked again,
+        # the same question was answered in 33 s (Joël, 2026-10-25). Once more, then no more.
+        for _ in range(2):
+            raw = self._ask(
+                user_id,
+                OPERATION_SYSTEM,
+                operation_message(history, state, turn.question),
+                OPERATION_SCHEMA,
+                check_operation,
+                OPERATION_OUTPUT_TOKENS,
+                (attempts, models, errors),
+            )
+            if raw is not None or not any("out_of_room" in e for e in errors):
+                break
         if raw is not None:
             translated = guarded(turn.question, read_operation(raw))
-        elif not state.concepts:
-            # No model, nothing yet: the question itself is the one term of a search.
-            translated = Translated(
-                Operation.CHERCHER, (Concept(turn.question, (turn.question,)),), None
-            )
         else:
+            # The question itself was searched as one term before: it found nothing, and said
+            # nothing of why. The turn fails, and says so.
             self._store.save_turn(
                 workspace_id,
                 conversation_id,

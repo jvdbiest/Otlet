@@ -140,3 +140,20 @@ def test_the_same_story_twice_gives_one_line() -> None:
         }
     )
     assert len(read_fact(raw, articles, []).lines) == 1
+
+
+def test_a_minimum_and_a_maximum_are_not_compared() -> None:
+    """The weather of Sunday: 9 °C minimum and 14 °C maximum do not diverge."""
+    agreement, compared = concordance(
+        [
+            line("La DH", "9°C", "température minimale", "dimanche", "Belgique"),
+            line("La Libre", "14°C", "température maximale", "dimanche", "Belgique"),
+            line("La Libre", "60 km/h", "rafales de vent", "dimanche", "Belgique"),
+            line("La DH", "60 km/h", "rafales de vent", "dimanche", "Belgique"),
+        ],
+        [],
+    )
+    assert (agreement, [(c.first, c.second, c.same) for c in compared]) == (
+        Agreement.CONCORDENT,
+        [(2, 3, True)],
+    )

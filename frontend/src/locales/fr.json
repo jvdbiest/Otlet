@@ -1250,6 +1250,7 @@
     "showSet": "Afficher les articles",
     "hideSet": "Replier les articles",
     "emptySet": "Aucun article ne contient à la fois un terme de chaque groupe. Modifiez les termes, ou ajoutez les formes courtes au glossaire.",
+    "broad": "{max} articles au moins : la question est large, et seuls les mieux classés sont gardés. Restreignez-la (un lieu, une personne, une langue), ou retirez les termes trop généraux avec « Modifier les termes ».",
     "editTerms": "Modifier les termes",
     "search": "Chercher avec ces termes",
     "cancel": "Annuler",

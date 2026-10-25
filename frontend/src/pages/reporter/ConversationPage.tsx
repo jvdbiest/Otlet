@@ -18,6 +18,8 @@ import { styles } from "../watch/styles.ts";
 
 const BRIEF_MAX = 20;
 const SHOWN_AT_ONCE = 8;
+// The largest set the Reporter keeps (reporter.SET_MAX): reached, the question is too broad.
+const SET_MAX = 200;
 const CHANGES_SET: readonly string[] = ["chercher", "restreindre", "élargir"];
 
 /** A conversation of the Reporter (ADR-0044): each question and its answer, a set of items or
@@ -295,6 +297,7 @@ function ItemSet({ turn, title, last }: { turn: TurnView; title: string; last: b
         </p>
       )}
       {turn.candidates.length === 0 && <p className={styles.notice}>{t("reporter.emptySet")}</p>}
+      {turn.candidates.length >= SET_MAX && <p className={styles.notice}>{t("reporter.broad", { max: SET_MAX })}</p>}
       {open && <Items candidates={sorted ? [...kept, ...turn.candidates.filter((c) => !kept.includes(c))] : turn.candidates} />}
       {last && chosen.length > 0 && (
         <p className={styles.row}>

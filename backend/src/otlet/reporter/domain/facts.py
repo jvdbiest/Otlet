@@ -227,8 +227,8 @@ def concordance(
 ) -> tuple[Agreement, list[Compared]]:
     """The agreement of the sources, from the lines, without a model (ADR-0044 §6).
 
-    Two lines of different sources are compared when they measure the same thing (a word of
-    their measure in common), at the same moment (one « quand » holds the other) and at the
+    Two lines of different sources are compared when they measure the same thing (the words of
+    one measure all in the other), at the same moment (one « quand » holds the other) and at the
     same place (the same « où » once the glossary has made Brussel and Bruxelles one; a
     narrower place, « centre de Bruxelles », is a part and is not compared). « Non précisé »
     matches anything; a figure that is the moment itself (a date asked for) does not compare
@@ -245,6 +245,12 @@ def concordance(
     def words(text: str) -> set[str]:
         return {w for w in re.findall(r"\w+", folded(text)) if len(w) > 3 and w not in MEASURE_STOP}
 
+    def same_measure(first: set[str], second: set[str]) -> bool:
+        # The words of one measure all in the other: « blessés » and « gewonden (blessés) » are
+        # the same measure; « température minimale » and « température maximale » are not
+        # (Joël's question on the weather, 2026-10-25: 9 °C and 14 °C were said to diverge).
+        return bool(first and second) and (first <= second or second <= first)
+
     def moment(line: FactLine) -> str:
         return "" if folded(line.when) == folded(line.figure) else folded(line.when)
 
@@ -259,7 +265,7 @@ def concordance(
     for i, a in enumerate(lines):
         for j in range(i + 1, len(lines)):
             b = lines[j]
-            if a.publisher == b.publisher or not words(a.measure) & words(b.measure):
+            if a.publisher == b.publisher or not same_measure(words(a.measure), words(b.measure)):
                 continue
             ta, tb = moment(a), moment(b)
             if not (ta in UNSPECIFIED or tb in UNSPECIFIED or ta in tb or tb in ta):

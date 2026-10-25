@@ -124,3 +124,19 @@ def test_numbers_in_words_are_figures() -> None:
 def test_a_fact_reads_first_the_items_that_hold_the_question() -> None:
     texts = ["Tempête Austen : les dégâts", "L'alerte orange commence vendredi midi", "Austen"]
     assert reading_order("Quand l'alerte orange a-t-elle commencé ?", texts) == [1, 0, 2]
+
+
+def test_the_same_story_twice_gives_one_line() -> None:
+    passage = "Le département entrera en alerte orange à 21 heures."
+    articles = [Article("a1", "Le Monde", passage), Article("a2", "Le Monde", passage)]
+    row = {"chiffre": "21 heures", "mesure": "alerte", "quand": "samedi", "ou": "Pas-de-Calais"}
+    raw = json.dumps(
+        {
+            "lignes": [
+                {**row, "article": 1, "extrait": passage},
+                {**row, "article": 2, "extrait": passage},
+            ],
+            "conclusion": "",
+        }
+    )
+    assert len(read_fact(raw, articles, []).lines) == 1

@@ -187,6 +187,15 @@ def read_fact(raw: str, articles: list[Article], glossary: list[GlossaryEntry]) 
             dropped += 1
             continue
         figure = str(row.get("chiffre", ""))
+        # A publisher that ran the same story twice gives one line, not two (Le Monde updates
+        # its live pages under new addresses: three times the same « 21 heures » on the bench).
+        if any(
+            line.publisher == article.publisher
+            and folded(line.figure) == folded(figure)
+            and folded(line.passage) == folded(passage)
+            for line in lines
+        ):
+            continue
         digits = _digits(figure)
         lines.append(
             FactLine(

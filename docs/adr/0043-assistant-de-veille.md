@@ -43,6 +43,7 @@ Les termes élargis par le modèle seul échouent sur les sujets belges (zéro r
    - **A1b-1** : sujet, concepts et termes, glossaire, recherche, dossier, tri, vers le brief ;
    - **A1b-2** (après usage) : thèmes et angles proposés, brouillon de brief complet, entrées depuis Veille › Éléments et Sujets ;
    - le banc est rejoué à chaque changement du prompt de tri, avec les mêmes seuils : au moins 20 points de rappel sur la recherche actuelle, moins de 10 % de pertinents écartés, trois néerlandais sur quatre retrouvés, aucune raison inventée.
+10. **Une règle sans modèle remplace une décision du modèle dès qu'elle est explicable, vérifiable et réutilisable** (Joël, 25 octobre 2026, après les bancs A1b et A2, où les garde-fous sans modèle ont fait l'essentiel du progrès). Le modèle propose ; une règle écrite décide quand elle le peut, et l'auteur voit pourquoi. Sont déjà ainsi : les termes trop généraux mis de côté, le pays de l'éditeur, un concept gardé seulement si la question le nomme, une langue demandée prise comme filtre, une ligne de fait gardée seulement si son extrait est dans l'article, et la concordance entre sources, calculée à partir des lignes (même mesure, même moment, même lieu : mêmes chiffres, elles concordent ; chiffres différents, elles divergent et l'auteur consulte les sources).
 
 ## Conséquences
 

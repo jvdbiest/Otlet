@@ -34,3 +34,4 @@ X05,I4,X,"Réglages essentiels : fournisseurs et modèles de l'utilisateur, budg
 P03,I4,P,"Mémoire de la pile complète avec potion sur la référence basse (S5b, ADR-0025)",3,"Mesure rapportée ; décision si au-delà de 3,4 Go",a_faire
 P04,I4,P,"Installation chronométrée sur machine vierge (critère 6 d'É0, décision D2)",3,"Durée mesurée et rapportée",a_faire
 P05,I4,P,"Évaluation courte d'un agent local consultatif (veille, sources, sujets, aide à la rédaction)",6,"Note d'évaluation remise à Joël",a_faire
+A2,I4,U,"Reporter : interroger la Veille ou un dossier par conversation ; chaque réponse est un ensemble d'éléments cliquable (filtre sans modèle quand c'est possible), et chaque chiffre est cité par source, sans addition non vérifiée (idée de Joël du 2026-10-25)",0,"Conception après l'usage d'A1b-1 ; décision de Joël",a_concevoir

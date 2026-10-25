@@ -41,6 +41,7 @@ from otlet.entrypoints.api import (
     backups,
     collection,
     media,
+    reporter,
     triage,
     watch,
     workspaces,
@@ -57,6 +58,8 @@ from otlet.media.application.library import MediaLibrary
 from otlet.platform import database
 from otlet.platform.config import Settings
 from otlet.platform.http import SafeClient
+from otlet.reporter.adapters.postgres import PostgresReporterStore
+from otlet.reporter.application.reporter import Reporter
 from otlet.watch.adapters.postgres import PostgresWatchStore
 from otlet.watch.adapters.triage_postgres import PostgresTriageStore
 from otlet.watch.application.triage import Change, Feed
@@ -197,6 +200,9 @@ def create_app(settings: Settings) -> FastAPI:
             Dossiers(assistant_store, assistant_store),
             workspace_context,
         )
+        reporter_router = reporter.build_router(
+            Reporter(PostgresReporterStore(engine, enqueue), assistant_store), workspace_context
+        )
         ai_router = ai.build_router(
             ai_settings,
             Budget(PostgresBudget(engine)),
@@ -228,6 +234,7 @@ def create_app(settings: Settings) -> FastAPI:
             writing_router,
             media_router,
             assistant_router,
+            reporter_router,
         ]
         for router in routers:
             app.include_router(router)

@@ -14,6 +14,7 @@ const styles = css as Record<
 
 const SECTIONS = [
   { to: "/veille", label: "nav.watch" },
+  { to: "/reporter", label: "nav.reporter" },
   { to: "/redaction", label: "nav.writing" },
   { to: "/bibliotheque", label: "nav.library" },
   { to: "/reglages", label: "nav.settings" },

@@ -1,0 +1,409 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+"""The conversations of the Reporter (A2-1, ADR-0044).
+
+A question is recorded by the API and answered by the worker, the only process that opens the
+keys of providers (DR6). The model translates the question into an operation; rules without a
+model keep it to what the question says; the set follows from the concepts and the language,
+found by the engine of the Assistant de veille (glossary, terms too general set aside). A
+question of fact is answered from the set by lines cited by source, and the agreement of the
+sources is computed. A sort uses the sort of the Assistant; nothing leaves the set.
+"""
+
+from collections.abc import Callable
+from dataclasses import dataclass, field, replace
+from datetime import UTC, datetime, timedelta
+from typing import Any, Protocol
+from uuid import UUID
+
+from otlet.assistant.application.assistant import AssistantStore, Candidate
+from otlet.assistant.application.dossiers import Model
+from otlet.assistant.domain.qualify import (
+    BATCH,
+    NO_SUMMARY,
+    NOT_JUDGED,
+    QUALIFY_SCHEMA,
+    QUALIFY_SYSTEM,
+    Judged,
+    Line,
+    check_qualify,
+    qualify_message,
+    read_qualify,
+)
+from otlet.assistant.domain.terms import (
+    Concept,
+    TermsError,
+    Widened,
+    publisher_country,
+    too_general,
+    widen,
+)
+from otlet.reporter.domain.facts import (
+    ARTICLES,
+    FACT_SCHEMA,
+    FACT_SYSTEM,
+    Article,
+    Fact,
+    check_fact,
+    fact_message,
+    read_fact,
+)
+from otlet.reporter.domain.questions import (
+    CONCEPTS_MAX,
+    OPERATION_SCHEMA,
+    OPERATION_SYSTEM,
+    PROMPT_VERSION,
+    QUESTION_MAX_LENGTH,
+    TERMS_MAX,
+    Operation,
+    State,
+    Translated,
+    changes_set,
+    check_operation,
+    guarded,
+    next_state,
+    operation_message,
+    read_operation,
+)
+from otlet.workspaces.domain.model import WorkspaceContext
+
+ANSWER_TURN = "reporter.answer_turn"
+SET_MAX = 200
+DAYS = 30
+OPERATION_OUTPUT_TOKENS = 4096
+FACT_OUTPUT_TOKENS = 8192
+QUALIFY_OUTPUT_TOKENS = 8192
+
+
+class ReporterError(Exception):
+    """A rule of the Reporter was not met; `code` is stable."""
+
+    def __init__(self, code: str, message: str) -> None:
+        super().__init__(message)
+        self.code = code
+
+
+@dataclass(frozen=True, slots=True)
+class Turn:
+    id: UUID
+    position: int
+    question: str
+    status: str  # pending, done, failed
+    operation: Operation | None = None
+    # The concepts and language the conversation holds after this turn (State), and the
+    # concepts as searched: widened by the glossary, general terms set aside.
+    state: State = State()
+    concepts: list[Widened] = field(default_factory=list)
+    term_counts: dict[str, int] = field(default_factory=dict)
+    candidates: list[Candidate] = field(default_factory=list)
+    fact: Fact | None = None
+    verdicts: dict[UUID, Judged] = field(default_factory=dict)
+    error: str | None = None
+    model: str | None = None
+    prompt_version: str = PROMPT_VERSION
+    attempts: list[dict[str, Any]] = field(default_factory=list)
+    created_at: datetime | None = None
+    finished_at: datetime | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class Conversation:
+    id: UUID
+    title: str
+    days: int | None
+    created_at: datetime | None = None
+    turns: list[Turn] = field(default_factory=list)
+
+
+class ReporterStore(Protocol):
+    def start_conversation(
+        self, workspace_id: UUID, user_id: UUID, title: str, days: int | None
+    ) -> Conversation: ...
+
+    def conversations(self, workspace_id: UUID, user_id: UUID, limit: int) -> list[Conversation]:
+        """The recent conversations of the author, without their turns."""
+        ...
+
+    def conversation(self, workspace_id: UUID, conversation_id: UUID) -> Conversation | None: ...
+
+    def add_turn(
+        self, workspace_id: UUID, user_id: UUID, conversation_id: UUID, question: str
+    ) -> Turn:
+        """Records the question, pending, and enqueues ANSWER_TURN, in one transaction."""
+        ...
+
+    def save_turn(self, workspace_id: UUID, conversation_id: UUID, turn: Turn) -> None: ...
+
+    def articles(self, workspace_id: UUID, item_ids: list[UUID]) -> list[Article]:
+        """The text of the items, in the order given (title first)."""
+        ...
+
+
+def _checked_question(question: str) -> str:
+    question = " ".join(question.split())
+    if not 1 <= len(question) <= QUESTION_MAX_LENGTH:
+        raise ReporterError(
+            "invalid_question", f"a question has 1 to {QUESTION_MAX_LENGTH} characters"
+        )
+    return question
+
+
+class Reporter:
+    def __init__(
+        self,
+        store: ReporterStore,
+        search: AssistantStore,
+        model: Model | None = None,
+        now: Callable[[], datetime] = lambda: datetime.now(UTC),
+    ) -> None:
+        self._store = store
+        self._search = search
+        self._model = model
+        self._now = now
+
+    # The API --------------------------------------------------------------------------------
+
+    def start(self, context: WorkspaceContext, question: str) -> Conversation:
+        question = _checked_question(question)
+        conversation = self._store.start_conversation(
+            context.workspace_id, context.user_id, question[:200], DAYS
+        )
+        turn = self._store.add_turn(
+            context.workspace_id, context.user_id, conversation.id, question
+        )
+        return replace(conversation, turns=[turn])
+
+    def ask(self, context: WorkspaceContext, conversation_id: UUID, question: str) -> Turn:
+        question = _checked_question(question)
+        conversation = self._store.conversation(context.workspace_id, conversation_id)
+        if conversation is None:
+            raise ReporterError("not_found", "no such conversation")
+        if any(turn.status == "pending" for turn in conversation.turns):
+            # A question reads the set the previous one leaves: one at a time.
+            raise ReporterError("turn_pending", "the previous question is still being answered")
+        return self._store.add_turn(
+            context.workspace_id, context.user_id, conversation_id, question
+        )
+
+    def get(self, context: WorkspaceContext, conversation_id: UUID) -> Conversation | None:
+        return self._store.conversation(context.workspace_id, conversation_id)
+
+    def recent(self, context: WorkspaceContext, limit: int = 30) -> list[Conversation]:
+        return self._store.conversations(context.workspace_id, context.user_id, limit)
+
+    def set_terms(
+        self,
+        context: WorkspaceContext,
+        conversation_id: UUID,
+        turn_id: UUID,
+        concepts: list[Concept],
+    ) -> Turn:
+        """The author's terms for the last set of the conversation; the set is found again,
+        without a model (the terms stay visible and editable, ADR-0044 §3)."""
+        conversation = self._store.conversation(context.workspace_id, conversation_id)
+        if conversation is None or not conversation.turns:
+            raise ReporterError("not_found", "no such conversation")
+        last = conversation.turns[-1]
+        if last.id != turn_id or last.status != "done" or not last.state.concepts:
+            raise ReporterError("not_editable", "only the terms of the last set can be changed")
+        state = State(_checked(concepts), last.state.language)
+        turn = self._found(context.workspace_id, conversation, last, state)
+        self._store.save_turn(context.workspace_id, conversation_id, turn)
+        return turn
+
+    # The worker -----------------------------------------------------------------------------
+
+    def run(self, workspace_id: UUID, user_id: UUID, conversation_id: UUID, turn_id: UUID) -> None:
+        if self._model is None:
+            raise RuntimeError("the model is only reached from the worker")
+        conversation = self._store.conversation(workspace_id, conversation_id)
+        if conversation is None:
+            return
+        position = next((n for n, t in enumerate(conversation.turns) if t.id == turn_id), None)
+        if position is None or conversation.turns[position].status != "pending":
+            return
+        turn = conversation.turns[position]
+        earlier = [t for t in conversation.turns[:position] if t.status == "done"]
+        previous = earlier[-1] if earlier else None
+        history = [t.question for t in conversation.turns[:position]]
+        attempts: list[dict[str, Any]] = []
+        models: list[str] = []
+        errors: list[str] = []
+        state = previous.state if previous else State()
+
+        raw = self._ask(
+            user_id,
+            OPERATION_SYSTEM,
+            operation_message(history, state, turn.question),
+            OPERATION_SCHEMA,
+            check_operation,
+            OPERATION_OUTPUT_TOKENS,
+            (attempts, models, errors),
+        )
+        if raw is not None:
+            translated = guarded(turn.question, read_operation(raw))
+        elif not state.concepts:
+            # No model, nothing yet: the question itself is the one term of a search.
+            translated = Translated(
+                Operation.CHERCHER, (Concept(turn.question, (turn.question,)),), None
+            )
+        else:
+            self._store.save_turn(
+                workspace_id,
+                conversation_id,
+                replace(
+                    turn,
+                    status="failed",
+                    state=state,
+                    error="; ".join(dict.fromkeys(errors)) or "no answer",
+                    attempts=attempts,
+                    finished_at=self._now(),
+                ),
+            )
+            return
+
+        new_state = next_state(state, translated)
+        done = replace(turn, operation=translated.operation, attempts=attempts)
+        if changes_set(translated.operation) or previous is None:
+            done = self._found(workspace_id, conversation, done, new_state)
+        else:
+            done = replace(
+                done,
+                state=previous.state,
+                concepts=previous.concepts,
+                term_counts=previous.term_counts,
+                candidates=previous.candidates,
+            )
+        if translated.operation is Operation.FAIT and done.candidates:
+            fact = self._fact(workspace_id, user_id, history, done, (attempts, models, errors))
+            done = replace(done, fact=fact)
+        elif translated.operation is Operation.TRIER and done.candidates:
+            subject = " ".join(c.concept.name for c in done.concepts) or turn.question
+            verdicts = self._sort(user_id, subject, done.candidates, (attempts, models, errors))
+            done = replace(done, verdicts=verdicts)
+        self._store.save_turn(
+            workspace_id,
+            conversation_id,
+            replace(
+                done,
+                status="done",
+                error="; ".join(dict.fromkeys(errors)) or None,
+                model=", ".join(dict.fromkeys(models)) or None,
+                attempts=attempts,
+                finished_at=self._now(),
+            ),
+        )
+
+    # Inside ---------------------------------------------------------------------------------
+
+    def _found(
+        self, workspace_id: UUID, conversation: Conversation, turn: Turn, state: State
+    ) -> Turn:
+        """The set of the state: concepts widened by the glossary, general terms set aside,
+        items holding a term of every concept, in the language asked. No model."""
+        if not state.concepts:
+            return replace(turn, state=state, concepts=[], term_counts={}, candidates=[])
+        glossary = [stored.entry for stored in self._search.glossary(workspace_id)]
+        since = (
+            None if conversation.days is None else self._now() - timedelta(days=conversation.days)
+        )
+        widened = widen(list(state.concepts), glossary)
+        counts = self._search.term_counts(
+            workspace_id, [term for w in widened for term in w.all_terms], since
+        )
+        widened = too_general(widened, counts, self._search.total_items(workspace_id, since))
+        found = self._search.candidates(workspace_id, widened, since, SET_MAX)
+        if state.language:
+            found = [c for c in found if (c.language or "").startswith(state.language)]
+        return replace(turn, state=state, concepts=widened, term_counts=counts, candidates=found)
+
+    def _fact(
+        self,
+        workspace_id: UUID,
+        user_id: UUID,
+        history: list[str],
+        turn: Turn,
+        log: tuple[list[dict[str, Any]], list[str], list[str]],
+    ) -> Fact | None:
+        articles = self._store.articles(workspace_id, [c.id for c in turn.candidates[:ARTICLES]])
+        raw = self._ask(
+            user_id,
+            FACT_SYSTEM,
+            fact_message(history, turn.question, articles),
+            FACT_SCHEMA,
+            check_fact,
+            FACT_OUTPUT_TOKENS,
+            log,
+        )
+        if raw is None:
+            return None
+        glossary = [stored.entry for stored in self._search.glossary(workspace_id)]
+        return read_fact(raw, articles, glossary)
+
+    def _sort(
+        self,
+        user_id: UUID,
+        subject: str,
+        candidates: list[Candidate],
+        log: tuple[list[dict[str, Any]], list[str], list[str]],
+    ) -> dict[UUID, Judged]:
+        """The sort of the Assistant de veille (ADR-0043 §5): nothing is excluded."""
+        verdicts: dict[UUID, Judged] = {}
+        sent = []
+        for candidate in candidates:
+            if candidate.summary.strip():
+                sent.append(candidate)
+            else:
+                verdicts[candidate.id] = NO_SUMMARY
+        for start in range(0, len(sent), BATCH):
+            batch = sent[start : start + BATCH]
+            lines = [
+                Line(c.title, c.summary, c.language, c.publisher, publisher_country(c.url))
+                for c in batch
+            ]
+            raw = self._ask(
+                user_id,
+                QUALIFY_SYSTEM,
+                qualify_message(subject, "", lines),
+                QUALIFY_SCHEMA,
+                check_qualify,
+                QUALIFY_OUTPUT_TOKENS,
+                log,
+            )
+            judged = read_qualify(raw, len(batch)) if raw is not None else {}
+            for n, candidate in enumerate(batch, 1):
+                verdicts[candidate.id] = judged.get(n, NOT_JUDGED)
+        return verdicts
+
+    def _ask(
+        self,
+        user_id: UUID,
+        system: str,
+        user: str,
+        schema: dict[str, Any],
+        validate: Callable[[str], list[str]],
+        max_output_tokens: int,
+        log: tuple[list[dict[str, Any]], list[str], list[str]],
+    ) -> str | None:
+        if self._model is None:
+            raise RuntimeError("the model is only reached from the worker")
+        attempts, models, errors = log
+        asked = self._model.ask(user_id, system, user, schema, validate, max_output_tokens)
+        attempts.extend(asked.attempts)
+        if asked.model:
+            models.append(asked.model)
+        if asked.text is None:
+            errors.append(asked.error or "no answer")
+        return asked.text
+
+
+def _checked(concepts: list[Concept]) -> tuple[Concept, ...]:
+    """The author's concepts: one to four, each with one to twenty terms."""
+    out = []
+    for concept in concepts:
+        terms = tuple(dict.fromkeys(" ".join(t.split()) for t in concept.terms if t.strip()))
+        if not 1 <= len(terms) <= TERMS_MAX:
+            raise TermsError("invalid_terms", f"a concept has 1 to {TERMS_MAX} terms")
+        out.append(Concept(" ".join(concept.name.split()) or terms[0], terms))
+    if not 1 <= len(out) <= CONCEPTS_MAX:
+        raise TermsError("invalid_concepts", f"a set has 1 to {CONCEPTS_MAX} concepts")
+    return tuple(out)

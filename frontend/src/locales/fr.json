@@ -19,6 +19,7 @@
   "nav": {
     "label": "Navigation principale",
     "watch": "Veille",
+    "reporter": "Reporter",
     "writing": "Rédaction",
     "library": "Bibliothèque",
     "settings": "Réglages"
@@ -253,7 +254,12 @@
     "declarations_disabled": "L'administrateur de cette instance n'autorise pas les déclarations de droits.",
     "declaration_not_found": "Aucune déclaration en cours sur cet élément.",
     "already_declared": "Un accord est déjà déclaré pour cette source.",
-    "ended": "La date de fin est déjà passée."
+    "ended": "La date de fin est déjà passée.",
+    "turn_pending": "La question précédente est encore en cours : attendez sa réponse.",
+    "invalid_question": "Une question compte entre 1 et 500 caractères.",
+    "conversation_not_found": "Cette conversation n'existe plus.",
+    "not_editable": "Seuls les termes du dernier ensemble peuvent être modifiés.",
+    "invalid_concepts": "Un ensemble compte entre 1 et 4 groupes de termes."
   },
   "manual": {
     "title": "Ajouter à la main",
@@ -1218,5 +1224,61 @@
       "add": "Ajouter",
       "delete": "Supprimer « {terms} »"
     }
+  },
+  "reporter": {
+    "title": "Reporter",
+    "intro": "Interrogez votre Veille comme un documentaliste : chaque réponse est un ensemble d'articles que vous ouvrez, ou des chiffres cités source par source. Votre modèle comprend la question ; Otlet cherche, vérifie et compare sans lui.",
+    "examples": "Par exemple : « Les articles sur la tempête Austen », puis « Lesquels concernent Bruxelles ? », « Et en néerlandais ? », « Combien de blessés ? »",
+    "question": "Votre question",
+    "ask": "Demander",
+    "start": "Commencer",
+    "recent": "Vos conversations récentes",
+    "none": "Aucune conversation pour l'instant.",
+    "back": "Revenir au Reporter",
+    "pending": "Je cherche…",
+    "failed": "Je n'ai pas pu traduire cette question ({error}). Reformulez-la, ou modifiez les termes de l'ensemble précédent.",
+    "operation": {
+      "chercher": "Recherche",
+      "restreindre": "Restriction",
+      "élargir": "Élargissement",
+      "trier": "Tri",
+      "fait": "Fait",
+      "agir": "Action"
+    },
+    "language": "en {language, select, fr {français} nl {néerlandais} en {anglais} other {{language}}} seulement",
+    "set": "{count, plural, =0 {aucun article} one {# article} other {# articles}}",
+    "showSet": "Afficher les articles",
+    "hideSet": "Replier les articles",
+    "emptySet": "Aucun article ne contient à la fois un terme de chaque groupe. Modifiez les termes, ou ajoutez les formes courtes au glossaire.",
+    "editTerms": "Modifier les termes",
+    "search": "Chercher avec ces termes",
+    "cancel": "Annuler",
+    "fact": {
+      "title": "{count, plural, one {Réponse de fait, d'après # article lu} other {Réponse de fait, d'après les # articles lus}}",
+      "source": "Source",
+      "figure": "Chiffre",
+      "measure": "Ce qu'il mesure",
+      "when": "Quand",
+      "where": "Où",
+      "passage": "Extrait",
+      "outside": "Le chiffre n'est pas dans l'extrait : à vérifier dans l'article.",
+      "none": "Je ne trouve pas de réponse dans les articles lus.",
+      "dropped": "{count, plural, one {# ligne du modèle écartée : son extrait n'est pas dans l'article.} other {# lignes du modèle écartées : leur extrait n'est pas dans l'article.}}",
+      "conclusion": "Selon le modèle : {text}",
+      "noModel": "Le modèle n'a pas répondu ({error}).",
+      "same": "même chiffre",
+      "different": "chiffres différents",
+      "agreement": {
+        "concordent": "Les sources concordent",
+        "divergent": "Les sources divergent : consultez-les",
+        "partiel": "Chiffres de mesures différentes, rien à comparer",
+        "une source": "Une seule source",
+        "absent": "Aucune source ne répond"
+      },
+      "agreementHelp": "Calculé par Otlet, pas par le modèle : deux lignes de sources différentes sont comparées quand elles mesurent la même chose, au même moment et au même lieu."
+    },
+    "sorted": "{kept} retenus · {check} à vérifier · {aside} écartés, selon votre modèle",
+    "toBrief": "{count, plural, one {Préparer un brief avec # article} other {Préparer un brief avec les # premiers articles}}",
+    "model": "Modèle : {model}"
   }
 }

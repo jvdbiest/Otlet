@@ -16,6 +16,8 @@ import { LibraryPage } from "./pages/library/LibraryPage.tsx";
 import { MediaPage } from "./pages/library/MediaPage.tsx";
 import { LoginPage } from "./pages/LoginPage.tsx";
 import { NotFoundPage } from "./pages/NotFoundPage.tsx";
+import { ConversationPage } from "./pages/reporter/ConversationPage.tsx";
+import { ReporterPage } from "./pages/reporter/ReporterPage.tsx";
 import { ItemPage } from "./pages/watch/ItemPage.tsx";
 import { AssistantPage } from "./pages/watch/AssistantPage.tsx";
 import { DossierPage } from "./pages/watch/DossierPage.tsx";
@@ -178,6 +180,16 @@ const itemRoute = createRoute({
   },
 });
 
+// The Reporter (A2-1, ADR-0044): the Veille questioned by conversation.
+const reporterRoute = createRoute({ getParentRoute: () => appRoute, path: "/reporter", component: ReporterPage });
+const conversationRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/reporter/$conversationId",
+  component: function Conversation() {
+    return <ConversationPage conversationId={conversationRoute.useParams().conversationId} />;
+  },
+});
+
 const routeTree = rootRoute.addChildren([
   loginRoute,
   appRoute.addChildren([
@@ -192,6 +204,8 @@ const routeTree = rootRoute.addChildren([
       manualRoute,
       itemRoute,
     ]),
+    reporterRoute,
+    conversationRoute,
     briefsRoute,
     newBriefRoute,
     briefRoute,

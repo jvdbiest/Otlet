@@ -51,3 +51,4 @@ La numérotation continue celle de l'architecture.
 | [0041](0041-evaluateur-documentaire.md) | Évaluateur documentaire : juger la matière d'un brief sur cinq critères | Accepté (A1a) |
 | [0042](0042-sauvegarde-et-restauration.md) | Sauvegarde et restauration : un dossier choisi, des copies complètes, restaurer sans écraser | Accepté (F08) |
 | [0043](0043-assistant-de-veille.md) | Assistant de veille : le glossaire trouve, le modèle ordonne | Accepté (A1b-1) |
+| [0044](0044-reporter.md) | Reporter : un assistant documentaire progressif | Accepté (A2) |

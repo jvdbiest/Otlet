@@ -245,7 +245,9 @@ class Dossiers:
         raw = self._ask(
             user_id,
             EXPAND_SYSTEM,
-            subject_message(dossier.subject, dossier.angle),
+            # The subject alone: the angle orients the sort, it never narrows the search
+            # (a concept « Belgique » set aside every item that does not write it).
+            subject_message(dossier.subject, ""),
             EXPAND_SCHEMA,
             check_expand,
             600,

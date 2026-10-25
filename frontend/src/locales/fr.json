@@ -60,7 +60,8 @@
       "items": "Éléments",
       "topics": "Sujets",
       "sources": "Sources",
-      "manual": "Ajouter à la main"
+      "manual": "Ajouter à la main",
+      "assistant": "Assistant"
     },
     "filter": "Source",
     "search": {
@@ -1155,5 +1156,65 @@
     "next": "Occurrence suivante",
     "none": "Aucun résultat",
     "count": "{current} sur {count}"
+  },
+  "assistant": {
+    "intro": "Donnez un sujet : Otlet cherche dans votre Veille, en français, en néerlandais et en anglais, avec les termes que vous verrez et le glossaire de l'espace. Votre modèle trie ensuite ce qu'il trouve, sans rien cacher.",
+    "subject": "Sujet",
+    "subjectExample": "Par exemple : le budget de la Région de Bruxelles-Capitale",
+    "angle": "Angle (facultatif)",
+    "angleExample": "Par exemple : ce que le budget 2027 change pour les Bruxellois",
+    "angleHelp": "Il aide à trier, il n'écarte rien.",
+    "period": "Période",
+    "periods": {
+      "7": "7 derniers jours",
+      "30": "30 derniers jours",
+      "0": "Toutes les dates"
+    },
+    "explore": "Explorer la Veille",
+    "recent": "Vos dossiers récents",
+    "running": "en cours",
+    "candidates": "{count, plural, =0 {aucun élément trouvé} one {# élément trouvé} other {# éléments trouvés}}",
+    "back": "Revenir à l'assistant",
+    "angleShown": "Angle : {angle}",
+    "status": {
+      "pending": "Recherche des termes et des éléments en cours…",
+      "qualifying": "{count, plural, one {# élément trouvé : votre modèle le trie…} other {# éléments trouvés : votre modèle les trie…}}",
+      "done": "{count} éléments examinés · {kept} retenus · {check} à vérifier · {aside} écartés"
+    },
+    "model": "trié par {model}",
+    "modelError": "Le modèle n'a pas tout trié ({error}) : les éléments non jugés sont « à vérifier ».",
+    "nothing": "La Veille ne contient rien sur ces termes. Modifiez les termes, élargissez la période, ou ajoutez une source qui couvre ce sujet.",
+    "groups": {
+      "traite": "{count, plural, one {Retenu (#)} other {Retenus (#)}}",
+      "proche": "{count, plural, one {À vérifier (#)} other {À vérifier (#)}}",
+      "hors_sujet": "{count, plural, one {Écarté (#)} other {Écartés (#)}}"
+    },
+    "show": "Afficher",
+    "hide": "Replier",
+    "reason": "Selon le modèle : {reason}",
+    "selection": "{count, plural, one {Votre sélection : # élément} other {Votre sélection : # éléments}}",
+    "tooMany": "Un brief prend {max} éléments au plus : les {max} premiers cochés seront repris.",
+    "toBrief": "{count, plural, one {Préparer le brief avec # élément} other {Préparer le brief avec # éléments}}",
+    "terms": {
+      "title": "Termes cherchés",
+      "and": "et",
+      "concept": "Termes de « {name} », séparés par des virgules",
+      "fromGlossary": "Ajouté par le glossaire de l'espace",
+      "glossary": "glossaire",
+      "keep": "Garder dans le glossaire",
+      "kept": "Gardé dans le glossaire",
+      "help": "Un élément est trouvé s'il contient un terme de chaque groupe, dans n'importe quelle langue.",
+      "edit": "Modifier les termes",
+      "rerun": "Relancer avec ces termes"
+    },
+    "glossary": {
+      "title": "Glossaire de l'espace",
+      "help": "Des termes qui veulent dire la même chose, dans une ou plusieurs langues. Chaque recherche de l'assistant les ajoute d'elle-même.",
+      "empty": "Le glossaire est vide.",
+      "new": "Nouvelle entrée du glossaire",
+      "example": "Par exemple : Bruxelles-Capitale, Brussels Hoofdstedelijk Gewest, Brussels-Capital Region",
+      "add": "Ajouter",
+      "delete": "Supprimer « {terms} »"
+    }
   }
 }

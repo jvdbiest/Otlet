@@ -105,3 +105,4 @@ date,heures,domaine,etape,tache,note
 2026-10-23,1.5,conception,E1,F08,sauvegarde et restauration : analyse, document partagé, ADR-0042 ; estimation grossière (Claude)
 2026-10-24,8,fonction,E1,F08,sauvegarde V1 : exécutant, chiffrement, service planifié, Réglages › Sauvegardes, restauration par commande, CI et scénarios de mise à jour ; estimation grossière (Claude)
 2026-10-24,3,fonction,E1,A1a-1,évaluateur documentaire : cadrage sur les briefs réels, règle et tests, champ Nature, route, panneau ; estimation grossière (Claude)
+2026-10-25,6,fonction,E1,A1b-1,assistant de veille : banc (deux passages), ADR-0043, glossaire, recherche par concepts, dossiers et tri, écran ; estimation grossière (Claude)

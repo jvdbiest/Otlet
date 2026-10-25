@@ -18,6 +18,7 @@ import { styles } from "../watch/styles.ts";
 
 const BRIEF_MAX = 20;
 const SHOWN_AT_ONCE = 8;
+const CHANGES_SET: readonly string[] = ["chercher", "restreindre", "élargir"];
 
 /** A conversation of the Reporter (ADR-0044): each question and its answer, a set of items or
  * lines of fact cited by source, then the next question. */
@@ -126,7 +127,10 @@ function Turn({
             {turn.language !== null && ` · ${t("reporter.language", { language: turn.language })}`}
             {turn.model !== null && ` · ${t("reporter.model", { model: turn.model })}`}
           </p>
-          <Terms workspaceId={workspaceId} conversationId={conversation.id} turn={turn} editable={last} />
+          {/* A fact, a sort or an action reads the set of the previous answer: its terms are there. */}
+          {(turn.operation === null || CHANGES_SET.includes(turn.operation)) && (
+            <Terms workspaceId={workspaceId} conversationId={conversation.id} turn={turn} editable={last} />
+          )}
           {turn.operation === "fait" ? (
             <Fact turn={turn} fact={turn.fact} />
           ) : (
@@ -304,7 +308,9 @@ function ItemSet({ turn, title, last }: { turn: TurnView; title: string; last: b
               });
             }}
           >
-            {t("reporter.toBrief", { count: chosen.length })}
+            {chosen.length < turn.candidates.length
+              ? t("reporter.toBriefFirst", { count: chosen.length })
+              : t("reporter.toBrief", { count: chosen.length })}
           </button>
         </p>
       )}

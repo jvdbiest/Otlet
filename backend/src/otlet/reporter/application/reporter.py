@@ -46,6 +46,7 @@ from otlet.reporter.domain.facts import (
     check_fact,
     fact_message,
     read_fact,
+    reading_order,
 )
 from otlet.reporter.domain.questions import (
     CONCEPTS_MAX,
@@ -324,7 +325,9 @@ class Reporter:
         turn: Turn,
         log: tuple[list[dict[str, Any]], list[str], list[str]],
     ) -> Fact | None:
-        articles = self._store.articles(workspace_id, [c.id for c in turn.candidates[:ARTICLES]])
+        order = reading_order(turn.question, [f"{c.title} {c.summary}" for c in turn.candidates])
+        chosen = [turn.candidates[n].id for n in order[:ARTICLES]]
+        articles = self._store.articles(workspace_id, chosen)
         raw = self._ask(
             user_id,
             FACT_SYSTEM,

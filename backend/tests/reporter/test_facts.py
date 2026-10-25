@@ -5,7 +5,14 @@ The cases are those of the A2 bench (Joël's Veille, 2026-10-25)."""
 import json
 
 from otlet.assistant.domain.terms import GlossaryEntry
-from otlet.reporter.domain.facts import Agreement, Article, FactLine, concordance, read_fact
+from otlet.reporter.domain.facts import (
+    Agreement,
+    Article,
+    FactLine,
+    concordance,
+    read_fact,
+    reading_order,
+)
 
 BRUSSELS = [GlossaryEntry(("Bruxelles", "Brussel", "Brussels"))]
 
@@ -112,3 +119,8 @@ def test_numbers_in_words_are_figures() -> None:
         BRUSSELS,
     )
     assert (agreement, [c.same for c in compared]) == (Agreement.CONCORDENT, [True])
+
+
+def test_a_fact_reads_first_the_items_that_hold_the_question() -> None:
+    texts = ["Tempête Austen : les dégâts", "L'alerte orange commence vendredi midi", "Austen"]
+    assert reading_order("Quand l'alerte orange a-t-elle commencé ?", texts) == [1, 0, 2]

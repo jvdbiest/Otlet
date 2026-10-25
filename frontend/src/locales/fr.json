@@ -1278,7 +1278,8 @@
       "agreementHelp": "Calculé par Otlet, pas par le modèle : deux lignes de sources différentes sont comparées quand elles mesurent la même chose, au même moment et au même lieu."
     },
     "sorted": "{kept} retenus · {check} à vérifier · {aside} écartés, selon votre modèle",
-    "toBrief": "{count, plural, one {Préparer un brief avec # article} other {Préparer un brief avec les # premiers articles}}",
+    "toBrief": "{count, plural, one {Préparer un brief avec cet article} other {Préparer un brief avec ces # articles}}",
+    "toBriefFirst": "{count, plural, one {Préparer un brief avec le premier article} other {Préparer un brief avec les # premiers articles}}",
     "model": "Modèle : {model}"
   }
 }

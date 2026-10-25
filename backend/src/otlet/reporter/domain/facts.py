@@ -122,6 +122,28 @@ FACT_SCHEMA: dict[str, Any] = {
 }
 
 
+QUESTION_STOP = set(
+    "combien quand quel quelle quels quelles est-ce sont ont-ils elle elles leur leurs"
+    " pour dans avec sans depuis selon cette cela".split()
+)
+
+
+def reading_order(question: str, texts: list[str]) -> list[int]:
+    """The positions of the set in the order a fact reads them: first the items that hold the
+    most words of the question (« alerte », « orange » for « Quand l'alerte orange a-t-elle
+    commencé ? »), then the others in their order. The model reads only ARTICLES items: in a set
+    of 126, the item that gave the answer on the bench was not among the first 15 by rank."""
+    words = {
+        w for w in re.findall(r"\w+", folded(question)) if len(w) > 3 and w not in QUESTION_STOP
+    }
+
+    def held(n: int) -> int:
+        found = set(re.findall(r"\w+", folded(texts[n])))
+        return len(words & found)
+
+    return sorted(range(len(texts)), key=lambda n: -held(n))
+
+
 def fact_message(history: list[str], question: str, articles: list[Article]) -> str:
     numbered = "\n\n".join(
         f"[{n}] {a.publisher} — {a.text[:BODY_CHARS]}" for n, a in enumerate(articles, 1)

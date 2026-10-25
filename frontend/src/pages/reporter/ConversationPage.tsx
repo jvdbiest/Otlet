@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import {
   conversationQuery,
   useAsk,
+  useReadMore,
   useSetTerms,
   type ConversationView,
   type FactView,
@@ -134,7 +135,7 @@ function Turn({
             <Terms workspaceId={workspaceId} conversationId={conversation.id} turn={turn} editable={last} />
           )}
           {turn.operation === "fait" ? (
-            <Fact turn={turn} fact={turn.fact} />
+            <Fact workspaceId={workspaceId} conversationId={conversation.id} turn={turn} fact={turn.fact} />
           ) : (
             <ItemSet turn={turn} title={conversation.title} last={last} />
           )}
@@ -299,6 +300,9 @@ function ItemSet({ turn, title, last }: { turn: TurnView; title: string; last: b
       {turn.candidates.length === 0 && <p className={styles.notice}>{t("reporter.emptySet")}</p>}
       {turn.candidates.length >= SET_MAX && <p className={styles.notice}>{t("reporter.broad", { max: SET_MAX })}</p>}
       {open && <Items candidates={sorted ? [...kept, ...turn.candidates.filter((c) => !kept.includes(c))] : turn.candidates} />}
+      {last && !sorted && turn.candidates.length > BRIEF_MAX && (
+        <p className={styles.help}>{t("reporter.sortFirst", { max: BRIEF_MAX })}</p>
+      )}
       {last && chosen.length > 0 && (
         <p className={styles.row}>
           <button
@@ -353,8 +357,19 @@ function Items({ candidates }: { candidates: TurnCandidate[] }) {
 }
 
 /** The lines of a fact, each with its source and passage, and the agreement Otlet computed. */
-function Fact({ turn, fact }: { turn: TurnView; fact: FactView | null }) {
+function Fact({
+  workspaceId,
+  conversationId,
+  turn,
+  fact,
+}: {
+  workspaceId: string;
+  conversationId: string;
+  turn: TurnView;
+  fact: FactView | null;
+}) {
   const { t } = useTranslation();
+  const more = useReadMore(workspaceId, conversationId);
   if (fact === null) {
     return <p className={styles.warning}>{t("reporter.fact.noModel", { error: turn.error ?? "" })}</p>;
   }
@@ -426,6 +441,28 @@ function Fact({ turn, fact }: { turn: TurnView; fact: FactView | null }) {
       )}
       <p className={styles.help}>{t("reporter.fact.agreementHelp")}</p>
       {fact.dropped > 0 && <p className={styles.meta}>{t("reporter.fact.dropped", { count: fact.dropped })}</p>}
+      {fact.read.length < turn.candidates.length && (
+        <p className={styles.row}>
+          <button
+            type="button"
+            className={styles.button}
+            disabled={more.isPending}
+            onClick={() => {
+              more.mutate(turn.id);
+            }}
+          >
+            {t("reporter.fact.more", { count: Math.min(15, turn.candidates.length - fact.read.length) })}
+          </button>
+          <span className={styles.meta}>
+            {t("reporter.fact.left", { count: turn.candidates.length - fact.read.length })}
+          </span>
+        </p>
+      )}
+      {more.error !== null && (
+        <p role="alert" className={styles.error}>
+          {errorText(t, more.error)}
+        </p>
+      )}
       {fact.conclusion !== "" && fact.lines.length > 0 && (
         <p className={styles.meta}>{t("reporter.fact.conclusion", { text: fact.conclusion })}</p>
       )}

@@ -236,6 +236,28 @@ class PostgresReporterStore:
             )
         return _turn(row)
 
+    def read_further(
+        self, workspace_id: UUID, user_id: UUID, conversation_id: UUID, turn_id: UUID
+    ) -> Turn:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            row = connection.execute(
+                sa.text(
+                    "UPDATE reporter_turns SET status = 'pending', finished_at = NULL"
+                    f" WHERE id = :id AND conversation_id = :conversation AND {here()}"
+                    f" RETURNING {TURN_COLUMNS}"
+                ),
+                {"id": turn_id, "conversation": conversation_id},
+            ).one()
+            self._enqueue(
+                connection,
+                ANSWER_TURN,
+                workspace_id=str(workspace_id),
+                user_id=str(user_id),
+                conversation_id=str(conversation_id),
+                turn_id=str(turn_id),
+            )
+        return _turn(row)
+
     def save_turn(self, workspace_id: UUID, conversation_id: UUID, turn: Turn) -> None:
         verdicts = {
             str(key): {"verdict": j.verdict.value, "reason": j.reason, "by_model": j.by_model}

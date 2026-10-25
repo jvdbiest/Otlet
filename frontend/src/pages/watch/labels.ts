@@ -75,6 +75,7 @@ const ERRORS = [
   "conversation_not_found",
   "not_editable",
   "invalid_concepts",
+  "nothing_more",
 ] as const;
 
 export const INTERVALS = ["15", "30", "60", "180", "360", "720", "1440", "10080"] as const;

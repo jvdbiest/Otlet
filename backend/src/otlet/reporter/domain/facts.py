@@ -222,6 +222,29 @@ def read_fact(raw: str, articles: list[Article], glossary: list[GlossaryEntry]) 
     )
 
 
+def merged(first: Fact, more: Fact, glossary: list[GlossaryEntry]) -> Fact:
+    """A fact read further (« Lire 15 articles de plus »): the new lines added to the first,
+    a story already cited not twice, the agreement computed again over all of them."""
+    lines = list(first.lines)
+    for line in more.lines:
+        if not any(
+            other.publisher == line.publisher
+            and folded(other.figure) == folded(line.figure)
+            and folded(other.passage) == folded(line.passage)
+            for other in lines
+        ):
+            lines.append(line)
+    agreement, compared = concordance(lines, glossary)
+    return Fact(
+        lines=tuple(lines),
+        agreement=agreement,
+        compared=tuple(compared),
+        conclusion=first.conclusion,
+        dropped=first.dropped + more.dropped,
+        read=first.read + more.read,
+    )
+
+
 def concordance(
     lines: list[FactLine], glossary: list[GlossaryEntry]
 ) -> tuple[Agreement, list[Compared]]:

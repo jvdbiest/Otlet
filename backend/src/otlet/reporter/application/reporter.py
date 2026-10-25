@@ -45,6 +45,7 @@ from otlet.reporter.domain.facts import (
     Fact,
     check_fact,
     fact_message,
+    merged,
     read_fact,
     reading_order,
 )
@@ -134,6 +135,12 @@ class ReporterStore(Protocol):
 
     def save_turn(self, workspace_id: UUID, conversation_id: UUID, turn: Turn) -> None: ...
 
+    def read_further(
+        self, workspace_id: UUID, user_id: UUID, conversation_id: UUID, turn_id: UUID
+    ) -> Turn:
+        """Marks the fact pending again and enqueues ANSWER_TURN, in one transaction."""
+        ...
+
     def articles(self, workspace_id: UUID, item_ids: list[UUID]) -> list[Article]:
         """The text of the items, in the order given (title first)."""
         ...
@@ -185,6 +192,20 @@ class Reporter:
             context.workspace_id, context.user_id, conversation_id, question
         )
 
+    def read_more(self, context: WorkspaceContext, conversation_id: UUID, turn_id: UUID) -> Turn:
+        """A fact read further: the next ARTICLES items of the set, by the same order."""
+        conversation = self._store.conversation(context.workspace_id, conversation_id)
+        if conversation is None:
+            raise ReporterError("not_found", "no such conversation")
+        if any(turn.status == "pending" for turn in conversation.turns):
+            raise ReporterError("turn_pending", "the previous question is still being answered")
+        turn = next((t for t in conversation.turns if t.id == turn_id), None)
+        if turn is None or turn.fact is None or len(turn.fact.read) >= len(turn.candidates):
+            raise ReporterError("nothing_more", "every item of the set has been read")
+        return self._store.read_further(
+            context.workspace_id, context.user_id, conversation_id, turn_id
+        )
+
     def get(self, context: WorkspaceContext, conversation_id: UUID) -> Conversation | None:
         return self._store.conversation(context.workspace_id, conversation_id)
 
@@ -223,6 +244,9 @@ class Reporter:
         if position is None or conversation.turns[position].status != "pending":
             return
         turn = conversation.turns[position]
+        if turn.fact is not None:
+            self._read_further(workspace_id, user_id, conversation, turn)
+            return
         earlier = [t for t in conversation.turns[:position] if t.status == "done"]
         previous = earlier[-1] if earlier else None
         history = [t.question for t in conversation.turns[:position]]
@@ -326,8 +350,9 @@ class Reporter:
         log: tuple[list[dict[str, Any]], list[str], list[str]],
     ) -> Fact | None:
         order = reading_order(turn.question, [f"{c.title} {c.summary}" for c in turn.candidates])
-        chosen = [turn.candidates[n].id for n in order[:ARTICLES]]
-        articles = self._store.articles(workspace_id, chosen)
+        done = set(turn.fact.read) if turn.fact is not None else set()
+        chosen = [turn.candidates[n].id for n in order if str(turn.candidates[n].id) not in done]
+        articles = self._store.articles(workspace_id, chosen[:ARTICLES])
         raw = self._ask(
             user_id,
             FACT_SYSTEM,
@@ -341,6 +366,30 @@ class Reporter:
             return None
         glossary = [stored.entry for stored in self._search.glossary(workspace_id)]
         return read_fact(raw, articles, glossary)
+
+    def _read_further(
+        self, workspace_id: UUID, user_id: UUID, conversation: Conversation, turn: Turn
+    ) -> None:
+        attempts: list[dict[str, Any]] = []
+        models: list[str] = []
+        errors: list[str] = []
+        history = [t.question for t in conversation.turns if t.position < turn.position]
+        more = self._fact(workspace_id, user_id, history, turn, (attempts, models, errors))
+        glossary = [stored.entry for stored in self._search.glossary(workspace_id)]
+        fact = turn.fact if more is None or turn.fact is None else merged(turn.fact, more, glossary)
+        self._store.save_turn(
+            workspace_id,
+            conversation.id,
+            replace(
+                turn,
+                status="done",
+                fact=fact,
+                error="; ".join(dict.fromkeys(errors)) or None,
+                model=", ".join(dict.fromkeys(models)) or turn.model,
+                attempts=[*turn.attempts, *attempts],
+                finished_at=self._now(),
+            ),
+        )
 
     def _sort(
         self,

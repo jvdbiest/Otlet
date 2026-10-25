@@ -259,7 +259,8 @@
     "invalid_question": "Une question compte entre 1 et 500 caractères.",
     "conversation_not_found": "Cette conversation n'existe plus.",
     "not_editable": "Seuls les termes du dernier ensemble peuvent être modifiés.",
-    "invalid_concepts": "Un ensemble compte entre 1 et 4 groupes de termes."
+    "invalid_concepts": "Un ensemble compte entre 1 et 4 groupes de termes.",
+    "nothing_more": "Tous les articles de l'ensemble ont déjà été lus."
   },
   "manual": {
     "title": "Ajouter à la main",
@@ -1276,9 +1277,12 @@
         "une source": "Une seule source",
         "absent": "Aucune source ne répond"
       },
-      "agreementHelp": "Calculé par Otlet, pas par le modèle : deux lignes de sources différentes sont comparées quand elles mesurent la même chose, au même moment et au même lieu."
+      "agreementHelp": "Calculé par Otlet, pas par le modèle : deux lignes de sources différentes sont comparées quand elles mesurent la même chose, au même moment et au même lieu.",
+      "more": "{count, plural, one {Lire l'article suivant} other {Lire # articles de plus}}",
+      "left": "{count, plural, one {(# article non lu)} other {(# articles non lus)}}"
     },
     "sorted": "{kept} retenus · {check} à vérifier · {aside} écartés, selon votre modèle",
+    "sortFirst": "Plus de {max} articles : demandez d'abord « Trie-les », et le brief ne prendra que ceux qui traitent vraiment le sujet.",
     "toBrief": "{count, plural, one {Préparer un brief avec cet article} other {Préparer un brief avec ces # articles}}",
     "toBriefFirst": "{count, plural, one {Préparer un brief avec le premier article} other {Préparer un brief avec les # premiers articles}}",
     "model": "Modèle : {model}"

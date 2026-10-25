@@ -208,6 +208,17 @@ def build_router(
         except ReporterError as error:
             raise _refused(error) from error
 
+    @router.post(
+        "/conversations/{conversation_id}/turns/{turn_id}/more",
+        status_code=status.HTTP_202_ACCEPTED,
+    )
+    def read_more(conversation_id: UUID, turn_id: UUID, context: Context) -> TurnView:
+        """A fact read further: the next items of the set; its lines are added."""
+        try:
+            return TurnView.of(reporter.read_more(context, conversation_id, turn_id))
+        except ReporterError as error:
+            raise _refused(error) from error
+
     @router.put("/conversations/{conversation_id}/turns/{turn_id}/terms")
     def set_terms(
         conversation_id: UUID, turn_id: UUID, body: TermsBody, context: Context

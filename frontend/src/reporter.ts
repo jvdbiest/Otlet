@@ -77,6 +77,24 @@ export function useAsk(workspaceId: string, conversationId: string) {
   });
 }
 
+/** A fact read further: the next items of the set; the worker adds their lines. */
+export function useReadMore(workspaceId: string, conversationId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (turnId: string) => {
+      const { data, error, response } = await api.POST(
+        "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/turns/{turn_id}/more",
+        { params: { path: { workspace_id: workspaceId, conversation_id: conversationId, turn_id: turnId } } },
+      );
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: () => client.invalidateQueries({ queryKey: [...key(workspaceId), conversationId] }),
+  });
+}
+
 /** The author's terms for the last set: found again at once, without a model. */
 export function useSetTerms(workspaceId: string, conversationId: string) {
   const client = useQueryClient();

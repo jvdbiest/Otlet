@@ -21,6 +21,7 @@ from otlet.writing.domain.draft import (
     PROMPT_VERSION,
     WORDS,
     SourceText,
+    asks_dates,
     check_answer,
     cited_keys,
     lone_sections,
@@ -230,6 +231,7 @@ class Drafts:
         sources = prompt_sources(texts, budget)
         keys = [source.key for source in sources]
         checks = 0
+        dated = asks_dates(fields)
         refusals: list[list[str]] = []
 
         def validate(raw: str) -> list[str]:
@@ -249,6 +251,7 @@ class Drafts:
                 words=WORDS[fields.length],
                 repeats=first,
                 in_text=first,
+                dates=first and dated,
             )
             refusals.append(found)
             return found

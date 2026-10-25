@@ -84,7 +84,7 @@ FACT_SCHEMA = {
 def chat(system: str, user: str, schema: dict) -> tuple[dict, float]:
     body = json.dumps({
         "model": MODEL, "stream": False, "think": False, "format": schema,
-        "options": {"temperature": 0, "num_ctx": 16384},
+        "options": {"temperature": 0, "num_ctx": int(os.environ.get("NUM_CTX", "16384"))},
         "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
     }).encode()
     started = time.monotonic()
@@ -259,4 +259,5 @@ def bench(workspace: UUID) -> None:
                 print(f"      divergence sur « {measure} » : {first} contre {second}")
 
 
-bench(UUID(sys.argv[1]))
+if not os.environ.get("RECONSTITUER"):
+    bench(UUID(sys.argv[1]))

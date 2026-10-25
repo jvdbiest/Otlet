@@ -47,6 +47,7 @@ class ConceptView(BaseModel):
     name: str
     terms: list[str]  # those of the author
     added: list[str]  # those the glossary adds
+    counts: dict[str, int] = {}  # the items each term finds alone, in the period
 
 
 class CandidateView(BaseModel):
@@ -124,7 +125,12 @@ class DossierView(BaseModel):
             days=dossier.days,
             status=dossier.status,
             concepts=[
-                ConceptView(name=w.concept.name, terms=list(w.concept.terms), added=list(w.added))
+                ConceptView(
+                    name=w.concept.name,
+                    terms=list(w.concept.terms),
+                    added=list(w.added),
+                    counts={t: dossier.term_counts[t] for t in w.terms if t in dossier.term_counts},
+                )
                 for w in dossier.concepts
             ],
             candidates=[

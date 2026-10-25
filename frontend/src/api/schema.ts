@@ -2227,6 +2227,13 @@ export interface components {
         ConceptView: {
             /** Added */
             added: string[];
+            /**
+             * Counts
+             * @default {}
+             */
+            counts: {
+                [key: string]: number;
+            };
             /** Name */
             name: string;
             /** Terms */

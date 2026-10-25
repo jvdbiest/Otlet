@@ -1054,6 +1054,14 @@
             "title": "Added",
             "type": "array"
           },
+          "counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "default": {},
+            "title": "Counts",
+            "type": "object"
+          },
           "name": {
             "title": "Name",
             "type": "string"

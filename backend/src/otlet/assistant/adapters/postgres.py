@@ -33,10 +33,15 @@ DOSSIER_COLUMNS = (
 )
 
 
-def _concepts_json(concepts: list[Widened]) -> str:
+def _concepts_json(concepts: list[Widened], counts: dict[str, int]) -> str:
     return json.dumps(
         [
-            {"name": w.concept.name, "terms": list(w.concept.terms), "added": list(w.added)}
+            {
+                "name": w.concept.name,
+                "terms": list(w.concept.terms),
+                "added": list(w.added),
+                "counts": {term: counts[term] for term in w.terms if term in counts},
+            }
             for w in concepts
         ]
     )
@@ -91,6 +96,7 @@ def _dossier(row: sa.Row[Any]) -> Dossier:
         attempts=list(row.attempts),
         created_at=row.created_at,
         finished_at=row.finished_at,
+        term_counts={term: n for c in row.concepts for term, n in c.get("counts", {}).items()},
     )
 
 
@@ -204,6 +210,21 @@ class PostgresAssistantStore:
             for row in rows
         ]
 
+    def term_counts(
+        self, workspace_id: UUID, terms: list[str], since: datetime | None
+    ) -> dict[str, int]:
+        counts: dict[str, int] = {}
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            for term in dict.fromkeys(terms):
+                counts[term] = connection.execute(
+                    sa.text(
+                        f"SELECT count(*) FROM search_candidates(:q, {CONCEPT_WINDOW}) AS c"
+                        " WHERE CAST(:since AS timestamptz) IS NULL OR c.sort_date >= :since"
+                    ),
+                    {"q": websearch(term), "since": since},
+                ).scalar_one()
+        return counts
+
     # Dossiers ---------------------------------------------------------------------------------
 
     def start_dossier(
@@ -292,7 +313,7 @@ class PostgresAssistantStore:
                 {
                     "id": dossier.id,
                     "status": dossier.status,
-                    "concepts": _concepts_json(dossier.concepts),
+                    "concepts": _concepts_json(dossier.concepts, dossier.term_counts),
                     "candidates": _candidates_json(dossier.candidates),
                     "verdicts": json.dumps(verdicts),
                     "error": dossier.error,

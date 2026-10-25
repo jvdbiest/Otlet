@@ -63,6 +63,12 @@ class AssistantStore(Protocol):
         self, workspace_id: UUID, concepts: list[Widened], since: datetime | None, limit: int
     ) -> list[Candidate]: ...
 
+    def term_counts(
+        self, workspace_id: UUID, terms: list[str], since: datetime | None
+    ) -> dict[str, int]:
+        """How many items each term finds alone, by the term as given."""
+        ...
+
 
 class Assistant:
     def __init__(self, store: AssistantStore) -> None:

@@ -222,6 +222,8 @@ def test_a_dossier_finds_without_a_model_then_orders(
     assert done is not None and done.status == "done" and done.model == "fake"
     # The model's concepts, widened by the glossary: the Dutch item is found.
     assert done.concepts[1].added == ("Brusselse",)
+    # Each term counts the items it finds alone: a term that finds nothing shows at once.
+    assert done.term_counts["Brusselse"] == 1 and done.term_counts["budget"] == 2
     by_title = {c.title: done.verdicts[c.id].verdict for c in done.candidates}
     assert by_title == {
         "Le budget de la Région bruxelloise sous pression": Verdict.TRAITE,

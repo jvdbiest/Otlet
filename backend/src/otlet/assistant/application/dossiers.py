@@ -75,6 +75,9 @@ class Dossier:
     attempts: list[dict[str, Any]] = field(default_factory=list)
     created_at: datetime | None = None
     finished_at: datetime | None = None
+    # The items each term finds alone (folded term → count), in the period: a term that
+    # finds nothing, or a concept no item shares with another, is seen at once.
+    term_counts: dict[str, int] = field(default_factory=dict)
 
 
 @dataclass(frozen=True, slots=True)
@@ -185,6 +188,9 @@ class Dossiers:
         widened = widen(concepts, glossary)
         since = None if dossier.days is None else self._now() - timedelta(days=dossier.days)
         candidates = self._search.candidates(workspace_id, widened, since, CANDIDATES_MAX)
+        counts = self._search.term_counts(
+            workspace_id, [term for w in widened for term in w.terms], since
+        )
         dossier = Dossier(
             id=dossier.id,
             subject=dossier.subject,
@@ -194,6 +200,7 @@ class Dossiers:
             concepts=widened,
             candidates=candidates,
             created_at=dossier.created_at,
+            term_counts=counts,
         )
         self._store.save_dossier(workspace_id, dossier, finished=False)
         verdicts = self._qualify(user_id, dossier, attempts, models, errors)
@@ -212,6 +219,7 @@ class Dossiers:
                 model=", ".join(dict.fromkeys(models)) or None,
                 attempts=attempts,
                 created_at=dossier.created_at,
+                term_counts=counts,
             ),
             finished=True,
         )

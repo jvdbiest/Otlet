@@ -1203,9 +1203,10 @@
       "glossary": "glossaire",
       "keep": "Garder dans le glossaire",
       "kept": "Gardé dans le glossaire",
-      "help": "Un élément est trouvé s'il contient un terme de chaque groupe, dans n'importe quelle langue.",
+      "help": "Un élément est trouvé s'il contient un terme de chaque groupe, dans n'importe quelle langue. Le nombre après chaque terme dit combien d'éléments il trouve seul.",
       "edit": "Modifier les termes",
-      "rerun": "Relancer avec ces termes"
+      "rerun": "Relancer avec ces termes",
+      "none": "Aucun élément ne contient à la fois un terme de chaque groupe. Ajoutez les formes courtes (par exemple « Bruxelles, bruxellois, Brussel » plutôt que « Bruxelles-Capitale »), ou gardez-les dans le glossaire pour les prochaines recherches."
     },
     "glossary": {
       "title": "Glossaire de l'espace",

@@ -208,12 +208,13 @@ function Terms({ workspaceId, dossier }: { workspaceId: string; dossier: Dossier
               {concept.terms.map((term) => (
                 <span key={term} className={styles.chip}>
                   {term}
+                  {term in concept.counts && <small> · {concept.counts[term]}</small>}
                 </span>
               ))}
               {concept.added.map((term) => (
                 <span key={term} className={styles.chip} title={t("assistant.terms.fromGlossary")}>
-                  {term} ·{" "}
-                  <small>{t("assistant.terms.glossary")}</small>
+                  {term} · <small>{t("assistant.terms.glossary")}</small>
+                  {term in concept.counts && <small> · {concept.counts[term]}</small>}
                 </span>
               ))}
               {concept.terms.length > 1 && !kept.includes(index) && (
@@ -241,6 +242,9 @@ function Terms({ workspaceId, dossier }: { workspaceId: string; dossier: Dossier
         </div>
       ))}
       <p className={styles.help}>{t("assistant.terms.help")}</p>
+      {dossier.status === "done" && dossier.candidates.length === 0 && (
+        <p className={styles.notice}>{t("assistant.terms.none")}</p>
+      )}
       <p className={styles.row}>
         {editing ? (
           <button

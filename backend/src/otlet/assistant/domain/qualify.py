@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import Any
 
-PROMPT_VERSION = "veille-1"
+PROMPT_VERSION = "veille-2"
 BATCH = 25
 SUMMARY_SENT = 300
 REASON_MAX_LENGTH = 300
@@ -40,7 +40,9 @@ EXPAND_SYSTEM = (
     "Tu prépares une recherche par mots-clés dans une veille de presse belge, en français, "
     "néerlandais et anglais. Découpe le sujet en concepts indispensables (2 au plus ; 1 si le "
     "sujet est un nom propre ou un événement). Pour chaque concept, donne les termes qui le "
-    "désignent dans les trois langues. Règles : chaque terme a 1 à 3 mots ; un concept par "
+    "désignent dans les trois langues. Pour un lieu ou une institution, donne d'abord les "
+    "formes courtes des titres de presse (Bruxelles, bruxellois, Brussel, Brusselse), puis "
+    "seulement les noms officiels, plus rares. Règles : chaque terme a 1 à 3 mots ; un concept par "
     "terme, jamais deux ; pas d'année ni de date que le sujet ne donne pas ; rien d'inventé "
     "(un nom propre reste tel quel) ; pas de terme qui trouverait tout (« actualité », "
     "« Belgique » seul) ; 8 termes au plus par concept.\n"

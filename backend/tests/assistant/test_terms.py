@@ -55,8 +55,9 @@ def test_an_entry_holds_two_terms_at_least() -> None:
         checked_entry(["budget"])
 
 
-def test_each_term_is_a_phrase_of_the_query() -> None:
-    assert websearch(("budget", 'région "bruxelloise"')) == '"budget" or "région  bruxelloise "'
+def test_a_term_holds_all_its_words_and_no_operator() -> None:
+    assert websearch("Région de Bruxelles-Capitale") == "Région de Bruxelles-Capitale"
+    assert websearch('budget "bruxellois" or -dette -') == "budget bruxellois dette"
 
 
 def test_the_country_of_a_publisher_comes_from_its_address() -> None:

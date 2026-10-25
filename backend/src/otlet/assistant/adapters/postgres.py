@@ -152,11 +152,25 @@ class PostgresAssistantStore:
         since: datetime | None,
         limit: int,
     ) -> list[Candidate]:
-        """The items holding a term of every concept, the best ranked first: no model."""
-        queries = {f"q{n}": websearch(c.terms) for n, c in enumerate(concepts)}
-        found = " INTERSECT ".join(
-            f"SELECT id FROM search_candidates(:{key}, {CONCEPT_WINDOW})" for key in queries
-        )
+        """The items holding a term of every concept, the best ranked first: no model. A term
+        of several words holds when the item has all its words, in any order: as an exact
+        phrase, « Région de Bruxelles-Capitale » found nothing (Joël, 2026-10-25)."""
+        queries: dict[str, str] = {}
+        groups = []
+        for n, concept in enumerate(concepts):
+            keys = []
+            for m, term in enumerate(concept.terms):
+                key = f"t{n}_{m}"
+                queries[key] = websearch(term)
+                keys.append(key)
+            groups.append(
+                "("
+                + " UNION ".join(
+                    f"SELECT id FROM search_candidates(:{key}, {CONCEPT_WINDOW})" for key in keys
+                )
+                + ")"
+            )
+        found = " INTERSECT ".join(groups)
         rank = " + ".join(
             f"ts_rank(i.search, websearch_to_tsquery(i.search_config, :{key}))" for key in queries
         )

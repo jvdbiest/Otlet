@@ -45,6 +45,11 @@ from otlet.workspaces.domain.model import WorkspaceContext
 
 QUALIFY_DOSSIER = "assistant.qualify_dossier"
 SUBJECT_MAX_LENGTH = 200
+# Room for the answer: a « thinking » local model (qwen3) spends its output on reasoning
+# first; with 600 tokens it was cut before the concepts (Joël, 2026-10-25). A local model
+# costs nothing per token (drafts.py, LOCAL_OUTPUT_TOKENS).
+EXPAND_OUTPUT_TOKENS = 4096
+QUALIFY_OUTPUT_TOKENS = 8192
 ANGLE_MAX_LENGTH = 500
 
 
@@ -250,7 +255,7 @@ class Dossiers:
             subject_message(dossier.subject, ""),
             EXPAND_SCHEMA,
             check_expand,
-            600,
+            EXPAND_OUTPUT_TOKENS,
             attempts,
             models,
             errors,
@@ -291,7 +296,7 @@ class Dossiers:
                 qualify_message(dossier.subject, dossier.angle, lines),
                 QUALIFY_SCHEMA,
                 check_qualify,
-                2000,
+                QUALIFY_OUTPUT_TOKENS,
                 attempts,
                 models,
                 errors,

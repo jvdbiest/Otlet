@@ -136,6 +136,13 @@ def test_the_glossary_finds_the_other_language(
     # Without a period, the older item too; the federal budget never (no term of Bruxelles).
     every = service.find(context, concepts)
     assert len(every.candidates) == 3
+    # A term of several words holds when the item has all of them, not as an exact phrase.
+    loose = service.find(
+        context, [Concept("budget", ("budget",)), Concept("Bruxelles", ("bruxelloise région",))]
+    )
+    assert [c.title for c in loose.candidates] == [
+        "Le budget de la Région bruxelloise sous pression"
+    ]
     # The glossary of another workspace is not this one's.
     other = context_for(engine, "bob@example.org")
     assert service.glossary(other) == []

@@ -109,9 +109,11 @@ def widen(concepts: list[Concept], glossary: list[GlossaryEntry]) -> list[Widene
     return out
 
 
-def websearch(terms: tuple[str, ...]) -> str:
-    """The terms as one query of websearch_to_tsquery: each a phrase, joined by « or »."""
-    return " or ".join('"' + term.replace('"', " ") + '"' for term in terms)
+def websearch(term: str) -> str:
+    """A term as a query of websearch_to_tsquery: all its words, in any order. Its operators
+    are taken out (quotes, a leading « - », the word « or »): a term is never a query."""
+    words = term.replace('"', " ").split()
+    return " ".join(w.lstrip("-") for w in words if w.lower() != "or" and w.lstrip("-"))
 
 
 # The country of a publisher, from the address of its item (ADR-0043 §5): the model needs it

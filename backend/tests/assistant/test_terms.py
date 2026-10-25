@@ -65,3 +65,20 @@ def test_the_country_of_a_publisher_comes_from_its_address() -> None:
     assert publisher_country("https://www.lemonde.fr/x") == "France"
     assert publisher_country("https://www.01net.com/x") is None
     assert publisher_country(None) is None
+
+
+def test_a_term_too_general_is_set_aside_but_shown() -> None:
+    """Bench of A2: « course » found 752 items of 2,940; « Bruxelles », 265 in a concept
+    « Austen » of 50. The first term of a concept always stays."""
+    from otlet.assistant.domain.terms import Widened, too_general
+
+    concepts = [
+        Widened(Concept("Austen", ("Austen", "tempête Austen", "Bruxelles", "course")), ()),
+        Widened(Concept("Bruxelles", ("Bruxelles", "bruxellois")), ()),
+    ]
+    counts = {"Austen": 50, "tempête Austen": 45, "Bruxelles": 265, "bruxellois": 94, "course": 752}
+    checked = too_general(concepts, counts, 2940)
+    assert checked[0].general == ("Bruxelles", "course")
+    assert checked[0].terms == ("Austen", "tempête Austen")
+    assert checked[0].all_terms == ("Austen", "tempête Austen", "Bruxelles", "course")
+    assert checked[1].general == ()  # 265 of 2,940 is under 10 %, and it leads its concept

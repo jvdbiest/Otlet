@@ -206,13 +206,23 @@ function Terms({ workspaceId, dossier }: { workspaceId: string; dossier: Dossier
           ) : (
             <>
               {concept.terms.map((term) => (
-                <span key={term} className={styles.chip}>
+                <span
+                  key={term}
+                  className={styles.chip}
+                  style={concept.general.includes(term) ? { opacity: 0.5, textDecoration: "line-through" } : undefined}
+                  title={concept.general.includes(term) ? t("assistant.terms.general") : undefined}
+                >
                   {term}
                   {term in concept.counts && <small> · {concept.counts[term]}</small>}
                 </span>
               ))}
               {concept.added.map((term) => (
-                <span key={term} className={styles.chip} title={t("assistant.terms.fromGlossary")}>
+                <span
+                  key={term}
+                  className={styles.chip}
+                  style={concept.general.includes(term) ? { opacity: 0.5, textDecoration: "line-through" } : undefined}
+                  title={concept.general.includes(term) ? t("assistant.terms.general") : t("assistant.terms.fromGlossary")}
+                >
                   {term} · <small>{t("assistant.terms.glossary")}</small>
                   {term in concept.counts && <small> · {concept.counts[term]}</small>}
                 </span>

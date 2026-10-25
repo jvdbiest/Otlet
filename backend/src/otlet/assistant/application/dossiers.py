@@ -39,6 +39,7 @@ from otlet.assistant.domain.terms import (
     Widened,
     checked_concepts,
     publisher_country,
+    too_general,
     widen,
 )
 from otlet.workspaces.domain.model import WorkspaceContext
@@ -185,12 +186,13 @@ class Dossiers:
         if not concepts:
             concepts = self._expand(user_id, dossier, attempts, models, errors)
         glossary = [stored.entry for stored in self._search.glossary(workspace_id)]
-        widened = widen(concepts, glossary)
         since = None if dossier.days is None else self._now() - timedelta(days=dossier.days)
-        candidates = self._search.candidates(workspace_id, widened, since, CANDIDATES_MAX)
+        widened = widen(concepts, glossary)
         counts = self._search.term_counts(
-            workspace_id, [term for w in widened for term in w.terms], since
+            workspace_id, [term for w in widened for term in w.all_terms], since
         )
+        widened = too_general(widened, counts, self._search.total_items(workspace_id, since))
+        candidates = self._search.candidates(workspace_id, widened, since, CANDIDATES_MAX)
         dossier = Dossier(
             id=dossier.id,
             subject=dossier.subject,

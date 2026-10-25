@@ -1062,6 +1062,14 @@
             "title": "Counts",
             "type": "object"
           },
+          "general": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "General",
+            "type": "array"
+          },
           "name": {
             "title": "Name",
             "type": "string"

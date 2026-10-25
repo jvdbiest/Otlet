@@ -87,10 +87,17 @@ class Widened:
 
     concept: Concept
     added: tuple[str, ...]
+    # Terms set aside as too general (too_general): shown, never searched.
+    general: tuple[str, ...] = ()
+
+    @property
+    def all_terms(self) -> tuple[str, ...]:
+        return (*self.concept.terms, *self.added)
 
     @property
     def terms(self) -> tuple[str, ...]:
-        return (*self.concept.terms, *self.added)
+        """The terms searched: all but the general ones."""
+        return tuple(term for term in self.all_terms if term not in self.general)
 
 
 def widen(concepts: list[Concept], glossary: list[GlossaryEntry]) -> list[Widened]:
@@ -135,3 +142,33 @@ def publisher_country(url: str | None) -> str | None:
     if not host or "." not in host:
         return None
     return COUNTRIES.get(host.rsplit(".", 1)[1])
+
+
+# A term is too general when it finds more than this share of the items of the period, or many
+# times more than the first term of its concept, the subject's own word (bench of A2, Joël,
+# 2026-10-25: « course » found 752 items of 2,940, « Bruxelles » 265 inside a concept
+# « Austen » of 50; the sets swelled to 400, then fell to 0).
+GENERAL_SHARE = 0.10
+GENERAL_RATIO = 4
+# Under this many items, a term is never too general: a small Veille has no common words.
+GENERAL_MIN = 20
+
+
+def too_general(concepts: list[Widened], counts: dict[str, int], total: int) -> list[Widened]:
+    """The concepts with their too general terms set aside. The first term of a concept is
+    never set aside: a concept always keeps something to search."""
+    out = []
+    for widened in concepts:
+        terms = widened.all_terms
+        first = counts.get(terms[0], 0)
+        general = tuple(
+            term
+            for term in terms[1:]
+            if counts.get(term, 0) >= GENERAL_MIN
+            and (
+                counts.get(term, 0) > GENERAL_SHARE * total
+                or (first > 0 and counts.get(term, 0) > GENERAL_RATIO * first)
+            )
+        )
+        out.append(Widened(widened.concept, widened.added, general))
+    return out

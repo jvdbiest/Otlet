@@ -1206,7 +1206,8 @@
       "help": "Un élément est trouvé s'il contient un terme de chaque groupe, dans n'importe quelle langue. Le nombre après chaque terme dit combien d'éléments il trouve seul.",
       "edit": "Modifier les termes",
       "rerun": "Relancer avec ces termes",
-      "none": "Aucun élément ne contient à la fois un terme de chaque groupe. Ajoutez les formes courtes (par exemple « Bruxelles, bruxellois, Brussel » plutôt que « Bruxelles-Capitale »), ou gardez-les dans le glossaire pour les prochaines recherches."
+      "none": "Aucun élément ne contient à la fois un terme de chaque groupe. Ajoutez les formes courtes (par exemple « Bruxelles, bruxellois, Brussel » plutôt que « Bruxelles-Capitale »), ou gardez-les dans le glossaire pour les prochaines recherches.",
+      "general": "Trop général : ce terme trouve une trop grande part de la Veille, ou bien plus que le sujet lui-même. Il n'est pas cherché."
     },
     "glossary": {
       "title": "Glossaire de l'espace",

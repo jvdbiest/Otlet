@@ -69,6 +69,10 @@ class AssistantStore(Protocol):
         """How many items each term finds alone, by the term as given."""
         ...
 
+    def total_items(self, workspace_id: UUID, since: datetime | None) -> int:
+        """The items of the period, duplicates aside."""
+        ...
+
 
 class Assistant:
     def __init__(self, store: AssistantStore) -> None:

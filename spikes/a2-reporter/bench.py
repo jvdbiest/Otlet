@@ -36,7 +36,10 @@ OPERATION_SYSTEM = (
     "- « fait » : une question dont la réponse est un nombre ou une date ;\n"
     "- « agir » : garder le dossier, préparer un brief.\n"
     "Termes : 1 à 3 mots, les formes courtes des titres de presse d'abord (Bruxelles, bruxellois, "
-    "Brussel), dans les trois langues, 8 au plus par concept, jamais de terme trop général."
+    "Brussel), dans les trois langues, 8 au plus par concept, jamais de terme trop général "
+    "(« météo », « course », « nouveau »). Un concept ne contient que des mots qui le désignent : "
+    "jamais un lieu ou un aspect dans le concept du sujet. Un sujet simple (un nom, un événement) "
+    "n'a qu'un concept ; restreindre ajoute exactement un concept."
 )
 OPERATION_SCHEMA = {
     "type": "object",
@@ -55,7 +58,10 @@ FACT_SYSTEM = (
     "numéro de l'article, le chiffre tel qu'écrit, ce qu'il mesure, quand, où, et l'extrait exact "
     "(copié mot pour mot, une phrase) qui le contient. N'additionne jamais des chiffres de sources "
     "différentes : elles peuvent compter les mêmes faits. Si deux chiffres ne portent pas sur la "
-    "même période ou le même lieu, dis-le dans « mesure », « quand » ou « où ». Puis la "
+    "même période ou le même lieu, dis-le. « quand » et « où » sont obligatoires : la date ou le "
+    "moment, et le lieu, de ce que le chiffre mesure, tels que l'article les donne (« non précisé » "
+    "sinon). Lis la question avec la conversation : « Combien ? » après « des blessés ? » veut "
+    "dire « combien de blessés ». Puis la "
     "concordance : « concordent » (les sources disent la même chose), « divergent » (elles "
     "diffèrent), « partiel » (des chiffres différents qui ne mesurent pas la même chose), ou "
     "« absent » (aucun article ne répond ; alors aucune ligne). Une phrase de conclusion courte, "
@@ -67,7 +73,7 @@ FACT_SCHEMA = {
         "lignes": {"type": "array", "items": {"type": "object", "properties": {
             "article": {"type": "integer"}, "chiffre": {"type": "string"}, "mesure": {"type": "string"},
             "quand": {"type": "string"}, "ou": {"type": "string"}, "extrait": {"type": "string"}},
-            "required": ["article", "chiffre", "mesure", "extrait"]}},
+            "required": ["article", "chiffre", "mesure", "quand", "ou", "extrait"]}},
         "concordance": {"type": "string", "enum": ["concordent", "divergent", "partiel", "absent"]},
         "conclusion": {"type": "string"},
     },
@@ -99,8 +105,13 @@ def bench(workspace: UUID) -> None:
     glossary = [stored.entry for stored in store.glossary(workspace)]
     since = datetime.now(UTC) - timedelta(days=30)
 
+    total = store.total_items(workspace, since)
+
     def find(concepts, language):
-        found = store.candidates(workspace, widen(concepts, glossary), since, 400)
+        widened = widen(concepts, glossary)
+        counts = store.term_counts(workspace, [t for w in widened for t in w.all_terms], since)
+        widened = too_general(widened, counts, total)
+        found = store.candidates(workspace, widened, since, 400)
         return [c for c in found if not language or (c.language or "").startswith(language)]
 
     for key, steps in CONVERSATIONS:
@@ -149,16 +160,30 @@ def bench(workspace: UUID) -> None:
                             " WHERE i.id = ANY(:ids)"), {"ids": [c.id for c in articles]}).all()}
             texts = [f"{rows[c.id].title}. {rows[c.id].body}"[:BODY] for c in articles]
             numbered = "\n\n".join(f"[{n}] {rows[c.id].publisher} — {t}" for n, (c, t) in enumerate(zip(articles, texts), 1))
-            fact, seconds = chat(FACT_SYSTEM, f"Question : {question}\n\nArticles :\n{numbered}", FACT_SCHEMA)
+            context = "\n".join(history[:-1])
+            fact, seconds = chat(
+                FACT_SYSTEM,
+                f"Conversation :\n{context}\n\nQuestion : {question}\n\nArticles :\n{numbered}",
+                FACT_SCHEMA,
+            )
             print(f"    fait ({seconds} s, {len(articles)} articles) : {fact.get('concordance')} — {fact.get('conclusion')}")
+            dropped = 0
             for row in fact.get("lignes", []):
                 n = row.get("article", 0)
                 text = texts[n - 1] if 1 <= n <= len(texts) else ""
-                passage_ok = fold(row.get("extrait", ""))[:80] in fold(text) if text else False
-                figure_ok = fold(row.get("chiffre", "")) in fold(row.get("extrait", ""))
+                passage_ok = bool(text) and fold(row.get("extrait", ""))[:80] in fold(text)
+                digits = "".join(ch for ch in row.get("chiffre", "") if ch.isdigit())
+                quoted = "".join(ch for ch in row.get("extrait", "") if ch.isdigit())
+                figure_ok = (digits in quoted) if digits else (
+                    fold(row.get("chiffre", "")) in fold(row.get("extrait", "")))
+                if not passage_ok:
+                    dropped += 1
+                    continue
                 source = rows[articles[n - 1].id].publisher if 1 <= n <= len(articles) else "?"
                 print(f"      [{n}] {source} | {row.get('chiffre')} | {row.get('mesure')} | {row.get('quand', '')} | {row.get('ou', '')}"
-                      f" | extrait {'OK' if passage_ok else 'ABSENT'} | chiffre {'OK' if figure_ok else 'HORS EXTRAIT'}")
+                      f" | chiffre {'OK' if figure_ok else 'HORS EXTRAIT'}")
+            if dropped:
+                print(f"      ({dropped} ligne(s) retirée(s) : extrait absent de l'article)")
 
 
 bench(UUID(sys.argv[1]))

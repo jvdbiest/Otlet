@@ -15,7 +15,7 @@ from uuid import UUID
 import sqlalchemy as sa
 
 from otlet.assistant.adapters.postgres import PostgresAssistantStore
-from otlet.assistant.domain.terms import Concept, widen
+from otlet.assistant.domain.terms import Concept, too_general, widen
 from otlet.platform import database as db
 from otlet.platform.config import Settings
 from otlet.platform.database import workspace_transaction

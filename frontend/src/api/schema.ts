@@ -2234,6 +2234,11 @@ export interface components {
             counts: {
                 [key: string]: number;
             };
+            /**
+             * General
+             * @default []
+             */
+            general: string[];
             /** Name */
             name: string;
             /** Terms */

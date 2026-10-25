@@ -40,7 +40,8 @@ def _concepts_json(concepts: list[Widened], counts: dict[str, int]) -> str:
                 "name": w.concept.name,
                 "terms": list(w.concept.terms),
                 "added": list(w.added),
-                "counts": {term: counts[term] for term in w.terms if term in counts},
+                "general": list(w.general),
+                "counts": {term: counts[term] for term in w.all_terms if term in counts},
             }
             for w in concepts
         ]
@@ -72,7 +73,12 @@ def _dossier(row: sa.Row[Any]) -> Dossier:
         days=row.days,
         status=row.status,
         concepts=[
-            Widened(Concept(c["name"], tuple(c["terms"])), tuple(c["added"])) for c in row.concepts
+            Widened(
+                Concept(c["name"], tuple(c["terms"])),
+                tuple(c["added"]),
+                tuple(c.get("general", ())),
+            )
+            for c in row.concepts
         ],
         candidates=[
             Candidate(
@@ -224,6 +230,20 @@ class PostgresAssistantStore:
                     {"q": websearch(term), "since": since},
                 ).scalar_one()
         return counts
+
+    def total_items(self, workspace_id: UUID, since: datetime | None) -> int:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            return int(
+                connection.execute(
+                    sa.text(
+                        "SELECT count(*) FROM source_items AS i"
+                        f" WHERE {here('i')} AND i.duplicate_of IS NULL"
+                        " AND (CAST(:since AS timestamptz) IS NULL"
+                        " OR coalesce(i.published_at, i.collected_at) >= :since)"
+                    ),
+                    {"since": since},
+                ).scalar_one()
+            )
 
     # Dossiers ---------------------------------------------------------------------------------
 

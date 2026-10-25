@@ -1,0 +1,73 @@
+{
+ "budget-bxl": [
+  [
+   "budget",
+   "budgétaire",
+   "begroting",
+   "budgettaire",
+   "déficit",
+   "tekort",
+   "économies",
+   "besparing",
+   "besparingen"
+  ],
+  [
+   "Bruxelles",
+   "bruxellois",
+   "bruxelloise",
+   "Brussel",
+   "Brusselse",
+   "Brussels",
+   "gewest",
+   "Région bruxelloise"
+  ]
+ ],
+ "austen": [
+  [],
+  [
+   "Austen"
+  ]
+ ],
+ "piratage-ia": [
+  [
+   "pirate",
+   "piraté",
+   "fuite de données",
+   "cyberattaques",
+   "hacker",
+   "datalek"
+  ],
+  []
+ ],
+ "verstappen": [
+  [
+   "Verstappen"
+  ]
+ ],
+ "apple": [
+  [
+   "Apple"
+  ],
+  [
+   "MacBook",
+   "iMac",
+   "iPad",
+   "keynote",
+   "octobre",
+   "oktober"
+  ]
+ ],
+ "actiris-creches": [
+  [
+   "Actiris"
+  ],
+  [
+   "crèche",
+   "crèches",
+   "kinderopvang",
+   "kinderdagverblijf",
+   "kinderdagverblijven",
+   "opvang"
+  ]
+ ]
+}

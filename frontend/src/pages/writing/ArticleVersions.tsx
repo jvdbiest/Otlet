@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { toDocument } from "../../editor/document.ts";
 import { mediaUrl } from "../../media.ts";
@@ -11,6 +11,7 @@ import { CompareLayout, ReferencePanel } from "./Compare.tsx";
 import { DocumentView, type PlatformDocument } from "./DocumentView.tsx";
 import { ExportTools } from "./ExportTools.tsx";
 import { GenerationDetails } from "./GenerationDetails.tsx";
+import { TextSearch } from "./TextSearch.tsx";
 import { VersionEditor } from "./VersionEditor.tsx";
 import { Warning } from "./Warning.tsx";
 
@@ -96,6 +97,8 @@ export function ArticleVersions({
   const [forked, setForked] = useState<{ from: number; to: number } | null>(null);
   // « Comparer » (Joël, 2026-10-20): a reference read only beside the draft or the editor.
   const [comparing, setComparing] = useState(false);
+  // What « Rechercher » reads: the draft or the editor, and the reference when comparing.
+  const searched = useRef<HTMLDivElement>(null);
   const versions = article.versions;
   const shown = versions.find((v) => v.number === chosen) ?? versions.at(-1);
   if (shown === undefined) {
@@ -105,6 +108,8 @@ export function ArticleVersions({
   const lone = listed(shown.details, "lone_sections");
   const repeated = listed(shown.details, "repeated_paragraphs");
   const guard = guardrails(shown.details);
+  // The passages copied from a source, by the draft of the model this version comes from.
+  const copied = guardrails(origin(shown, versions).details).passages.map((p) => p.excerpt);
   const anchor = (type: string, start: string, skip = 0): string | undefined => {
     const id = findBlock(shown.document as unknown as PlatformDocument, type, start, skip);
     return id === undefined ? undefined : blockAnchor(prefix, id);
@@ -245,6 +250,8 @@ export function ArticleVersions({
           </p>
         </div>
       )}
+      <TextSearch within={searched} />
+      <div ref={searched}>
       <CompareLayout
         comparing={comparing}
         reference={
@@ -254,7 +261,7 @@ export function ArticleVersions({
             versions={versions}
             current={shown.number}
             documentSources={(shown.document as unknown as PlatformDocument).attrs.sources}
-            copied={guardrails(origin(shown, versions).details).passages.map((p) => p.excerpt)}
+            copied={copied}
           />
         }
       >
@@ -272,6 +279,7 @@ export function ArticleVersions({
             onChoose(number);
           }}
           copiedFrom={copiedFrom}
+          copied={comparing ? copied : []}
           validated={article.validated_version}
           onClose={() => {
             setEditing(false);
@@ -330,10 +338,12 @@ export function ArticleVersions({
             title={shown.title}
             prefix={prefix}
             mediaUrl={(id) => mediaUrl(workspaceId, id)}
+            copied={comparing ? copied : []}
           />
         </>
       )}
       </CompareLayout>
+      </div>
     </>
   );
 }

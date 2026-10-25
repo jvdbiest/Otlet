@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { Link, useSearch } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
@@ -64,16 +64,21 @@ function remember(key: string, value: string | null) {
  * (X02, F-VEI-04, F-VEI-05). */
 export function ItemsPage() {
   const workspaceId = useWorkspaceId();
-  return workspaceId === undefined ? null : <Items workspaceId={workspaceId} />;
+  const { source, topic } = useSearch({ strict: false });
+  return workspaceId === undefined ? null : (
+    <Items key={`${source ?? ""}|${topic ?? ""}`} workspaceId={workspaceId} source={source ?? null} topic={topic ?? null} />
+  );
 }
 
-function Items({ workspaceId }: { workspaceId: string }) {
+/** `source`, `topic`: opened from the count of a source or a topic, its items in every view
+ * (Joël, 2026-10-24). */
+function Items({ workspaceId, source, topic }: { workspaceId: string; source: string | null; topic: string | null }) {
   const { t } = useTranslation();
   const [filter, setFilter] = useState<FeedFilter>({
-    view: "to_sort",
-    sourceId: null,
+    view: source === null && topic === null ? "to_sort" : "all",
+    sourceId: source,
     unread: false,
-    topicIds: [],
+    topicIds: topic === null ? [] : [topic],
     allTopics: false,
     period: ANY_TIME,
     sort: remembered(SORT_KEY, SORTS) ?? "date",

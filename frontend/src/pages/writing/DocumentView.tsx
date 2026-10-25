@@ -5,6 +5,7 @@ import { styles } from "../watch/styles.ts";
 import { blockAnchor } from "./blocks.ts";
 import { FONTS, type TextStyle } from "../../editor/format.ts";
 import { WRAP_DEFAULT } from "../../editor/schema.ts";
+import { copiedRanges } from "../../editor/copied.ts";
 import { editorStyles } from "../../editor/styles.ts";
 
 const DAY = new Intl.DateTimeFormat("fr-BE", { dateStyle: "medium" });
@@ -34,9 +35,14 @@ export interface PlatformDocument {
   content: Node[];
 }
 
-function inline(nodes: Node[] | undefined, numbers: Map<string, number>, prefix: string): ReactNode[] {
+function inline(
+  nodes: Node[] | undefined,
+  numbers: Map<string, number>,
+  prefix: string,
+  copied: string[] = [],
+): ReactNode[] {
   return (nodes ?? []).map((node, index) => {
-    let out: ReactNode = node.text ?? "";
+    let out: ReactNode = node.text === undefined ? "" : marked(node.text, copied);
     for (const mark of node.marks ?? []) {
       if (mark.type === "bold") {
         out = <strong>{out}</strong>;
@@ -91,6 +97,22 @@ function aligned(node: Node): CSSProperties | undefined {
 
 type MediaUrl = (id: string) => string;
 
+/** A text with the passages copied from a source marked, in the same yellow as the source. */
+function marked(text: string, copied: string[]): ReactNode {
+  const ranges = copiedRanges(text, copied);
+  if (ranges.length === 0) {
+    return text;
+  }
+  const parts: ReactNode[] = [];
+  let at = 0;
+  for (const [start, end] of ranges) {
+    parts.push(text.slice(at, start), <mark key={start}>{text.slice(start, end)}</mark>);
+    at = end;
+  }
+  parts.push(text.slice(at));
+  return parts;
+}
+
 function figureStyle(node: Node): CSSProperties | undefined {
   const side = node.attrs?.align;
   if (node.attrs?.wrap && (side === "left" || side === "right")) {
@@ -109,6 +131,7 @@ function block(
   prefix: string,
   key: number,
   mediaUrl: MediaUrl,
+  copied: string[] = [],
 ): ReactNode {
   const content = node.content;
   const id = node.attrs?.id ? blockAnchor(prefix, node.attrs.id) : undefined;
@@ -116,30 +139,30 @@ function block(
     case "heading":
       return node.attrs?.level === 3 ? (
         <h4 key={key} id={id} style={aligned(node)}>
-          {inline(content, numbers, prefix)}
+          {inline(content, numbers, prefix, copied)}
         </h4>
       ) : (
         <h3 key={key} id={id} style={aligned(node)}>
-          {inline(content, numbers, prefix)}
+          {inline(content, numbers, prefix, copied)}
         </h3>
       );
     case "paragraph":
       return (
         <p key={key} id={id} style={aligned(node)}>
-          {inline(content, numbers, prefix)}
+          {inline(content, numbers, prefix, copied)}
         </p>
       );
     case "bullet_list":
     case "ordered_list": {
       const items = (content ?? []).map((item, n) => (
-        <li key={n}>{(item.content ?? []).map((child, m) => block(child, numbers, prefix, m, mediaUrl))}</li>
+        <li key={n}>{(item.content ?? []).map((child, m) => block(child, numbers, prefix, m, mediaUrl, copied))}</li>
       ));
       return node.type === "bullet_list" ? <ul key={key}>{items}</ul> : <ol key={key}>{items}</ol>;
     }
     case "citation":
     case "encadre":
       return (
-        <blockquote key={key}>{(content ?? []).map((child, m) => block(child, numbers, prefix, m, mediaUrl))}</blockquote>
+        <blockquote key={key}>{(content ?? []).map((child, m) => block(child, numbers, prefix, m, mediaUrl, copied))}</blockquote>
       );
     case "separateur":
       return <hr key={key} />;
@@ -167,19 +190,21 @@ export function DocumentView({
   prefix,
   mediaUrl,
   words,
+  copied = [],
 }: {
   document: PlatformDocument;
   title: string;
   prefix: string;
   mediaUrl: MediaUrl;
   words?: Map<string, number>; // of each source, by its id (Joël, 2026-10-19)
+  copied?: string[]; // passages copied from a source, marked as in the source when comparing
 }) {
   const { t } = useTranslation();
   const numbers = new Map(document.attrs.sources.map((source, index) => [source.id, index + 1]));
   return (
     <article className={`${styles.text} ${editorStyles.paper}`} lang={document.attrs.langue}>
       <h2>{title}</h2>
-      {document.content.map((node, index) => block(node, numbers, prefix, index, mediaUrl))}
+      {document.content.map((node, index) => block(node, numbers, prefix, index, mediaUrl, copied))}
       {document.attrs.sources.length > 0 && (
         <>
           <h3>{t("draft.sources")}</h3>

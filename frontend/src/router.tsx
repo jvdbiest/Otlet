@@ -17,6 +17,8 @@ import { MediaPage } from "./pages/library/MediaPage.tsx";
 import { LoginPage } from "./pages/LoginPage.tsx";
 import { NotFoundPage } from "./pages/NotFoundPage.tsx";
 import { ItemPage } from "./pages/watch/ItemPage.tsx";
+import { AssistantPage } from "./pages/watch/AssistantPage.tsx";
+import { DossierPage } from "./pages/watch/DossierPage.tsx";
 import { ItemsPage } from "./pages/watch/ItemsPage.tsx";
 import { ManualPage } from "./pages/watch/ManualPage.tsx";
 import { SourcesPage } from "./pages/watch/SourcesPage.tsx";
@@ -83,11 +85,15 @@ const briefsRoute = createRoute({ getParentRoute: () => appRoute, path: "/redact
 const newBriefRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/redaction/nouveau",
-  validateSearch: (search: Record<string, unknown>): { items: string } => ({
+  // `title`, `angle`: from a dossier of the Assistant de veille (ADR-0043 §7).
+  validateSearch: (search: Record<string, unknown>): { items: string; title?: string; angle?: string } => ({
     items: typeof search.items === "string" ? search.items : "",
+    ...(typeof search.title === "string" ? { title: search.title } : {}),
+    ...(typeof search.angle === "string" ? { angle: search.angle } : {}),
   }),
   component: function NewBrief() {
-    return <NewBriefPage items={newBriefRoute.useSearch().items} />;
+    const { items, title, angle } = newBriefRoute.useSearch();
+    return <NewBriefPage items={items} title={title} angle={angle} />;
   },
 });
 const briefRoute = createRoute({
@@ -135,7 +141,16 @@ const watchRoute = createRoute({
   component: WatchLayout,
 });
 
-const itemsRoute = createRoute({ getParentRoute: () => watchRoute, path: "/", component: ItemsPage });
+// `source`, `topic`: opened from the count of a source or a topic, filtered on it.
+const itemsRoute = createRoute({
+  getParentRoute: () => watchRoute,
+  path: "/",
+  component: ItemsPage,
+  validateSearch: (search: Record<string, unknown>): { source?: string; topic?: string } => ({
+    ...(typeof search.source === "string" ? { source: search.source } : {}),
+    ...(typeof search.topic === "string" ? { topic: search.topic } : {}),
+  }),
+});
 const sourcesRoute = createRoute({ getParentRoute: () => watchRoute, path: "sources", component: SourcesPage });
 const topicsRoute = createRoute({ getParentRoute: () => watchRoute, path: "sujets", component: TopicsPage });
 const topicRoute = createRoute({
@@ -143,6 +158,15 @@ const topicRoute = createRoute({
   path: "sujets/$topicId",
   component: function Topic() {
     return <TopicItemsPage topicId={topicRoute.useParams().topicId} />;
+  },
+});
+// The Assistant de veille (A1b-1, ADR-0043): a subject, its dossier.
+const assistantRoute = createRoute({ getParentRoute: () => watchRoute, path: "assistant", component: AssistantPage });
+const dossierRoute = createRoute({
+  getParentRoute: () => watchRoute,
+  path: "assistant/$dossierId",
+  component: function Dossier() {
+    return <DossierPage dossierId={dossierRoute.useParams().dossierId} />;
   },
 });
 const manualRoute = createRoute({ getParentRoute: () => watchRoute, path: "saisie", component: ManualPage });
@@ -158,7 +182,16 @@ const routeTree = rootRoute.addChildren([
   loginRoute,
   appRoute.addChildren([
     indexRoute,
-    watchRoute.addChildren([itemsRoute, topicsRoute, topicRoute, sourcesRoute, manualRoute, itemRoute]),
+    watchRoute.addChildren([
+      itemsRoute,
+      topicsRoute,
+      topicRoute,
+      sourcesRoute,
+      assistantRoute,
+      dossierRoute,
+      manualRoute,
+      itemRoute,
+    ]),
     briefsRoute,
     newBriefRoute,
     briefRoute,

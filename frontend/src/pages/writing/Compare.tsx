@@ -5,6 +5,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import { copiedRanges } from "../../editor/copied.ts";
 import { mediaUrl } from "../../media.ts";
 import { briefSourcesQuery, type SourceTextView, type VersionView } from "../../writing.ts";
 import { formatDate } from "../watch/labels.ts";
@@ -269,21 +270,24 @@ function SourceText({ source, number, copied }: { source: SourceTextView; number
   );
 }
 
-/** The paragraph, with the copied passages (their first words, as the guardrails name them) marked. */
+/** The paragraph, with the copied passages (their first words, as the guardrails name them)
+ * marked: the same marks as in the draft beside it (editor/copied.ts). */
 function marked(paragraph: string, copied: string[]): ReactNode {
-  const hit = copied
-    .map((excerpt) => ({ excerpt, at: paragraph.indexOf(excerpt) }))
-    .filter((found) => found.excerpt !== "" && found.at >= 0)
-    .sort((a, b) => a.at - b.at)[0];
-  if (hit === undefined) {
+  const ranges = copiedRanges(paragraph, copied);
+  if (ranges.length === 0) {
     return paragraph;
   }
-  const end = hit.at + hit.excerpt.length;
-  return (
-    <>
-      {paragraph.slice(0, hit.at)}
-      <mark title="Passage repris dans le brouillon">{paragraph.slice(hit.at, end)}</mark>
-      {marked(paragraph.slice(end), copied)}
-    </>
-  );
+  const parts: ReactNode[] = [];
+  let at = 0;
+  for (const [start, end] of ranges) {
+    parts.push(
+      paragraph.slice(at, start),
+      <mark key={start} title="Passage repris dans le brouillon">
+        {paragraph.slice(start, end)}
+      </mark>,
+    );
+    at = end;
+  }
+  parts.push(paragraph.slice(at));
+  return parts;
 }

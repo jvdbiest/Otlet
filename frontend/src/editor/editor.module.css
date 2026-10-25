@@ -361,3 +361,9 @@
 .menu button:focus-visible {
   background: var(--bg);
 }
+
+/* A passage copied from a source, as the source beside it marks it (Joël, 2026-10-24). */
+.page :global(.otlet-copied) {
+  background-color: mark;
+  color: marktext;
+}

@@ -2,6 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Button, Form, Input, Label, Text, TextField } from "react-aria-components";
+import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import {
   checksQuery,
@@ -263,7 +264,10 @@ function SourceCard({ workspaceId, source }: { workspaceId: string; source: Sour
         <span className={styles.meta}>{reasonText(t, source.legal_reason)}</span>
       </p>
       <p className={styles.meta}>
-        {t("sources.items", { count: source.item_count })}
+        {/* The count opens its items in Veille › Éléments, filtered on the source (Joël, 2026-10-24). */}
+        <Link to="/veille" search={{ source: source.id }} title={t("sources.showItems")}>
+          {t("sources.items", { count: source.item_count })}
+        </Link>
         {" · "}
         {!source.active
           ? t("sources.paused")

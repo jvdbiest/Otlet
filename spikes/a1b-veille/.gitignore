@@ -1,0 +1,9 @@
+# Press texts (titles, summaries) and verdicts on them stay on the VM, out of the repository.
+results/candidates.json
+results/qualify.json
+results/preannotation.json
+results/reference.json
+results/to_label.txt
+results/reference_doc.md
+results/doc_payload.json
+results/qualify2.json

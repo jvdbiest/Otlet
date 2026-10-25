@@ -248,6 +248,7 @@ class Drafts:
                 crossing=False,
                 words=WORDS[fields.length],
                 repeats=first,
+                in_text=first,
             )
             refusals.append(found)
             return found

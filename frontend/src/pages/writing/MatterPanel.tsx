@@ -66,8 +66,15 @@ export function MatterPanel({
     </>
   );
   const tone = level === "insufficient" ? styles.warning : level === "limited" ? styles.notice : styles.meta;
+  // Next to « Générer »: it informs, it never stops the writing (Joël, 2026-10-24); limited
+  // gets a warning, insufficient a stronger one.
   if (compact) {
-    return <p className={tone}>{title}</p>;
+    return (
+      <div className={tone}>
+        <p>{title}</p>
+        {level !== "enough" && <p>{t(`matter.generate.${level}`)}</p>}
+      </div>
+    );
   }
   return (
     <div className={tone} aria-live="polite">

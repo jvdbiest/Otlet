@@ -7,6 +7,7 @@ const TABS = [
   { to: "/veille", label: "watch.tabs.items" },
   { to: "/veille/sujets", label: "watch.tabs.topics" },
   { to: "/veille/sources", label: "watch.tabs.sources" },
+  { to: "/veille/assistant", label: "watch.tabs.assistant" },
   { to: "/veille/saisie", label: "watch.tabs.manual" },
 ] as const;
 

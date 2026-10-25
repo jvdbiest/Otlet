@@ -1,0 +1,187 @@
+{
+ "budget-bxl": {
+  "relevant": 2,
+  "methods": {
+   "A": {
+    "precision_10": 0.0,
+    "recall": 0.5,
+    "recall_nl": 0.0,
+    "shown": 17
+   },
+   "B": {
+    "precision_10": null,
+    "recall": 0.0,
+    "recall_nl": 0.0,
+    "shown": 0
+   },
+   "G": {
+    "precision_10": 0.1,
+    "recall": 1.0,
+    "recall_nl": 1.0,
+    "shown": 60
+   },
+   "C": {
+    "precision_10": null,
+    "recall": 0.0,
+    "recall_nl": 0.0,
+    "shown": 0
+   }
+  },
+  "relevant_set_aside_by_C": [
+   "01a16fbf-42b4-7313-a93c-f76a8b8189e8"
+  ]
+ },
+ "austen": {
+  "relevant": 31,
+  "methods": {
+   "A": {
+    "precision_10": 0.7,
+    "recall": 0.81,
+    "recall_nl": 0.0,
+    "shown": 40
+   },
+   "B": {
+    "precision_10": 0.8,
+    "recall": 1.0,
+    "recall_nl": 1.0,
+    "shown": 49
+   },
+   "G": {
+    "precision_10": 0.6,
+    "recall": 1.0,
+    "recall_nl": 1.0,
+    "shown": 49
+   },
+   "C": {
+    "precision_10": 1.0,
+    "recall": 0.87,
+    "recall_nl": 0.83,
+    "shown": 27
+   }
+  },
+  "relevant_set_aside_by_C": []
+ },
+ "piratage-ia": {
+  "relevant": 9,
+  "methods": {
+   "A": {
+    "precision_10": 0.33,
+    "recall": 0.22,
+    "recall_nl": 0.0,
+    "shown": 6
+   },
+   "B": {
+    "precision_10": 0.5,
+    "recall": 0.67,
+    "recall_nl": 0.0,
+    "shown": 21
+   },
+   "G": {
+    "precision_10": 0.7,
+    "recall": 1.0,
+    "recall_nl": 1.0,
+    "shown": 30
+   },
+   "C": {
+    "precision_10": 0.71,
+    "recall": 0.56,
+    "recall_nl": 0.0,
+    "shown": 7
+   }
+  },
+  "relevant_set_aside_by_C": [
+   "01a16a15-6d77-7754-a94c-5b900c5166d6",
+   "01a16cd9-6967-751a-8904-7e0afa6bd96b"
+  ]
+ },
+ "verstappen": {
+  "relevant": 29,
+  "methods": {
+   "A": {
+    "precision_10": 1.0,
+    "recall": 0.97,
+    "recall_nl": null,
+    "shown": 40
+   },
+   "B": {
+    "precision_10": 1.0,
+    "recall": 0.97,
+    "recall_nl": null,
+    "shown": 54
+   },
+   "G": {
+    "precision_10": 1.0,
+    "recall": 1.0,
+    "recall_nl": null,
+    "shown": 56
+   },
+   "C": {
+    "precision_10": 1.0,
+    "recall": 0.93,
+    "recall_nl": null,
+    "shown": 37
+   }
+  },
+  "relevant_set_aside_by_C": []
+ },
+ "apple": {
+  "relevant": 4,
+  "methods": {
+   "A": {
+    "precision_10": 0.25,
+    "recall": 0.25,
+    "recall_nl": null,
+    "shown": 4
+   },
+   "B": {
+    "precision_10": 0.3,
+    "recall": 1.0,
+    "recall_nl": null,
+    "shown": 45
+   },
+   "G": {
+    "precision_10": 0.4,
+    "recall": 1.0,
+    "recall_nl": null,
+    "shown": 55
+   },
+   "C": {
+    "precision_10": 0.44,
+    "recall": 1.0,
+    "recall_nl": null,
+    "shown": 9
+   }
+  },
+  "relevant_set_aside_by_C": []
+ },
+ "actiris-creches": {
+  "relevant": 1,
+  "methods": {
+   "A": {
+    "precision_10": 1.0,
+    "recall": 1.0,
+    "recall_nl": 1.0,
+    "shown": 1
+   },
+   "B": {
+    "precision_10": 1.0,
+    "recall": 1.0,
+    "recall_nl": 1.0,
+    "shown": 1
+   },
+   "G": {
+    "precision_10": 1.0,
+    "recall": 1.0,
+    "recall_nl": 1.0,
+    "shown": 1
+   },
+   "C": {
+    "precision_10": 1.0,
+    "recall": 1.0,
+    "recall_nl": 1.0,
+    "shown": 1
+   }
+  },
+  "relevant_set_aside_by_C": []
+ }
+}

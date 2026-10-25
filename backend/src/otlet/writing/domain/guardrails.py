@@ -4,7 +4,8 @@ checks of the content after the model wrote it, which no prompt replaces.
 
 - `unsupported`: the proper names, dates and numbers of the draft that its sources never write.
   The audit found « Stephen King » in 5 of 19 drafts of a top 10 whose source never names him:
-  a model fills in with what it knows. A finding is a clue for the author, not a proof.
+  a model fills in with what it knows. A finding is a clue for the author, not a proof. A
+  place counts as written under any of its forms (PLACES).
 - `copying`: the passages taken word for word from a source, and the share of the draft they
   make (some models copy 40 to 60 % of their sequences of 8 words).
 
@@ -33,6 +34,38 @@ NAME = re.compile(
 )
 POSSESSIVE = re.compile(r"['’]s$")
 ELISION = re.compile(r"^(?:[ldjmnstcq]|qu|jusqu|lorsqu|puisqu)['’]", re.I)
+# The forms of a place, folded: its name, its people, its adjective, its English name. A place
+# the draft names is known when a source writes one of them: « en France » rewords « sur le
+# territoire français », « en Belgique » « des Belges » (Joël, 2026-10-24: no inventions).
+# Short or ambiguous forms are left out (« us », « eu », « ue »).
+PLACES = tuple(
+    frozenset(forms.strip().split(","))
+    for forms in """
+    france,francais,francaise,francaises,french
+    belgique,belge,belges,belgium,belgian
+    wallonie,wallon,wallonne,wallons,wallonia
+    flandre,flandres,flamand,flamande,flamands,flanders,flemish
+    bruxelles,bruxellois,bruxelloise,brussels
+    europe,europeen,europeenne,europeens,europeennes,european
+    allemagne,allemand,allemande,allemands,allemandes,germany,german
+    angleterre,anglais,anglaise,england,english
+    chine,chinois,chinoise,chinoises,china,chinese
+    japon,japonais,japonaise,japonaises,japan,japanese
+    russie,russe,russes,russia,russian
+    ukraine,ukrainien,ukrainienne,ukrainiens,ukrainian
+    italie,italien,italienne,italiens,italy,italian
+    espagne,espagnol,espagnole,espagnols,spain,spanish
+    suisse,suisses,switzerland,swiss
+    canada,canadien,canadienne,canadiens,canadian
+    inde,indien,indienne,indiens,india,indian
+    israel,israelien,israelienne,israeliens,israeli
+    autriche,autrichien,autrichienne,austria,austrian
+    californie,californien,californienne,california
+    etats unis,americain,americaine,americains,americaines,united states,american
+    royaume uni,britannique,britanniques,united kingdom,british,uk
+    pays bas,neerlandais,neerlandaise,netherlands,dutch
+    cisjordanie,west bank""".strip().splitlines()
+)
 NUMBER = re.compile(r"\d[\d\s  .,]*\d|\d")
 
 
@@ -94,8 +127,13 @@ def unsupported(paragraphs: list[str], sources: list[str], allowed: str = "") ->
         for name in _names(paragraph):
             folded = fold(name)
             parts = [p for p in folded.split() if len(p) > 3]
-            known = f" {folded} " in reference or (
-                len(parts) > 1 and all(f" {p} " in reference for p in parts)
+            known = (
+                f" {folded} " in reference
+                or (len(parts) > 1 and all(f" {p} " in reference for p in parts))
+                or any(
+                    folded in forms and any(f" {form} " in reference for form in forms)
+                    for forms in PLACES
+                )
             )
             if not known and folded not in seen:
                 seen.add(folded)

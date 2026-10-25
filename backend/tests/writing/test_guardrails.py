@@ -74,3 +74,20 @@ def test_the_matter_has_three_levels() -> None:
     assert matter_level(352, full_text=False) == "insufficient"
     assert matter_level(40, full_text=False) == "insufficient"
     assert matter_level(120, full_text=True) == "insufficient"
+
+
+def test_a_place_counts_as_written_under_any_of_its_forms() -> None:
+    """« En France » rewords « sur le territoire français » (Joël, 2026-10-24): no finding; a
+    place no source writes in any form is still found."""
+    sources = [
+        "Des risques liés à leur utilisation sur le territoire français, selon BFM TV.",
+        "Des centaines de milliers de Belges touchés par des fuites de données.",
+        "Settlers attacked diplomats in the West Bank; UK-funded vehicles in Dunkirk.",
+    ]
+    draft = [
+        "Des inquiétudes persistent en France. Les fuites inquiètent en Belgique.",
+        "Des colons attaquent en Cisjordanie. Rien de tel en Allemagne.",
+        "Des véhicules venus du Royaume Uni, et non des États-Unis.",
+    ]
+    names = [f.text for f in unsupported(draft, sources) if f.kind == "name"]
+    assert names == ["Allemagne", "États-Unis"]

@@ -90,14 +90,23 @@ export function BriefsPage() {
   );
 }
 
-/** A new brief, on the items chosen in the watch (`items`, comma separated ids). */
-export function NewBriefPage({ items }: { items: string }) {
+/** A new brief, on the items chosen in the watch (`items`, comma separated ids); `title` and
+ * `angle` when it comes from a dossier of the Assistant de veille. */
+export function NewBriefPage({
+  items,
+  title,
+  angle,
+}: {
+  items: string;
+  title?: string | undefined;
+  angle?: string | undefined;
+}) {
   const workspaceId = useWorkspaceId();
   if (workspaceId === undefined) {
     return null;
   }
   const ids = items.split(",").filter((id) => id !== "");
-  return <BriefForm workspaceId={workspaceId} brief={null} initialItems={ids} />;
+  return <BriefForm workspaceId={workspaceId} brief={null} initialItems={ids} initialTitle={title} initialAngle={angle} />;
 }
 
 export function BriefPage({ briefId }: { briefId: string }) {
@@ -130,17 +139,21 @@ function BriefForm({
   workspaceId,
   brief,
   initialItems,
+  initialTitle,
+  initialAngle,
 }: {
   workspaceId: string;
   brief: BriefView | null;
   initialItems: string[];
+  initialTitle?: string | undefined;
+  initialAngle?: string | undefined;
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const save = useSaveBrief(workspaceId);
   const remove = useDeleteBrief(workspaceId);
-  const [title, setTitle] = useState(brief?.title ?? "");
-  const [angle, setAngle] = useState(brief?.angle ?? "");
+  const [title, setTitle] = useState(brief?.title ?? initialTitle ?? "");
+  const [angle, setAngle] = useState(brief?.angle ?? initialAngle ?? "");
   const [instructions, setInstructions] = useState(brief?.instructions ?? "");
   const [audience, setAudience] = useState(brief?.audience ?? "");
   const [tone, setTone] = useState(brief?.tone ?? "neutral");

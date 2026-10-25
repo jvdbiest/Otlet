@@ -19,6 +19,7 @@ from otlet.writing.domain.draft import (
     repeated_paragraphs,
     source_budget,
     to_document,
+    without_ids,
 )
 from otlet.writing.domain.vocabulary import settled
 
@@ -201,8 +202,9 @@ def test_every_source_of_the_brief_must_be_cited() -> None:
     keys = ["S1", "S2", "S3"]
     errors = check_answer(answer(), keys)
     assert errors == [
-        "sources not used: S3; every source of the brief must be cited by at least one paragraph:"
-        " connect them in the article"
+        "sources not used: S3; use each of them once, in the one paragraph where it brings"
+        " something the other sources do not: add that fact there, never repeat a fact the"
+        " article already gives, and leave the rest of the article as it is"
     ]
     # After a repair, the answer is kept even if it still leaves a source out.
     assert check_answer(answer(), keys, every_source=False) == []
@@ -323,3 +325,69 @@ def test_a_synthesis_crosses_the_sources_a_panorama_takes_them_in_turn() -> None
         for paragraph in section["paragraphs"]:
             paragraph["source_ids"] = ["S1"]
     assert check_answer(json.dumps(alone), ["S1"], crossing=True) == []
+
+
+def test_an_id_written_in_a_text_sends_the_answer_back() -> None:
+    """An id never belongs to the text (Joël, 2026-10-24): the first answer is sent back."""
+    raw = json.loads(answer())
+    raw["lead"] = "Selon S2, la tempête a frappé le Hainaut et le Brabant wallon."
+    raw["sections"][0]["paragraphs"][0]["text"] = 'Le bilan est lourd. source_ids: ["S1"]'
+    errors = check_answer(json.dumps(raw), ["S1", "S2"], every_source=False, in_text=True)
+    assert len(errors) == 1 and errors[0].startswith(
+        "source ids written in the text: S2, S1, source_ids;"
+    )
+    # Not asked (the repaired answer): kept, and cleaned when it becomes a document.
+    assert check_answer(json.dumps(raw), ["S1", "S2"], every_source=False) == []
+
+
+def test_ids_left_in_the_text_go_or_become_the_publisher() -> None:
+    """The four forms seen in Joël's versions (2026-10-24): removed when the sentence stands
+    without them; as the subject of a verb, the name of its publisher, « les sources » for
+    several."""
+    names = {"S1": "Le Soir", "S2": "RTBF Info", "S3": "La DH"}
+    cases = {
+        "Selon S2 et S3, ces mesures visaient à minimiser les risques.": (
+            "Ces mesures visaient à minimiser les risques."
+        ),
+        "Le 112 a été saturé. Selon S2, le retour au calme a été progressif.": (
+            "Le 112 a été saturé. Le retour au calme a été progressif."
+        ),
+        "Le pays est un modèle, comme le souligne S2.": "Le pays est un modèle.",
+        "Les vents ont atteint 110 km/h, selon S1 et S3.": "Les vents ont atteint 110 km/h.",
+        "Des enjeux globaux (S3) se dessinent.": "Des enjeux globaux se dessinent.",
+        'Un classique du genre. source_ids: ["S1"]': "Un classique du genre.",
+        "S3 confirme ces chiffres.": "La DH confirme ces chiffres.",
+        "S2 et S3 soulignent que la normale revient.": (
+            "Les sources soulignent que la normale revient."
+        ),
+        "Les dégâts sont lourds, et S2 et S3 décrivent le chaos.": (
+            "Les dégâts sont lourds, et les sources décrivent le chaos."
+        ),
+        "La Galaxy S24 sort en mars.": "La Galaxy S24 sort en mars.",
+    }
+    for text, expected in cases.items():
+        assert without_ids(text, names) == expected, text
+    sources = prompt_sources([source("A", "a"), source("B", "b")], 9000)
+    raw = json.loads(answer())
+    raw["title"] = "Ce que dit S1"
+    raw["sections"][0]["heading"] = "Le bilan selon S2"
+    title, document = to_document(json.dumps(raw), sources, "fr")
+    assert title == "Ce que dit Journal"
+    assert document["content"][1]["content"][0]["text"] == "Le bilan"
+
+
+def test_the_instructions_of_the_author_decide_the_plan() -> None:
+    """« Tempête Austen » (Joël, 2026-10-24): asked in the order of events, it came out by
+    themes; the plan of the mode is now a default the author's instructions override."""
+    sources = prompt_sources([source("A", "a"), source("B", "b")], 9000)
+    fields = BriefFields(
+        title="Tempête Austen - Son déroulement",
+        item_ids=(),
+        instructions="Présenter les événements dans leur ordre chronologique.",
+    )
+    (_, system), (_, user) = messages(fields, sources)
+    assert "This plan is a default" in user
+    assert "prevails over the plan of the mode" in system
+    for mode in (Mode.SYNTHESIS, Mode.PANORAMA):
+        plain = messages(BriefFields(title="T", item_ids=(), mode=mode), sources)[1][1]
+        assert "{default}" not in plain and "This plan is a default" in plain

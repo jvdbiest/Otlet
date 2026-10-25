@@ -201,6 +201,12 @@ def messages(
             + "). They decide the plan and the order of the article: a structure they ask for"
             " prevails over the plan of the mode.\n" + fields.instructions
         )
+    if asks_dates(fields):
+        user += (
+            "\n\nDates: start each heading with the date of its event when its sources give it,"
+            " otherwise with the date of its source (the date field of the source); never invent"
+            " a date."
+        )
     return [("system", system), ("user", user)]
 
 
@@ -489,6 +495,27 @@ def _vocabulary(text: str) -> set[str]:
 def _alike(one: set[str], other: set[str]) -> bool:
     """Two paragraphs that share most of their words: one is a copy of the other."""
     return bool(one and other) and len(one & other) / len(one | other) >= 0.6
+
+
+def without_repeats(raw: str) -> str:
+    """A checked answer without the paragraphs that repeat an earlier one, and without the
+    sections left empty. On Joël's brief « actualités de piratage » (2026-10-25), the answer
+    sent back once for its missing dates came out with one section four times: a model asked
+    to fix many things at once may copy; a copy brings nothing, it is taken out."""
+    data = json.loads(raw)
+    seen: list[set[str]] = []
+    sections = []
+    for section in data["sections"]:
+        kept = []
+        for paragraph in section["paragraphs"]:
+            vocabulary = _vocabulary(paragraph["text"])
+            if any(_alike(vocabulary, other) for other in seen):
+                continue
+            seen.append(vocabulary)
+            kept.append(paragraph)
+        if kept:
+            sections.append({**section, "paragraphs": kept})
+    return json.dumps({**data, "sections": sections}, ensure_ascii=False)
 
 
 def repeated_paragraphs(raw: str) -> list[str]:

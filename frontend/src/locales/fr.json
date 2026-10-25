@@ -1247,6 +1247,7 @@
       "agir": "Action"
     },
     "language": "en {language, select, fr {français} nl {néerlandais} en {anglais} other {{language}}} seulement",
+    "period": "{count, plural, one {aujourd'hui seulement} other {# derniers jours seulement}}",
     "set": "{count, plural, =0 {aucun article} one {# article} other {# articles}}",
     "showSet": "Afficher les articles",
     "hideSet": "Replier les articles",

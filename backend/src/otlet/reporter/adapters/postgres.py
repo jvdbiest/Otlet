@@ -33,6 +33,7 @@ def _state_json(state: State) -> str:
         {
             "concepts": [{"name": c.name, "terms": list(c.terms)} for c in state.concepts],
             "language": state.language,
+            "days": state.days,
         }
     )
 
@@ -117,7 +118,9 @@ def _turn(row: sa.Row[Any]) -> Turn:
         status=row.status,
         operation=None if row.operation is None else Operation(row.operation),
         state=State(
-            tuple(_concept(c) for c in row.state.get("concepts", [])), row.state.get("language")
+            tuple(_concept(c) for c in row.state.get("concepts", [])),
+            row.state.get("language"),
+            row.state.get("days"),
         ),
         concepts=[
             Widened(_concept(c), tuple(c["added"]), tuple(c.get("general", ())))

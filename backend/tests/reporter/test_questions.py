@@ -79,3 +79,18 @@ def test_the_state_follows_the_operations() -> None:
     # A fact or a sort does not change the set; a new search starts in every language.
     assert next_state(state, Translated(Operation.FAIT, (), None)) == state
     assert next_state(state, Translated(Operation.CHERCHER, (BXL,), None)) == State((BXL,), None)
+
+
+def test_a_period_named_is_a_filter() -> None:
+    """« les actualités de piratage de ces derniers jours » kept 30 days (Joël, 2026-10-25)."""
+    from otlet.reporter.domain.questions import asked_period
+
+    assert asked_period("quels sont les actualités de piratage de ces derniers jours ?") == 7
+    assert asked_period("La météo du jour en Belgique ?") == 1
+    assert asked_period("Tempête Austen") is None
+    concept = Concept("piratage", ("piratage",))
+    translated = guarded(
+        "Le piratage de ces derniers jours", Translated(Operation.CHERCHER, (concept,), None)
+    )
+    assert translated.days == 7
+    assert next_state(State(), translated) == State((concept,), None, 7)

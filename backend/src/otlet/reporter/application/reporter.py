@@ -227,7 +227,7 @@ class Reporter:
         last = conversation.turns[-1]
         if last.id != turn_id or last.status != "done" or not last.state.concepts:
             raise ReporterError("not_editable", "only the terms of the last set can be changed")
-        state = State(_checked(concepts), last.state.language)
+        state = State(_checked(concepts), last.state.language, last.state.days)
         turn = self._found(context.workspace_id, conversation, last, state)
         self._store.save_turn(context.workspace_id, conversation_id, turn)
         return turn
@@ -328,9 +328,8 @@ class Reporter:
         if not state.concepts:
             return replace(turn, state=state, concepts=[], term_counts={}, candidates=[])
         glossary = [stored.entry for stored in self._search.glossary(workspace_id)]
-        since = (
-            None if conversation.days is None else self._now() - timedelta(days=conversation.days)
-        )
+        days = state.days or conversation.days
+        since = None if days is None else self._now() - timedelta(days=days)
         widened = widen(list(state.concepts), glossary)
         counts = self._search.term_counts(
             workspace_id, [term for w in widened for term in w.all_terms], since

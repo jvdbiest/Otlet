@@ -22,6 +22,7 @@ from otlet.writing.domain.draft import (
     source_budget,
     to_document,
     without_ids,
+    without_repeats,
 )
 from otlet.writing.domain.vocabulary import settled
 
@@ -410,3 +411,12 @@ def test_headings_without_a_date_are_sent_back_when_dates_are_asked() -> None:
     asked = BriefFields(title="T", item_ids=(uuid.uuid4(),), instructions="Indiquer les dates")
     assert asks_dates(asked)
     assert not asks_dates(replace(asked, instructions="Un paragraphe par événement"))
+
+
+def test_a_repeated_section_is_taken_out() -> None:
+    """One section four times in the answer sent back for its dates (Joël, 2026-10-25)."""
+    data = json.loads(answer())
+    copy = data["sections"][0]
+    data["sections"] += [copy, copy]
+    cleaned = json.loads(without_repeats(json.dumps(data)))
+    assert [s["heading"] for s in cleaned["sections"]] == ["Les annonces", "Mon expérience"]

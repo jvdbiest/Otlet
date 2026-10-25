@@ -37,6 +37,8 @@ class State:
 
     concepts: tuple[Concept, ...] = ()
     language: str | None = None
+    # A period the author named (« ces derniers jours »), in days; None: the conversation's.
+    days: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -44,6 +46,7 @@ class Translated:
     operation: Operation
     concepts: tuple[Concept, ...]
     language: str | None
+    days: int | None = None
 
 
 OPERATION_SYSTEM = (
@@ -89,6 +92,29 @@ LANGUAGE_WORDS = {
     "fr": ("francais", "francophone", "francophones"),
     "en": ("anglais", "anglophone", "anglophones"),
 }
+
+
+# Words of a question that name a period (Joël, 2026-10-25: « les actualités de piratage de ces
+# derniers jours » kept the 30 days of the conversation, and the brief dated events of
+# September). A filter, as a language is; the longest period named wins nothing: the first.
+PERIOD_WORDS = (
+    ("aujourd'hui", 1),
+    ("du jour", 1),
+    ("ce jour", 1),
+    ("hier", 2),
+    ("ces derniers jours", 7),
+    ("ces jours-ci", 7),
+    ("cette semaine", 7),
+    ("de la semaine", 7),
+    ("la semaine derniere", 14),
+    ("ce mois", 31),
+    ("du mois", 31),
+)
+
+
+def asked_period(question: str) -> int | None:
+    asked = f" {folded(question).replace('?', ' ').replace(',', ' ')} "
+    return next((days for words, days in PERIOD_WORDS if f" {words} " in asked), None)
 
 
 def operation_message(history: list[str], state: State, question: str) -> str:
@@ -159,10 +185,11 @@ def guarded(question: str, translated: Translated) -> Translated:
         )
 
     anchored = tuple(c for c in translated.concepts if named(c))
-    kept = replace(translated, concepts=anchored or translated.concepts[:1])
+    period = asked_period(question)
+    kept = replace(translated, concepts=anchored or translated.concepts[:1], days=period)
     for code, names in LANGUAGE_WORDS.items():
         if words & set(names):
-            return Translated(Operation.RESTREINDRE, (), code)
+            return Translated(Operation.RESTREINDRE, (), code, period)
     return kept
 
 
@@ -171,15 +198,17 @@ def next_state(state: State, translated: Translated) -> State:
     proposed = translated.concepts
     match translated.operation:
         case Operation.CHERCHER if proposed:
-            # A new subject: a new set, in every language.
-            return State(proposed[:2], None)
+            # A new subject: a new set, in every language, over the period it names.
+            return State(proposed[:2], None, translated.days)
         case Operation.RESTREINDRE:
             concepts = (state.concepts + proposed[:1])[:CONCEPTS_MAX]
-            return State(concepts, translated.language or state.language)
+            return State(
+                concepts, translated.language or state.language, translated.days or state.days
+            )
         case Operation.ELARGIR if state.concepts and proposed:
             last = state.concepts[-1]
             widened = Concept(last.name, _clean([*last.terms, *proposed[0].terms]))
-            return State((*state.concepts[:-1], widened), state.language)
+            return State((*state.concepts[:-1], widened), state.language, state.days)
         case _:
             return state
 

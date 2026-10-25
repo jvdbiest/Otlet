@@ -33,6 +33,7 @@ from otlet.writing.domain.draft import (
     repeated_paragraphs,
     source_budget,
     to_document,
+    without_repeats,
 )
 from otlet.writing.domain.guardrails import copying, unsupported
 from otlet.writing.domain.vocabulary import choice
@@ -316,9 +317,11 @@ class Drafts:
                 details,
             )
             return
-        title, document = to_document(written.text, sources, fields.language)
+        # A section the model copied is taken out; the details say what was (Joël, 2026-10-25).
+        answer = without_repeats(written.text)
+        title, document = to_document(answer, sources, fields.language)
         cut = [source.source.title for source in sources if source.cut]
-        cited = cited_keys(written.text)
+        cited = cited_keys(answer)
         unused = [source.source.title for source in sources if source.key not in cited]
         # More tokens than the window: a local engine may have dropped the start of the
         # conversation, where the rules are (Ollama does so without a word).
@@ -342,7 +345,7 @@ class Drafts:
         if fields.mode is Mode.SYNTHESIS and len(keys) > 1:
             # The repaired answer is kept even if some sections still draw on one source:
             # the version says which (a warning, not a failure).
-            details["lone_sections"] = lone_sections(written.text)
+            details["lone_sections"] = lone_sections(answer)
         details["repeated_paragraphs"] = repeated_paragraphs(written.text)
         details.update(checked(written.text, texts, brief.fields))
         self._articles.finish(workspace_id, generation_id, None, written.attempts, made, details)

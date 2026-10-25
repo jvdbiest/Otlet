@@ -5050,6 +5050,17 @@
             ],
             "title": "Created At"
           },
+          "days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days"
+          },
           "error": {
             "anyOf": [
               {
@@ -5154,6 +5165,7 @@
           "status",
           "operation",
           "language",
+          "days",
           "concepts",
           "candidates",
           "fact",

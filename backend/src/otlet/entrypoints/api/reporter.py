@@ -69,6 +69,7 @@ class TurnView(BaseModel):
     status: Literal["pending", "done", "failed"]
     operation: Literal["chercher", "restreindre", "élargir", "trier", "fait", "agir"] | None
     language: str | None
+    days: int | None  # a period the question named, in days
     concepts: list[ConceptView]
     candidates: list[TurnCandidateView]
     fact: FactView | None
@@ -87,6 +88,7 @@ class TurnView(BaseModel):
             status=turn.status,
             operation=None if turn.operation is None else turn.operation.value,
             language=turn.state.language,
+            days=turn.state.days,
             concepts=[
                 ConceptView(
                     name=w.concept.name,

@@ -3704,6 +3704,8 @@ export interface components {
             concepts: components["schemas"]["ConceptView"][];
             /** Created At */
             created_at: string | null;
+            /** Days */
+            days: number | null;
             /** Error */
             error: string | null;
             fact: components["schemas"]["FactView"] | null;

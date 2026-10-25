@@ -134,11 +134,23 @@ def bench(workspace: UUID) -> None:
             operation = answer.get("operation")
             proposed = [Concept(c.get("name") or c["terms"][0], tuple(c["terms"]))
                         for c in answer.get("concepts", []) if c.get("terms")]
+            # Guards without a model (third pass). A concept is kept only when the question
+            # names it (its name or one of its terms): « impact, effet, ville » is dropped.
+            # A language asked for is a filter, never a concept.
+            asked = f" {fold(question)} "
+            anchored = [c for c in proposed if any(f" {fold(w)} " in asked or fold(w) in asked.split()
+                                                   for w in (c.name, *c.terms) if len(w) > 2)]
+            proposed = anchored or proposed[:1]
+            for words, code in (("neerlandais neerlandophone flamand nl", "nl"),
+                                ("francais francophone", "fr"), ("anglais anglophone", "en")):
+                if any(f" {w} " in asked.replace("?", " ") for w in words.split()):
+                    operation, model_language, proposed = "restreindre", code, []
             if operation == "chercher":
                 model_concepts = proposed[:2]
             elif operation == "restreindre":
                 model_concepts = model_concepts + proposed
-                model_language = answer.get("langue") or model_language
+                langue = answer.get("langue")
+                model_language = langue if langue in ("fr", "nl", "en") else model_language
             elif operation == "élargir" and model_concepts and proposed:
                 last = model_concepts[-1]
                 model_concepts = model_concepts[:-1] + [Concept(last.name, last.terms + proposed[0].terms)]

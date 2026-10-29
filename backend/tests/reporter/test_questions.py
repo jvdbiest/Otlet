@@ -221,3 +221,41 @@ def test_words_between_quotes_are_searched_as_written() -> None:
     # A phrase the model left out is a concept of its own, first.
     other = guarded(question, Translated(Operation.CHERCHER, (Concept("jeu", ("jeux",)),), None))
     assert other.concepts[0] == Concept("GTA VI", ('"GTA VI"', '"GTA 6"'))
+
+
+def test_the_failures_of_the_evening_of_2026_10_29() -> None:
+    """Joël's conversations after the reading was deployed."""
+    from otlet.reporter.domain.questions import about_the_set
+
+    # « perte d'emploi » came with « Bruxelles », never asked, and a concept « parlant ».
+    question = "Je veux trouver des articles parlant de perte d'emploi"
+    jobs = Concept("perte d'emploi", ("Bruxelles", "perte d'emploi", "chômage", "licenciement"))
+    talking = Concept("parlant", ("parlant", "Brussel", "werkloosheid"))
+    kept = guarded(question, Translated(Operation.CHERCHER, (jobs, talking), None))
+    assert kept.concepts == (
+        Concept("perte d'emploi", ("perte d'emploi", "chômage", "licenciement")),
+    )
+    # « uniquement en Belgique » restricts, though « Belgique » holds « Bruxelles ».
+    belgium = Concept("Belgique", ("Belgique", "België", "Bruxelles"))
+    state = next_state(State(kept.concepts), Translated(Operation.RESTREINDRE, (belgium,), None))
+    assert [c.name for c in state.concepts] == ["perte d'emploi", "Belgique"]
+    # The place named in the question is a concept of its own.
+    budget = Concept(
+        "budget", ("budget", "Région de Bruxelles-Capitale", "Brussels-Capital Region")
+    )
+    question = "Je veux en savoir plus sur le budget de la région Bruxelles-Capitale"
+    kept = guarded(question, Translated(Operation.CHERCHER, (budget,), None))
+    assert kept.concepts == (
+        Concept("budget", ("budget",)),
+        Concept(
+            "Bruxelles-Capitale",
+            ("Bruxelles-Capitale", "Région de Bruxelles-Capitale", "Brussels-Capital Region"),
+        ),
+    )
+    # « véhicule » is searched by « véhicules »: a follow-up that names nothing new keeps the set.
+    cars = State((Concept("véhicules électriques", ("véhicules électriques",)),))
+    model = Translated(Operation.CHERCHER, (Concept("modèle", ("modèle", "model")),), None)
+    assert about_the_set("et quel est le véhicule éléctrique le moins cher ?", model, cars)
+    # The same concept twice is kept once.
+    gta = Concept("GTA", ("GTA",))
+    assert guarded("GTA VI", Translated(Operation.CHERCHER, (gta, gta), None)).concepts == (gta,)

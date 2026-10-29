@@ -196,8 +196,37 @@ QUESTION_WORDS = set(
     trouve trouver informations information evenements evenement marque marques recentes
     recents recent recente savoir plus est-ce qu'est-ce c'est sujet sujets concerne concernent
     lesquels lesquelles seulement aussi encore toutes tous sortis sorti sortent annonce
-    annonces disent""".split()
+    annonces disent parlant parler uniquement elements element trouves trouvees concernes
+    concernees moins""".split()
 )
+
+# Places of the Veille (Belgian press): a place the question does not name is no term of its
+# subject, and a place it names is a concept of its own (Joël, 2026-10-29: « perte d'emploi »
+# came with « Bruxelles », and « budget » with « Région de Bruxelles-Capitale »).
+# One line for each place, its names in the three languages: « Brussels-Capital Region » is
+# the « Bruxelles-Capitale » of the question.
+PLACE_NAMES = (
+    "belgique belgie belgium belge belges belgische",
+    "bruxelles brussel brussels bruxellois bruxelloise bruxelloises brusselse bruxelles-capitale"
+    " brussel-hoofdstad brussels-capital",
+    "wallonie wallonia wallonne wallon wallons wallonnes waals waalse",
+    "flandre flandres vlaanderen flanders flamand flamande flamands vlaamse",
+    "liege luik",
+    "anvers antwerpen antwerp",
+    "gand gent ghent",
+    "charleroi",
+    "namur namen",
+    "mons bergen",
+    "louvain leuven",
+    "ostende oostende",
+    "bruges brugge",
+    "hainaut henegouwen",
+    "limbourg limburg",
+    "luxembourg luxemburg",
+    "france frankrijk",
+    "europe europa europeen europeenne europese",
+)
+PLACES = {word: line.split()[0] for line in PLACE_NAMES for word in line.split()}
 
 
 def _named(question: str) -> list[str]:
@@ -208,10 +237,12 @@ def _named(question: str) -> list[str]:
         asked = asked.replace(f" {words_of_period} ", " ")
     asked = MONTH_PERIOD.sub(" ", asked)
     language = {w for names in LANGUAGE_WORDS.values() for w in names}
+    # Short names written in capitals name something too: « MR », « F1 », « GSK ».
+    acronyms = {folded(w) for w in re.findall(r"[\w-]+", question) if len(w) >= 2 and w.isupper()}
     return [
         word
         for word in re.findall(r"[\w-]+", asked)
-        if len(word) >= 5
+        if (len(word) >= 5 or word in acronyms)
         and word not in QUESTION_WORDS
         and word not in language
         and word not in MONTHS
@@ -226,6 +257,8 @@ def unsearched(question: str, concepts: list[Concept]) -> list[str]:
     }
 
     def stem(word: str) -> str:
+        # « véhicule » is searched by « véhicules »: the plural aside first.
+        word = word[:-1] if len(word) > 5 and word[-1] in "sx" else word
         return word[: max(5, len(word) - 2)]
 
     stems = {stem(w) for w in searched}
@@ -240,16 +273,27 @@ def unsearched(question: str, concepts: list[Concept]) -> list[str]:
     return out
 
 
-def about_the_set(question: str, translated: Translated, state: State) -> bool:
-    """A « search » whose every word the set already searches is a question about the set:
-    « qui parle de budget », after the budget of Brussels, searched « acteurs, ministres,
-    participants » without « budget » and left the set (Joël, 2026-10-29)."""
-    return (
-        translated.operation is Operation.CHERCHER
-        and bool(state.concepts)
-        and bool(_named(question))
-        and not unsearched(question, list(state.concepts))
+def _names(question: str, concept: Concept) -> bool:
+    """The question names the concept: its name or one of its terms."""
+    asked = _asked(question)
+    words = set(asked.split())
+    return any(
+        len(w) > 1 and (f" {folded(w)} " in asked or folded(w) in words)
+        for w in (concept.name, *concept.terms)
     )
+
+
+def about_the_set(question: str, translated: Translated, state: State) -> bool:
+    """A « search » that names nothing new is a question about the set:
+    - every word of it the set already searches: « qui parle de budget », after the budget of
+      Brussels, searched « acteurs, ministres, participants » without « budget »;
+    - none of its concepts named by the question: « et quel est le véhicule électrique le
+      moins cher ? » searched « modèle » alone (Joël, 2026-10-29)."""
+    if translated.operation is not Operation.CHERCHER or not state.concepts:
+        return False
+    if unsearched(question, list(state.concepts)):
+        return False  # « Et l'enseignement ? »: a new subject
+    return bool(_named(question)) or not any(_names(question, c) for c in translated.concepts)
 
 
 def _words(text: str) -> str:
@@ -295,13 +339,39 @@ def split_mixed(concept: Concept) -> tuple[Concept, ...]:
 
 
 def _same_concept(a: Concept, b: Concept) -> bool:
-    """Two concepts sharing a term, hyphens aside: « Bruxelles Capitale » restricts nothing
-    more than « Bruxelles-Capitale »."""
+    """The concept added is one the set holds, by its name, hyphens aside: « Bruxelles
+    Capitale » restricts nothing more than « Bruxelles-Capitale ». Sharing a term is not
+    enough: « Belgique » with « Bruxelles » among its terms was taken for the Brussels already
+    in « perte d'emploi », and « uniquement en Belgique » restricted nothing (Joël, 2026-10-29)."""
 
-    def keys(c: Concept) -> set[str]:
-        return {folded(t).replace("-", " ") for t in (c.name, *c.terms)}
+    def key(text: str) -> str:
+        return folded(text).replace("-", " ")
 
-    return bool(keys(a) & keys(b))
+    return key(a.name) in {key(t) for t in (b.name, *b.terms)}
+
+
+def _place_words(term: str) -> set[str]:
+    """The places a text names, each by the first of its names."""
+    words = set(_words(term).split())
+    return {PLACES[w] for w in words | {p for w in words for p in w.split("-")} if w in PLACES}
+
+
+def placed(question: str, concept: Concept) -> tuple[Concept, ...]:
+    """A subject without the places the model added to it: a place the question names is a
+    concept of its own, one it does not name is dropped. A concept that is a place stays."""
+    if _place_words(concept.name) or not any(_place_words(t) for t in concept.terms):
+        return (concept,)
+    asked = _place_words(question)
+    subject = [t for t in concept.terms if not _place_words(t)]
+    places = [t for t in concept.terms if _place_words(t) & asked]
+    out = [Concept(concept.name, _clean(subject))] if subject else []
+    if places:
+        # Led by the place as the question writes it, so that the question names it.
+        found = set().union(*(_place_words(t) for t in places))
+        written = [w for w in re.findall(r"[\w-]+", question) if _place_words(w) & found]
+        name = written[0] if written else places[0]
+        out.append(Concept(name, _clean([name, *places])))
+    return tuple(out) or (concept,)
 
 
 # Names that hold a term without meaning it (Joël, 2026-10-29: « Bruxelles-Capitale n'a rien à
@@ -450,7 +520,16 @@ def guarded(question: str, translated: Translated, today: date | None = None) ->
             return Concept(concept.name, _clean([concept.name, *concept.terms]))
         return concept
 
-    proposed = tuple(part for c in translated.concepts for part in split_mixed(c))
+    proposed = tuple(
+        placed_part
+        for c in translated.concepts
+        # A concept named by a word of the question that names nothing (« parlant »).
+        if folded(c.name) not in QUESTION_WORDS
+        for part in split_mixed(c)
+        for placed_part in placed(question, part)
+    )
+    # The same concept twice (« GTA » and « GTA »): once.
+    proposed = tuple({folded(c.name): c for c in reversed(proposed)}.values())[::-1]
     kept_concepts = tuple(c for c in map(anchored, proposed) if c is not None)
     dropped = [c for c in proposed if anchored(c) is None and not _of_period(c)]
     missing = unsearched(question, list(kept_concepts))

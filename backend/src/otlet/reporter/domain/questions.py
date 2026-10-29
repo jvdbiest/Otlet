@@ -16,7 +16,7 @@ from typing import Any
 
 from otlet.assistant.domain.terms import TERM_MAX_LENGTH, Concept, folded
 
-PROMPT_VERSION = "reporter-1"
+PROMPT_VERSION = "reporter-2"
 QUESTION_MAX_LENGTH = 500
 # A subject has one or two concepts; each « restreindre » adds one (Austen, Bruxelles, blessés).
 CONCEPTS_MAX = 4
@@ -66,7 +66,9 @@ OPERATION_SYSTEM = (
     "Brussel), dans les trois langues, 8 au plus par concept, jamais de terme trop général "
     "(« météo », « course », « nouveau »). Un concept ne contient que des mots qui le désignent : "
     "jamais un lieu ou un aspect dans le concept du sujet. Un sujet simple (un nom, un événement) "
-    "n'a qu'un concept ; restreindre ajoute exactement un concept."
+    "n'a qu'un concept ; restreindre ajoute exactement un concept. Un groupe (« les clubs "
+    "belges », « les partis flamands ») se cherche par les noms de ses membres tels que la presse "
+    "les écrit (Anderlecht, Union, Club Brugge, Genk…), pas par le nom du groupe."
 )
 OPERATION_SCHEMA: dict[str, Any] = {
     "type": "object",
@@ -229,6 +231,9 @@ PLACE_NAMES = (
 PLACES = {word: line.split()[0] for line in PLACE_NAMES for word in line.split()}
 
 
+PRONOUN_SUFFIX = re.compile(r"(-t)?-(il|elle|ils|elles|on)$")
+
+
 def _named(question: str) -> list[str]:
     """The words of a question that name something: neither a question word, a period nor a
     language, nor a word shorter than five letters; folded."""
@@ -239,21 +244,27 @@ def _named(question: str) -> list[str]:
     language = {w for names in LANGUAGE_WORDS.values() for w in names}
     # Short names written in capitals name something too: « MR », « F1 », « GSK ».
     acronyms = {folded(w) for w in re.findall(r"[\w-]+", question) if len(w) >= 2 and w.isupper()}
-    return [
-        word
-        for word in re.findall(r"[\w-]+", asked)
-        if (len(word) >= 5 or word in acronyms)
-        and word not in QUESTION_WORDS
-        and word not in language
-        and word not in MONTHS
-    ]
+    out = []
+    for word in re.findall(r"[\w-]+", asked):
+        # « passe-t-il », « Quels-sont »: the parts of a word joined to a pronoun.
+        word = PRONOUN_SUFFIX.sub("", word)
+        if all(part in QUESTION_WORDS or len(part) < 5 for part in word.split("-")):
+            if word not in acronyms:
+                continue
+        if word not in language and word not in MONTHS:
+            out.append(word)
+    return out
 
 
 def unsearched(question: str, concepts: list[Concept]) -> list[str]:
     """The words of the question that name something no term searches (« enseignement » when
     only « Belgique » was searched, Joël, 2026-10-29), in the author's spelling."""
     searched = {
-        w for c in concepts for t in (c.name, *c.terms) for w in re.findall(r"[\w-]+", folded(t))
+        # The terms only: a word left in the name is not searched (« grèves SNCB »).
+        w
+        for c in concepts
+        for t in c.terms
+        for w in re.findall(r"[\w-]+", folded(t))
     }
 
     def stem(word: str) -> str:
@@ -273,14 +284,43 @@ def unsearched(question: str, concepts: list[Concept]) -> list[str]:
     return out
 
 
+def _said(term: str, asked: str) -> bool:
+    """The question (as _asked) writes the term, in the singular or the plural: « grève » in
+    « les grèves à la SNCB » (bench, 2026-10-29)."""
+    term = folded(term)
+    # « l'intelligence artificielle » writes « intelligence artificielle ».
+    asked = f"{asked} {asked.replace(chr(39), ' ')} "
+    words = set(asked.split())
+    plurals = {term + "s", term + "x", term[:-1] if term[-1:] in "sx" else term}
+    return len(term) > 1 and (f" {term} " in asked or term in words or bool(plurals & words))
+
+
 def _names(question: str, concept: Concept) -> bool:
     """The question names the concept: its name or one of its terms."""
     asked = _asked(question)
-    words = set(asked.split())
-    return any(
-        len(w) > 1 and (f" {folded(w)} " in asked or folded(w) in words)
-        for w in (concept.name, *concept.terms)
-    )
+    return any(_said(w, asked) for w in (concept.name, *concept.terms))
+
+
+# Words of a question that point back to the set: « Qu'en pensent les enseignants ? » after
+# « l'intelligence artificielle à l'école » searched teachers alone (bench, 2026-10-29).
+ANAPHORA = (
+    " qu'en ",
+    " parmi ",
+    " parmis ",
+    " lesquels ",
+    " lesquelles ",
+    " ceux ",
+    " celles ",
+    " s'y ",
+    " ce sujet ",
+    " cela ",
+    " ces articles ",
+)
+
+
+def points_back(question: str) -> bool:
+    asked = _asked(question)
+    return any(word in asked for word in ANAPHORA)
 
 
 def about_the_set(question: str, translated: Translated, state: State) -> bool:
@@ -511,7 +551,7 @@ def guarded(question: str, translated: Translated, today: date | None = None) ->
     words = set(asked.split())
 
     def said(w: str) -> bool:
-        return len(w) > 2 and (f" {folded(w)} " in asked or folded(w) in words)
+        return len(w) > 2 and _said(w, asked)
 
     def anchored(concept: Concept) -> Concept | None:
         if not any(said(w) for w in (concept.name, *concept.terms)):
@@ -538,6 +578,15 @@ def guarded(question: str, translated: Translated, today: date | None = None) ->
         # concept comes back, led by the word of the question (Joël, 2026-10-29).
         word = missing[0]
         kept_concepts = (*kept_concepts, Concept(word, _clean([word, *dropped[0].terms])))
+    elif (
+        (words_left := [w for w in missing if folded(w) not in ROMAN and not w.isdigit()])
+        and len(kept_concepts) == 1
+        and translated.operation is Operation.CHERCHER
+    ):
+        # A word of the question the model left out of every term is searched too: « SNCB »
+        # stayed in the name « grèves SNCB », « école » was dropped (bench, 2026-10-29).
+        # A number (« VI » of « GTA VI ») is never a subject of its own.
+        kept_concepts = (*kept_concepts, Concept(words_left[0], (words_left[0],)))
     period = asked_period(question, today)
     # None named: the first stays, unless it is made of the words of a period.
     fallback = tuple(c for c in proposed[:1] if not _of_period(c))

@@ -259,3 +259,28 @@ def test_the_failures_of_the_evening_of_2026_10_29() -> None:
     # The same concept twice is kept once.
     gta = Concept("GTA", ("GTA",))
     assert guarded("GTA VI", Translated(Operation.CHERCHER, (gta, gta), None)).concepts == (gta,)
+
+
+def test_the_bench_of_2026_10_29() -> None:
+    """Questions chosen by Claude, answered by qwen3:14b: what the rules now keep."""
+    from otlet.reporter.domain.questions import points_back, unsearched
+
+    # « SNCB » stayed in the name of the concept, never in its terms.
+    strikes = Concept("grèves SNCB", ("grève", "lock-out", "protest"))
+    kept = guarded(
+        "Quoi de neuf sur les grèves à la SNCB ?",
+        Translated(Operation.CHERCHER, (strikes,), None),
+    )
+    assert [c.name for c in kept.concepts] == ["grèves SNCB", "SNCB"]
+    # « école » was dropped by the model.
+    ai = Concept("intelligence artificielle", ("IA", "AI", "kunstmatige intelligentie"))
+    kept = guarded(
+        "Que dit-on de l'intelligence artificielle à l'école ?",
+        Translated(Operation.CHERCHER, (ai,), None),
+    )
+    assert [c.name for c in kept.concepts] == ["intelligence artificielle", "école"]
+    # A word joined to a pronoun names nothing.
+    assert unsearched("Que se passe-t-il chez Tesla ?", [Concept("Tesla", ("Tesla",))]) == []
+    assert points_back("Qu'en pensent les enseignants ?")
+    assert points_back("Qui s'y oppose ?")
+    assert not points_back("Et les voitures chinoises ?")

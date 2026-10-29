@@ -557,6 +557,17 @@ def with_quoted(question: str, concepts: tuple[Concept, ...]) -> tuple[Concept, 
     return tuple(out)
 
 
+def _numbered_phrase(term: str) -> str:
+    """A name with a number is a phrase: « Switch 2 » found « 2 » anywhere in a review of a
+    Tamron lens with « switch » (bench, 2026-10-29)."""
+    words = term.split()
+    if term.startswith('"') or len(words) < 2:
+        return term
+    if any(w.isdigit() or folded(w) in ROMAN for w in words):
+        return f'"{term}"'
+    return term
+
+
 def guarded(
     question: str, translated: Translated, today: date | None = None, every_word: bool = True
 ) -> Translated:
@@ -619,9 +630,11 @@ def guarded(
     period = asked_period(question, today)
     # None named: the first stays, unless it is made of the words of a period.
     fallback = tuple(c for c in proposed[:1] if not _of_period(c))
-    kept = replace(
-        translated, concepts=with_quoted(question, kept_concepts or fallback), days=period
+    numbered_names = tuple(
+        Concept(c.name, _clean([_numbered_phrase(t) for t in c.terms]))
+        for c in kept_concepts or fallback
     )
+    kept = replace(translated, concepts=with_quoted(question, numbered_names), days=period)
     for code, names in LANGUAGE_WORDS.items():
         if words & set(names):
             return Translated(Operation.RESTREINDRE, (), code, period)

@@ -217,7 +217,7 @@ def test_words_between_quotes_are_searched_as_written() -> None:
     assert numbered("Vi") == ["Vi"]
     games = Concept("GTA VI", ("GTA VI", "GTA 6", "Grand Theft Auto VI"))
     kept = guarded(question, Translated(Operation.CHERCHER, (games,), None))
-    assert kept.concepts == (Concept("GTA VI", ('"GTA VI"', '"GTA 6"', "Grand Theft Auto VI")),)
+    assert kept.concepts == (Concept("GTA VI", ('"GTA VI"', '"GTA 6"', '"Grand Theft Auto VI"')),)
     # A phrase the model left out is a concept of its own, first.
     other = guarded(question, Translated(Operation.CHERCHER, (Concept("jeu", ("jeux",)),), None))
     assert other.concepts[0] == Concept("GTA VI", ('"GTA VI"', '"GTA 6"'))
@@ -307,3 +307,9 @@ def test_the_second_bench_of_2026_10_29() -> None:
     consoles = State((Concept("consoles de jeux vidéo", ("Nintendo", "Switch", "PS5")),))
     switch = Translated(Operation.CHERCHER, (Concept("Switch 2", ("Switch 2",)),), None)
     assert not about_the_set("Et la Switch 2 ?", switch, consoles)
+
+
+def test_a_name_with_a_number_is_a_phrase() -> None:
+    switch = Concept("Switch 2", ("Switch 2", "Nintendo"))
+    kept = guarded("Et la Switch 2 ?", Translated(Operation.CHERCHER, (switch,), None))
+    assert kept.concepts == (Concept("Switch 2", ('"Switch 2"', "Nintendo")),)

@@ -8,6 +8,11 @@ export type ConversationSummaryView = components["schemas"]["ConversationSummary
 export type TurnView = components["schemas"]["TurnView"];
 export type TurnCandidate = TurnView["candidates"][number];
 export type FactView = components["schemas"]["FactView"];
+export type ReadingView = components["schemas"]["ReadingView"];
+/** A question, read by the model before its answer is shown when `read` (« Lire avant de répondre »). */
+export type Question = string | { question: string; read: boolean };
+
+const body = (input: Question) => (typeof input === "string" ? { question: input, read: false } : input);
 export type ConceptBody = components["schemas"]["ConceptBody"];
 
 const key = (workspaceId: string) => ["workspaces", workspaceId, "reporter"] as const;
@@ -46,10 +51,10 @@ export const conversationsQuery = (workspaceId: string) =>
 export function useStartConversation(workspaceId: string) {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: async (question: string) => {
+    mutationFn: async (question: Question) => {
       const { data, error, response } = await api.POST("/api/workspaces/{workspace_id}/reporter/conversations", {
         params: { path: { workspace_id: workspaceId } },
-        body: { question },
+        body: body(question),
       });
       if (data === undefined) {
         throw apiError(response, error);
@@ -63,10 +68,10 @@ export function useStartConversation(workspaceId: string) {
 export function useAsk(workspaceId: string, conversationId: string) {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: async (question: string) => {
+    mutationFn: async (question: Question) => {
       const { data, error, response } = await api.POST(
         "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/turns",
-        { params: { path: { workspace_id: workspaceId, conversation_id: conversationId } }, body: { question } },
+        { params: { path: { workspace_id: workspaceId, conversation_id: conversationId } }, body: body(question) },
       );
       if (data === undefined) {
         throw apiError(response, error);
@@ -84,6 +89,24 @@ export function useReadMore(workspaceId: string, conversationId: string) {
     mutationFn: async (turnId: string) => {
       const { data, error, response } = await api.POST(
         "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/turns/{turn_id}/more",
+        { params: { path: { workspace_id: workspaceId, conversation_id: conversationId, turn_id: turnId } } },
+      );
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: () => client.invalidateQueries({ queryKey: [...key(workspaceId), conversationId] }),
+  });
+}
+
+/** « Vérifier en lisant »: the model reads the set of an answered question, once. */
+export function useReadSet(workspaceId: string, conversationId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (turnId: string) => {
+      const { data, error, response } = await api.POST(
+        "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/turns/{turn_id}/reading",
         { params: { path: { workspace_id: workspaceId, conversation_id: conversationId, turn_id: turnId } } },
       );
       if (data === undefined) {

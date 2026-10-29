@@ -1,6 +1,57 @@
 {
   "components": {
     "schemas": {
+      "AnswerView": {
+        "properties": {
+          "dated": {
+            "title": "Dated",
+            "type": "string"
+          },
+          "item_id": {
+            "format": "uuid",
+            "title": "Item Id",
+            "type": "string"
+          },
+          "publisher": {
+            "title": "Publisher",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "round": {
+            "title": "Round",
+            "type": "integer"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "required": [
+          "item_id",
+          "title",
+          "publisher",
+          "dated",
+          "url",
+          "reason",
+          "round"
+        ],
+        "title": "AnswerView",
+        "type": "object"
+      },
       "ArchiveBody": {
         "properties": {
           "archived": {
@@ -3818,12 +3869,98 @@
             "maxLength": 1000,
             "title": "Question",
             "type": "string"
+          },
+          "read": {
+            "default": false,
+            "title": "Read",
+            "type": "boolean"
           }
         },
         "required": [
           "question"
         ],
         "title": "QuestionBody",
+        "type": "object"
+      },
+      "ReadConceptView": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "terms": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Terms",
+            "type": "array"
+          }
+        },
+        "required": [
+          "name",
+          "terms"
+        ],
+        "title": "ReadConceptView",
+        "type": "object"
+      },
+      "ReadingView": {
+        "description": "« Vérifier en lisant »: what the model read, what truly answers, what is missing.",
+        "properties": {
+          "answers": {
+            "items": {
+              "$ref": "#/components/schemas/AnswerView"
+            },
+            "title": "Answers",
+            "type": "array"
+          },
+          "coverage": {
+            "anyOf": [
+              {
+                "enum": [
+                  "oui",
+                  "partiel",
+                  "non"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coverage"
+          },
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Errors",
+            "type": "array"
+          },
+          "missing": {
+            "title": "Missing",
+            "type": "string"
+          },
+          "requested": {
+            "title": "Requested",
+            "type": "boolean"
+          },
+          "rounds": {
+            "items": {
+              "$ref": "#/components/schemas/RoundView"
+            },
+            "title": "Rounds",
+            "type": "array"
+          }
+        },
+        "required": [
+          "requested",
+          "rounds",
+          "answers",
+          "coverage",
+          "missing",
+          "errors"
+        ],
+        "title": "ReadingView",
         "type": "object"
       },
       "RefreshView": {
@@ -3960,6 +4097,32 @@
           "declaration"
         ],
         "title": "RightsView",
+        "type": "object"
+      },
+      "RoundView": {
+        "properties": {
+          "concepts": {
+            "items": {
+              "$ref": "#/components/schemas/ReadConceptView"
+            },
+            "title": "Concepts",
+            "type": "array"
+          },
+          "found": {
+            "title": "Found",
+            "type": "integer"
+          },
+          "read": {
+            "title": "Read",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "concepts",
+          "read",
+          "found"
+        ],
+        "title": "RoundView",
         "type": "object"
       },
       "SaveBody": {
@@ -5170,6 +5333,16 @@
             "title": "Question",
             "type": "string"
           },
+          "reading": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReadingView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "status": {
             "enum": [
               "pending",
@@ -5205,6 +5378,7 @@
           "concepts",
           "candidates",
           "fact",
+          "reading",
           "unsearched",
           "themes",
           "error",
@@ -10821,6 +10995,67 @@
           }
         },
         "summary": "Read More"
+      }
+    },
+    "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/turns/{turn_id}/reading": {
+      "post": {
+        "description": "« Vérifier en lisant »: the model reads the set of an answered question, once.",
+        "operationId": "read_set_api_workspaces__workspace_id__reporter_conversations__conversation_id__turns__turn_id__reading_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conversation Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "turn_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Turn Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TurnView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Read Set"
       }
     },
     "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/turns/{turn_id}/terms": {

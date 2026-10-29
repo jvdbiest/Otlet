@@ -7,15 +7,18 @@ import {
   conversationQuery,
   useAsk,
   useReadMore,
+  useReadSet,
   useSetTerms,
   type ConversationView,
   type FactView,
+  type ReadingView,
   type TurnCandidate,
   type TurnView,
 } from "../../reporter.ts";
 import { useWorkspaceId } from "../../session.ts";
 import { errorText, formatDate } from "../watch/labels.ts";
 import { styles } from "../watch/styles.ts";
+import { ReadFirst } from "./ReporterPage.tsx";
 
 const BRIEF_MAX = 20;
 const SHOWN_AT_ONCE = 8;
@@ -44,6 +47,7 @@ function Conversation({ workspaceId, conversationId }: { workspaceId: string; co
   }
   const data = conversation.data;
   const last = data.turns.at(-1);
+  const busy = data.turns.some((turn) => turn.status === "pending");
   return (
     <>
       <p>
@@ -51,27 +55,42 @@ function Conversation({ workspaceId, conversationId }: { workspaceId: string; co
       </p>
       <h1>{data.title}</h1>
       {data.turns.map((turn) => (
-        <Turn key={turn.id} workspaceId={workspaceId} conversation={data} turn={turn} last={turn.id === last?.id} />
+        <Turn
+          key={turn.id}
+          workspaceId={workspaceId}
+          conversation={data}
+          turn={turn}
+          last={turn.id === last?.id}
+          busy={busy}
+        />
       ))}
-      <Ask
-        workspaceId={workspaceId}
-        conversationId={conversationId}
-        busy={data.turns.some((turn) => turn.status === "pending")}
-      />
+      {/* Once used, the reading stays on for the next questions (Joël, 2026-10-29). */}
+      <Ask workspaceId={workspaceId} conversationId={conversationId} busy={busy} readBefore={(last?.reading ?? null) !== null} />
     </>
   );
 }
 
-function Ask({ workspaceId, conversationId, busy }: { workspaceId: string; conversationId: string; busy: boolean }) {
+function Ask({
+  workspaceId,
+  conversationId,
+  busy,
+  readBefore,
+}: {
+  workspaceId: string;
+  conversationId: string;
+  busy: boolean;
+  readBefore: boolean;
+}) {
   const { t } = useTranslation();
   const ask = useAsk(workspaceId, conversationId);
   const [question, setQuestion] = useState("");
+  const [read, setRead] = useState(readBefore);
   return (
     <form
       className={styles.form}
       onSubmit={(event) => {
         event.preventDefault();
-        ask.mutate(question.trim(), {
+        ask.mutate({ question: question.trim(), read }, {
           onSuccess: () => {
             setQuestion("");
           },
@@ -88,6 +107,7 @@ function Ask({ workspaceId, conversationId, busy }: { workspaceId: string; conve
           }}
         />
       </label>
+      <ReadFirst read={read} onChange={setRead} />
       <p className={styles.row}>
         <button type="submit" className={styles.primary} disabled={busy || question.trim() === "" || ask.isPending}>
           {t("reporter.ask")}
@@ -107,11 +127,13 @@ function Turn({
   conversation,
   turn,
   last,
+  busy,
 }: {
   workspaceId: string;
   conversation: ConversationView;
   turn: TurnView;
   last: boolean;
+  busy: boolean;
 }) {
   const { t } = useTranslation();
   return (
@@ -121,7 +143,9 @@ function Turn({
       </p>
       {turn.status === "pending" && (
         <p role="status" className={styles.meta}>
-          {t("reporter.pending")}
+          {turn.reading?.requested === true && turn.operation !== null
+            ? t("reporter.reading.pending")
+            : t("reporter.pending")}
         </p>
       )}
       {turn.status === "failed" && (
@@ -158,6 +182,7 @@ function Turn({
               last={last}
             />
           )}
+          <Reading workspaceId={workspaceId} conversationId={conversation.id} turn={turn} busy={busy} />
         </>
       )}
     </section>
@@ -613,5 +638,100 @@ function Fact({
         <p className={styles.meta}>{t("reporter.fact.conclusion", { text: fact.conclusion })}</p>
       )}
     </>
+  );
+}
+
+/** « Vérifier en lisant » (Joël, 2026-10-29): the model reads the first items of the set, as a
+ * person would, says which truly answer and what is missing, and searches once more otherwise. */
+function Reading({
+  workspaceId,
+  conversationId,
+  turn,
+  busy,
+}: {
+  workspaceId: string;
+  conversationId: string;
+  turn: TurnView;
+  busy: boolean;
+}) {
+  const { t } = useTranslation();
+  const readSet = useReadSet(workspaceId, conversationId);
+  const reading: ReadingView | null = turn.reading;
+  if (reading === null || reading.rounds.length === 0) {
+    return (
+      <>
+        {reading !== null && reading.errors.length > 0 && (
+          <p className={styles.warning}>{t("reporter.reading.failed", { error: reading.errors.join("; ") })}</p>
+        )}
+        <p className={styles.row}>
+          <button
+            type="button"
+            className={styles.button}
+            disabled={busy || readSet.isPending}
+            onClick={() => {
+              readSet.mutate(turn.id);
+            }}
+          >
+            {t("reporter.reading.button")}
+          </button>
+          <span className={styles.meta}>{t("reporter.reading.help")}</span>
+        </p>
+        {readSet.error !== null && (
+          <p role="alert" className={styles.error}>
+            {errorText(t, readSet.error)}
+          </p>
+        )}
+      </>
+    );
+  }
+  const read = reading.rounds.reduce((sum, round) => sum + round.read, 0);
+  const second = reading.rounds[1];
+  return (
+    <section aria-label={t("reporter.reading.title")}>
+      <h3>{t("reporter.reading.title")}</h3>
+      <p className={styles.meta}>
+        {t("reporter.reading.read", { count: read })}
+        {second !== undefined &&
+          ` · ${t("reporter.reading.second", {
+            terms: second.concepts.map((c) => c.terms.join(", ")).join(" ET "),
+            count: second.read,
+          })}`}
+      </p>
+      {reading.coverage !== null && (
+        <p>
+          <strong>{t(`reporter.reading.coverage.${reading.coverage}`)}</strong>
+        </p>
+      )}
+      {reading.missing !== "" && (
+        <p className={styles.notice}>{t("reporter.reading.missing", { text: reading.missing })}</p>
+      )}
+      {reading.answers.length === 0 ? (
+        <p className={styles.notice}>{t("reporter.reading.none")}</p>
+      ) : (
+        <ul>
+          {reading.answers.map((answer) => (
+            <li key={answer.item_id}>
+              <Link to="/veille/elements/$itemId" params={{ itemId: answer.item_id }}>
+                {answer.title}
+              </Link>{" "}
+              <span className={styles.meta}>
+                {answer.publisher} · {formatDate(answer.dated)}
+                {answer.round === 2 && ` · ${t("reporter.reading.fromSecond")}`}
+              </span>
+              {answer.reason !== "" && (
+                <>
+                  <br />
+                  <span className={styles.meta}>{answer.reason}</span>
+                </>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className={styles.help}>{t("reporter.reading.byModel")}</p>
+      {reading.errors.length > 0 && (
+        <p className={styles.warning}>{t("reporter.reading.failed", { error: reading.errors.join("; ") })}</p>
+      )}
+    </section>
   );
 }

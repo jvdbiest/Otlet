@@ -139,3 +139,85 @@ def test_a_word_of_the_question_no_term_searches_is_shown_and_brought_back() -> 
         Concept("enseignement", ("enseignement", "éducation", "école", "onderwijs")),
     )
     assert unsearched(question, list(kept.concepts)) == []
+
+
+def test_a_concept_naming_a_subject_and_a_place_is_split() -> None:
+    """« budget de la région Bruxelles-Capitale » searched budget OR Brussels: the budgets of
+    Mons and Seneffe, a storm in Brussels (Joël, 2026-10-29)."""
+    from otlet.reporter.domain.questions import split_mixed
+
+    mixed = Concept(
+        "budget de la région Bruxelles-Capitale",
+        (
+            "budget de la région Bruxelles-Capitale",
+            "budget",
+            "Bruxelles-Capitale",
+            "Brussel-Hoofdstad",
+            "Brussels-Capital Region",
+            "budget régional",
+            "budget de la région",
+            "budget 2024",
+        ),
+    )
+    assert split_mixed(mixed) == (
+        Concept("budget", ("budget", "budget régional", "budget de la région", "budget 2024")),
+        Concept(
+            "Bruxelles-Capitale",
+            ("Bruxelles-Capitale", "Brussel-Hoofdstad", "Brussels-Capital Region"),
+        ),
+    )
+    assert split_mixed(AUSTEN) == (AUSTEN,)
+    question = "Je veux en savoir plus sur le budget de la région Bruxelles-Capitale"
+    kept = guarded(question, Translated(Operation.CHERCHER, (mixed,), None))
+    assert [c.name for c in kept.concepts] == ["budget", "Bruxelles-Capitale"]
+
+
+def test_a_place_the_set_holds_restricts_nothing_more() -> None:
+    budget = Concept("budget", ("budget",))
+    region = Concept("Bruxelles-Capitale", ("Bruxelles-Capitale", "Brussel-Hoofdstad"))
+    state = State((budget, region))
+    again = Concept("Bruxelles Capitale", ("Bruxelles Capitale",))
+    assert next_state(state, Translated(Operation.RESTREINDRE, (again,), None)) == state
+
+
+def test_a_search_of_what_the_set_searches_is_a_question_about_the_set() -> None:
+    """« qui parle de budget » searched « acteurs, ministres » and left the set."""
+    from otlet.reporter.domain.questions import about_the_set
+
+    state = State((Concept("budget", ("budget",)), Concept("Bruxelles", ("Bruxelles",))))
+    actors = Translated(Operation.CHERCHER, (Concept("acteurs", ("acteurs", "ministres")),), None)
+    assert about_the_set("qui parle de budget", actors, state)
+    assert not about_the_set("Et l'enseignement ?", actors, state)
+    assert not about_the_set("Et le MR ?", actors, state)
+    assert not about_the_set("qui parle de budget", actors, State())
+
+
+def test_brussels_is_not_found_in_wallonie_bruxelles() -> None:
+    """« Bruxelles-Capitale n'a rien à voir avec Wallonie-Bruxelles » (Joël, 2026-10-29)."""
+    from otlet.reporter.domain.questions import only_false_friends
+
+    terms = ("Bruxelles", "Brussel", "bruxellois")
+    fwb = "Fédération Wallonie-Bruxelles : le budget 2027 au cœur d'un premier vif échange"
+    assert only_false_friends(fwb, terms)
+    assert not only_false_friends(fwb + " ; le gouvernement de Bruxelles réagit", terms)
+    assert not only_false_friends("Brusselse regering : le budget", ("Brusselse regering",))
+    assert not only_false_friends("Le budget régional, sans nommer la ville", terms)
+
+
+def test_words_between_quotes_are_searched_as_written() -> None:
+    """« les actualités concernant le jeux "GTA VI" » (Joël, 2026-10-29): the phrase as it is
+    written, and GTA 6 with it."""
+    from otlet.reporter.domain.questions import numbered, quoted
+
+    question = 'Quelles sont les actualités concernant le jeux "GTA VI" ?'
+    assert quoted(question) == ["GTA VI"]
+    assert quoted("Et « Grand Theft Auto » ?") == ["Grand Theft Auto"]
+    assert numbered("GTA VI") == ["GTA VI", "GTA 6"]
+    assert numbered("Windows 11") == ["Windows 11", "Windows XI"]
+    assert numbered("Vi") == ["Vi"]
+    games = Concept("GTA VI", ("GTA VI", "GTA 6", "Grand Theft Auto VI"))
+    kept = guarded(question, Translated(Operation.CHERCHER, (games,), None))
+    assert kept.concepts == (Concept("GTA VI", ('"GTA VI"', '"GTA 6"', "Grand Theft Auto VI")),)
+    # A phrase the model left out is a concept of its own, first.
+    other = guarded(question, Translated(Operation.CHERCHER, (Concept("jeu", ("jeux",)),), None))
+    assert other.concepts[0] == Concept("GTA VI", ('"GTA VI"', '"GTA 6"'))

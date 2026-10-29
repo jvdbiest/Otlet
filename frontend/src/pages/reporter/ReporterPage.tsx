@@ -14,12 +14,33 @@ export function ReporterPage() {
   return workspaceId === undefined ? null : <Reporter workspaceId={workspaceId} />;
 }
 
+/** « Lire avant de répondre »: off by default, the model reads the set before it is shown. */
+export function ReadFirst({ read, onChange }: { read: boolean; onChange: (read: boolean) => void }) {
+  const { t } = useTranslation();
+  return (
+    <>
+      <label className={styles.check}>
+        <input
+          type="checkbox"
+          checked={read}
+          onChange={(event) => {
+            onChange(event.target.checked);
+          }}
+        />{" "}
+        {t("reporter.reading.first")}
+      </label>
+      <p className={styles.help}>{t("reporter.reading.firstHelp")}</p>
+    </>
+  );
+}
+
 function Reporter({ workspaceId }: { workspaceId: string }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const start = useStartConversation(workspaceId);
   const recent = useQuery(conversationsQuery(workspaceId));
   const [question, setQuestion] = useState("");
+  const [read, setRead] = useState(false);
   return (
     <>
       <h1>{t("reporter.title")}</h1>
@@ -28,7 +49,7 @@ function Reporter({ workspaceId }: { workspaceId: string }) {
         className={styles.form}
         onSubmit={(event) => {
           event.preventDefault();
-          start.mutate(question.trim(), {
+          start.mutate({ question: question.trim(), read }, {
             onSuccess: (conversation) => {
               void navigate({ to: "/reporter/$conversationId", params: { conversationId: conversation.id } });
             },
@@ -46,6 +67,7 @@ function Reporter({ workspaceId }: { workspaceId: string }) {
           />
         </label>
         <p className={styles.help}>{t("reporter.examples")}</p>
+        <ReadFirst read={read} onChange={setRead} />
         <p className={styles.row}>
           <button type="submit" className={styles.primary} disabled={question.trim() === "" || start.isPending}>
             {t("reporter.start")}

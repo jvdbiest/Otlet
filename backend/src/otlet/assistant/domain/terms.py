@@ -118,9 +118,13 @@ def widen(concepts: list[Concept], glossary: list[GlossaryEntry]) -> list[Widene
 
 def websearch(term: str) -> str:
     """A term as a query of websearch_to_tsquery: all its words, in any order. Its operators
-    are taken out (quotes, a leading « - », the word « or »): a term is never a query."""
+    are taken out (quotes, a leading « - », the word « or »): a term is never a query. A term
+    written between quotes as a whole is a phrase, its words side by side (« "GTA VI" », Joël,
+    2026-10-29)."""
+    phrase = len(term) > 2 and term[0] == term[-1] == '"'
     words = term.replace('"', " ").split()
-    return " ".join(w.lstrip("-") for w in words if w.lower() != "or" and w.lstrip("-"))
+    kept = " ".join(w.lstrip("-") for w in words if w.lower() != "or" and w.lstrip("-"))
+    return f'"{kept}"' if phrase and kept else kept
 
 
 # The country of a publisher, from the address of its item (ADR-0043 §5): the model needs it

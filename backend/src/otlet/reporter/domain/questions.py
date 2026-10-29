@@ -136,7 +136,11 @@ MONTH_PERIOD = re.compile(
 
 
 def _asked(question: str) -> str:
-    return f" {folded(question).replace('?', ' ').replace(',', ' ')} "
+    """A question as its folded words between spaces, its marks and quotes aside."""
+    text = folded(question)
+    for mark in '?,"«»“”':
+        text = text.replace(mark, " ")
+    return f" {' '.join(text.split())} "
 
 
 def asked_period(question: str, today: date | None = None) -> int | None:
@@ -196,17 +200,30 @@ QUESTION_WORDS = set(
 )
 
 
-def unsearched(question: str, concepts: list[Concept]) -> list[str]:
-    """The words of the question that name something no term searches (« enseignement » when
-    only « Belgique » was searched, Joël, 2026-10-29), in the author's spelling."""
+def _named(question: str) -> list[str]:
+    """The words of a question that name something: neither a question word, a period nor a
+    language, nor a word shorter than five letters; folded."""
     asked = _asked(question)
     for words_of_period, _ in PERIOD_WORDS:
         asked = asked.replace(f" {words_of_period} ", " ")
     asked = MONTH_PERIOD.sub(" ", asked)
+    language = {w for names in LANGUAGE_WORDS.values() for w in names}
+    return [
+        word
+        for word in re.findall(r"[\w-]+", asked)
+        if len(word) >= 5
+        and word not in QUESTION_WORDS
+        and word not in language
+        and word not in MONTHS
+    ]
+
+
+def unsearched(question: str, concepts: list[Concept]) -> list[str]:
+    """The words of the question that name something no term searches (« enseignement » when
+    only « Belgique » was searched, Joël, 2026-10-29), in the author's spelling."""
     searched = {
         w for c in concepts for t in (c.name, *c.terms) for w in re.findall(r"[\w-]+", folded(t))
     }
-    language = {w for names in LANGUAGE_WORDS.values() for w in names}
 
     def stem(word: str) -> str:
         return word[: max(5, len(word) - 2)]
@@ -214,15 +231,93 @@ def unsearched(question: str, concepts: list[Concept]) -> list[str]:
     stems = {stem(w) for w in searched}
     originals = {folded(w): w for w in re.findall(r"[\w-]+", question)}
     out = []
-    for word in re.findall(r"[\w-]+", asked):
-        if len(word) < 5 or word in QUESTION_WORDS or word in language or word in MONTHS:
-            continue
+    for word in _named(question):
         if word in searched or stem(word) in stems:
             continue
         shown = originals.get(word, word)
         if shown not in out:
             out.append(shown)
     return out
+
+
+def about_the_set(question: str, translated: Translated, state: State) -> bool:
+    """A « search » whose every word the set already searches is a question about the set:
+    « qui parle de budget », after the budget of Brussels, searched « acteurs, ministres,
+    participants » without « budget » and left the set (Joël, 2026-10-29)."""
+    return (
+        translated.operation is Operation.CHERCHER
+        and bool(state.concepts)
+        and bool(_named(question))
+        and not unsearched(question, list(state.concepts))
+    )
+
+
+def _words(text: str) -> str:
+    """A text as its folded words, hyphenated words kept whole, between spaces."""
+    return " " + " ".join(re.findall(r"[\w-]+", folded(text))) + " "
+
+
+def _likeness(term: str, part: str) -> int:
+    """How close a term is to a part of a name: a shared word, else the longest shared start
+    of two words (Brussel, Brussels-Capital Region and Bruxelles-Capitale share « bru »)."""
+    best = 0
+    for a in _words(term).split():
+        for b in _words(part).split():
+            if a == b:
+                return 100
+            n = 0
+            while n < min(len(a), len(b)) and a[n] == b[n]:
+                n += 1
+            best = max(best, n)
+    return best
+
+
+def split_mixed(concept: Concept) -> tuple[Concept, ...]:
+    """A concept that names two things, as one concept for each. « budget de la région
+    Bruxelles-Capitale » with the terms « budget » and « Bruxelles-Capitale » searched budget OR
+    Brussels: the budgets of Mons and Seneffe, a storm in Brussels (Joël, 2026-10-29). Its parts
+    are the shortest terms its name holds; every other term goes to the part it is closest to,
+    or is dropped when it is close to none."""
+    name = _words(concept.name)
+    inside = [t for t in concept.terms if _words(t).strip() and _words(t) != name]
+    inside = [t for t in inside if _words(t) in name]
+    parts = [t for t in inside if not any(o != t and _words(o) in _words(t) for o in inside)]
+    if len(parts) < 2:
+        return (concept,)
+    groups: dict[str, list[str]] = {p: [p] for p in parts}
+    for term in concept.terms:
+        if term in parts or _words(term) == name:
+            continue
+        scores = sorted(((_likeness(term, p), p) for p in parts), reverse=True)
+        if scores[0][0] >= 3 and scores[0][0] > scores[1][0]:
+            groups[scores[0][1]].append(term)
+    return tuple(Concept(p, _clean(groups[p])) for p in parts)
+
+
+def _same_concept(a: Concept, b: Concept) -> bool:
+    """Two concepts sharing a term, hyphens aside: « Bruxelles Capitale » restricts nothing
+    more than « Bruxelles-Capitale »."""
+
+    def keys(c: Concept) -> set[str]:
+        return {folded(t).replace("-", " ") for t in (c.name, *c.terms)}
+
+    return bool(keys(a) & keys(b))
+
+
+# Names that hold a term without meaning it (Joël, 2026-10-29: « Bruxelles-Capitale n'a rien à
+# voir avec Wallonie-Bruxelles »). The engine finds « Bruxelles » in « Fédération
+# Wallonie-Bruxelles »; an item that names Brussels only so is not about Brussels.
+FALSE_FRIENDS = ("wallonie-bruxelles", "wallonie-brussel", "wallonia-brussels")
+
+
+def only_false_friends(text: str, terms: tuple[str, ...]) -> bool:
+    """True when the text names a false friend and no term of the concept as a whole word:
+    « Fédération Wallonie-Bruxelles : le budget 2027 » for « Bruxelles ». A text that names
+    neither stays: the engine found the term further in the article."""
+    words = _words(text)
+    if not any(f" {friend} " in words for friend in FALSE_FRIENDS):
+        return False
+    return not any(_words(term) in words for term in terms if _words(term).strip())
 
 
 def operation_message(history: list[str], state: State, question: str) -> str:
@@ -275,6 +370,59 @@ def read_operation(raw: str) -> Translated:
     )
 
 
+# Words between quotes in a question are searched as they are written, side by side (Joël,
+# 2026-10-29: « les actualités concernant le jeu "GTA VI" »).
+QUOTED = re.compile(r'"([^"]{2,80})"|«\s*([^»]{2,80}?)\s*»|“([^”]{2,80})”')
+ROMAN = dict(
+    zip(
+        "i ii iii iv v vi vii viii ix x xi xii xiii xiv xv xvi xvii xviii xix xx".split(),
+        range(1, 21),
+        strict=True,
+    )
+)
+
+
+def quoted(question: str) -> list[str]:
+    """The phrases of a question between quotes, " ", « » or “ ”."""
+    found = (" ".join(next(g for g in m.groups() if g).split()) for m in QUOTED.finditer(question))
+    return list(dict.fromkeys(p for p in found if p))
+
+
+def numbered(phrase: str) -> list[str]:
+    """The phrase and its other numbering: « GTA VI » and « GTA 6 », « Windows 11 » and
+    « Windows XI »; a single word is never renumbered."""
+    words = phrase.split()
+    if len(words) < 2:
+        return [phrase]
+    arabic = {str(n): r.upper() for r, n in ROMAN.items()}
+    other = [str(ROMAN[w.lower()]) if w.lower() in ROMAN else arabic.get(w, w) for w in words]
+    return list(dict.fromkeys([phrase, " ".join(other)]))
+
+
+def with_quoted(question: str, concepts: tuple[Concept, ...]) -> tuple[Concept, ...]:
+    """Every phrase of the question between quotes searched as a phrase, with its other
+    numbering: in the concept that names it already, else in a concept of its own, first."""
+    out = list(concepts)
+    for phrase in quoted(question):
+        terms = [f'"{p}"' for p in numbered(phrase)]
+        keys = {folded(p).replace('"', "") for p in numbered(phrase)}
+        at = next(
+            (
+                n
+                for n, c in enumerate(out)
+                if keys & {folded(t).replace('"', "") for t in (c.name, *c.terms)}
+            ),
+            None,
+        )
+        if at is None:
+            out.insert(0, Concept(phrase[:TERM_MAX_LENGTH], _clean(terms)))
+            continue
+        concept = out[at]
+        rest = [t for t in concept.terms if folded(t).replace('"', "") not in keys]
+        out[at] = Concept(concept.name, _clean([*terms, *rest]))
+    return tuple(out)
+
+
 def guarded(question: str, translated: Translated, today: date | None = None) -> Translated:
     """The translation kept to what the question says (ADR-0044 §4):
 
@@ -302,8 +450,9 @@ def guarded(question: str, translated: Translated, today: date | None = None) ->
             return Concept(concept.name, _clean([concept.name, *concept.terms]))
         return concept
 
-    kept_concepts = tuple(c for c in map(anchored, translated.concepts) if c is not None)
-    dropped = [c for c in translated.concepts if anchored(c) is None and not _of_period(c)]
+    proposed = tuple(part for c in translated.concepts for part in split_mixed(c))
+    kept_concepts = tuple(c for c in map(anchored, proposed) if c is not None)
+    dropped = [c for c in proposed if anchored(c) is None and not _of_period(c)]
     missing = unsearched(question, list(kept_concepts))
     if dropped and missing and kept_concepts:
         # The model named the subject otherwise (« éducation » for « enseignement »): its
@@ -312,8 +461,10 @@ def guarded(question: str, translated: Translated, today: date | None = None) ->
         kept_concepts = (*kept_concepts, Concept(word, _clean([word, *dropped[0].terms])))
     period = asked_period(question, today)
     # None named: the first stays, unless it is made of the words of a period.
-    fallback = tuple(c for c in translated.concepts[:1] if not _of_period(c))
-    kept = replace(translated, concepts=kept_concepts or fallback, days=period)
+    fallback = tuple(c for c in proposed[:1] if not _of_period(c))
+    kept = replace(
+        translated, concepts=with_quoted(question, kept_concepts or fallback), days=period
+    )
     for code, names in LANGUAGE_WORDS.items():
         if words & set(names):
             return Translated(Operation.RESTREINDRE, (), code, period)
@@ -328,7 +479,12 @@ def next_state(state: State, translated: Translated) -> State:
             # A new subject: a new set, in every language, over the period it names.
             return State(proposed[:2], None, translated.days)
         case Operation.RESTREINDRE:
-            concepts = (state.concepts + proposed[:1])[:CONCEPTS_MAX]
+            # A place the set already holds restricts nothing more (« Seulement Bruxelles
+            # Capitale » after the budget of the Région de Bruxelles-Capitale).
+            added = [
+                c for c in proposed[:1] if not any(_same_concept(c, s) for s in state.concepts)
+            ]
+            concepts = (*state.concepts, *added)[:CONCEPTS_MAX]
             return State(
                 concepts, translated.language or state.language, translated.days or state.days
             )

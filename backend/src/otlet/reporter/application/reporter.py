@@ -59,10 +59,12 @@ from otlet.reporter.domain.questions import (
     Operation,
     State,
     Translated,
+    about_the_set,
     changes_set,
     check_operation,
     guarded,
     next_state,
+    only_false_friends,
     operation_message,
     read_operation,
 )
@@ -277,6 +279,9 @@ class Reporter:
         today = self._now().date()
         if raw is not None:
             translated = guarded(turn.question, read_operation(raw), today)
+            if about_the_set(turn.question, translated, state):
+                # Asked of the set, answered from it: its articles that truly treat the subject.
+                translated = replace(translated, operation=Operation.TRIER, concepts=())
             if not state.concepts and not changes_set(translated.operation):
                 # A fact asked first (« Quels sont les derniers faits concernant
                 # l'enseignement ? », Joël, 2026-10-29): there is no set yet to read. The set is
@@ -384,6 +389,11 @@ class Reporter:
         )
         widened = too_general(widened, counts, self._search.total_items(workspace_id, since))
         found = self._search.candidates(workspace_id, widened, since, SET_MAX)
+        found = [
+            c
+            for c in found
+            if not any(only_false_friends(f"{c.title} {c.summary}", w.terms) for w in widened)
+        ]
         if state.language:
             found = [c for c in found if (c.language or "").startswith(state.language)]
         return replace(turn, state=state, concepts=widened, term_counts=counts, candidates=found)

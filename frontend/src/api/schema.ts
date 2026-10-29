@@ -3574,6 +3574,13 @@ export interface components {
             /** Concepts */
             concepts: components["schemas"]["ConceptBody"][];
         };
+        /** ThemeView */
+        ThemeView: {
+            /** Items */
+            items: string[];
+            /** Label */
+            label: string;
+        };
         /** TopicBody */
         TopicBody: {
             /**
@@ -3731,6 +3738,10 @@ export interface components {
              * @enum {string}
              */
             status: "pending" | "done" | "failed";
+            /** Themes */
+            themes: components["schemas"]["ThemeView"][];
+            /** Unsearched */
+            unsearched: string[];
         };
         /** UsageView */
         UsageView: {

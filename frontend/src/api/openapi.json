@@ -4652,6 +4652,28 @@
         "title": "TermsBody",
         "type": "object"
       },
+      "ThemeView": {
+        "properties": {
+          "items": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "items"
+        ],
+        "title": "ThemeView",
+        "type": "object"
+      },
       "TopicBody": {
         "properties": {
           "description": {
@@ -5156,6 +5178,20 @@
             ],
             "title": "Status",
             "type": "string"
+          },
+          "themes": {
+            "items": {
+              "$ref": "#/components/schemas/ThemeView"
+            },
+            "title": "Themes",
+            "type": "array"
+          },
+          "unsearched": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Unsearched",
+            "type": "array"
           }
         },
         "required": [
@@ -5169,6 +5205,8 @@
           "concepts",
           "candidates",
           "fact",
+          "unsearched",
+          "themes",
           "error",
           "model",
           "created_at",

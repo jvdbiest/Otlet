@@ -217,7 +217,7 @@ def test_words_between_quotes_are_searched_as_written() -> None:
     assert numbered("Vi") == ["Vi"]
     games = Concept("GTA VI", ("GTA VI", "GTA 6", "Grand Theft Auto VI"))
     kept = guarded(question, Translated(Operation.CHERCHER, (games,), None))
-    assert kept.concepts == (Concept("GTA VI", ('"GTA VI"', '"GTA 6"', "Grand Theft Auto VI")),)
+    assert kept.concepts == (Concept("GTA VI", ('"GTA VI"', '"GTA 6"', '"Grand Theft Auto VI"')),)
     # A phrase the model left out is a concept of its own, first.
     other = guarded(question, Translated(Operation.CHERCHER, (Concept("jeu", ("jeux",)),), None))
     assert other.concepts[0] == Concept("GTA VI", ('"GTA VI"', '"GTA 6"'))
@@ -284,3 +284,32 @@ def test_the_bench_of_2026_10_29() -> None:
     assert points_back("Qu'en pensent les enseignants ?")
     assert points_back("Qui s'y oppose ?")
     assert not points_back("Et les voitures chinoises ?")
+
+
+def test_the_second_bench_of_2026_10_29() -> None:
+    """Questions drawn from Joël's recent briefs."""
+    from otlet.reporter.domain.questions import about_the_set
+
+    # « October » and « oktober » are no terms of « jeux vidéo ».
+    games = Concept("jeux vidéo", ("jeux vidéo", "release", "October", "oktober 2026"))
+    kept = guarded(
+        "Quels jeux vidéo sont sortis depuis octobre ?",
+        Translated(Operation.CHERCHER, (games,), None),
+    )
+    assert kept.concepts == (Concept("jeux vidéo", ("jeux vidéo", "release")),)
+    # « nouveautés », once split from « nouveautés Apple », is no concept.
+    news = Concept("nouveautés Apple", ("nouveautés", "Apple", "Apple produits"))
+    kept = guarded(
+        "Les nouveautés Apple du 28 octobre", Translated(Operation.CHERCHER, (news,), None)
+    )
+    assert [c.name for c in kept.concepts] == ["Apple"]
+    # « Et la Switch 2 ? » narrows the consoles to one of their terms: not about the set.
+    consoles = State((Concept("consoles de jeux vidéo", ("Nintendo", "Switch", "PS5")),))
+    switch = Translated(Operation.CHERCHER, (Concept("Switch 2", ("Switch 2",)),), None)
+    assert not about_the_set("Et la Switch 2 ?", switch, consoles)
+
+
+def test_a_name_with_a_number_is_a_phrase() -> None:
+    switch = Concept("Switch 2", ("Switch 2", "Nintendo"))
+    kept = guarded("Et la Switch 2 ?", Translated(Operation.CHERCHER, (switch,), None))
+    assert kept.concepts == (Concept("Switch 2", ('"Switch 2"', "Nintendo")),)

@@ -17,11 +17,13 @@ from otlet.platform.rls import here
 from otlet.reporter.application.reporter import ANSWER_TURN, Conversation, Turn
 from otlet.reporter.domain.facts import Agreement, Article, Compared, Fact, FactLine
 from otlet.reporter.domain.questions import PROMPT_VERSION, Operation, State
+from otlet.reporter.domain.reading import Answer, Coverage, Reading, Round
 
 TURN_COLUMNS = (
     "id, position, question, status, operation, state, concepts, candidates, fact, verdicts,"
-    " error, model, prompt_version, attempts, created_at, finished_at"
+    " reading, error, model, prompt_version, attempts, created_at, finished_at"
 )
+REQUESTED = json.dumps({"requested": True})
 
 
 def _concept(data: dict[str, Any]) -> Concept:
@@ -110,6 +112,55 @@ def _fact(data: dict[str, Any] | None) -> Fact | None:
     )
 
 
+def _reading_json(reading: Reading | None) -> str | None:
+    if reading is None:
+        return None
+    return json.dumps(
+        {
+            "requested": reading.requested,
+            "rounds": [
+                {
+                    "concepts": [{"name": c.name, "terms": list(c.terms)} for c in r.concepts],
+                    "read": list(r.read),
+                    "found": r.found,
+                }
+                for r in reading.rounds
+            ],
+            "answers": [
+                {
+                    "item_id": a.item_id,
+                    "title": a.title,
+                    "publisher": a.publisher,
+                    "dated": a.dated,
+                    "url": a.url,
+                    "reason": a.reason,
+                    "round": a.round,
+                }
+                for a in reading.answers
+            ],
+            "coverage": None if reading.coverage is None else reading.coverage.value,
+            "missing": reading.missing,
+            "errors": list(reading.errors),
+        }
+    )
+
+
+def _reading(data: dict[str, Any] | None) -> Reading | None:
+    if data is None:
+        return None
+    return Reading(
+        requested=bool(data.get("requested")),
+        rounds=tuple(
+            Round(tuple(_concept(c) for c in r["concepts"]), tuple(r["read"]), r["found"])
+            for r in data.get("rounds", [])
+        ),
+        answers=tuple(Answer(**a) for a in data.get("answers", [])),
+        coverage=None if data.get("coverage") is None else Coverage(data["coverage"]),
+        missing=data.get("missing", ""),
+        errors=tuple(data.get("errors", [])),
+    )
+
+
 def _turn(row: sa.Row[Any]) -> Turn:
     return Turn(
         id=row.id,
@@ -144,6 +195,7 @@ def _turn(row: sa.Row[Any]) -> Turn:
             UUID(key): Judged(Verdict(v["verdict"]), v["reason"], v["by_model"])
             for key, v in row.verdicts.items()
         },
+        reading=_reading(row.reading),
         error=row.error,
         model=row.model,
         prompt_version=row.prompt_version,
@@ -210,14 +262,20 @@ class PostgresReporterStore:
         return Conversation(row.id, row.title, row.days, row.created_at, [_turn(t) for t in turns])
 
     def add_turn(
-        self, workspace_id: UUID, user_id: UUID, conversation_id: UUID, question: str
+        self,
+        workspace_id: UUID,
+        user_id: UUID,
+        conversation_id: UUID,
+        question: str,
+        read: bool = False,
     ) -> Turn:
         with workspace_transaction(self._engine, workspace_id) as connection:
             row = connection.execute(
                 sa.text(
                     "INSERT INTO reporter_turns (id, workspace_id, conversation_id, position,"
-                    " question, prompt_version) SELECT :id, :workspace, :conversation,"
-                    " coalesce(max(position), 0) + 1, :question, :version FROM reporter_turns"
+                    " question, prompt_version, reading) SELECT :id, :workspace, :conversation,"
+                    " coalesce(max(position), 0) + 1, :question, :version,"
+                    " CAST(:reading AS jsonb) FROM reporter_turns"
                     f" WHERE conversation_id = :conversation AND {here()}"
                     f" RETURNING {TURN_COLUMNS}"
                 ),
@@ -227,6 +285,7 @@ class PostgresReporterStore:
                     "conversation": conversation_id,
                     "question": question,
                     "version": PROMPT_VERSION,
+                    "reading": REQUESTED if read else None,
                 },
             ).one()
             self._enqueue(
@@ -261,6 +320,29 @@ class PostgresReporterStore:
             )
         return _turn(row)
 
+    def request_reading(
+        self, workspace_id: UUID, user_id: UUID, conversation_id: UUID, turn_id: UUID
+    ) -> Turn:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            row = connection.execute(
+                sa.text(
+                    "UPDATE reporter_turns SET status = 'pending', finished_at = NULL,"
+                    " reading = CAST(:reading AS jsonb)"
+                    f" WHERE id = :id AND conversation_id = :conversation AND {here()}"
+                    f" RETURNING {TURN_COLUMNS}"
+                ),
+                {"id": turn_id, "conversation": conversation_id, "reading": REQUESTED},
+            ).one()
+            self._enqueue(
+                connection,
+                ANSWER_TURN,
+                workspace_id=str(workspace_id),
+                user_id=str(user_id),
+                conversation_id=str(conversation_id),
+                turn_id=str(turn_id),
+            )
+        return _turn(row)
+
     def save_turn(self, workspace_id: UUID, conversation_id: UUID, turn: Turn) -> None:
         verdicts = {
             str(key): {"verdict": j.verdict.value, "reason": j.reason, "by_model": j.by_model}
@@ -272,7 +354,8 @@ class PostgresReporterStore:
                     "UPDATE reporter_turns SET status = :status, operation = :operation,"
                     " state = CAST(:state AS jsonb), concepts = CAST(:concepts AS jsonb),"
                     " candidates = CAST(:candidates AS jsonb), fact = CAST(:fact AS jsonb),"
-                    " verdicts = CAST(:verdicts AS jsonb), error = :error, model = :model,"
+                    " verdicts = CAST(:verdicts AS jsonb), reading = CAST(:reading AS jsonb),"
+                    " error = :error, model = :model,"
                     " attempts = CAST(:attempts AS jsonb), finished_at = :finished"
                     f" WHERE id = :id AND conversation_id = :conversation AND {here()}"
                 ),
@@ -286,6 +369,7 @@ class PostgresReporterStore:
                     "candidates": _candidates_json(turn.candidates),
                     "fact": _fact_json(turn.fact),
                     "verdicts": json.dumps(verdicts),
+                    "reading": _reading_json(turn.reading),
                     "error": turn.error,
                     "model": turn.model,
                     "attempts": json.dumps(turn.attempts),

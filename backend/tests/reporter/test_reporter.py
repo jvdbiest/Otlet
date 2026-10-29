@@ -25,6 +25,7 @@ from otlet.reporter.adapters.postgres import PostgresReporterStore
 from otlet.reporter.application.reporter import Reporter, ReporterError
 from otlet.reporter.domain.facts import Agreement
 from otlet.reporter.domain.questions import Operation
+from otlet.reporter.domain.reading import Coverage
 from otlet.workspaces.adapters.postgres import PostgresWorkspaceStore
 from otlet.workspaces.application.workspaces import Workspaces
 from otlet.workspaces.domain.model import WorkspaceContext
@@ -100,6 +101,8 @@ class FakeModel:
         if self.fail:
             return Asked(None, "no model", None, ())
         question = user.rsplit("Question : ", 1)[-1].split("\n")[0]
+        if "Question à vérifier : " in user:
+            return Asked(json.dumps(self._reading(user)), None, "fake", ())
         if "Dernière question : " in user:
             question = user.rsplit("Dernière question : ", 1)[-1]
             if "pas encore d'ensemble" in question:
@@ -131,6 +134,22 @@ class FakeModel:
             concepts = [{"name": "Bruxelles", "terms": ["Bruxelles", "Brussel"]}]
             return {"operation": "restreindre", "concepts": concepts}
         return {"operation": "fait", "concepts": []}
+
+    @staticmethod
+    def _reading(user: str) -> dict[str, Any]:
+        """Only the item on the injured in Brussels answers; the coast is searched next."""
+        blocks = user.split("Articles :", 1)[-1].split("\n[")[1:]
+        answers = [
+            {"article": n, "raison": "les blessés"}
+            for n, block in enumerate(blocks, 1)
+            if "blessés à Bruxelles" in block
+        ]
+        return {
+            "repondent": answers,
+            "couverture": "partiel",
+            "manque": "Le nombre de blessés à la côte manque.",
+            "autres_concepts": [{"name": "côte", "terms": ["côte"]}],
+        }
 
     @staticmethod
     def _line(article: int, figure: str, passage: str) -> dict[str, Any]:
@@ -272,3 +291,48 @@ def test_a_fact_asked_first_searches_then_reads(
     assert [w.concept.name for w in turn.concepts] == ["Austen"]
     assert len(turn.candidates) == 3
     assert turn.fact is not None and len(turn.fact.lines) == 2
+
+
+def test_a_set_is_read_when_asked_and_once(
+    reporter: tuple[Reporter, Reporter, WorkspaceContext, sa.Engine],
+) -> None:
+    """« Vérifier en lisant » (Joël, 2026-10-29): the model says which items truly answer and
+    what is missing; one more search with its terms, without the items already read."""
+    api, worker, context, _ = reporter
+    conversation = api.start(context, "Les articles sur la tempête Austen")
+    turn = conversation.turns[0]
+    answer(worker, context, conversation.id, turn.id)
+    pending = api.read_set(context, conversation.id, turn.id)
+    assert pending.status == "pending" and pending.reading is not None
+    assert pending.reading.requested
+    answer(worker, context, conversation.id, turn.id)
+    found = api.get(context, conversation.id)
+    assert found is not None
+    read = found.turns[0]
+    assert read.status == "done" and read.reading is not None
+    reading = read.reading
+    assert not reading.requested
+    assert [a.title for a in reading.answers] == [AUSTEN[0][0]]
+    assert reading.coverage is Coverage.PARTIEL
+    assert reading.missing == "Le nombre de blessés à la côte manque."
+    # The second search found only the coast, already read: nothing more to read.
+    assert [len(r.read) for r in reading.rounds] == [3, 0]
+    assert [c.name for c in reading.rounds[1].concepts] == ["côte"]
+    # The set and the answer stay as they were.
+    assert len(read.candidates) == 3 and read.operation is Operation.CHERCHER
+    with pytest.raises(ReporterError) as refused:
+        api.read_set(context, conversation.id, turn.id)
+    assert refused.value.code == "already_read"
+
+
+def test_a_question_asked_to_be_read_is_read_before_it_is_shown(
+    reporter: tuple[Reporter, Reporter, WorkspaceContext, sa.Engine],
+) -> None:
+    api, worker, context, _ = reporter
+    conversation = api.start(context, "Les articles sur la tempête Austen", read=True)
+    answer(worker, context, conversation.id, conversation.turns[0].id)
+    found = api.get(context, conversation.id)
+    assert found is not None
+    turn = found.turns[0]
+    assert turn.status == "done" and turn.reading is not None
+    assert [a.title for a in turn.reading.answers] == [AUSTEN[0][0]]

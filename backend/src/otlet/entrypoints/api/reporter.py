@@ -21,6 +21,8 @@ from otlet.entrypoints.api.assistant import (
 from otlet.entrypoints.api.auth import same_origin
 from otlet.entrypoints.api.workspaces import PREFIX
 from otlet.reporter.application.reporter import Conversation, Reporter, ReporterError, Turn
+from otlet.reporter.domain.questions import unsearched
+from otlet.reporter.domain.themes import themes
 from otlet.workspaces.domain.model import WorkspaceContext
 
 
@@ -62,6 +64,15 @@ class TurnCandidateView(CandidateView):
     judged: JudgedView | None  # after a sort only
 
 
+class ThemeView(BaseModel):
+    label: str
+    items: list[UUID]
+
+
+# A set this large is shown with its main themes (Joël, 2026-10-29).
+THEMES_FROM = 25
+
+
 class TurnView(BaseModel):
     id: UUID
     position: int
@@ -73,6 +84,10 @@ class TurnView(BaseModel):
     concepts: list[ConceptView]
     candidates: list[TurnCandidateView]
     fact: FactView | None
+    # Words of the question that no term searched (« enseignement »), and the main themes of
+    # a large set: both without a model, to guide the author (Joël, 2026-10-29).
+    unsearched: list[str]
+    themes: list[ThemeView]
     error: str | None
     model: str | None
     created_at: datetime | None
@@ -134,6 +149,18 @@ class TurnView(BaseModel):
             ),
             error=turn.error,
             model=turn.model,
+            unsearched=unsearched(turn.question, [w.concept for w in turn.concepts])
+            if turn.status == "done" and turn.concepts
+            else [],
+            themes=[
+                ThemeView(label=t.label, items=[turn.candidates[n].id for n in t.members])
+                for t in themes(
+                    [f"{c.title} {c.summary}" for c in turn.candidates],
+                    [term for w in turn.concepts for term in w.all_terms],
+                )
+            ]
+            if len(turn.candidates) >= THEMES_FROM
+            else [],
             created_at=turn.created_at,
             finished_at=turn.finished_at,
         )

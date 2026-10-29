@@ -102,6 +102,10 @@ class FakeModel:
         question = user.rsplit("Question : ", 1)[-1].split("\n")[0]
         if "Dernière question : " in user:
             question = user.rsplit("Dernière question : ", 1)[-1]
+            if "pas encore d'ensemble" in question:
+                concepts = [{"name": "Austen", "terms": ["Austen"]}]
+                answer = {"operation": "chercher", "concepts": concepts}
+                return Asked(json.dumps(answer), None, "fake", ())
             return Asked(json.dumps(self._operation(question)), None, "fake", ())
         lines = []
         for n, block in enumerate(user.split("Articles :", 1)[-1].split("\n[")[1:], 1):
@@ -114,7 +118,7 @@ class FakeModel:
 
     @staticmethod
     def _operation(question: str) -> dict[str, Any]:
-        if "Austen" in question:
+        if "Austen" in question and "Combien" not in question:
             # A concept the question never named is added, as the model did on the bench.
             concepts = [
                 {"name": "Austen", "terms": ["Austen", "tempête Austen"]},
@@ -251,3 +255,20 @@ def test_a_question_the_model_cannot_translate(
     assert (found.turns[0].status, found.turns[0].error) == ("failed", "no model")
     # One attempt only when the model is down; twice when it ran out of room.
     assert len(failing.asked) == 1
+
+
+def test_a_fact_asked_first_searches_then_reads(
+    reporter: tuple[Reporter, Reporter, WorkspaceContext, sa.Engine],
+) -> None:
+    """« Quels sont les derniers faits concernant l'enseignement ? » found nothing: there was no
+    set yet (Joël, 2026-10-29). The set is searched first, then the fact read in it."""
+    api, worker, context, _ = reporter
+    conversation = api.start(context, "Combien de blessés pendant la tempête Austen ?")
+    answer(worker, context, conversation.id, conversation.turns[0].id)
+    found = api.get(context, conversation.id)
+    assert found is not None
+    turn = found.turns[0]
+    assert turn.operation is Operation.FAIT
+    assert [w.concept.name for w in turn.concepts] == ["Austen"]
+    assert len(turn.candidates) == 3
+    assert turn.fact is not None and len(turn.fact.lines) == 2

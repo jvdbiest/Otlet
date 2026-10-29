@@ -107,3 +107,35 @@ def test_a_period_names_no_concept_and_a_named_subject_is_searched() -> None:
     assert kept.days == 7
     only_week = guarded(question, Translated(Operation.CHERCHER, (week,), None))
     assert only_week.concepts == () and only_week.days == 7
+
+
+def test_a_month_named_is_a_period_and_no_concept() -> None:
+    """« Quels jeux vidéos sont sortis depuis octobre ? » searched « octobre 2023 »."""
+    from datetime import date
+
+    from otlet.reporter.domain.questions import asked_period
+
+    today = date(2026, 10, 29)
+    assert asked_period("Quels jeux vidéos sont sortis depuis octobre ?", today) == 29
+    assert asked_period("Que s'est-il passé en novembre ?", today) == 363
+    months = Concept("octobre", ("octobre", "octobre 2025", "sortie octobre 2024"))
+    games = Concept("jeux vidéo", ("jeux vidéo",))
+    question = "Quels jeux vidéos sont sortis depuis octobre ?"
+    kept = guarded(question, Translated(Operation.CHERCHER, (games, months), None), today)
+    assert kept.concepts == (games,) and kept.days == 29
+
+
+def test_a_word_of_the_question_no_term_searches_is_shown_and_brought_back() -> None:
+    """Only « Belgique » was searched for the teaching in Belgium (Joël, 2026-10-29)."""
+    from otlet.reporter.domain.questions import unsearched
+
+    question = "Quels sont les derniers faits concernant l'enseignement en Belgique ?"
+    belgium = Concept("Belgique", ("Belgique", "België"))
+    assert unsearched(question, [belgium]) == ["enseignement"]
+    school = Concept("éducation", ("éducation", "école", "onderwijs"))
+    kept = guarded(question, Translated(Operation.CHERCHER, (belgium, school), None))
+    assert kept.concepts == (
+        belgium,
+        Concept("enseignement", ("enseignement", "éducation", "école", "onderwijs")),
+    )
+    assert unsearched(question, list(kept.concepts)) == []

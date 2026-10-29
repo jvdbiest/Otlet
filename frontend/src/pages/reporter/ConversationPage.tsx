@@ -22,6 +22,8 @@ const SHOWN_AT_ONCE = 8;
 // The largest set the Reporter keeps (reporter.SET_MAX): reached, the question is too broad.
 const SET_MAX = 200;
 const CHANGES_SET: readonly string[] = ["chercher", "restreindre", "élargir"];
+// From this many items, the main themes are shown at once (Joël, 2026-10-29).
+const THEMES_OPEN = 100;
 
 /** A conversation of the Reporter (ADR-0044): each question and its answer, a set of items or
  * lines of fact cited by source, then the next question. */
@@ -137,14 +139,24 @@ function Turn({
             {turn.days !== null && ` · ${t("reporter.period", { count: turn.days })}`}
             {turn.model !== null && ` · ${t("reporter.model", { model: turn.model })}`}
           </p>
-          {/* A fact, a sort or an action reads the set of the previous answer: its terms are there. */}
-          {(turn.operation === null || CHANGES_SET.includes(turn.operation)) && (
-            <Terms workspaceId={workspaceId} conversationId={conversation.id} turn={turn} editable={last} />
+          {/* A fact, a sort or an action reads the set of the previous answer: its terms are
+          there; asked first, it searched its own set. */}
+          {(turn.operation === null || CHANGES_SET.includes(turn.operation) || turn.position === 1) && (
+            <>
+              <Terms workspaceId={workspaceId} conversationId={conversation.id} turn={turn} editable={last} />
+              <Unsearched workspaceId={workspaceId} conversationId={conversation.id} turn={turn} last={last} />
+            </>
           )}
           {turn.operation === "fait" ? (
             <Fact workspaceId={workspaceId} conversationId={conversation.id} turn={turn} fact={turn.fact} />
           ) : (
-            <ItemSet turn={turn} title={conversation.title} last={last} />
+            <ItemSet
+              workspaceId={workspaceId}
+              conversationId={conversation.id}
+              turn={turn}
+              title={conversation.title}
+              last={last}
+            />
           )}
         </>
       )}
@@ -273,14 +285,102 @@ function Terms({
   );
 }
 
-/** The set of the answer: its count opens the items; after a sort, by verdict. */
-function ItemSet({ turn, title, last }: { turn: TurnView; title: string; last: boolean }) {
+/** Words of the question no term searched: shown, and added to the terms in one click. */
+function Unsearched({
+  workspaceId,
+  conversationId,
+  turn,
+  last,
+}: {
+  workspaceId: string;
+  conversationId: string;
+  turn: TurnView;
+  last: boolean;
+}) {
+  const { t } = useTranslation();
+  const setTerms = useSetTerms(workspaceId, conversationId);
+  if (turn.unsearched.length === 0) {
+    return null;
+  }
+  return (
+    <p className={styles.notice}>
+      {t("reporter.unsearched", { words: turn.unsearched.join(", ") })}{" "}
+      {last && turn.concepts.length < 4 && (
+        <button
+          type="button"
+          className={styles.button}
+          disabled={setTerms.isPending}
+          onClick={() => {
+            setTerms.mutate({
+              turnId: turn.id,
+              concepts: [
+                ...turn.concepts.map((c) => ({ name: c.name, terms: [...c.terms, ...c.added] })),
+                ...turn.unsearched.slice(0, 4 - turn.concepts.length).map((word) => ({ name: word, terms: [word] })),
+              ],
+            });
+          }}
+        >
+          {t("reporter.addUnsearched")}
+        </button>
+      )}
+    </p>
+  );
+}
+
+/** Questions that follow a set, in one click: the Reporter is strongest when they are chained. */
+function Suggestions({ workspaceId, conversationId, turn }: { workspaceId: string; conversationId: string; turn: TurnView }) {
+  const { t } = useTranslation();
+  const ask = useAsk(workspaceId, conversationId);
+  const sorted = turn.candidates.some((c) => c.judged !== null);
+  const questions = [
+    ...(sorted ? [] : [t("reporter.suggest.sort")]),
+    ...(turn.language === null ? [t("reporter.suggest.dutch"), t("reporter.suggest.french")] : []),
+  ];
+  return (
+    <p className={styles.row} style={{ flexWrap: "wrap" }}>
+      <span className={styles.meta}>{t("reporter.suggest.title")}</span>
+      {questions.map((question) => (
+        <button
+          key={question}
+          type="button"
+          className={styles.chip}
+          disabled={ask.isPending}
+          onClick={() => {
+            ask.mutate(question);
+          }}
+        >
+          {question}
+        </button>
+      ))}
+    </p>
+  );
+}
+
+/** The set of the answer: its count opens the items; after a sort, by verdict; a large set by
+ * its main themes, each a click away. */
+function ItemSet({
+  workspaceId,
+  conversationId,
+  turn,
+  title,
+  last,
+}: {
+  workspaceId: string;
+  conversationId: string;
+  turn: TurnView;
+  title: string;
+  last: boolean;
+}) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [open, setOpen] = useState(last && turn.candidates.length <= SHOWN_AT_ONCE);
-  const sorted = turn.candidates.some((c) => c.judged !== null);
-  const kept = sorted ? turn.candidates.filter((c) => c.judged?.verdict === "traite") : turn.candidates;
-  const chosen = (kept.length > 0 ? kept : turn.candidates).slice(0, BRIEF_MAX);
+  const [showThemes, setShowThemes] = useState(turn.candidates.length >= THEMES_OPEN);
+  const [theme, setTheme] = useState<number | null>(null);
+  const picked = theme === null ? null : turn.themes[theme];
+  const inTheme = picked === undefined || picked === null ? turn.candidates : turn.candidates.filter((c) => picked.items.includes(c.id));
+  const sorted = inTheme.some((c) => c.judged !== null);
+  const kept = sorted ? inTheme.filter((c) => c.judged?.verdict === "traite") : inTheme;
+  const chosen = (kept.length > 0 ? kept : inTheme).slice(0, BRIEF_MAX);
   const count = (verdict: string) => turn.candidates.filter((c) => c.judged?.verdict === verdict).length;
   return (
     <>
@@ -304,9 +404,48 @@ function ItemSet({ turn, title, last }: { turn: TurnView; title: string; last: b
           {t("reporter.sorted", { kept: count("traite"), check: count("proche"), aside: count("hors_sujet") })}
         </p>
       )}
+      {turn.themes.length > 0 && !showThemes && (
+        <p className={styles.row}>
+          <button
+            type="button"
+            className={styles.chip}
+            onClick={() => {
+              setShowThemes(true);
+            }}
+          >
+            {t("reporter.suggest.themes")}
+          </button>
+        </p>
+      )}
+      {showThemes && turn.themes.length > 0 && (
+        <div>
+          <p className={styles.meta}>{t("reporter.themes", { count: turn.candidates.length })}</p>
+          <p className={styles.row} style={{ flexWrap: "wrap" }}>
+            {turn.themes.map((found, index) => (
+              <button
+                key={found.label}
+                type="button"
+                className={styles.chip}
+                aria-pressed={theme === index}
+                style={theme === index ? { fontWeight: 600 } : undefined}
+                onClick={() => {
+                  setTheme(theme === index ? null : index);
+                  setOpen(true);
+                }}
+              >
+                {found.label} ({found.items.length})
+              </button>
+            ))}
+          </p>
+          <p className={styles.help}>{t("reporter.themesHelp")}</p>
+        </div>
+      )}
       {turn.candidates.length === 0 && <p className={styles.notice}>{t("reporter.emptySet")}</p>}
       {turn.candidates.length >= SET_MAX && <p className={styles.notice}>{t("reporter.broad", { max: SET_MAX })}</p>}
-      {open && <Items candidates={sorted ? [...kept, ...turn.candidates.filter((c) => !kept.includes(c))] : turn.candidates} />}
+      {open && <Items candidates={sorted ? [...kept, ...inTheme.filter((c) => !kept.includes(c))] : inTheme} />}
+      {last && turn.candidates.length > 0 && (
+        <Suggestions workspaceId={workspaceId} conversationId={conversationId} turn={turn} />
+      )}
       {last && !sorted && turn.candidates.length > BRIEF_MAX && (
         <p className={styles.help}>{t("reporter.sortFirst", { max: BRIEF_MAX })}</p>
       )}
@@ -322,7 +461,7 @@ function ItemSet({ turn, title, last }: { turn: TurnView; title: string; last: b
               });
             }}
           >
-            {chosen.length < turn.candidates.length
+            {chosen.length < inTheme.length
               ? t("reporter.toBriefFirst", { count: chosen.length })
               : t("reporter.toBrief", { count: chosen.length })}
           </button>

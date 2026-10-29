@@ -8,7 +8,9 @@ for a concept: two guards brought the items found from a few to 88 % of the refe
 """
 
 import json
+import re
 from dataclasses import dataclass, replace
+from datetime import date
 from enum import StrEnum
 from typing import Any
 
@@ -112,9 +114,45 @@ PERIOD_WORDS = (
 )
 
 
-def asked_period(question: str) -> int | None:
-    asked = f" {folded(question).replace('?', ' ').replace(',', ' ')} "
-    return next((days for words, days in PERIOD_WORDS if f" {words} " in asked), None)
+MONTHS = (
+    "janvier",
+    "fevrier",
+    "mars",
+    "avril",
+    "mai",
+    "juin",
+    "juillet",
+    "aout",
+    "septembre",
+    "octobre",
+    "novembre",
+    "decembre",
+)
+# « depuis octobre », « en octobre », « d'octobre »: from the first of that month (Joël,
+# 2026-10-29: « Quels jeux vidéos sont sortis depuis octobre ? » searched « octobre 2023 »).
+MONTH_PERIOD = re.compile(
+    r"\b(?:depuis|en|d'|du mois d'|au mois d')\s*(" + "|".join(MONTHS) + r")\b"
+)
+
+
+def _asked(question: str) -> str:
+    return f" {folded(question).replace('?', ' ').replace(',', ' ')} "
+
+
+def asked_period(question: str, today: date | None = None) -> int | None:
+    """The days a question names, from its words: « cette semaine » 7, « depuis octobre » from
+    the first of October (the last October not after today)."""
+    asked = _asked(question)
+    named = next((days for words, days in PERIOD_WORDS if f" {words} " in asked), None)
+    if named is not None:
+        return named
+    month = MONTH_PERIOD.search(asked)
+    if month is None:
+        return None
+    today = today or date.today()
+    number = MONTHS.index(month.group(1)) + 1
+    year = today.year if number <= today.month else today.year - 1
+    return (today - date(year, number, 1)).days + 1
 
 
 PERIOD_TERMS = {
@@ -138,7 +176,53 @@ PERIOD_TERMS = {
 
 
 def _of_period(concept: Concept) -> bool:
-    return all(folded(t) in PERIOD_TERMS for t in (concept.name, *concept.terms))
+    """A concept made only of the words of a period: « semaine, week », « octobre 2025 »."""
+    return all(
+        w in PERIOD_TERMS or w in MONTHS or w.isdigit()
+        for t in (concept.name, *concept.terms)
+        for w in re.findall(r"[\w'-]+", folded(t))
+    )
+
+
+# Words of a question that ask, but name no subject: never « not searched ».
+QUESTION_WORDS = set(
+    """quel quels quelle quelles sont derniers dernieres dernier derniere faits fait concernant
+    actualite actualites article articles nouvelles nouveaute nouveautes parle parlent passe
+    passes quoi comment pourquoi combien depuis entre avant apres pendant cette semaine
+    trouve trouver informations information evenements evenement marque marques recentes
+    recents recent recente savoir plus est-ce qu'est-ce c'est sujet sujets concerne concernent
+    lesquels lesquelles seulement aussi encore toutes tous sortis sorti sortent annonce
+    annonces disent""".split()
+)
+
+
+def unsearched(question: str, concepts: list[Concept]) -> list[str]:
+    """The words of the question that name something no term searches (« enseignement » when
+    only « Belgique » was searched, Joël, 2026-10-29), in the author's spelling."""
+    asked = _asked(question)
+    for words_of_period, _ in PERIOD_WORDS:
+        asked = asked.replace(f" {words_of_period} ", " ")
+    asked = MONTH_PERIOD.sub(" ", asked)
+    searched = {
+        w for c in concepts for t in (c.name, *c.terms) for w in re.findall(r"[\w-]+", folded(t))
+    }
+    language = {w for names in LANGUAGE_WORDS.values() for w in names}
+
+    def stem(word: str) -> str:
+        return word[: max(5, len(word) - 2)]
+
+    stems = {stem(w) for w in searched}
+    originals = {folded(w): w for w in re.findall(r"[\w-]+", question)}
+    out = []
+    for word in re.findall(r"[\w-]+", asked):
+        if len(word) < 5 or word in QUESTION_WORDS or word in language or word in MONTHS:
+            continue
+        if word in searched or stem(word) in stems:
+            continue
+        shown = originals.get(word, word)
+        if shown not in out:
+            out.append(shown)
+    return out
 
 
 def operation_message(history: list[str], state: State, question: str) -> str:
@@ -191,7 +275,7 @@ def read_operation(raw: str) -> Translated:
     )
 
 
-def guarded(question: str, translated: Translated) -> Translated:
+def guarded(question: str, translated: Translated, today: date | None = None) -> Translated:
     """The translation kept to what the question says (ADR-0044 §4):
 
     - a concept is kept only when the question names it, by its name or one of its terms;
@@ -202,9 +286,10 @@ def guarded(question: str, translated: Translated) -> Translated:
       week », which found every week-end of the Veille);
     - a concept the question names by its name searches that name first: « jeux vidéo » came
       with « console, PC, mobile » and not « jeux vidéo » itself (Joël, 2026-10-25)."""
-    asked = f" {folded(question).replace('?', ' ').replace(',', ' ')} "
+    asked = _asked(question)
     for words_of_period, _ in PERIOD_WORDS:
         asked = asked.replace(f" {words_of_period} ", " ")
+    asked = MONTH_PERIOD.sub(" ", asked)
     words = set(asked.split())
 
     def said(w: str) -> bool:
@@ -218,7 +303,14 @@ def guarded(question: str, translated: Translated) -> Translated:
         return concept
 
     kept_concepts = tuple(c for c in map(anchored, translated.concepts) if c is not None)
-    period = asked_period(question)
+    dropped = [c for c in translated.concepts if anchored(c) is None and not _of_period(c)]
+    missing = unsearched(question, list(kept_concepts))
+    if dropped and missing and kept_concepts:
+        # The model named the subject otherwise (« éducation » for « enseignement »): its
+        # concept comes back, led by the word of the question (Joël, 2026-10-29).
+        word = missing[0]
+        kept_concepts = (*kept_concepts, Concept(word, _clean([word, *dropped[0].terms])))
+    period = asked_period(question, today)
     # None named: the first stays, unless it is made of the words of a period.
     fallback = tuple(c for c in translated.concepts[:1] if not _of_period(c))
     kept = replace(translated, concepts=kept_concepts or fallback, days=period)

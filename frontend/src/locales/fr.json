@@ -1287,6 +1287,17 @@
     "sortFirst": "Plus de {max} articles : demandez d'abord « Trie-les », et le brief ne prendra que ceux qui traitent vraiment le sujet.",
     "toBrief": "{count, plural, one {Préparer un brief avec cet article} other {Préparer un brief avec ces # articles}}",
     "toBriefFirst": "{count, plural, one {Préparer un brief avec le premier article} other {Préparer un brief avec les # premiers articles}}",
-    "model": "Modèle : {model}"
+    "model": "Modèle : {model}",
+    "unsearched": "Non cherché : {words}.",
+    "addUnsearched": "L'ajouter aux termes",
+    "themes": "{count} articles. Principaux sujets, tirés des titres et des résumés :",
+    "themesHelp": "Un clic sur un sujet n'affiche que ses articles, et « Préparer un brief » les reprend. Un second clic revient à tous.",
+    "suggest": {
+      "title": "Et ensuite ?",
+      "sort": "Trie-les",
+      "dutch": "Seulement en néerlandais",
+      "french": "Seulement en français",
+      "themes": "Quels sujets dominent ?"
+    }
   }
 }

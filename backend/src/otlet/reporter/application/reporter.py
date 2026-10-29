@@ -11,7 +11,7 @@ sources is computed. A sort uses the sort of the Assistant; nothing leaves the s
 
 from collections.abc import Callable
 from dataclasses import dataclass, field, replace
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from typing import Any, Protocol
 from uuid import UUID
 
@@ -58,6 +58,7 @@ from otlet.reporter.domain.questions import (
     TERMS_MAX,
     Operation,
     State,
+    Translated,
     changes_set,
     check_operation,
     guarded,
@@ -68,6 +69,10 @@ from otlet.reporter.domain.questions import (
 from otlet.workspaces.domain.model import WorkspaceContext
 
 ANSWER_TURN = "reporter.answer_turn"
+FIRST_SEARCH = (
+    "\n\nIl n'y a pas encore d'ensemble d'articles : réponds par l'opération « chercher » et les"
+    " concepts du sujet de la question."
+)
 SET_MAX = 200
 DAYS = 30
 OPERATION_OUTPUT_TOKENS = 4096
@@ -269,8 +274,16 @@ class Reporter:
             )
             if raw is not None or not any("out_of_room" in e for e in errors):
                 break
+        today = self._now().date()
         if raw is not None:
-            translated = guarded(turn.question, read_operation(raw))
+            translated = guarded(turn.question, read_operation(raw), today)
+            if not state.concepts and not changes_set(translated.operation):
+                # A fact asked first (« Quels sont les derniers faits concernant
+                # l'enseignement ? », Joël, 2026-10-29): there is no set yet to read. The set is
+                # searched first, then the fact read in it.
+                translated = self._search_first(
+                    user_id, history, turn.question, translated, today, (attempts, models, errors)
+                )
         else:
             # The question itself was searched as one term before: it found nothing, and said
             # nothing of why. The turn fails, and says so.
@@ -288,7 +301,11 @@ class Reporter:
             )
             return
 
-        new_state = next_state(state, translated)
+        new_state = (
+            next_state(state, translated)
+            if changes_set(translated.operation) or state.concepts
+            else State(translated.concepts[:2], None, translated.days)
+        )
         done = replace(turn, operation=translated.operation, attempts=attempts)
         if changes_set(translated.operation) or previous is None:
             done = self._found(workspace_id, conversation, done, new_state)
@@ -321,6 +338,35 @@ class Reporter:
         )
 
     # Inside ---------------------------------------------------------------------------------
+
+    def _search_first(
+        self,
+        user_id: UUID,
+        history: list[str],
+        question: str,
+        translated: Translated,
+        today: date,
+        log: tuple[list[dict[str, Any]], list[str], list[str]],
+    ) -> Translated:
+        """The concepts of a first question that is not a search: the model's own when it gave
+        some, else asked again as a search. The operation stays what the author asked."""
+        if translated.concepts:
+            return translated
+        raw = self._ask(
+            user_id,
+            OPERATION_SYSTEM,
+            operation_message(history, State(), question) + FIRST_SEARCH,
+            OPERATION_SCHEMA,
+            check_operation,
+            OPERATION_OUTPUT_TOKENS,
+            log,
+        )
+        if raw is None:
+            return translated
+        searched = guarded(question, read_operation(raw), today)
+        return replace(
+            translated, concepts=searched.concepts, days=translated.days or searched.days
+        )
 
     def _found(
         self, workspace_id: UUID, conversation: Conversation, turn: Turn, state: State

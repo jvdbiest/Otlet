@@ -1298,6 +1298,26 @@
       "dutch": "Seulement en néerlandais",
       "french": "Seulement en français",
       "themes": "Quels sujets dominent ?"
+    },
+    "reading": {
+      "button": "Vérifier en lisant",
+      "help": "Votre modèle lit les 30 premiers articles et dit lesquels répondent vraiment ; une ou deux minutes.",
+      "first": "Lire avant de répondre",
+      "firstHelp": "Pour une question pointue : votre modèle lit les articles trouvés avant de vous les montrer, et cherche autrement une fois s'ils ne répondent pas. Plus lent.",
+      "pending": "Je lis les articles…",
+      "title": "Lecture des articles",
+      "read": "{count, plural, one {# article lu} other {# articles lus}}",
+      "second": "puis cherché aussi avec « {terms} » ({count, plural, =0 {rien de nouveau} one {# article lu} other {# articles lus}})",
+      "coverage": {
+        "oui": "Ces articles répondent à la question.",
+        "partiel": "Ces articles n'y répondent qu'en partie.",
+        "non": "Aucun article lu ne répond à la question."
+      },
+      "missing": "Ce qui manque, selon le modèle : {text}",
+      "none": "Aucun des articles lus ne traite vraiment la question.",
+      "fromSecond": "seconde recherche",
+      "byModel": "Jugé par votre modèle sur les titres et les résumés : ouvrez les articles pour vérifier.",
+      "failed": "La lecture n'a pas abouti ({error}). Vous pouvez la relancer."
     }
   }
 }

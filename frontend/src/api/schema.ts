@@ -1692,6 +1692,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/turns/{turn_id}/reading": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Read Set
+         * @description « Vérifier en lisant »: the model reads the set of an answered question, once.
+         */
+        post: operations["read_set_api_workspaces__workspace_id__reporter_conversations__conversation_id__turns__turn_id__reading_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/turns/{turn_id}/terms": {
         parameters: {
             query?: never;
@@ -1934,6 +1954,26 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AnswerView */
+        AnswerView: {
+            /** Dated */
+            dated: string;
+            /**
+             * Item Id
+             * Format: uuid
+             */
+            item_id: string;
+            /** Publisher */
+            publisher: string;
+            /** Reason */
+            reason: string;
+            /** Round */
+            round: number;
+            /** Title */
+            title: string;
+            /** Url */
+            url: string | null;
+        };
         /** ArchiveBody */
         ArchiveBody: {
             /** Archived */
@@ -3298,6 +3338,36 @@ export interface components {
         QuestionBody: {
             /** Question */
             question: string;
+            /**
+             * Read
+             * @default false
+             */
+            read: boolean;
+        };
+        /** ReadConceptView */
+        ReadConceptView: {
+            /** Name */
+            name: string;
+            /** Terms */
+            terms: string[];
+        };
+        /**
+         * ReadingView
+         * @description « Vérifier en lisant »: what the model read, what truly answers, what is missing.
+         */
+        ReadingView: {
+            /** Answers */
+            answers: components["schemas"]["AnswerView"][];
+            /** Coverage */
+            coverage: ("oui" | "partiel" | "non") | null;
+            /** Errors */
+            errors: string[];
+            /** Missing */
+            missing: string;
+            /** Requested */
+            requested: boolean;
+            /** Rounds */
+            rounds: components["schemas"]["RoundView"][];
         };
         /** RefreshView */
         RefreshView: {
@@ -3349,6 +3419,15 @@ export interface components {
             declaration: components["schemas"]["DeclarationView"] | null;
             /** Reserved */
             reserved: boolean;
+        };
+        /** RoundView */
+        RoundView: {
+            /** Concepts */
+            concepts: components["schemas"]["ReadConceptView"][];
+            /** Found */
+            found: number;
+            /** Read */
+            read: number;
         };
         /**
          * SaveBody
@@ -3733,6 +3812,7 @@ export interface components {
             position: number;
             /** Question */
             question: string;
+            reading: components["schemas"]["ReadingView"] | null;
             /**
              * Status
              * @enum {string}
@@ -7226,6 +7306,39 @@ export interface operations {
         };
     };
     read_more_api_workspaces__workspace_id__reporter_conversations__conversation_id__turns__turn_id__more_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+                turn_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TurnView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_set_api_workspaces__workspace_id__reporter_conversations__conversation_id__turns__turn_id__reading_post: {
         parameters: {
             query?: never;
             header?: never;

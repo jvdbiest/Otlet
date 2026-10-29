@@ -533,7 +533,9 @@ def with_quoted(question: str, concepts: tuple[Concept, ...]) -> tuple[Concept, 
     return tuple(out)
 
 
-def guarded(question: str, translated: Translated, today: date | None = None) -> Translated:
+def guarded(
+    question: str, translated: Translated, today: date | None = None, every_word: bool = True
+) -> Translated:
     """The translation kept to what the question says (ADR-0044 §4):
 
     - a concept is kept only when the question names it, by its name or one of its terms;
@@ -582,6 +584,8 @@ def guarded(question: str, translated: Translated, today: date | None = None) ->
         (words_left := [w for w in missing if folded(w) not in ROMAN and not w.isdigit()])
         and len(kept_concepts) == 1
         and translated.operation is Operation.CHERCHER
+        # A fact names what it counts (« Combien de blessés ? »): not a subject to restrict by.
+        and every_word
     ):
         # A word of the question the model left out of every term is searched too: « SNCB »
         # stayed in the name « grèves SNCB », « école » was dropped (bench, 2026-10-29).

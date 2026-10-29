@@ -432,7 +432,7 @@ class Reporter:
         )
         if raw is None:
             return translated
-        searched = guarded(question, read_operation(raw), today)
+        searched = guarded(question, read_operation(raw), today, every_word=False)
         return replace(
             translated, concepts=searched.concepts, days=translated.days or searched.days
         )

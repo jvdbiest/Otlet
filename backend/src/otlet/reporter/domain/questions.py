@@ -181,6 +181,28 @@ PERIOD_TERMS = {
 }
 
 
+# The months in the other languages of the Veille: « October », « oktober » came as terms of
+# « jeux vidéo » and found every item of October (bench, 2026-10-29).
+OTHER_MONTHS = set(
+    """january february march april may june july august september october november december
+    januari februari maart mei juni juli augustus oktober""".split()
+)
+
+
+def _dated(term: str) -> bool:
+    """A term made only of the words of a period or a date: « October », « oktober 2026 »."""
+    words = re.findall(r"[\w'-]+", folded(term))
+    return bool(words) and all(
+        w in PERIOD_TERMS or w in MONTHS or w in OTHER_MONTHS or w.isdigit() for w in words
+    )
+
+
+def _without_dates(concept: Concept) -> Concept:
+    """A concept without its terms of a period: a period is a filter, never a term."""
+    terms = tuple(t for t in concept.terms if not _dated(t))
+    return Concept(concept.name, terms) if terms else concept
+
+
 def _of_period(concept: Concept) -> bool:
     """A concept made only of the words of a period: « semaine, week », « octobre 2025 »."""
     return all(
@@ -331,7 +353,9 @@ def about_the_set(question: str, translated: Translated, state: State) -> bool:
       moins cher ? » searched « modèle » alone (Joël, 2026-10-29)."""
     if translated.operation is not Operation.CHERCHER or not state.concepts:
         return False
-    if unsearched(question, list(state.concepts)):
+    # The words of the question must name the concepts themselves, not one of their terms:
+    # « Et la Switch 2 ? » narrows « consoles » to one of its terms (bench, 2026-10-29).
+    if unsearched(question, [Concept(c.name, (c.name,)) for c in state.concepts]):
         return False  # « Et l'enseignement ? »: a new subject
     return bool(_named(question)) or not any(_names(question, c) for c in translated.concepts)
 
@@ -563,12 +587,13 @@ def guarded(
         return concept
 
     proposed = tuple(
-        placed_part
+        _without_dates(placed_part)
         for c in translated.concepts
-        # A concept named by a word of the question that names nothing (« parlant »).
-        if folded(c.name) not in QUESTION_WORDS
         for part in split_mixed(c)
         for placed_part in placed(question, part)
+        # A concept named by a word of the question that names nothing (« parlant »), also
+        # once split (« nouveautés » of « nouveautés Apple »).
+        if folded(placed_part.name) not in QUESTION_WORDS
     )
     # The same concept twice (« GTA » and « GTA »): once.
     proposed = tuple({folded(c.name): c for c in reversed(proposed)}.values())[::-1]

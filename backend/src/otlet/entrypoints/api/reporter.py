@@ -28,6 +28,8 @@ from otlet.workspaces.domain.model import WorkspaceContext
 
 class QuestionBody(BaseModel):
     question: str = Field(max_length=1000)
+    # « Lire avant de répondre »: the set is read by the model before the answer is shown.
+    read: bool = False
 
 
 class TermsBody(BaseModel):
@@ -60,6 +62,38 @@ class FactView(BaseModel):
     read: list[UUID]  # the items read to answer
 
 
+class ReadConceptView(BaseModel):
+    name: str
+    terms: list[str]
+
+
+class RoundView(BaseModel):
+    concepts: list[ReadConceptView]
+    read: int  # items read
+    found: int  # items the search found
+
+
+class AnswerView(BaseModel):
+    item_id: UUID
+    title: str
+    publisher: str
+    dated: str
+    url: str | None
+    reason: str
+    round: int
+
+
+class ReadingView(BaseModel):
+    """« Vérifier en lisant »: what the model read, what truly answers, what is missing."""
+
+    requested: bool
+    rounds: list[RoundView]
+    answers: list[AnswerView]
+    coverage: Literal["oui", "partiel", "non"] | None
+    missing: str
+    errors: list[str]
+
+
 class TurnCandidateView(CandidateView):
     judged: JudgedView | None  # after a sort only
 
@@ -84,6 +118,7 @@ class TurnView(BaseModel):
     concepts: list[ConceptView]
     candidates: list[TurnCandidateView]
     fact: FactView | None
+    reading: ReadingView | None
     # Words of the question that no term searched (« enseignement »), and the main themes of
     # a large set: both without a model, to guide the author (Joël, 2026-10-29).
     unsearched: list[str]
@@ -147,6 +182,36 @@ class TurnView(BaseModel):
                 dropped=fact.dropped,
                 read=[UUID(i) for i in fact.read],
             ),
+            reading=None
+            if (r := turn.reading) is None
+            else ReadingView(
+                requested=r.requested,
+                rounds=[
+                    RoundView(
+                        concepts=[
+                            ReadConceptView(name=c.name, terms=list(c.terms)) for c in rd.concepts
+                        ],
+                        read=len(rd.read),
+                        found=rd.found,
+                    )
+                    for rd in r.rounds
+                ],
+                answers=[
+                    AnswerView(
+                        item_id=UUID(a.item_id),
+                        title=a.title,
+                        publisher=a.publisher,
+                        dated=a.dated,
+                        url=a.url,
+                        reason=a.reason,
+                        round=a.round,
+                    )
+                    for a in r.answers
+                ],
+                coverage=None if r.coverage is None else r.coverage.value,
+                missing=r.missing,
+                errors=list(r.errors),
+            ),
             error=turn.error,
             model=turn.model,
             unsearched=unsearched(turn.question, [w.concept for w in turn.concepts])
@@ -193,7 +258,7 @@ class ConversationSummaryView(BaseModel):
 def _refused(error: TermsError | ReporterError) -> HTTPException:
     if isinstance(error, ReporterError) and error.code == "not_found":
         return HTTPException(status.HTTP_404_NOT_FOUND, "conversation_not_found")
-    if isinstance(error, ReporterError) and error.code == "turn_pending":
+    if isinstance(error, ReporterError) and error.code in ("turn_pending", "already_read"):
         return HTTPException(status.HTTP_409_CONFLICT, error.code)
     return HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, error.code)
 
@@ -210,7 +275,7 @@ def build_router(
     def start(body: QuestionBody, context: Context) -> ConversationView:
         """Starts a conversation with its first question; the worker answers it."""
         try:
-            return ConversationView.of(reporter.start(context, body.question))
+            return ConversationView.of(reporter.start(context, body.question, body.read))
         except ReporterError as error:
             raise _refused(error) from error
 
@@ -233,7 +298,7 @@ def build_router(
     def ask(conversation_id: UUID, body: QuestionBody, context: Context) -> TurnView:
         """A new question; refused while the previous one is being answered."""
         try:
-            return TurnView.of(reporter.ask(context, conversation_id, body.question))
+            return TurnView.of(reporter.ask(context, conversation_id, body.question, body.read))
         except ReporterError as error:
             raise _refused(error) from error
 
@@ -245,6 +310,17 @@ def build_router(
         """A fact read further: the next items of the set; its lines are added."""
         try:
             return TurnView.of(reporter.read_more(context, conversation_id, turn_id))
+        except ReporterError as error:
+            raise _refused(error) from error
+
+    @router.post(
+        "/conversations/{conversation_id}/turns/{turn_id}/reading",
+        status_code=status.HTTP_202_ACCEPTED,
+    )
+    def read_set(conversation_id: UUID, turn_id: UUID, context: Context) -> TurnView:
+        """« Vérifier en lisant »: the model reads the set of an answered question, once."""
+        try:
+            return TurnView.of(reporter.read_set(context, conversation_id, turn_id))
         except ReporterError as error:
             raise _refused(error) from error
 

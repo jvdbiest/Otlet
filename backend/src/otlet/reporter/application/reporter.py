@@ -68,6 +68,19 @@ from otlet.reporter.domain.questions import (
     operation_message,
     read_operation,
 )
+from otlet.reporter.domain.reading import (
+    READ_MAX,
+    READING_SCHEMA,
+    READING_SYSTEM,
+    Coverage,
+    Read,
+    Reading,
+    Round,
+    check_reading,
+    concluded,
+    read_reading,
+    reading_message,
+)
 from otlet.workspaces.domain.model import WorkspaceContext
 
 ANSWER_TURN = "reporter.answer_turn"
@@ -80,6 +93,7 @@ DAYS = 30
 OPERATION_OUTPUT_TOKENS = 4096
 FACT_OUTPUT_TOKENS = 8192
 QUALIFY_OUTPUT_TOKENS = 8192
+READING_OUTPUT_TOKENS = 8192
 
 
 class ReporterError(Exception):
@@ -105,6 +119,8 @@ class Turn:
     candidates: list[Candidate] = field(default_factory=list)
     fact: Fact | None = None
     verdicts: dict[UUID, Judged] = field(default_factory=dict)
+    # « Vérifier en lisant »: the set read by the model, asked or done (reading.py).
+    reading: Reading | None = None
     error: str | None = None
     model: str | None = None
     prompt_version: str = PROMPT_VERSION
@@ -134,9 +150,15 @@ class ReporterStore(Protocol):
     def conversation(self, workspace_id: UUID, conversation_id: UUID) -> Conversation | None: ...
 
     def add_turn(
-        self, workspace_id: UUID, user_id: UUID, conversation_id: UUID, question: str
+        self,
+        workspace_id: UUID,
+        user_id: UUID,
+        conversation_id: UUID,
+        question: str,
+        read: bool = False,
     ) -> Turn:
-        """Records the question, pending, and enqueues ANSWER_TURN, in one transaction."""
+        """Records the question, pending, and enqueues ANSWER_TURN, in one transaction; `read`
+        asks for its set to be read once found."""
         ...
 
     def save_turn(self, workspace_id: UUID, conversation_id: UUID, turn: Turn) -> None: ...
@@ -145,6 +167,13 @@ class ReporterStore(Protocol):
         self, workspace_id: UUID, user_id: UUID, conversation_id: UUID, turn_id: UUID
     ) -> Turn:
         """Marks the fact pending again and enqueues ANSWER_TURN, in one transaction."""
+        ...
+
+    def request_reading(
+        self, workspace_id: UUID, user_id: UUID, conversation_id: UUID, turn_id: UUID
+    ) -> Turn:
+        """Marks the turn pending, its reading asked, and enqueues ANSWER_TURN, in one
+        transaction."""
         ...
 
     def articles(self, workspace_id: UUID, item_ids: list[UUID]) -> list[Article]:
@@ -176,17 +205,19 @@ class Reporter:
 
     # The API --------------------------------------------------------------------------------
 
-    def start(self, context: WorkspaceContext, question: str) -> Conversation:
+    def start(self, context: WorkspaceContext, question: str, read: bool = False) -> Conversation:
         question = _checked_question(question)
         conversation = self._store.start_conversation(
             context.workspace_id, context.user_id, question[:200], DAYS
         )
         turn = self._store.add_turn(
-            context.workspace_id, context.user_id, conversation.id, question
+            context.workspace_id, context.user_id, conversation.id, question, read
         )
         return replace(conversation, turns=[turn])
 
-    def ask(self, context: WorkspaceContext, conversation_id: UUID, question: str) -> Turn:
+    def ask(
+        self, context: WorkspaceContext, conversation_id: UUID, question: str, read: bool = False
+    ) -> Turn:
         question = _checked_question(question)
         conversation = self._store.conversation(context.workspace_id, conversation_id)
         if conversation is None:
@@ -195,7 +226,7 @@ class Reporter:
             # A question reads the set the previous one leaves: one at a time.
             raise ReporterError("turn_pending", "the previous question is still being answered")
         return self._store.add_turn(
-            context.workspace_id, context.user_id, conversation_id, question
+            context.workspace_id, context.user_id, conversation_id, question, read
         )
 
     def read_more(self, context: WorkspaceContext, conversation_id: UUID, turn_id: UUID) -> Turn:
@@ -209,6 +240,22 @@ class Reporter:
         if turn is None or turn.fact is None or len(turn.fact.read) >= len(turn.candidates):
             raise ReporterError("nothing_more", "every item of the set has been read")
         return self._store.read_further(
+            context.workspace_id, context.user_id, conversation_id, turn_id
+        )
+
+    def read_set(self, context: WorkspaceContext, conversation_id: UUID, turn_id: UUID) -> Turn:
+        """« Vérifier en lisant »: the set of an answered turn read by the model, once."""
+        conversation = self._store.conversation(context.workspace_id, conversation_id)
+        if conversation is None:
+            raise ReporterError("not_found", "no such conversation")
+        if any(turn.status == "pending" for turn in conversation.turns):
+            raise ReporterError("turn_pending", "the previous question is still being answered")
+        turn = next((t for t in conversation.turns if t.id == turn_id), None)
+        if turn is None or turn.status != "done" or turn.operation is None:
+            raise ReporterError("not_found", "no such answered question")
+        if turn.reading is not None and turn.reading.rounds:
+            raise ReporterError("already_read", "this set has been read")
+        return self._store.request_reading(
             context.workspace_id, context.user_id, conversation_id, turn_id
         )
 
@@ -250,6 +297,9 @@ class Reporter:
         if position is None or conversation.turns[position].status != "pending":
             return
         turn = conversation.turns[position]
+        if turn.reading is not None and turn.reading.requested and turn.operation is not None:
+            self._read_saved(workspace_id, user_id, conversation, turn)
+            return
         if turn.fact is not None:
             self._read_further(workspace_id, user_id, conversation, turn)
             return
@@ -329,6 +379,12 @@ class Reporter:
             subject = " ".join(c.concept.name for c in done.concepts) or turn.question
             verdicts = self._sort(user_id, subject, done.candidates, (attempts, models, errors))
             done = replace(done, verdicts=verdicts)
+        if turn.reading is not None and turn.reading.requested:
+            # « Lire avant de répondre »: the set is read before the answer is shown.
+            reading = self._read(
+                workspace_id, user_id, conversation, done, (attempts, models, errors)
+            )
+            done = replace(done, reading=reading)
         self._store.save_turn(
             workspace_id,
             conversation_id,
@@ -380,6 +436,12 @@ class Reporter:
         items holding a term of every concept, in the language asked. No model."""
         if not state.concepts:
             return replace(turn, state=state, concepts=[], term_counts={}, candidates=[])
+        widened, counts, found = self._search_set(workspace_id, conversation, state)
+        return replace(turn, state=state, concepts=widened, term_counts=counts, candidates=found)
+
+    def _search_set(
+        self, workspace_id: UUID, conversation: Conversation, state: State
+    ) -> tuple[list[Widened], dict[str, int], list[Candidate]]:
         glossary = [stored.entry for stored in self._search.glossary(workspace_id)]
         days = state.days or conversation.days
         since = None if days is None else self._now() - timedelta(days=days)
@@ -396,7 +458,81 @@ class Reporter:
         ]
         if state.language:
             found = [c for c in found if (c.language or "").startswith(state.language)]
-        return replace(turn, state=state, concepts=widened, term_counts=counts, candidates=found)
+        return widened, counts, found
+
+    def _read(
+        self,
+        workspace_id: UUID,
+        user_id: UUID,
+        conversation: Conversation,
+        turn: Turn,
+        log: tuple[list[dict[str, Any]], list[str], list[str]],
+    ) -> Reading:
+        """The set read as a person reads it: the first READ_MAX items judged; when the
+        question is not covered, one more search with the model's terms, read the same way."""
+        history = [t.question for t in conversation.turns if t.position < turn.position]
+        errors_before = len(log[2])
+        first_items = [_read_item(c) for c in turn.candidates[:READ_MAX]]
+        rounds = [
+            Round(turn.state.concepts, tuple(r.item_id for r in first_items), len(turn.candidates))
+        ]
+        raw = self._ask_reading(user_id, history, turn.question, first_items, log)
+        if raw is None:
+            return Reading(errors=tuple(log[2][errors_before:]))
+        first = read_reading(raw, first_items, 1)
+        second = None
+        if first.coverage is not Coverage.OUI and first.others:
+            state = State(first.others, turn.state.language, turn.state.days)
+            _, _, found = self._search_set(workspace_id, conversation, state)
+            seen = {r.item_id for r in first_items}
+            fresh = [_read_item(c) for c in found if str(c.id) not in seen][:READ_MAX]
+            rounds.append(Round(first.others, tuple(r.item_id for r in fresh), len(found)))
+            if fresh:
+                again = self._ask_reading(user_id, history, turn.question, fresh, log)
+                second = read_reading(again, fresh, 2) if again is not None else None
+        coverage, missing = concluded(first, second)
+        answers = first.answers + (second.answers if second is not None else ())
+        return Reading(
+            False, tuple(rounds), answers, coverage, missing, tuple(log[2][errors_before:])
+        )
+
+    def _ask_reading(
+        self,
+        user_id: UUID,
+        history: list[str],
+        question: str,
+        items: list[Read],
+        log: tuple[list[dict[str, Any]], list[str], list[str]],
+    ) -> str | None:
+        return self._ask(
+            user_id,
+            READING_SYSTEM,
+            reading_message(history, question, items),
+            READING_SCHEMA,
+            check_reading,
+            READING_OUTPUT_TOKENS,
+            log,
+        )
+
+    def _read_saved(
+        self, workspace_id: UUID, user_id: UUID, conversation: Conversation, turn: Turn
+    ) -> None:
+        attempts: list[dict[str, Any]] = []
+        models: list[str] = []
+        errors: list[str] = []
+        reading = self._read(workspace_id, user_id, conversation, turn, (attempts, models, errors))
+        self._store.save_turn(
+            workspace_id,
+            conversation.id,
+            replace(
+                turn,
+                status="done",
+                reading=reading,
+                model=", ".join(dict.fromkeys(models)) or turn.model,
+                attempts=[*turn.attempts, *attempts],
+                finished_at=self._now(),
+            ),
+        )
 
     def _fact(
         self,
@@ -503,6 +639,17 @@ class Reporter:
         if asked.text is None:
             errors.append(asked.error or "no answer")
         return asked.text
+
+
+def _read_item(candidate: Candidate) -> Read:
+    return Read(
+        str(candidate.id),
+        candidate.title,
+        candidate.summary,
+        candidate.publisher or "",
+        candidate.dated.isoformat(),
+        candidate.url,
+    )
 
 
 def _checked(concepts: list[Concept]) -> tuple[Concept, ...]:

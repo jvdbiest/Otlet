@@ -66,6 +66,7 @@ from otlet.reporter.domain.questions import (
     next_state,
     only_false_friends,
     operation_message,
+    points_back,
     read_operation,
 )
 from otlet.reporter.domain.reading import (
@@ -332,6 +333,13 @@ class Reporter:
             if about_the_set(turn.question, translated, state):
                 # Asked of the set, answered from it: its articles that truly treat the subject.
                 translated = replace(translated, operation=Operation.TRIER, concepts=())
+            elif (
+                translated.operation is Operation.CHERCHER
+                and state.concepts
+                and points_back(turn.question)
+            ):
+                # « Qu'en pensent les enseignants ? »: within the set, not a new subject.
+                translated = replace(translated, operation=Operation.RESTREINDRE)
             if not state.concepts and not changes_set(translated.operation):
                 # A fact asked first (« Quels sont les derniers faits concernant
                 # l'enseignement ? », Joël, 2026-10-29): there is no set yet to read. The set is
@@ -424,7 +432,7 @@ class Reporter:
         )
         if raw is None:
             return translated
-        searched = guarded(question, read_operation(raw), today)
+        searched = guarded(question, read_operation(raw), today, every_word=False)
         return replace(
             translated, concepts=searched.concepts, days=translated.days or searched.days
         )

@@ -16,8 +16,9 @@ TIMEOUT_SECONDS = 300.0
 
 
 class GatewayModel:
-    def __init__(self, gateway: Gateway) -> None:
+    def __init__(self, gateway: Gateway, usage: str = USAGE) -> None:
         self._gateway = gateway
+        self._usage = usage
 
     def ask(
         self,
@@ -31,7 +32,7 @@ class GatewayModel:
         outcome = self._gateway.generate(
             user_id,
             Request(
-                usage=USAGE,
+                usage=self._usage,
                 messages=(Message("system", system), Message("user", user)),
                 schema=schema,
                 schema_name=SCHEMA_NAME,

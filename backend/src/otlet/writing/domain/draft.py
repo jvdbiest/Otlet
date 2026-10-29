@@ -23,7 +23,7 @@ from typing import Any
 from otlet.writing.domain.brief import BriefFields, Length, Mode
 from otlet.writing.domain.vocabulary import choice
 
-PROMPT_VERSION = "redaction-15"
+PROMPT_VERSION = "redaction-16"
 SCHEMA_NAME = "article_draft"
 # Up to 15: a selection of ten films is ten sections (Joël, 2026-10-18; six cut his top 10).
 SECTIONS = (2, 15)
@@ -201,6 +201,12 @@ def messages(
             + "). They decide the plan and the order of the article: a structure they ask for"
             " prevails over the plan of the mode.\n" + fields.instructions
         )
+    if asks_dates(fields):
+        user += (
+            "\n\nDates: start each heading with the date of its event when its sources give it,"
+            " otherwise with the date of its source (the date field of the source); never invent"
+            " a date."
+        )
     return [("system", system), ("user", user)]
 
 
@@ -328,6 +334,31 @@ def _text(value: Any, minimum: int) -> bool:
     return isinstance(value, str) and len(value.strip()) >= minimum
 
 
+# Dates asked by the author (Joël, 2026-10-25): « Indiquer les dates pour les sujets de chaque
+# actualité » gave 2 dated paragraphs of 15 and no dated heading. A rule after the generation,
+# not the prompt: the instructions or the angle ask for dates; a heading without one is sent
+# back once.
+DATES_ASKED = re.compile(r"\b(dat(e|es|er|é|ée|és|ées)|chronolog\w*|datum|dated?)\b", re.IGNORECASE)
+MONTHS = (
+    "janvier|février|fevrier|mars|avril|mai|juin|juillet|août|aout|septembre|octobre|novembre"
+    "|décembre|decembre|januari|februari|maart|april|mei|juni|juli|augustus|oktober"
+    "|december|january|february|march|may|june|july|august|september|october|november"
+)
+WEEKDAYS = (
+    "lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche|maandag|dinsdag|woensdag|donderdag"
+    "|vrijdag|zaterdag|zondag|monday|tuesday|wednesday|thursday|friday|saturday|sunday"
+)
+A_DATE = re.compile(
+    rf"\b(\d{{1,2}}(er|e)?\s+({MONTHS})|({MONTHS})\s+\d{{1,2}}|\d{{1,2}}[/.]\d{{1,2}}|{WEEKDAYS})\b",
+    re.IGNORECASE,
+)
+
+
+def asks_dates(fields: BriefFields) -> bool:
+    """The author's instructions or angle ask for dates."""
+    return bool(DATES_ASKED.search(f"{fields.instructions} {fields.angle}"))
+
+
 def check_answer(
     raw: str,
     keys: list[str],
@@ -336,6 +367,7 @@ def check_answer(
     words: int | None = None,
     repeats: bool = False,
     in_text: bool = False,
+    dates: bool = False,
 ) -> list[str]:
     """The errors of an answer, in words a model can act on; empty when it is usable. With
     `every_source`, a source of the brief no paragraph cites is an error too; with `crossing`
@@ -343,7 +375,8 @@ def check_answer(
     `words`, these two errors ask to keep the length: a model asked to fix them otherwise
     tends to merge and cut (Joël's v28 and v29, 2026-10-18). With `repeats`, so is a
     paragraph that repeats another: a model short of matter pads the length with copies.
-    With `in_text`, so is an id of a source written in a text (title, lead, heading, paragraph)."""
+    With `in_text`, so is an id of a source written in a text (title, lead, heading, paragraph).
+    With `dates` (the author asked for them), so is a heading without a date."""
     try:
         data = json.loads(raw)
     except json.JSONDecodeError as error:
@@ -373,6 +406,7 @@ def check_answer(
         for text in texts:
             if isinstance(text, str):
                 written += [key for key in ids_in_text(text, keys) if key not in written]
+    undated: list[str] = []
     lone: list[str] = []
     seen: list[tuple[str, set[str]]] = []
     repeated: list[str] = []
@@ -382,6 +416,8 @@ def check_answer(
             continue
         if not _text(section.get("heading"), 3):
             errors.append(f"sections[{n}].heading: a heading is required")
+        elif dates and not A_DATE.search(section["heading"]):
+            undated.append(f"sections[{n}]")
         paragraphs = section.get("paragraphs")
         if not isinstance(paragraphs, list) or not paragraphs:
             errors.append(f"sections[{n}].paragraphs: one paragraph at least is required")
@@ -438,6 +474,12 @@ def check_answer(
             " numbered references from source_ids; name the publisher only for an opinion, a"
             " ranking or a statement that must be attributed" + keep
         )
+    if dates and undated:
+        errors.append(
+            f"headings without a date: {', '.join(undated)}; the author asks for dates: start each"
+            " heading with the date of its event when its sources give it, otherwise with the date"
+            " of its source (the date field of the source); never invent a date" + keep
+        )
     if repeats and repeated:
         errors.append(
             f"paragraphs repeated: {', '.join(repeated)}; every paragraph must bring something"
@@ -453,6 +495,58 @@ def _vocabulary(text: str) -> set[str]:
 def _alike(one: set[str], other: set[str]) -> bool:
     """Two paragraphs that share most of their words: one is a copy of the other."""
     return bool(one and other) and len(one & other) / len(one | other) >= 0.6
+
+
+def without_repeats(raw: str) -> str:
+    """A checked answer without the paragraphs that repeat an earlier one, and without the
+    sections left empty. On Joël's brief « actualités de piratage » (2026-10-25), the answer
+    sent back once for its missing dates came out with one section four times: a model asked
+    to fix many things at once may copy; a copy brings nothing, it is taken out."""
+    data = json.loads(raw)
+    seen: list[set[str]] = []
+    sections = []
+    for section in data["sections"]:
+        kept = []
+        for paragraph in section["paragraphs"]:
+            vocabulary = _vocabulary(paragraph["text"])
+            if any(_alike(vocabulary, other) for other in seen):
+                continue
+            seen.append(vocabulary)
+            kept.append(paragraph)
+        if kept:
+            sections.append({**section, "paragraphs": kept})
+    return json.dumps({**data, "sections": sections}, ensure_ascii=False)
+
+
+MONTH_NAMES = {
+    "fr": "janvier février mars avril mai juin juillet août septembre octobre novembre décembre",
+    "nl": "januari februari maart april mei juni juli augustus september oktober november december",
+    "en": "January February March April May June July August September October November December",
+}
+# A month alone, « Octobre 2026 : », at the start of a heading: not a date of the day.
+VAGUE_DATE = re.compile(rf"^\s*({MONTHS})\s+\d{{4}}\s*[:–-]\s*", re.IGNORECASE)
+
+
+def dated_headings(raw: str, sources: list[PromptSource], language: str) -> str:
+    """A checked answer whose headings all start with a date of the day, when the author asked
+    for dates. A heading without one gets the date of publication of the most recent source its
+    paragraphs cite, as the author decided (Joël, 2026-10-25): the date of the event when the
+    sources give it, otherwise that of the source. The V5 of « actualités de piratage » had
+    thirteen headings dated « Octobre 2026 » only: the model, sent back once, wrote the month."""
+    data = json.loads(raw)
+    dates = {s.key: s.source.published_at for s in sources if s.source.published_at is not None}
+    months = MONTH_NAMES.get(language, MONTH_NAMES["fr"]).split()
+    sections = []
+    for section in data["sections"]:
+        heading = str(section["heading"])
+        if not A_DATE.search(heading):
+            cited = [dates[i] for p in section["paragraphs"] for i in p["source_ids"] if i in dates]
+            if cited:
+                day = max(cited)
+                prefix = f"{day.day} {months[day.month - 1]} {day.year}"
+                heading = f"{prefix} : {VAGUE_DATE.sub('', heading)}"
+        sections.append({**section, "heading": heading})
+    return json.dumps({**data, "sections": sections}, ensure_ascii=False)
 
 
 def repeated_paragraphs(raw: str) -> list[str]:

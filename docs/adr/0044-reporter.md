@@ -40,7 +40,7 @@ Dans chaque banc, l'essentiel du progrès est venu de règles sans modèle, pas 
    - **agir** : garder, préparer un brief.
 
    Chaque réponse est un ensemble cliquable ; les termes restent visibles et modifiables.
-4. **Garde-fous de la traduction** : un concept proposé par le modèle n'est gardé que si la question le nomme ; une langue nommée dans la question devient un filtre ; seules fr, nl et en sont des langues.
+4. **Garde-fous de la traduction** : un concept proposé par le modèle n'est gardé que si la question le nomme ; une langue nommée dans la question devient un filtre ; seules fr, nl et en sont des langues. Une période nommée (« ces derniers jours », « cette semaine » : 7 jours ; « aujourd'hui », « du jour » : 1 jour) est aussi un filtre (Joël, 2026-10-25 : « ces derniers jours » gardait les 30 jours de la conversation, et le brief datait des événements de septembre).
 5. **Réponse de fait.** Une ligne par chiffre ou date : source, ce qu'il mesure, quand, où, extrait exact. Une ligne dont l'extrait n'est pas dans l'article est retirée. Aucune addition entre sources. « Je ne trouve pas » quand aucune ligne ne tient. La conversation est transmise pour lire « Combien ? » après « des blessés ? ».
 6. **Concordance calculée par le moteur**, jamais étiquetée par le modèle. Elle a cinq états : concordent, divergent, partiel, une source, absent. Deux lignes de sources différentes sont comparées quand elles mesurent la même chose, au même moment et au même lieu. Le lieu est normalisé par le glossaire ; un lieu plus étroit n'est pas comparé. Le Reporter montre toujours les lignes comparées, qu'elles concordent ou qu'elles divergent.
 7. **Reconstituer**, la septième opération :
@@ -79,6 +79,8 @@ Dans chaque banc, l'essentiel du progrès est venu de règles sans modèle, pas 
     - **A2-1** : la conversation (opérations sauf reconstituer), la réponse de fait immédiate, la concordance calculée, les garde-fous de la traduction, les ensembles cliquables ;
     - **A2-2** : « Reconstituer » en tâche de fond, chronologie d'abord, volets en filtres, analyse IA et confiance calculée ;
     - **A2-3** : « Préparer un brief » depuis le Reporter, le champ « Faits vérifiés », l'encadré « Analyse IA », les deux garde-fous dans la comparaison, la traçabilité.
+
+15. **Règles ajoutées à l'usage** (2026-10-25, premiers essais de Joël) : seules des mesures identiques se comparent (une température minimale et une maximale ne divergent pas) ; une réponse de fait peut lire 15 articles de plus, ses lignes s'ajoutent et la concordance est recalculée ; au-delà de 20 articles non triés, le Reporter invite à trier avant le brief. Côté rédaction : des dates demandées par l'auteur sont annoncées au modèle et contrôlées après la génération, et une section recopiée par le modèle est retirée sans modèle.
 
 ## Conséquences
 

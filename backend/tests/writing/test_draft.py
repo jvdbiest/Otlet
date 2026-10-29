@@ -4,6 +4,7 @@ three parts of the prompt, the answer checked, and the document built from it.""
 
 import json
 import uuid
+from dataclasses import replace
 from datetime import UTC, datetime
 
 from otlet.writing.domain.brief import BriefFields, Length, Mode
@@ -11,7 +12,9 @@ from otlet.writing.domain.charter import DEFAULT_CHARTER
 from otlet.writing.domain.draft import (
     SOURCE_MIN_CHARS,
     SourceText,
+    asks_dates,
     check_answer,
+    dated_headings,
     lone_sections,
     messages,
     output_schema,
@@ -20,6 +23,7 @@ from otlet.writing.domain.draft import (
     source_budget,
     to_document,
     without_ids,
+    without_repeats,
 )
 from otlet.writing.domain.vocabulary import settled
 
@@ -391,3 +395,42 @@ def test_the_instructions_of_the_author_decide_the_plan() -> None:
     for mode in (Mode.SYNTHESIS, Mode.PANORAMA):
         plain = messages(BriefFields(title="T", item_ids=(), mode=mode), sources)[1][1]
         assert "{default}" not in plain and "This plan is a default" in plain
+
+
+def test_headings_without_a_date_are_sent_back_when_dates_are_asked() -> None:
+    """« Indiquer les dates pour les sujets de chaque actualité » (Joël, 2026-10-25)."""
+    keys = ["S1", "S2"]
+    data = json.loads(answer())
+    data["sections"][0]["heading"] = "19 octobre : piratage de Capcom"
+    data["sections"][1]["heading"] = "Cyberattaque chez Delhaize"
+    raw = json.dumps(data)
+    assert check_answer(raw, keys) == []
+    errors = check_answer(raw, keys, dates=True)
+    assert len(errors) == 1 and errors[0].startswith("headings without a date: sections[1];")
+    data["sections"][1]["heading"] = "Samedi, cyberattaque chez Delhaize"
+    assert check_answer(json.dumps(data), keys, dates=True) == []
+    asked = BriefFields(title="T", item_ids=(uuid.uuid4(),), instructions="Indiquer les dates")
+    assert asks_dates(asked)
+    assert not asks_dates(replace(asked, instructions="Un paragraphe par événement"))
+
+
+def test_a_repeated_section_is_taken_out() -> None:
+    """One section four times in the answer sent back for its dates (Joël, 2026-10-25)."""
+    data = json.loads(answer())
+    copy = data["sections"][0]
+    data["sections"] += [copy, copy]
+    cleaned = json.loads(without_repeats(json.dumps(data)))
+    assert [s["heading"] for s in cleaned["sections"]] == ["Les annonces", "Mon expérience"]
+
+
+def test_a_heading_without_its_day_gets_the_date_of_its_source() -> None:
+    """V5 of « actualités de piratage »: « Octobre 2026 : … » (Joël, 2026-10-25)."""
+    sources = prompt_sources([source("A", "un texte"), source("B", "un autre texte")], 10_000)
+    data = json.loads(answer())
+    data["sections"][0]["heading"] = "Octobre 2026: Les annonces"
+    data["sections"][1]["heading"] = "19 octobre 2026 : Mon expérience"
+    dated = json.loads(dated_headings(json.dumps(data), sources, "fr"))
+    assert [s["heading"] for s in dated["sections"]] == [
+        "17 octobre 2026 : Les annonces",
+        "19 octobre 2026 : Mon expérience",
+    ]

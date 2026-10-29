@@ -64,16 +64,27 @@ function Conversation({ workspaceId, conversationId }: { workspaceId: string; co
           busy={busy}
         />
       ))}
-      <Ask workspaceId={workspaceId} conversationId={conversationId} busy={busy} />
+      {/* Once used, the reading stays on for the next questions (Joël, 2026-10-29). */}
+      <Ask workspaceId={workspaceId} conversationId={conversationId} busy={busy} readBefore={(last?.reading ?? null) !== null} />
     </>
   );
 }
 
-function Ask({ workspaceId, conversationId, busy }: { workspaceId: string; conversationId: string; busy: boolean }) {
+function Ask({
+  workspaceId,
+  conversationId,
+  busy,
+  readBefore,
+}: {
+  workspaceId: string;
+  conversationId: string;
+  busy: boolean;
+  readBefore: boolean;
+}) {
   const { t } = useTranslation();
   const ask = useAsk(workspaceId, conversationId);
   const [question, setQuestion] = useState("");
-  const [read, setRead] = useState(false);
+  const [read, setRead] = useState(readBefore);
   return (
     <form
       className={styles.form}

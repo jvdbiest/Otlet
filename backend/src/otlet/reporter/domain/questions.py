@@ -136,7 +136,11 @@ MONTH_PERIOD = re.compile(
 
 
 def _asked(question: str) -> str:
-    return f" {folded(question).replace('?', ' ').replace(',', ' ')} "
+    """A question as its folded words between spaces, its marks and quotes aside."""
+    text = folded(question)
+    for mark in '?,"«»“”':
+        text = text.replace(mark, " ")
+    return f" {' '.join(text.split())} "
 
 
 def asked_period(question: str, today: date | None = None) -> int | None:
@@ -366,6 +370,59 @@ def read_operation(raw: str) -> Translated:
     )
 
 
+# Words between quotes in a question are searched as they are written, side by side (Joël,
+# 2026-10-29: « les actualités concernant le jeu "GTA VI" »).
+QUOTED = re.compile(r'"([^"]{2,80})"|«\s*([^»]{2,80}?)\s*»|“([^”]{2,80})”')
+ROMAN = dict(
+    zip(
+        "i ii iii iv v vi vii viii ix x xi xii xiii xiv xv xvi xvii xviii xix xx".split(),
+        range(1, 21),
+        strict=True,
+    )
+)
+
+
+def quoted(question: str) -> list[str]:
+    """The phrases of a question between quotes, " ", « » or “ ”."""
+    found = (" ".join(next(g for g in m.groups() if g).split()) for m in QUOTED.finditer(question))
+    return list(dict.fromkeys(p for p in found if p))
+
+
+def numbered(phrase: str) -> list[str]:
+    """The phrase and its other numbering: « GTA VI » and « GTA 6 », « Windows 11 » and
+    « Windows XI »; a single word is never renumbered."""
+    words = phrase.split()
+    if len(words) < 2:
+        return [phrase]
+    arabic = {str(n): r.upper() for r, n in ROMAN.items()}
+    other = [str(ROMAN[w.lower()]) if w.lower() in ROMAN else arabic.get(w, w) for w in words]
+    return list(dict.fromkeys([phrase, " ".join(other)]))
+
+
+def with_quoted(question: str, concepts: tuple[Concept, ...]) -> tuple[Concept, ...]:
+    """Every phrase of the question between quotes searched as a phrase, with its other
+    numbering: in the concept that names it already, else in a concept of its own, first."""
+    out = list(concepts)
+    for phrase in quoted(question):
+        terms = [f'"{p}"' for p in numbered(phrase)]
+        keys = {folded(p).replace('"', "") for p in numbered(phrase)}
+        at = next(
+            (
+                n
+                for n, c in enumerate(out)
+                if keys & {folded(t).replace('"', "") for t in (c.name, *c.terms)}
+            ),
+            None,
+        )
+        if at is None:
+            out.insert(0, Concept(phrase[:TERM_MAX_LENGTH], _clean(terms)))
+            continue
+        concept = out[at]
+        rest = [t for t in concept.terms if folded(t).replace('"', "") not in keys]
+        out[at] = Concept(concept.name, _clean([*terms, *rest]))
+    return tuple(out)
+
+
 def guarded(question: str, translated: Translated, today: date | None = None) -> Translated:
     """The translation kept to what the question says (ADR-0044 §4):
 
@@ -405,7 +462,9 @@ def guarded(question: str, translated: Translated, today: date | None = None) ->
     period = asked_period(question, today)
     # None named: the first stays, unless it is made of the words of a period.
     fallback = tuple(c for c in proposed[:1] if not _of_period(c))
-    kept = replace(translated, concepts=kept_concepts or fallback, days=period)
+    kept = replace(
+        translated, concepts=with_quoted(question, kept_concepts or fallback), days=period
+    )
     for code, names in LANGUAGE_WORDS.items():
         if words & set(names):
             return Translated(Operation.RESTREINDRE, (), code, period)

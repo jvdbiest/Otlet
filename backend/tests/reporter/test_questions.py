@@ -202,3 +202,22 @@ def test_brussels_is_not_found_in_wallonie_bruxelles() -> None:
     assert not only_false_friends(fwb + " ; le gouvernement de Bruxelles réagit", terms)
     assert not only_false_friends("Brusselse regering : le budget", ("Brusselse regering",))
     assert not only_false_friends("Le budget régional, sans nommer la ville", terms)
+
+
+def test_words_between_quotes_are_searched_as_written() -> None:
+    """« les actualités concernant le jeux "GTA VI" » (Joël, 2026-10-29): the phrase as it is
+    written, and GTA 6 with it."""
+    from otlet.reporter.domain.questions import numbered, quoted
+
+    question = 'Quelles sont les actualités concernant le jeux "GTA VI" ?'
+    assert quoted(question) == ["GTA VI"]
+    assert quoted("Et « Grand Theft Auto » ?") == ["Grand Theft Auto"]
+    assert numbered("GTA VI") == ["GTA VI", "GTA 6"]
+    assert numbered("Windows 11") == ["Windows 11", "Windows XI"]
+    assert numbered("Vi") == ["Vi"]
+    games = Concept("GTA VI", ("GTA VI", "GTA 6", "Grand Theft Auto VI"))
+    kept = guarded(question, Translated(Operation.CHERCHER, (games,), None))
+    assert kept.concepts == (Concept("GTA VI", ('"GTA VI"', '"GTA 6"', "Grand Theft Auto VI")),)
+    # A phrase the model left out is a concept of its own, first.
+    other = guarded(question, Translated(Operation.CHERCHER, (Concept("jeu", ("jeux",)),), None))
+    assert other.concepts[0] == Concept("GTA VI", ('"GTA VI"', '"GTA 6"'))

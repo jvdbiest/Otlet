@@ -33,6 +33,8 @@ class Operation(StrEnum):
     TRIER = "trier"
     FAIT = "fait"
     AGIR = "agir"
+    # Never asked of the model: the words of the question say it (excluded_terms).
+    EXCLURE = "exclure"
 
 
 @dataclass(frozen=True, slots=True)
@@ -48,6 +50,8 @@ class State:
     # others restrict it, and the items found by the meaning must hold them too.
     meaning: tuple[float, ...] = ()
     subject: int = 0
+    # What the author took out of the set (« En supprimant ce qui concerne Apple »).
+    excluded: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,6 +60,7 @@ class Translated:
     concepts: tuple[Concept, ...]
     language: str | None
     days: int | None = None
+    excluded: tuple[str, ...] = ()
 
 
 OPERATION_SYSTEM = (
@@ -82,7 +87,10 @@ OPERATION_SYSTEM = (
 OPERATION_SCHEMA: dict[str, Any] = {
     "type": "object",
     "properties": {
-        "operation": {"type": "string", "enum": [o.value for o in Operation]},
+        "operation": {
+            "type": "string",
+            "enum": [o.value for o in Operation if o is not Operation.EXCLURE],
+        },
         "concepts": {
             "type": "array",
             "items": {
@@ -126,6 +134,10 @@ PERIOD_WORDS = (
     ("cette semaine", 7),
     ("de la semaine", 7),
     ("deze week", 7),
+    ("cette semaine-ci", 7),
+    ("ce mois-ci", 31),
+    ("deze maand", 31),
+    ("this month", 31),
     ("this week", 7),
     ("la semaine derniere", 14),
     ("ce mois", 31),
@@ -190,6 +202,7 @@ PERIOD_TERMS = {
     "weekend",
     "week-end",
     "mois",
+    "mois-ci",
     "hier",
     "dag",
     "vandaag",
@@ -875,12 +888,47 @@ def next_state(state: State, translated: Translated) -> State:
                 language=translated.language or state.language,
                 days=translated.days or state.days,
             )
+        case Operation.EXCLURE:
+            return replace(state, excluded=(*state.excluded, *translated.excluded))
         case Operation.ELARGIR if state.concepts and proposed:
             last = state.concepts[-1]
             widened = Concept(last.name, _clean([*last.terms, *proposed[0].terms]))
             return replace(state, concepts=(*state.concepts[:-1], widened))
         case _:
             return state
+
+
+# « En supprimant ce qui concerne Apple » was read as a sort: nothing was taken out, and 200
+# articles were judged for nothing (Joël, 2026-10-30). At the start of a question, on a set.
+EXCLUDING = re.compile(
+    r"^ (?:et )?(?:en )?"
+    r"(?:supprimant|supprime|supprimer|retirant|retire|retirer|enlevant|enleve|enlever|excluant"
+    r"|exclus|exclure|ecartant|ecarte|ecarter|sans|sauf|hors|excepte|a l'exclusion de|zonder"
+    r"|behalve|except|excluding|without) (.+) $"
+)
+EXCLUDED_HEAD = re.compile(
+    r"^(?:tout )?(?:ce qui (?:concerne|parle de|touche|porte sur) |les articles (?:sur|de) "
+    r"|les |la |le |l'|de |du |des |d'|het |the )+"
+)
+
+
+def excluded_terms(question: str) -> tuple[str, ...]:
+    """What a question asks to take out of the set: « sans Apple, iPhone et MacBook »."""
+    # The words of the question, its commas kept: they separate the terms.
+    asked = re.sub(r'[?"«»“”]', " ", folded(question).replace("’", "'"))
+    found = EXCLUDING.match(f" {' '.join(asked.split())} ")
+    if found is None:
+        return ()
+    parts = re.split(r" et | ou | en | and |,", found.group(1))
+    terms = (EXCLUDED_HEAD.sub("", part.strip()).strip(" .") for part in parts)
+    return tuple(dict.fromkeys(term for term in terms if term))
+
+
+def holds_excluded(text: str, excluded: tuple[str, ...]) -> bool:
+    """Whether a text names one of the terms, singular or plural: `text` is the title and the
+    summary of an item, which say what it is about; its body may only mention them."""
+    written = _words(text)
+    return any(f" {term} " in written or f" {term}s " in written for term in excluded)
 
 
 def only_a_period(question: str) -> bool:
@@ -890,4 +938,9 @@ def only_a_period(question: str) -> bool:
 
 
 def changes_set(operation: Operation) -> bool:
-    return operation in (Operation.CHERCHER, Operation.RESTREINDRE, Operation.ELARGIR)
+    return operation in (
+        Operation.CHERCHER,
+        Operation.RESTREINDRE,
+        Operation.ELARGIR,
+        Operation.EXCLURE,
+    )

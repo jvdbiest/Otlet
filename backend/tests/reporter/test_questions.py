@@ -439,3 +439,21 @@ def test_only_a_period_keeps_the_subject_of_the_conversation() -> None:
     date_concept = Concept("date", ("aujourd'hui", "vandaag", "today"))
     kept = guarded(question, Translated(Operation.RESTREINDRE, (date_concept,), None))
     assert kept.concepts == () and kept.days == 1
+
+
+def test_a_question_takes_terms_out_of_the_set() -> None:
+    from otlet.reporter.domain.questions import asked_period, excluded_terms, holds_excluded
+
+    assert excluded_terms("En supprimant ce qui concerne Apple") == ("apple",)
+    assert excluded_terms("Sans Apple, iPhone et MacBook ?") == ("apple", "iphone", "macbook")
+    assert excluded_terms("Sauf les articles sur Samsung") == ("samsung",)
+    assert excluded_terms("Zonder Apple") == ("apple",)
+    # A word of a subject is not an exclusion: « sans-abri », or in the middle of a question.
+    assert excluded_terms("Les sans-abri à Bruxelles") == ()
+    assert excluded_terms("Sans-abri à Bruxelles") == ()
+    assert excluded_terms("Les budgets sans TVA") == ()
+    assert holds_excluded("Apple dévoile un écran", ("apple",))
+    assert holds_excluded("Les écrans Apple.", ("apple",))
+    assert holds_excluded("Une tarte aux pommes", ("pomme",))
+    assert not holds_excluded("Pineapple express", ("apple",))
+    assert asked_period("Des annonces concernant de nouveaux écrans ce mois-ci ?") == 31

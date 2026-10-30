@@ -112,7 +112,10 @@ class TurnView(BaseModel):
     position: int
     question: str
     status: Literal["pending", "done", "failed"]
-    operation: Literal["chercher", "restreindre", "élargir", "trier", "fait", "agir"] | None
+    operation: (
+        Literal["chercher", "restreindre", "élargir", "trier", "fait", "agir", "exclure"] | None
+    )
+    excluded: list[str]
     language: str | None
     days: int | None  # a period the question named, in days
     concepts: list[ConceptView]
@@ -137,6 +140,7 @@ class TurnView(BaseModel):
             question=turn.question,
             status=turn.status,
             operation=None if turn.operation is None else turn.operation.value,
+            excluded=list(turn.state.excluded),
             language=turn.state.language,
             days=turn.state.days,
             concepts=[

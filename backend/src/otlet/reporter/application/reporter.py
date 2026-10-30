@@ -64,7 +64,9 @@ from otlet.reporter.domain.questions import (
     about_the_set,
     changes_set,
     check_operation,
+    excluded_terms,
     guarded,
+    holds_excluded,
     next_state,
     only_a_period,
     only_false_friends,
@@ -368,7 +370,8 @@ class Reporter:
         raw = None
         # A thinking model may spend its whole answer reasoning (« out_of_room »): asked again,
         # the same question was answered in 33 s (Joël, 2026-10-25). Once more, then no more.
-        for _ in range(2):
+        excluded = excluded_terms(turn.question) if state.concepts else ()
+        for _ in range(0 if excluded else 2):
             raw = self._ask(
                 user_id,
                 OPERATION_SYSTEM,
@@ -381,7 +384,9 @@ class Reporter:
             if raw is not None or not any("out_of_room" in e for e in errors):
                 break
         today = self._now().date()
-        if raw is not None:
+        if excluded:
+            translated = Translated(Operation.EXCLURE, (), None, None, excluded)
+        elif raw is not None:
             translated = guarded(turn.question, read_operation(raw), today)
             if state.concepts and only_a_period(turn.question):
                 translated = replace(translated, operation=Operation.RESTREINDRE, concepts=())
@@ -435,7 +440,10 @@ class Reporter:
         done = replace(turn, operation=translated.operation, attempts=attempts)
         if changes_set(translated.operation) or previous is None:
             done = self._found(workspace_id, conversation, done, new_state)
-            if translated.operation is Operation.RESTREINDRE and previous is not None:
+            if (
+                translated.operation in (Operation.RESTREINDRE, Operation.EXCLURE)
+                and previous is not None
+            ):
                 # Within the set: what the author had sorted stays sorted (Joël, 2026-10-30).
                 found = {c.id for c in done.candidates}
                 done = replace(
@@ -545,6 +553,7 @@ class Reporter:
             c
             for c in found
             if not any(only_false_friends(f"{c.title} {c.summary}", w.terms) for w in widened)
+            and not holds_excluded(f"{c.title} {c.summary}", state.excluded)
         ]
         if state.language:
             found = [c for c in found if (c.language or "").startswith(state.language)]
@@ -604,7 +613,9 @@ class Reporter:
         first = read_reading(raw, first_items, 1)
         second = None
         if first.coverage is not Coverage.OUI and first.others:
-            state = State(first.others, turn.state.language, turn.state.days)
+            state = State(
+                first.others, turn.state.language, turn.state.days, excluded=turn.state.excluded
+            )
             _, _, found = self._search_set(workspace_id, conversation, state)
             seen = {r.item_id for r in first_items}
             fresh = [_read_item(c) for c in found if str(c.id) not in seen][:READ_MAX]

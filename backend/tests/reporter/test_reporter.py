@@ -454,3 +454,27 @@ def test_the_articles_of_today_keep_the_subject_and_the_sort(
     assert [w.concept.name for w in last.concepts] == ["Austen"]
     assert [c.title for c in last.candidates] == [today.title]
     assert last.verdicts == {today.id: aside}
+
+
+def test_a_subject_taken_out_stays_out_without_a_model(
+    reporter: tuple[Reporter, Reporter, WorkspaceContext, sa.Engine],
+) -> None:
+    api, _, context, engine = reporter
+    model = FakeModel()
+    worker = Reporter(PostgresReporterStore(engine), PostgresAssistantStore(engine), model)
+    conversation = api.start(context, "Les articles sur la tempête Austen")
+    answer(worker, context, conversation.id, conversation.turns[0].id)
+    asked = len(model.asked)
+    turn = api.ask(context, conversation.id, "En supprimant ce qui concerne la côte")
+    answer(worker, context, conversation.id, turn.id)
+    found = api.get(context, conversation.id)
+    assert found is not None
+    last = found.turns[1]
+    assert (last.operation, last.state.excluded) == (Operation.EXCLURE, ("cote",))
+    assert {c.title for c in last.candidates} == {AUSTEN[0][0], AUSTEN[2][0]}
+    assert len(model.asked) == asked
+    # The next question keeps it out.
+    again = api.ask(context, conversation.id, "Et en néerlandais ?")
+    answer(worker, context, conversation.id, again.id)
+    found = api.get(context, conversation.id)
+    assert found is not None and found.turns[2].state.excluded == ("cote",)

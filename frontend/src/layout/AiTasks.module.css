@@ -26,3 +26,49 @@
   color: var(--text);
   cursor: pointer;
 }
+
+/* The bubble touches the block: the pointer goes from one to the other without leaving. */
+.bubble {
+  display: none;
+  position: absolute;
+  z-index: 10;
+  left: 0;
+  bottom: 100%;
+  width: 22rem;
+  max-width: calc(100vw - 2rem);
+  max-height: 20rem;
+  overflow-y: auto;
+  margin: 0;
+  padding: var(--space-2);
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 20%);
+}
+
+.tasks:hover .bubble,
+.tasks:focus-within .bubble {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.link {
+  display: block;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.link:hover,
+.link:focus {
+  background: var(--bg);
+  text-decoration: underline;
+}
+
+.kind {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}

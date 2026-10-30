@@ -178,6 +178,7 @@ function Turn({
             {turn.operation !== null && t(`reporter.operation.${turn.operation}`)}
             {turn.language !== null && ` · ${t("reporter.language", { language: turn.language })}`}
             {turn.days !== null && ` · ${t("reporter.period", { count: turn.days })}`}
+            {turn.excluded.length > 0 && ` · ${t("reporter.excluded", { terms: turn.excluded.join(", ") })}`}
             {turn.model !== null && ` · ${t("reporter.model", { model: turn.model })}`}
           </p>
           {/* A fact, a sort or an action reads the set of the previous answer: its terms are

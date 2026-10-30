@@ -38,6 +38,7 @@ def _state_json(state: State) -> str:
             "days": state.days,
             "meaning": list(state.meaning),
             "subject": state.subject,
+            "excluded": list(state.excluded),
         }
     )
 
@@ -176,6 +177,7 @@ def _turn(row: sa.Row[Any]) -> Turn:
             row.state.get("days"),
             tuple(row.state.get("meaning", ())),
             row.state.get("subject", 0),
+            tuple(row.state.get("excluded", ())),
         ),
         concepts=[
             Widened(_concept(c), tuple(c["added"]), tuple(c.get("general", ())))

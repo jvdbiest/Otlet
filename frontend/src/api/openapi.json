@@ -5442,6 +5442,13 @@
             ],
             "title": "Error"
           },
+          "excluded": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Excluded",
+            "type": "array"
+          },
           "fact": {
             "anyOf": [
               {
@@ -5500,7 +5507,8 @@
                   "élargir",
                   "trier",
                   "fait",
-                  "agir"
+                  "agir",
+                  "exclure"
                 ],
                 "type": "string"
               },
@@ -5558,6 +5566,7 @@
           "question",
           "status",
           "operation",
+          "excluded",
           "language",
           "days",
           "concepts",

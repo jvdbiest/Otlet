@@ -19,7 +19,14 @@
   "aiTasks": {
     "cancel": "Annuler",
     "count": "Tâche(s) IA en cours : {count}",
-    "cancelAll": "Annuler toute génération en cours"
+    "cancelAll": "Annuler toute génération en cours",
+    "list": "Ouvrir une tâche",
+    "kind": {
+      "reporter": "Reporter",
+      "dossier": "Assistant de veille",
+      "draft": "Rédaction",
+      "check": "Test du profil IA"
+    }
   },
   "nav": {
     "label": "Navigation principale",
@@ -1259,8 +1266,10 @@
       "élargir": "Élargissement",
       "trier": "Tri",
       "fait": "Fait",
-      "agir": "Action"
+      "agir": "Action",
+      "exclure": "Retrait"
     },
+    "excluded": "sans : {terms}",
     "language": "en {language, select, fr {français} nl {néerlandais} en {anglais} other {{language}}} seulement",
     "period": "{count, plural, one {aujourd'hui seulement} other {# derniers jours seulement}}",
     "set": "{count, plural, =0 {aucun article} one {# article} other {# articles}}",

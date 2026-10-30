@@ -3967,6 +3967,8 @@ export interface components {
             days: number | null;
             /** Error */
             error: string | null;
+            /** Excluded */
+            excluded: string[];
             fact: components["schemas"]["FactView"] | null;
             /** Finished At */
             finished_at: string | null;
@@ -3980,7 +3982,7 @@ export interface components {
             /** Model */
             model: string | null;
             /** Operation */
-            operation: ("chercher" | "restreindre" | "élargir" | "trier" | "fait" | "agir") | null;
+            operation: ("chercher" | "restreindre" | "élargir" | "trier" | "fait" | "agir" | "exclure") | null;
             /** Position */
             position: number;
             /** Question */

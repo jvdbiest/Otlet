@@ -28,7 +28,7 @@ from otlet.reporter.application.reporter import (
     Turn,
 )
 from otlet.reporter.domain.questions import unsearched
-from otlet.reporter.domain.reconstitution import RebuiltLine, Reconstitution
+from otlet.reporter.domain.reconstitution import RebuiltLine, Reconstitution, Sentence
 from otlet.reporter.domain.themes import themes
 from otlet.workspaces.domain.model import WorkspaceContext
 
@@ -136,6 +136,7 @@ class ReconstitutionView(BaseModel):
     facets: list[FacetView]
     lines: list[RebuiltLineView]
     flagged: list[RebuiltLineView]
+    answer: list[SentenceView]
     sentences: list[SentenceView]
     confidence: Literal["forte", "moyenne", "faible"] | None
     reasons: list[str]
@@ -159,21 +160,22 @@ class ReconstitutionView(BaseModel):
                 to_check=list(one.to_check),
             )
 
+        def sentence(one: Sentence) -> SentenceView:
+            return SentenceView(
+                text=one.text,
+                lines=list(one.lines),
+                deduction=one.deduction,
+                unsupported=list(one.unsupported),
+            )
+
         return cls(
             requested=rebuilt.requested,
             form=rebuilt.form,
             facets=[FacetView(name=f.name, question=f.question) for f in rebuilt.facets],
             lines=[line(one) for one in rebuilt.lines],
             flagged=[line(one) for one in rebuilt.flagged],
-            sentences=[
-                SentenceView(
-                    text=s.text,
-                    lines=list(s.lines),
-                    deduction=s.deduction,
-                    unsupported=list(s.unsupported),
-                )
-                for s in rebuilt.sentences
-            ],
+            answer=[sentence(s) for s in rebuilt.answer],
+            sentences=[sentence(s) for s in rebuilt.sentences],
             confidence=None if rebuilt.confidence is None else rebuilt.confidence.value,
             reasons=list(rebuilt.reasons),
             found=rebuilt.found,

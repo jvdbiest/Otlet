@@ -1349,15 +1349,16 @@
       "help": "Votre modèle trie les articles si besoin, en lit jusqu'à 15 et relève ce qui répond, volet par volet. Comptez plusieurs minutes avec un modèle local.",
       "pending": "Je reconstitue : tri, lecture par volet, puis analyse…",
       "title": "Reconstitution",
+      "inBrief": "En bref",
+      "facts": "{count, plural, one {Voir le fait et ses volets} other {Voir les # faits et leurs volets}}",
       "chronology": "Chronologie",
       "synthesis": "Synthèse",
-      "read": "{read} articles lus sur {found}.",
       "line": "Ligne",
       "information": "Information",
       "noLine": "Aucune ligne pour ce volet.",
       "nothing": "Je ne trouve pas : aucun des {count} articles ne traite vraiment ce sujet.",
       "flagged": "{count, plural, one {Une ligne à vérifier, écartée de l'analyse} other {# lignes à vérifier, écartées de l'analyse}}",
-      "analysis": "Analyse IA",
+      "analysis": "Voir l'analyse détaillée",
       "confidence": {
         "forte": "Confiance forte",
         "moyenne": "Confiance moyenne",
@@ -1366,7 +1367,7 @@
       "noAnalysis": "Pas d'analyse : aucune ligne ne tient.",
       "deduction": "Déduction :",
       "unsupported": "Sans appui dans ses articles : {words}",
-      "byModel": "Écrite par votre modèle à partir des lignes seulement. Les lignes restent la référence.",
+      "byModel": "Écrit par votre modèle à partir des faits relevés dans {read} articles lus sur {found}. Les faits restent la référence.",
       "failed": "Le modèle n'a pas tout fait : {error}"
     },
     "reading": {

@@ -14,6 +14,7 @@ import {
   type ConversationView,
   type FactView,
   type ReadingView,
+  type SentenceView,
   type TurnCandidate,
   type TurnView,
 } from "../../reporter.ts";
@@ -666,8 +667,24 @@ function Rebuild({
   const shown = facet === null ? numbered : numbered.filter(({ line }) => line.facet === facet);
   return (
     <section aria-label={t("reporter.rebuild.title")}>
-      <h3>{t(done.form === "synthèse" ? "reporter.rebuild.synthesis" : "reporter.rebuild.chronology")}</h3>
-      <p className={styles.meta}>{t("reporter.rebuild.read", { read: done.read, found: done.found })}</p>
+      <div className={styles.panel}>
+        <h3>{t("reporter.rebuild.inBrief")}</h3>
+        {done.answer.length === 0 && done.sentences.length === 0 && (
+          <p className={styles.notice}>{t("reporter.rebuild.noAnalysis")}</p>
+        )}
+        {done.answer.map((sentence, index) => (
+          <RebuiltSentence key={index} sentence={sentence} strong={index === 0} />
+        ))}
+        {done.confidence !== null && (
+          <p>
+            <strong>{t(`reporter.rebuild.confidence.${done.confidence}`)}</strong>
+            {done.reasons.length > 0 && <span className={styles.meta}> · {done.reasons.join(" ; ")}</span>}
+          </p>
+        )}
+        <p className={styles.help}>{t("reporter.rebuild.byModel", { read: done.read, found: done.found })}</p>
+      </div>
+      <details>
+        <summary>{t("reporter.rebuild.facts", { count: done.lines.length })}</summary>
       <p className={styles.row} style={{ flexWrap: "wrap" }}>
         {done.facets.map((one, index) => (
           <button
@@ -732,36 +749,39 @@ function Rebuild({
           </ul>
         </details>
       )}
-      <div className={styles.panel}>
-        <h4>{t("reporter.rebuild.analysis")}</h4>
-        {done.confidence !== null && (
-          <p>
-            <strong>{t(`reporter.rebuild.confidence.${done.confidence}`)}</strong>
-            {done.reasons.length > 0 && <span className={styles.meta}> · {done.reasons.join(" ; ")}</span>}
-          </p>
-        )}
-        {done.sentences.length === 0 && <p className={styles.notice}>{t("reporter.rebuild.noAnalysis")}</p>}
-        {done.sentences.map((sentence, index) => (
-          <p key={index}>
-            {sentence.deduction && <em>{t("reporter.rebuild.deduction")} </em>}
-            {sentence.text}{" "}
-            <span className={styles.meta}>{sentence.lines.map((n) => `L${String(n)}`).join(" ")}</span>
-            {sentence.unsupported.length > 0 && (
-              <>
-                <br />
-                <span className={styles.warning}>
-                  {t("reporter.rebuild.unsupported", { words: sentence.unsupported.join(", ") })}
-                </span>
-              </>
-            )}
-          </p>
-        ))}
-        <p className={styles.help}>{t("reporter.rebuild.byModel")}</p>
-      </div>
+      </details>
+      {done.sentences.length > 0 && (
+        <details>
+          <summary>{t("reporter.rebuild.analysis")}</summary>
+          {done.sentences.map((sentence, index) => (
+            <RebuiltSentence key={index} sentence={sentence} />
+          ))}
+        </details>
+      )}
       {done.errors.length > 0 && (
         <p className={styles.notice}>{t("reporter.rebuild.failed", { error: done.errors.join("; ") })}</p>
       )}
     </section>
+  );
+}
+
+/** A sentence of the answer or of the analysis, with its lines and what they do not hold. */
+function RebuiltSentence({ sentence, strong = false }: { sentence: SentenceView; strong?: boolean }) {
+  const { t } = useTranslation();
+  return (
+    <p>
+      {sentence.deduction && <em>{t("reporter.rebuild.deduction")} </em>}
+      {strong ? <strong>{sentence.text}</strong> : sentence.text}{" "}
+      <span className={styles.meta}>{sentence.lines.map((n) => `L${String(n)}`).join(" ")}</span>
+      {sentence.unsupported.length > 0 && (
+        <>
+          <br />
+          <span className={styles.warning}>
+            {t("reporter.rebuild.unsupported", { words: sentence.unsupported.join(", ") })}
+          </span>
+        </>
+      )}
+    </p>
   );
 }
 

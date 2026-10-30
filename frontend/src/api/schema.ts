@@ -3635,6 +3635,8 @@ export interface components {
          * @description « Reconstituer » (ADR-0044 §7): the lines by date, the facets as filters, the analysis.
          */
         ReconstitutionView: {
+            /** Answer */
+            answer: components["schemas"]["SentenceView"][];
             /** Confidence */
             confidence: ("forte" | "moyenne" | "faible") | null;
             /** Dropped */

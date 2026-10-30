@@ -4283,6 +4283,13 @@
       "ReconstitutionView": {
         "description": "« Reconstituer » (ADR-0044 §7): the lines by date, the facets as filters, the analysis.",
         "properties": {
+          "answer": {
+            "items": {
+              "$ref": "#/components/schemas/SentenceView"
+            },
+            "title": "Answer",
+            "type": "array"
+          },
           "confidence": {
             "anyOf": [
               {
@@ -4368,6 +4375,7 @@
           "facets",
           "lines",
           "flagged",
+          "answer",
           "sentences",
           "confidence",
           "reasons",

@@ -73,6 +73,9 @@ class Reconstitution:
     facets: tuple[Facet, ...] = ()
     lines: tuple[RebuiltLine, ...] = ()
     flagged: tuple[RebuiltLine, ...] = ()
+    # What it comes to: the question answered first (Joël, 2026-10-31: « je vois comment la
+    # conclusion est construite, mais pas quelle est la conclusion »); `sentences` detail it.
+    answer: tuple[Sentence, ...] = ()
     sentences: tuple[Sentence, ...] = ()
     confidence: Confidence | None = None
     reasons: tuple[str, ...] = ()
@@ -140,32 +143,36 @@ LINES_SCHEMA: dict[str, Any] = {
     "required": ["lignes"],
 }
 ANALYSIS_SYSTEM = (
-    "Tu es le Reporter d'Otlet. Écris une analyse courte (3 à 6 phrases) qui répond à la question "
-    "de l'auteur à partir des lignes numérotées, et d'elles seules : tu ne vois pas les articles. "
-    "Pour chaque phrase, donne les numéros des lignes qui la portent. Une déduction (ce que les "
+    "Tu es le Reporter d'Otlet. À partir des lignes numérotées, et d'elles seules (tu ne vois pas "
+    "les articles), écris deux choses. Dans « reponse », 2 à 4 phrases qui répondent directement à "
+    "la question de l'auteur, comme à quelqu'un qui ne lira rien d'autre : la conclusion "
+    "principale d'abord, puis chaque partie de la question ; dis clairement ce que les lignes ne "
+    "permettent pas de dire. Pas une description des articles : la réponse. Dans « phrases », une "
+    "analyse courte (3 à 6 phrases) qui détaille cette réponse. "
+    "Pour chaque phrase, donne les numéros des lignes qui la portent, sans jamais les écrire dans "
+    "le texte. Une déduction (ce que les "
     "lignes laissent penser sans le dire) est permise, mais marque-la comme déduction et "
     "formule-la comme telle (« semble », « laisse penser »). Aucun chiffre, aucune date, aucun "
     "lieu, aucun nom qui ne soit dans les lignes. Des moments différents désignent des événements "
     "différents, pas des sources en désaccord. Si les lignes ne suffisent pas pour répondre, "
     "dis-le en une phrase."
 )
+_SENTENCE: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "texte": {"type": "string"},
+        "lignes": {"type": "array", "items": {"type": "integer"}},
+        "deduction": {"type": "boolean"},
+    },
+    "required": ["texte", "lignes", "deduction"],
+}
 ANALYSIS_SCHEMA: dict[str, Any] = {
     "type": "object",
     "properties": {
-        "phrases": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "texte": {"type": "string"},
-                    "lignes": {"type": "array", "items": {"type": "integer"}},
-                    "deduction": {"type": "boolean"},
-                },
-                "required": ["texte", "lignes", "deduction"],
-            },
-        }
+        "reponse": {"type": "array", "items": _SENTENCE},
+        "phrases": {"type": "array", "items": _SENTENCE},
     },
-    "required": ["phrases"],
+    "required": ["reponse", "phrases"],
 }
 
 
@@ -188,7 +195,7 @@ def check_lines(raw: str) -> list[str]:
 
 
 def check_analysis(raw: str) -> list[str]:
-    return _list_of(raw, "phrases")
+    return _list_of(raw, "reponse") + _list_of(raw, "phrases")
 
 
 def read_facets(raw: str) -> tuple[str, tuple[Facet, ...]]:
@@ -443,12 +450,22 @@ LINE_NUMBERS = re.compile(r"\s*\(?\bL\d+(?:\s*,\s*L\d+)*\)?")
 
 def read_analysis(
     raw: str, lines: tuple[RebuiltLine, ...], articles: list[Article]
+) -> tuple[tuple[Sentence, ...], tuple[Sentence, ...]]:
+    """The answer and the analysis, each sentence with its lines."""
+    return (
+        _sentences(raw, "reponse", lines, articles),
+        _sentences(raw, "phrases", lines, articles),
+    )
+
+
+def _sentences(
+    raw: str, key: str, lines: tuple[RebuiltLine, ...], articles: list[Article]
 ) -> tuple[Sentence, ...]:
-    """Each sentence with its lines, and what it says that its articles do not: it may use what
-    the cited articles hold, their dates, and the dates their weekdays name."""
+    """Each sentence with what it says that its articles do not: it may use what the cited
+    articles hold, their dates, and the dates their weekdays name."""
     texts = {a.item_id: a.text[:BODY_CHARS] for a in articles}
     out = []
-    for row in json.loads(raw)["phrases"]:
+    for row in json.loads(raw)[key]:
         if not isinstance(row, dict) or not str(row.get("texte", "")).strip():
             continue
         text = " ".join(LINE_NUMBERS.sub("", str(row["texte"])).split())

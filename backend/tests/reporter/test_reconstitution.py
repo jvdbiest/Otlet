@@ -99,14 +99,16 @@ def test_a_sentence_says_what_its_lines_do_not_hold() -> None:
     line = RebuiltLine(1, "a", "La DH", DAY.isoformat(), "Quatre blessés", "", "", "Quatre")
     raw = json.dumps(
         {
+            "reponse": [{"texte": "Bruxelles a été touchée.", "lignes": [1], "deduction": False}],
             "phrases": [
                 {"texte": "La tempête a touché Bruxelles.", "lignes": [1], "deduction": False},
                 {"texte": "Elle a touché Namur le 24 octobre.", "lignes": [1], "deduction": True},
                 {"texte": "Sans appui.", "lignes": [], "deduction": False},
-            ]
+            ],
         }
     )
-    sentences = read_analysis(raw, (line,), [ARTICLE])
+    answer, sentences = read_analysis(raw, (line,), [ARTICLE])
+    assert [s.text for s in answer] == ["Bruxelles a été touchée."]
     assert sentences[0].unsupported == ()
     assert sentences[1].deduction and "Namur" in sentences[1].unsupported
     assert sentences[2].unsupported == ("aucune ligne citée",)
@@ -165,6 +167,7 @@ def test_a_story_updated_gives_one_line_and_line_numbers_are_no_part_of_a_senten
     assert len(kept) == 1
     line = RebuiltLine(1, "a", "La DH", DAY.isoformat(), "Quatre blessés", "", "", "Quatre")
     answer = {"texte": "La tempête a touché Bruxelles (L1, L1).", "lignes": [1], "deduction": False}
-    sentences = read_analysis(json.dumps({"phrases": [answer]}), (line,), [ARTICLE])
+    raw = json.dumps({"reponse": [answer], "phrases": []})
+    sentences, _ = read_analysis(raw, (line,), [ARTICLE])
     assert sentences[0].text == "La tempête a touché Bruxelles."
     assert sentences[0].unsupported == ()

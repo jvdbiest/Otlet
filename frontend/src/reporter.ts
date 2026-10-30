@@ -11,6 +11,7 @@ export type FactView = components["schemas"]["FactView"];
 export type ReadingView = components["schemas"]["ReadingView"];
 export type ReconstitutionView = components["schemas"]["ReconstitutionView"];
 export type RebuiltLineView = components["schemas"]["RebuiltLineView"];
+export type SentenceView = components["schemas"]["SentenceView"];
 /** A question, read by the model before its answer is shown when `read` (« Lire avant de répondre »). */
 export type Question =
   | string

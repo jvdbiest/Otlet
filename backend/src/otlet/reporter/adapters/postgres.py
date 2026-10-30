@@ -174,6 +174,13 @@ def _rebuilt_line(data: dict[str, Any]) -> RebuiltLine:
     return RebuiltLine(**{**data, "to_check": tuple(data.get("to_check", ()))})
 
 
+def _read_sentences(rows: list[dict[str, Any]]) -> tuple[Sentence, ...]:
+    return tuple(
+        Sentence(s["text"], tuple(s["lines"]), s["deduction"], tuple(s["unsupported"]))
+        for s in rows
+    )
+
+
 def _reconstitution(data: dict[str, Any] | None) -> Reconstitution | None:
     if data is None:
         return None
@@ -184,10 +191,8 @@ def _reconstitution(data: dict[str, Any] | None) -> Reconstitution | None:
         facets=tuple(Facet(**f) for f in data.get("facets", [])),
         lines=tuple(_rebuilt_line(line) for line in data.get("lines", [])),
         flagged=tuple(_rebuilt_line(line) for line in data.get("flagged", [])),
-        sentences=tuple(
-            Sentence(s["text"], tuple(s["lines"]), s["deduction"], tuple(s["unsupported"]))
-            for s in data.get("sentences", [])
-        ),
+        answer=_read_sentences(data.get("answer", [])),
+        sentences=_read_sentences(data.get("sentences", [])),
         confidence=None if level is None else Confidence(level),
         reasons=tuple(data.get("reasons", [])),
         found=data.get("found", 0),

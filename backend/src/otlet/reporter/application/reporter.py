@@ -693,6 +693,7 @@ class Reporter:
             dropped += lost
         lines = tuple(sorted(kept, key=lambda line: (line.dated, line.facet)))
         level, reasons = confidence(form, facets, lines, glossary)
+        answer: tuple[Sentence, ...] = ()
         sentences: tuple[Sentence, ...] = ()
         if lines:
             raw = self._ask(
@@ -704,12 +705,14 @@ class Reporter:
                 FACT_OUTPUT_TOKENS,
                 log,
             )
-            sentences = () if raw is None else read_analysis(raw, lines, articles)
+            if raw is not None:
+                answer, sentences = read_analysis(raw, lines, articles)
         return Reconstitution(
             form=form,
             facets=facets,
             lines=lines,
             flagged=tuple(flagged),
+            answer=answer,
             sentences=sentences,
             confidence=level,
             reasons=reasons,

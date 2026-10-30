@@ -68,6 +68,12 @@ class AssistantStore(Protocol):
         until: datetime | None = None,
     ) -> list[Candidate]: ...
 
+    def latest(
+        self, workspace_id: UUID, since: datetime | None, until: datetime | None, limit: int
+    ) -> list[Candidate]:
+        """The items of a period, the most recent first."""
+        ...
+
     def near(
         self,
         workspace_id: UUID,

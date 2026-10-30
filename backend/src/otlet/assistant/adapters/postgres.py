@@ -221,6 +221,38 @@ class PostgresAssistantStore:
             for row in rows
         ]
 
+    def latest(
+        self, workspace_id: UUID, since: datetime | None, until: datetime | None, limit: int
+    ) -> list[Candidate]:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            rows = connection.execute(
+                sa.text(
+                    "SELECT i.id, i.title, left(coalesce(i.summary, ''), :chars) AS summary,"
+                    " i.url, i.language, coalesce(s.name, i.declared_origin) AS publisher,"
+                    " coalesce(i.published_at, i.collected_at) AS dated"
+                    " FROM source_items AS i LEFT JOIN sources AS s ON s.id = i.source_id"
+                    f" WHERE {here('i')} AND i.duplicate_of IS NULL"
+                    " AND (CAST(:since AS timestamptz) IS NULL"
+                    " OR coalesce(i.published_at, i.collected_at) >= :since)"
+                    " AND (CAST(:until AS timestamptz) IS NULL"
+                    " OR coalesce(i.published_at, i.collected_at) < :until)"
+                    " ORDER BY dated DESC, i.id LIMIT :limit"
+                ),
+                {"chars": SUMMARY_CHARS, "since": since, "until": until, "limit": limit},
+            ).all()
+        return [
+            Candidate(
+                id=row.id,
+                title=row.title,
+                summary=row.summary,
+                url=row.url,
+                language=row.language,
+                publisher=row.publisher,
+                dated=row.dated,
+            )
+            for row in rows
+        ]
+
     def near(
         self,
         workspace_id: UUID,

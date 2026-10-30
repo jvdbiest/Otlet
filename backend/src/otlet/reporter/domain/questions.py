@@ -174,6 +174,8 @@ MONTH_PERIOD = re.compile(
 def _asked(question: str) -> str:
     """A question as its folded words between spaces, its marks and quotes aside."""
     text = folded(question).replace("’", "'")
+    # « Quelles-sont les actualités » is « quelles sont les actualités ».
+    text = re.sub(r"\b(quels?|quelles?)-", r"\1 ", text)
     for mark in '?,"«»“”':
         text = text.replace(mark, " ")
     # « Les articles d'aujourd'hui » names a period too (Joël, 2026-10-30).
@@ -847,6 +849,20 @@ def _numbered_phrase(term: str) -> str:
     return term
 
 
+# « nouveaux moniteurs » is a search for monitors: as a term, it found nothing, and the set with
+# it (Joël, 2026-10-30). « New York » or « Nouvel An » name something: a capital follows.
+NEW_HEAD = re.compile(
+    r"^(?:nouveaux|nouveau|nouvelles|nouvelle|nouvel|new|nieuwe|nieuw)\s+(?=(?-i:[a-zà-ÿ]))",
+    re.IGNORECASE,
+)
+
+
+def _not_new(concept: Concept) -> Concept:
+    """A concept whose terms do not ask for what is new: every article is."""
+    terms = _clean([NEW_HEAD.sub("", t) for t in concept.terms])
+    return Concept(NEW_HEAD.sub("", concept.name), terms)
+
+
 def guarded(
     question: str, translated: Translated, today: date | None = None, every_word: bool = True
 ) -> Translated:
@@ -860,6 +876,7 @@ def guarded(
       week », which found every week-end of the Veille);
     - a concept the question names by its name searches that name first: « jeux vidéo » came
       with « console, PC, mobile » and not « jeux vidéo » itself (Joël, 2026-10-25)."""
+    translated = replace(translated, concepts=tuple(_not_new(c) for c in translated.concepts))
     asked = _without_dates_named(_asked(question))
     for words_of_period, _ in PERIOD_WORDS:
         asked = asked.replace(f" {words_of_period} ", " ")
@@ -966,6 +983,15 @@ def guarded(
 def next_state(state: State, translated: Translated) -> State:
     """The concepts and language after the operation; the set follows them, without a model."""
     proposed = translated.concepts
+    if (
+        translated.operation is Operation.CHERCHER
+        and not proposed
+        and (translated.days or translated.date_from or translated.date_to)
+    ):
+        # « Les actualités du jour » names no subject: every article of the period.
+        return State(
+            days=translated.days, date_from=translated.date_from, date_to=translated.date_to
+        )
     match translated.operation:
         case Operation.CHERCHER if proposed:
             # A new subject: a new set, in every language, over the period it names.
@@ -1042,6 +1068,11 @@ def holds_excluded(text: str, excluded: tuple[str, ...]) -> bool:
 def asks_sort(question: str) -> bool:
     """« Trie-les »: its words say the operation, without a model."""
     return ASKS_SORT.match(_asked(question)) is not None
+
+
+def names_no_subject(question: str) -> bool:
+    """A question of question words alone: « Les actualités ? »."""
+    return not _named(question)
 
 
 def only_a_period(question: str) -> bool:

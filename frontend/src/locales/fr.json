@@ -1270,6 +1270,12 @@
       "exclure": "Retrait"
     },
     "excluded": "sans : {terms}",
+    "selectAll": "{count, plural, one {Sélectionner la conversation} other {Tout sélectionner (#)}}",
+    "selectOne": "Sélectionner : {title}",
+    "deleteChosen": "{count, plural, one {Effacer la conversation sélectionnée} other {Effacer les # conversations sélectionnées}}",
+    "deleteConfirm": "{count, plural, one {Effacer définitivement cette conversation ?} other {Effacer définitivement ces # conversations ?}} Les briefs qui en sont issus restent.",
+    "deleteYes": "Effacer",
+    "deleteNo": "Garder",
     "dates": "du {from} au {to}",
     "dateFrom": "Du",
     "dateTo": "Au",

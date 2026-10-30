@@ -359,6 +359,18 @@ class PostgresReporterStore:
             )
         return _turn(row)
 
+    def delete_conversations(
+        self, workspace_id: UUID, user_id: UUID, conversation_ids: list[UUID]
+    ) -> int:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            return connection.execute(
+                sa.text(
+                    "DELETE FROM reporter_conversations"
+                    f" WHERE id = ANY(:ids) AND created_by = :user AND {here()}"
+                ),
+                {"ids": conversation_ids, "user": user_id},
+            ).rowcount
+
     def is_pending(self, workspace_id: UUID, turn_id: UUID) -> bool:
         """Whether a question is still being answered: what a call in progress looks at."""
         with workspace_transaction(self._engine, workspace_id) as connection:

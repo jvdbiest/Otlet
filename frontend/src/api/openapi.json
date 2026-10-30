@@ -1574,6 +1574,38 @@
         "title": "DeclarationView",
         "type": "object"
       },
+      "DeleteBody": {
+        "properties": {
+          "ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 1000,
+            "minItems": 1,
+            "title": "Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "ids"
+        ],
+        "title": "DeleteBody",
+        "type": "object"
+      },
+      "DeletedView": {
+        "properties": {
+          "deleted": {
+            "title": "Deleted",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "deleted"
+        ],
+        "title": "DeletedView",
+        "type": "object"
+      },
       "DescriptionBody": {
         "description": "What a person says of an image; an empty text clears it.",
         "properties": {
@@ -11242,6 +11274,57 @@
           }
         },
         "summary": "Start"
+      }
+    },
+    "/api/workspaces/{workspace_id}/reporter/conversations/delete": {
+      "post": {
+        "description": "Deletes the conversations chosen, for good.",
+        "operationId": "delete_api_workspaces__workspace_id__reporter_conversations_delete_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletedView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete"
       }
     },
     "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}": {

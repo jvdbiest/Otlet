@@ -84,6 +84,24 @@ export function useAsk(workspaceId: string, conversationId: string) {
   });
 }
 
+/** Deletes conversations for good; those being answered end with them. */
+export function useDeleteConversations(workspaceId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (ids: string[]) => {
+      const { data, error, response } = await api.POST("/api/workspaces/{workspace_id}/reporter/conversations/delete", {
+        params: { path: { workspace_id: workspaceId } },
+        body: { ids },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: () => client.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
+  });
+}
+
 /** Ends the question being answered; the worker cuts its call to the model. */
 export function useCancelQuestion(workspaceId: string, conversationId: string) {
   const client = useQueryClient();

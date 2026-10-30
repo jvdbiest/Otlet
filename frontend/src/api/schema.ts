@@ -1706,6 +1706,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/reporter/conversations/delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Delete
+         * @description Deletes the conversations chosen, for good.
+         */
+        post: operations["delete_api_workspaces__workspace_id__reporter_conversations_delete_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}": {
         parameters: {
             query?: never;
@@ -2628,6 +2648,16 @@ export interface components {
             detail: string;
             /** Reference */
             reference: string;
+        };
+        /** DeleteBody */
+        DeleteBody: {
+            /** Ids */
+            ids: string[];
+        };
+        /** DeletedView */
+        DeletedView: {
+            /** Deleted */
+            deleted: number;
         };
         /**
          * DescriptionBody
@@ -7532,6 +7562,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ConversationView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_api_workspaces__workspace_id__reporter_conversations_delete_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeleteBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeletedView"];
                 };
             };
             /** @description Validation Error */

@@ -20,7 +20,13 @@ from otlet.entrypoints.api.assistant import (
 )
 from otlet.entrypoints.api.auth import same_origin
 from otlet.entrypoints.api.workspaces import PREFIX
-from otlet.reporter.application.reporter import Conversation, Reporter, ReporterError, Turn
+from otlet.reporter.application.reporter import (
+    LIST_MAX,
+    Conversation,
+    Reporter,
+    ReporterError,
+    Turn,
+)
 from otlet.reporter.domain.questions import unsearched
 from otlet.reporter.domain.themes import themes
 from otlet.workspaces.domain.model import WorkspaceContext
@@ -260,6 +266,14 @@ class ConversationView(BaseModel):
         )
 
 
+class DeleteBody(BaseModel):
+    ids: list[UUID] = Field(min_length=1, max_length=LIST_MAX)
+
+
+class DeletedView(BaseModel):
+    deleted: int
+
+
 class ConversationSummaryView(BaseModel):
     id: UUID
     title: str
@@ -299,6 +313,11 @@ def build_router(
             ConversationSummaryView(id=c.id, title=c.title, created_at=c.created_at)
             for c in reporter.recent(context)
         ]
+
+    @router.post("/conversations/delete")
+    def delete(body: DeleteBody, context: Context) -> DeletedView:
+        """Deletes the conversations chosen, for good."""
+        return DeletedView(deleted=reporter.delete(context, body.ids))
 
     @router.get("/conversations/{conversation_id}")
     def get(conversation_id: UUID, context: Context) -> ConversationView:

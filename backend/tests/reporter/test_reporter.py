@@ -513,3 +513,22 @@ def test_dates_chosen_or_named_bound_the_set_and_trie_les_sorts_without_translat
     found = api.get(context, conversation.id)
     assert found is not None and found.turns[2].operation is Operation.TRIER
     assert model.asked and not any("Dernière question : " in asked for asked in model.asked)
+
+
+def test_conversations_are_deleted_by_their_author_only(
+    reporter: tuple[Reporter, Reporter, WorkspaceContext, sa.Engine],
+) -> None:
+    api, worker, context, engine = reporter
+    first = api.start(context, "Les articles sur la tempête Austen")
+    answer(worker, context, first.id, first.turns[0].id)
+    second = api.start(context, "Austen encore")
+    kept = api.start(context, "Austen toujours")
+    other = replace(context, user_id=context_for(engine, "bob@example.org").user_id)
+    assert api.delete(other, [first.id]) == 0
+    assert api.get(context, first.id) is not None
+    # One answered, one being answered: the job of the second finds nothing to do.
+    assert api.delete(context, [first.id, second.id]) == 2
+    assert api.get(context, first.id) is None and api.get(context, second.id) is None
+    answer(worker, context, second.id, second.turns[0].id)
+    assert [c.id for c in api.recent(context)] == [kept.id]
+    assert [t.conversation_id for t in api.running(context)] == [kept.id]

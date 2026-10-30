@@ -94,6 +94,8 @@ logger = logging.getLogger(__name__)
 
 ANSWER_TURN = "reporter.answer_turn"
 CANCELLED = "cancelled"  # the error of a question the author cancelled
+# The list of the author's conversations: all of them, within reason, so that each can be deleted.
+LIST_MAX = 1000
 FIRST_SEARCH = (
     "\n\nIl n'y a pas encore d'ensemble d'articles : réponds par l'opération « chercher » et les"
     " concepts du sujet de la question."
@@ -186,6 +188,12 @@ class ReporterStore(Protocol):
     def save_turn(self, workspace_id: UUID, conversation_id: UUID, turn: Turn) -> None: ...
 
     def running_turns(self, workspace_id: UUID, user_id: UUID) -> list[RunningTurn]: ...
+
+    def delete_conversations(
+        self, workspace_id: UUID, user_id: UUID, conversation_ids: list[UUID]
+    ) -> int:
+        """Deletes those of the author, with their questions; how many."""
+        ...
 
     def read_further(
         self, workspace_id: UUID, user_id: UUID, conversation_id: UUID, turn_id: UUID
@@ -300,8 +308,16 @@ class Reporter:
     def get(self, context: WorkspaceContext, conversation_id: UUID) -> Conversation | None:
         return self._store.conversation(context.workspace_id, conversation_id)
 
-    def recent(self, context: WorkspaceContext, limit: int = 30) -> list[Conversation]:
+    def recent(self, context: WorkspaceContext, limit: int = LIST_MAX) -> list[Conversation]:
         return self._store.conversations(context.workspace_id, context.user_id, limit)
+
+    def delete(self, context: WorkspaceContext, conversation_ids: list[UUID]) -> int:
+        """Deletes conversations for good (Joël, 2026-10-30). The briefs made from them stay, and
+        lose only their way back; a question being answered ends with its conversation: the
+        worker sees it gone, and cuts its call to the model."""
+        return self._store.delete_conversations(
+            context.workspace_id, context.user_id, conversation_ids
+        )
 
     def set_terms(
         self,

@@ -30,7 +30,8 @@ def answer(operation: str, *concepts: tuple[str, list[str]], langue: str | None 
 
 def test_an_answer_is_read_and_cleaned() -> None:
     raw = answer("chercher", ("Austen", [" tempête  Austen", "Austen", "austen", ""]))
-    assert check_operation(raw) == []
+    # One list of terms is still read; the model is asked for one list by language.
+    assert check_operation(raw) != []
     assert read_operation(raw) == Translated(
         Operation.CHERCHER, (Concept("Austen", ("tempête Austen", "Austen")),), None
     )
@@ -55,7 +56,9 @@ def test_a_concept_the_question_does_not_name_is_dropped() -> None:
         None,
     )
     kept = guarded("Lesquels concernent Bruxelles ?", translated)
-    assert kept.concepts == (Concept("Bruxelles", ("Bruxelles",)),)
+    # A place is searched by all its names (bench, 2026-10-30).
+    assert [c.name for c in kept.concepts] == ["Bruxelles"]
+    assert {"Bruxelles", "brussel", "bruxellois"} <= set(kept.concepts[0].terms)
 
 
 def test_a_search_keeps_its_first_concept_when_none_is_named() -> None:
@@ -134,10 +137,9 @@ def test_a_word_of_the_question_no_term_searches_is_shown_and_brought_back() -> 
     assert unsearched(question, [belgium]) == ["enseignement"]
     school = Concept("éducation", ("éducation", "école", "onderwijs"))
     kept = guarded(question, Translated(Operation.CHERCHER, (belgium, school), None))
-    assert kept.concepts == (
-        belgium,
-        Concept("enseignement", ("enseignement", "éducation", "école", "onderwijs")),
-    )
+    assert [c.name for c in kept.concepts] == ["Belgique", "enseignement"]
+    assert {"Belgique", "België", "belge"} <= set(kept.concepts[0].terms)
+    assert kept.concepts[1].terms == ("enseignement", "éducation", "école", "onderwijs")
     assert unsearched(question, list(kept.concepts)) == []
 
 
@@ -245,13 +247,10 @@ def test_the_failures_of_the_evening_of_2026_10_29() -> None:
     )
     question = "Je veux en savoir plus sur le budget de la région Bruxelles-Capitale"
     kept = guarded(question, Translated(Operation.CHERCHER, (budget,), None))
-    assert kept.concepts == (
-        Concept("budget", ("budget",)),
-        Concept(
-            "Bruxelles-Capitale",
-            ("Bruxelles-Capitale", "Région de Bruxelles-Capitale", "Brussels-Capital Region"),
-        ),
-    )
+    assert kept.concepts[0] == Concept("budget", ("budget",))
+    # The place by all its names: Bruzz writes « Brussel » (bench, 2026-10-30).
+    assert kept.concepts[1].name == "Bruxelles-Capitale"
+    assert {"Région de Bruxelles-Capitale", "brussel", "bruxelles"} <= set(kept.concepts[1].terms)
     # « véhicule » is searched by « véhicules »: a follow-up that names nothing new keeps the set.
     cars = State((Concept("véhicules électriques", ("véhicules électriques",)),))
     model = Translated(Operation.CHERCHER, (Concept("modèle", ("modèle", "model")),), None)
@@ -313,3 +312,70 @@ def test_a_name_with_a_number_is_a_phrase() -> None:
     switch = Concept("Switch 2", ("Switch 2", "Nintendo"))
     kept = guarded("Et la Switch 2 ?", Translated(Operation.CHERCHER, (switch,), None))
     assert kept.concepts == (Concept("Switch 2", ('"Switch 2"', "Nintendo")),)
+
+
+def test_the_third_bench_of_2026_10_30() -> None:
+    """Questions on the items of 30 October."""
+    from otlet.reporter.domain.questions import points_back, split_mixed
+
+    hospitals = Concept(
+        "hôpitaux en Flandre", ("hôpitaux en Flandre", "hôpitaux flamands", "Vlaamse ziekenhuizen")
+    )
+    kept = guarded(
+        "La situation financière des hôpitaux en Flandre",
+        Translated(Operation.CHERCHER, (hospitals,), None),
+    )
+    assert kept.concepts[0] == Concept("hôpitaux", ("hôpitaux", "ziekenhuizen"))
+    assert kept.concepts[1].name == "Flandre"
+    assert {"Vlaanderen", "vlaamse"} <= {t.casefold() for t in kept.concepts[1].terms} | {
+        "Vlaanderen"
+    }
+    philippe = Concept("Edouard Philippe", ("Edouard Philippe", "Philippe", "Edouard"))
+    assert split_mixed(philippe) == (philippe,)
+    assert points_back("Qui sont les victimes ?")
+    assert points_back("Sur les écouteurs ?")
+    assert not points_back("Et AWS ?")
+    view = Concept("opinion des indépendants", ("opinion des indépendants", "zelfstandigen"))
+    kept = guarded(
+        "Qu'en pensent les indépendants ?", Translated(Operation.RESTREINDRE, (view,), None)
+    )
+    assert kept.concepts == (Concept("indépendants", ("indépendants", "zelfstandigen")),)
+
+
+def test_terms_are_asked_in_every_language() -> None:
+    """« hôpitaux » alone missed « Vlaamse ziekenhuizen » (bench, 2026-10-30)."""
+    by_language = json.dumps(
+        {
+            "operation": "chercher",
+            "concepts": [
+                {
+                    "name": "hôpitaux",
+                    "fr": ["hôpitaux"],
+                    "nl": ["ziekenhuizen"],
+                    "en": ["hospitals"],
+                }
+            ],
+        }
+    )
+    assert check_operation(by_language) == []
+    assert read_operation(by_language).concepts == (
+        Concept("hôpitaux", ("hôpitaux", "ziekenhuizen", "hospitals")),
+    )
+    missing = by_language.replace('["ziekenhuizen"]', "[]")
+    assert check_operation(missing) == [
+        "concepts[0]: give terms in nl (a proper name is repeated as it is)"
+    ]
+
+
+def test_an_acronym_of_the_name_is_a_concept_of_its_own() -> None:
+    """« grèves à la SNCB » searched strikes OR SNCB (bench, 2026-10-30)."""
+    from otlet.reporter.domain.questions import split_mixed
+
+    strikes = Concept(
+        "grèves à la SNCB",
+        ("grèves à la SNCB", "grèves", "grèves ferroviaires", "stakingen", "strikes"),
+    )
+    assert split_mixed(strikes) == (
+        Concept("grèves", ("grèves", "grèves ferroviaires", "stakingen", "strikes")),
+        Concept("SNCB", ("SNCB",)),
+    )

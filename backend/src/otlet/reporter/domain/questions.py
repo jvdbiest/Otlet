@@ -197,6 +197,22 @@ def _dated(term: str) -> bool:
     )
 
 
+# Heads that ask how something is seen, not what it is: « opinion des indépendants »
+# searched the phrase and found nothing (bench, 2026-10-30).
+VIEW_HEAD = re.compile(
+    r"^(opinions?|avis|r[eé]actions?|positions?|point de vue|mening|reacties?|standpunt|"
+    r"views?|reactions?)\s+(des|de la|de l'|du|de|d'|van de|van|of the|of)\s*",
+    re.IGNORECASE,
+)
+
+
+def _seen(concept: Concept) -> Concept:
+    """A concept without « opinion des », « réaction de »: the people, not the view."""
+    name = VIEW_HEAD.sub("", concept.name).strip() or concept.name
+    terms = tuple(VIEW_HEAD.sub("", t).strip() or t for t in concept.terms)
+    return Concept(name, _clean([*terms])) if terms else concept
+
+
 def _without_dates(concept: Concept) -> Concept:
     """A concept without its terms of a period: a period is a filter, never a term."""
     terms = tuple(t for t in concept.terms if not _dated(t))
@@ -340,9 +356,37 @@ ANAPHORA = (
 )
 
 
+# A follow-up that asks who, how many, why… or is a fragment (« Sur les écouteurs ? ») asks
+# within the set: « Qui sont les victimes ? » after the train crash in Spain searched victims
+# of everything, « Sur les écouteurs ? » after the Black Friday every earphone (bench,
+# 2026-10-30). « Et … ? » may open a new subject (« Et AWS ? »): it is not one of them.
+WITHIN = (
+    "qui",
+    "que",
+    "quoi",
+    "quel",
+    "quels",
+    "quelle",
+    "quelles",
+    "combien",
+    "pourquoi",
+    "comment",
+    "ou",
+    "quand",
+    "sur",
+    "pour",
+    "chez",
+    "dans",
+    "avec",
+    "parmi",
+)
+
+
 def points_back(question: str) -> bool:
     asked = _asked(question)
-    return any(word in asked for word in ANAPHORA)
+    first = asked.split()[0] if asked.split() else ""
+    first = first.split("-")[0].split("'")[0]
+    return any(word in asked for word in ANAPHORA) or first in WITHIN
 
 
 def about_the_set(question: str, translated: Translated, state: State) -> bool:
@@ -386,6 +430,9 @@ def split_mixed(concept: Concept) -> tuple[Concept, ...]:
     Brussels: the budgets of Mons and Seneffe, a storm in Brussels (Joël, 2026-10-29). Its parts
     are the shortest terms its name holds; every other term goes to the part it is closest to,
     or is dropped when it is close to none."""
+    words = concept.name.split()
+    if 2 <= len(words) <= 3 and all(w[:1].isupper() for w in words):
+        return (concept,)  # « Edouard Philippe » is one person
     name = _words(concept.name)
     inside = [t for t in concept.terms if _words(t).strip() and _words(t) != name]
     inside = [t for t in inside if _words(t) in name]
@@ -420,22 +467,50 @@ def _place_words(term: str) -> set[str]:
     return {PLACES[w] for w in words | {p for w in words for p in w.split("-")} if w in PLACES}
 
 
+def _place_names(places: set[str]) -> list[str]:
+    """Every name of the places, in the three languages, as the press writes them: « Brussel »
+    and « Bruxelles » for « Bruxelles-Capitale » (bench, 2026-10-30: Bruzz wrote « Brussel »
+    and « begroting », and the Reporter searched « Brussels-Capital »)."""
+    return [w for line in PLACE_NAMES for w in line.split() if PLACES[line.split()[0]] in places]
+
+
+# The little words a place leaves in a term: « hôpitaux en Flandre », « Région de
+# Bruxelles-Capitale ».
+PLACE_LINKS = set(
+    """en de du des la le l in van of het the region regio regional gewest province provincie
+    ville stad city commune gemeente""".split()
+)
+
+
+def _without_place(term: str) -> str:
+    """A term without its place words and the little words they leave: « hôpitaux en
+    Flandre » is « hôpitaux », « Vlaamse ziekenhuizen » is « ziekenhuizen »."""
+    words = [w for w in term.split() if not _place_words(w) and folded(w) not in PLACE_LINKS]
+    return " ".join(words)
+
+
 def placed(question: str, concept: Concept) -> tuple[Concept, ...]:
-    """A subject without the places the model added to it: a place the question names is a
-    concept of its own, one it does not name is dropped. A concept that is a place stays."""
-    if _place_words(concept.name) or not any(_place_words(t) for t in concept.terms):
-        return (concept,)
+    """A subject without the places in it: a place the question names is a concept of its own,
+    with every name of that place; one it does not name is dropped. A concept that is only a
+    place stays, with every name of that place."""
     asked = _place_words(question)
-    subject = [t for t in concept.terms if not _place_words(t)]
-    places = [t for t in concept.terms if _place_words(t) & asked]
-    out = [Concept(concept.name, _clean(subject))] if subject else []
+    if not _place_words(concept.name) and not any(_place_words(t) for t in concept.terms):
+        return (concept,)
+    subject_name = _without_place(concept.name)
+    if not subject_name:
+        # A place alone (« Flandre », « Bruxelles-Capitale »).
+        alone = _place_words(concept.name) & asked or _place_words(concept.name)
+        return (Concept(concept.name, _clean([*concept.terms, *_place_names(alone)])),)
+    subject = [s for s in (_without_place(t) for t in concept.terms) if s]
+    out = [Concept(subject_name, _clean([subject_name, *subject]))]
+    places = set().union(*(_place_words(t) for t in (concept.name, *concept.terms))) & asked
     if places:
         # Led by the place as the question writes it, so that the question names it.
-        found = set().union(*(_place_words(t) for t in places))
-        written = [w for w in re.findall(r"[\w-]+", question) if _place_words(w) & found]
-        name = written[0] if written else places[0]
-        out.append(Concept(name, _clean([name, *places])))
-    return tuple(out) or (concept,)
+        written = [w for w in re.findall(r"[\w-]+", question) if _place_words(w) & places]
+        name = written[0]
+        named = [t for t in concept.terms if _place_words(t) & places and not _without_place(t)]
+        out.append(Concept(name, _clean([name, *named, *_place_names(places)])))
+    return tuple(out)
 
 
 # Names that hold a term without meaning it (Joël, 2026-10-29: « Bruxelles-Capitale n'a rien à
@@ -599,7 +674,7 @@ def guarded(
 
     proposed = tuple(
         _without_dates(placed_part)
-        for c in translated.concepts
+        for c in map(_seen, translated.concepts)
         for part in split_mixed(c)
         for placed_part in placed(question, part)
         # A concept named by a word of the question that names nothing (« parlant »), also

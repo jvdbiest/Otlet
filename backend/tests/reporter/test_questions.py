@@ -457,3 +457,39 @@ def test_a_question_takes_terms_out_of_the_set() -> None:
     assert holds_excluded("Une tarte aux pommes", ("pomme",))
     assert not holds_excluded("Pineapple express", ("apple",))
     assert asked_period("Des annonces concernant de nouveaux écrans ce mois-ci ?") == 31
+
+
+def test_dates_named_in_a_question() -> None:
+    from datetime import date
+
+    from otlet.reporter.domain.questions import (
+        asked_dates,
+        asks_sort,
+        excluded_terms,
+        only_a_period,
+    )
+
+    today = date(2026, 10, 30)
+    both = (date(2026, 10, 29), date(2026, 10, 30))
+    question = "uniquement les articles du 29 et du 30 octobre"
+    assert asked_dates(question, today) == both
+    assert asked_dates("du 29 au 30 octobre", today) == both
+    assert asked_dates("Du 29/10/2026 au 30/10/2026", today) == both
+    assert asked_dates("le 29 octobre", today) == (date(2026, 10, 29), date(2026, 10, 29))
+    assert asked_dates("depuis le 15 octobre", today) == (date(2026, 10, 15), today)
+    assert asked_dates("du 28 septembre au 2 octobre", today) == (
+        date(2026, 9, 28),
+        date(2026, 10, 2),
+    )
+    assert asked_dates("28, 29 et 30 octobre", today) == (date(2026, 10, 28), today)
+    # A date to come: the last one.
+    assert asked_dates("le 12 novembre", today) == (date(2025, 11, 12), date(2025, 11, 12))
+    assert asked_dates("Les 5 meilleurs écrans", today) is None
+    assert asked_dates("Le 31 février", today) is None
+    assert only_a_period(question)
+    assert not only_a_period("Les processeurs du 29 octobre")
+    date_concept = Concept("date", ('"29 et 30 octobre"', '"29 en 30 oktober"'))
+    kept = guarded(question, Translated(Operation.RESTREINDRE, (date_concept,), None), today)
+    assert (kept.concepts, kept.date_from, kept.date_to) == ((), *both)
+    assert asks_sort("Trie-les") and asks_sort("Trier") and not asks_sort("Trie les écrans")
+    assert excluded_terms("en supprimant les articles Apple et Macbook") == ("apple", "macbook")

@@ -2,7 +2,7 @@
 """The conversations of the Reporter on PostgreSQL, in the context of each workspace."""
 
 import json
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -30,6 +30,10 @@ def _concept(data: dict[str, Any]) -> Concept:
     return Concept(data["name"], tuple(data["terms"]))
 
 
+def _day(value: str | None) -> date | None:
+    return None if value is None else date.fromisoformat(value)
+
+
 def _state_json(state: State) -> str:
     return json.dumps(
         {
@@ -39,6 +43,8 @@ def _state_json(state: State) -> str:
             "meaning": list(state.meaning),
             "subject": state.subject,
             "excluded": list(state.excluded),
+            "date_from": None if state.date_from is None else state.date_from.isoformat(),
+            "date_to": None if state.date_to is None else state.date_to.isoformat(),
         }
     )
 
@@ -178,6 +184,8 @@ def _turn(row: sa.Row[Any]) -> Turn:
             tuple(row.state.get("meaning", ())),
             row.state.get("subject", 0),
             tuple(row.state.get("excluded", ())),
+            _day(row.state.get("date_from")),
+            _day(row.state.get("date_to")),
         ),
         concepts=[
             Widened(_concept(c), tuple(c["added"]), tuple(c.get("general", ())))
@@ -274,14 +282,15 @@ class PostgresReporterStore:
         conversation_id: UUID,
         question: str,
         read: bool = False,
+        dates: tuple[date | None, date | None] = (None, None),
     ) -> Turn:
         with workspace_transaction(self._engine, workspace_id) as connection:
             row = connection.execute(
                 sa.text(
                     "INSERT INTO reporter_turns (id, workspace_id, conversation_id, position,"
-                    " question, prompt_version, reading) SELECT :id, :workspace, :conversation,"
-                    " coalesce(max(position), 0) + 1, :question, :version,"
-                    " CAST(:reading AS jsonb) FROM reporter_turns"
+                    " question, prompt_version, reading, state) SELECT :id, :workspace,"
+                    " :conversation, coalesce(max(position), 0) + 1, :question, :version,"
+                    " CAST(:reading AS jsonb), CAST(:state AS jsonb) FROM reporter_turns"
                     f" WHERE conversation_id = :conversation AND {here()}"
                     f" RETURNING {TURN_COLUMNS}"
                 ),
@@ -292,6 +301,7 @@ class PostgresReporterStore:
                     "question": question,
                     "version": PROMPT_VERSION,
                     "reading": REQUESTED if read else None,
+                    "state": _state_json(State(date_from=dates[0], date_to=dates[1])),
                 },
             ).one()
             self._enqueue(

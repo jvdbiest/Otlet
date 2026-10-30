@@ -41,6 +41,8 @@ function Reporter({ workspaceId }: { workspaceId: string }) {
   const recent = useQuery(conversationsQuery(workspaceId));
   const [question, setQuestion] = useState("");
   const [read, setRead] = useState(false);
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
   return (
     <>
       <h1>{t("reporter.title")}</h1>
@@ -49,7 +51,7 @@ function Reporter({ workspaceId }: { workspaceId: string }) {
         className={styles.form}
         onSubmit={(event) => {
           event.preventDefault();
-          start.mutate({ question: question.trim(), read }, {
+          start.mutate({ question: question.trim(), read, date_from: from || null, date_to: to || null }, {
             onSuccess: (conversation) => {
               void navigate({ to: "/reporter/$conversationId", params: { conversationId: conversation.id } });
             },
@@ -67,6 +69,31 @@ function Reporter({ workspaceId }: { workspaceId: string }) {
           />
         </label>
         <p className={styles.help}>{t("reporter.examples")}</p>
+        <p className={styles.row}>
+          <label className={styles.field}>
+            <span>{t("reporter.dateFrom")}</span>
+            <input
+              type="date"
+              value={from}
+              max={to || undefined}
+              onChange={(event) => {
+                setFrom(event.target.value);
+              }}
+            />
+          </label>
+          <label className={styles.field}>
+            <span>{t("reporter.dateTo")}</span>
+            <input
+              type="date"
+              value={to}
+              min={from || undefined}
+              onChange={(event) => {
+                setTo(event.target.value);
+              }}
+            />
+          </label>
+        </p>
+        <p className={styles.help}>{t("reporter.datesHelp")}</p>
         <ReadFirst read={read} onChange={setRead} />
         <p className={styles.row}>
           <button type="submit" className={styles.primary} disabled={question.trim() === "" || start.isPending}>

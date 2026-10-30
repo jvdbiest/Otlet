@@ -1270,6 +1270,10 @@
       "exclure": "Retrait"
     },
     "excluded": "sans : {terms}",
+    "dates": "du {from} au {to}",
+    "dateFrom": "Du",
+    "dateTo": "Au",
+    "datesHelp": "Facultatif. Sans date, la question porte sur les 30 derniers jours, ou sur la période qu'elle nomme.",
     "language": "en {language, select, fr {français} nl {néerlandais} en {anglais} other {{language}}} seulement",
     "period": "{count, plural, one {aujourd'hui seulement} other {# derniers jours seulement}}",
     "set": "{count, plural, =0 {aucun article} one {# article} other {# articles}}",

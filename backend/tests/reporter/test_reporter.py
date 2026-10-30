@@ -478,3 +478,38 @@ def test_a_subject_taken_out_stays_out_without_a_model(
     answer(worker, context, conversation.id, again.id)
     found = api.get(context, conversation.id)
     assert found is not None and found.turns[2].state.excluded == ("cote",)
+
+
+def test_dates_chosen_or_named_bound_the_set_and_trie_les_sorts_without_translation(
+    reporter: tuple[Reporter, Reporter, WorkspaceContext, sa.Engine],
+) -> None:
+    api, worker, context, engine = reporter
+    collect(engine, context, "rtbf", "fr", [("Tempête Austen : ce matin", "Encore du vent.", 0)])
+    today = NOW.date()
+    # On the calendar, with the first question.
+    chosen = api.start(context, "Les articles sur la tempête Austen", dates=(today, today))
+    answer(worker, context, chosen.id, chosen.turns[0].id)
+    found = api.get(context, chosen.id)
+    assert found is not None
+    assert [c.title for c in found.turns[0].candidates] == ["Tempête Austen : ce matin"]
+    assert found.turns[0].state.date_from == today
+    # Named in a question, on a set found without dates.
+    conversation = api.start(context, "Les articles sur la tempête Austen")
+    answer(worker, context, conversation.id, conversation.turns[0].id)
+    named = f"{today.day:02d}/{today.month:02d}/{today.year}"
+    turn = api.ask(context, conversation.id, f"Uniquement les articles du {named}")
+    answer(worker, context, conversation.id, turn.id)
+    found = api.get(context, conversation.id)
+    assert found is not None
+    assert found.turns[1].operation is Operation.RESTREINDRE
+    assert [c.title for c in found.turns[1].candidates] == ["Tempête Austen : ce matin"]
+    assert [w.concept.name for w in found.turns[1].concepts] == ["Austen"]
+    # « Trie-les » is a sort by its words: the model is only asked to sort.
+    model = FakeModel()
+    model.fail = True
+    sorting = Reporter(PostgresReporterStore(engine), PostgresAssistantStore(engine), model)
+    sort = api.ask(context, conversation.id, "Trie-les")
+    answer(sorting, context, conversation.id, sort.id)
+    found = api.get(context, conversation.id)
+    assert found is not None and found.turns[2].operation is Operation.TRIER
+    assert model.asked and not any("Dernière question : " in asked for asked in model.asked)

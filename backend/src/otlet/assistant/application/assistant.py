@@ -60,7 +60,12 @@ class AssistantStore(Protocol):
     def delete_entry(self, workspace_id: UUID, entry_id: UUID) -> bool: ...
 
     def candidates(
-        self, workspace_id: UUID, concepts: list[Widened], since: datetime | None, limit: int
+        self,
+        workspace_id: UUID,
+        concepts: list[Widened],
+        since: datetime | None,
+        limit: int,
+        until: datetime | None = None,
     ) -> list[Candidate]: ...
 
     def near(
@@ -70,6 +75,7 @@ class AssistantStore(Protocol):
         since: datetime | None,
         limit: int,
         floor: float,
+        until: datetime | None = None,
     ) -> list[Candidate]:
         """The items closest in meaning (ADR-0045), at least `floor` close, the closest first."""
         ...

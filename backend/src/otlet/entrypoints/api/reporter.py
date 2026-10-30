@@ -4,7 +4,7 @@ sets of items and lines of fact cited by source. The API records a question; the
 answers it (DR6), and the interface reads the conversation again until the turn is done."""
 
 from collections.abc import Callable
-from datetime import datetime
+from datetime import date, datetime
 from typing import Annotated, Literal
 from uuid import UUID
 
@@ -30,6 +30,9 @@ class QuestionBody(BaseModel):
     question: str = Field(max_length=1000)
     # « Lire avant de répondre »: the set is read by the model before the answer is shown.
     read: bool = False
+    # Dates chosen on the calendar, with the first question; both included.
+    date_from: date | None = None
+    date_to: date | None = None
 
 
 class TermsBody(BaseModel):
@@ -116,6 +119,8 @@ class TurnView(BaseModel):
         Literal["chercher", "restreindre", "élargir", "trier", "fait", "agir", "exclure"] | None
     )
     excluded: list[str]
+    date_from: date | None
+    date_to: date | None
     language: str | None
     days: int | None  # a period the question named, in days
     concepts: list[ConceptView]
@@ -141,6 +146,8 @@ class TurnView(BaseModel):
             status=turn.status,
             operation=None if turn.operation is None else turn.operation.value,
             excluded=list(turn.state.excluded),
+            date_from=turn.state.date_from,
+            date_to=turn.state.date_to,
             language=turn.state.language,
             days=turn.state.days,
             concepts=[
@@ -279,7 +286,9 @@ def build_router(
     def start(body: QuestionBody, context: Context) -> ConversationView:
         """Starts a conversation with its first question; the worker answers it."""
         try:
-            return ConversationView.of(reporter.start(context, body.question, body.read))
+            return ConversationView.of(
+                reporter.start(context, body.question, body.read, (body.date_from, body.date_to))
+            )
         except ReporterError as error:
             raise _refused(error) from error
 

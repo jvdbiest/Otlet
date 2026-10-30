@@ -30,6 +30,11 @@ const CHANGES_SET: readonly string[] = ["chercher", "restreindre", "élargir"];
 // From this many items, the main themes are shown at once (Joël, 2026-10-29).
 const THEMES_OPEN = 100;
 
+/** « 2026-10-29 » as the reader writes it. */
+function formatDay(day: string): string {
+  return day.split("-").reverse().join("/");
+}
+
 /** A conversation of the Reporter (ADR-0044): each question and its answer, a set of items or
  * lines of fact cited by source, then the next question. */
 export function ConversationPage({ conversationId }: { conversationId: string }) {
@@ -177,7 +182,9 @@ function Turn({
           <p className={styles.meta}>
             {turn.operation !== null && t(`reporter.operation.${turn.operation}`)}
             {turn.language !== null && ` · ${t("reporter.language", { language: turn.language })}`}
-            {turn.days !== null && ` · ${t("reporter.period", { count: turn.days })}`}
+            {turn.date_from === null && turn.date_to === null && turn.days !== null && ` · ${t("reporter.period", { count: turn.days })}`}
+            {(turn.date_from !== null || turn.date_to !== null) &&
+              ` · ${t("reporter.dates", { from: turn.date_from === null ? "…" : formatDay(turn.date_from), to: turn.date_to === null ? "…" : formatDay(turn.date_to) })}`}
             {turn.excluded.length > 0 && ` · ${t("reporter.excluded", { terms: turn.excluded.join(", ") })}`}
             {turn.model !== null && ` · ${t("reporter.model", { model: turn.model })}`}
           </p>

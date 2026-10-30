@@ -62,6 +62,7 @@ from otlet.reporter.domain.questions import (
     State,
     Translated,
     about_the_set,
+    asks_sort,
     changes_set,
     check_operation,
     excluded_terms,
@@ -175,8 +176,10 @@ class ReporterStore(Protocol):
         conversation_id: UUID,
         question: str,
         read: bool = False,
+        dates: tuple[date | None, date | None] = (None, None),
     ) -> Turn:
-        """Records the question, pending, and enqueues ANSWER_TURN, in one transaction; `read`
+        """Records the question, pending, and enqueues ANSWER_TURN, in one transaction; `dates`,
+        those chosen with the question, wait in its state; `read`
         asks for its set to be read once found."""
         ...
 
@@ -211,6 +214,10 @@ def _checked_question(question: str) -> str:
     return question
 
 
+def _midnight(day: date) -> datetime:
+    return datetime(day.year, day.month, day.day, tzinfo=UTC)
+
+
 class Reporter:
     def __init__(
         self,
@@ -230,13 +237,19 @@ class Reporter:
 
     # The API --------------------------------------------------------------------------------
 
-    def start(self, context: WorkspaceContext, question: str, read: bool = False) -> Conversation:
+    def start(
+        self,
+        context: WorkspaceContext,
+        question: str,
+        read: bool = False,
+        dates: tuple[date | None, date | None] = (None, None),
+    ) -> Conversation:
         question = _checked_question(question)
         conversation = self._store.start_conversation(
             context.workspace_id, context.user_id, question[:200], DAYS
         )
         turn = self._store.add_turn(
-            context.workspace_id, context.user_id, conversation.id, question, read
+            context.workspace_id, context.user_id, conversation.id, question, read, dates
         )
         return replace(conversation, turns=[turn])
 
@@ -371,7 +384,8 @@ class Reporter:
         # A thinking model may spend its whole answer reasoning (« out_of_room »): asked again,
         # the same question was answered in 33 s (Joël, 2026-10-25). Once more, then no more.
         excluded = excluded_terms(turn.question) if state.concepts else ()
-        for _ in range(0 if excluded else 2):
+        sort = bool(state.concepts) and asks_sort(turn.question)
+        for _ in range(0 if excluded or sort else 2):
             raw = self._ask(
                 user_id,
                 OPERATION_SYSTEM,
@@ -386,8 +400,18 @@ class Reporter:
         today = self._now().date()
         if excluded:
             translated = Translated(Operation.EXCLURE, (), None, None, excluded)
+        elif sort:
+            translated = Translated(Operation.TRIER, (), None)
         elif raw is not None:
             translated = guarded(turn.question, read_operation(raw), today)
+            if turn.state.date_from or turn.state.date_to:
+                # The dates chosen on the calendar, with the first question.
+                translated = replace(
+                    translated,
+                    days=None,
+                    date_from=turn.state.date_from,
+                    date_to=turn.state.date_to,
+                )
             if state.concepts and only_a_period(turn.question):
                 translated = replace(translated, operation=Operation.RESTREINDRE, concepts=())
             elif about_the_set(turn.question, translated, state):
@@ -427,7 +451,13 @@ class Reporter:
         new_state = (
             next_state(state, translated)
             if changes_set(translated.operation) or state.concepts
-            else State(translated.concepts[:3], None, translated.days)
+            else State(
+                translated.concepts[:3],
+                None,
+                translated.days,
+                date_from=translated.date_from,
+                date_to=translated.date_to,
+            )
         )
         if new_state.concepts and (
             translated.operation is Operation.CHERCHER or not state.concepts
@@ -538,17 +568,21 @@ class Reporter:
         days = state.days or conversation.days
         now = self._now()
         since = None if days is None else now - timedelta(days=days)
+        until = None
         if days == 1:
             # « Aujourd'hui » is today, not the last 24 hours.
             since = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        if state.date_from is not None or state.date_to is not None:
+            since = None if state.date_from is None else _midnight(state.date_from)
+            until = None if state.date_to is None else _midnight(state.date_to) + timedelta(days=1)
         widened = widen(list(state.concepts), glossary)
         counts = self._search.term_counts(
             workspace_id, [term for w in widened for term in w.all_terms], since
         )
         widened = too_general(widened, counts, self._search.total_items(workspace_id, since))
-        found = self._search.candidates(workspace_id, widened, since, SET_MAX)
+        found = self._search.candidates(workspace_id, widened, since, SET_MAX, until)
         if state.meaning:
-            found = self._with_meaning(workspace_id, state, widened, since, found)
+            found = self._with_meaning(workspace_id, state, widened, since, until, found)
         found = [
             c
             for c in found
@@ -576,17 +610,20 @@ class Reporter:
         state: State,
         widened: list[Widened],
         since: datetime | None,
+        until: datetime | None,
         found: list[Candidate],
     ) -> list[Candidate]:
         """The items of the words and the items closest to the question, ranked together by
         reciprocal rank (ADR-0045). An item found by the meaning must hold the concepts that
         restricted the search since (« uniquement en Belgique »)."""
-        near = self._search.near(workspace_id, state.meaning, since, NEAR_MAX, NEAR_FLOOR)
+        near = self._search.near(workspace_id, state.meaning, since, NEAR_MAX, NEAR_FLOOR, until)
         restrictions = widened[state.subject :]
         if near and restrictions:
             allowed = {
                 c.id
-                for c in self._search.candidates(workspace_id, restrictions, since, RESTRICT_MAX)
+                for c in self._search.candidates(
+                    workspace_id, restrictions, since, RESTRICT_MAX, until
+                )
             }
             near = [c for c in near if c.id in allowed]
         return fused([found, near], lambda c: c.id, SET_MAX)
@@ -614,7 +651,12 @@ class Reporter:
         second = None
         if first.coverage is not Coverage.OUI and first.others:
             state = State(
-                first.others, turn.state.language, turn.state.days, excluded=turn.state.excluded
+                first.others,
+                turn.state.language,
+                turn.state.days,
+                excluded=turn.state.excluded,
+                date_from=turn.state.date_from,
+                date_to=turn.state.date_to,
             )
             _, _, found = self._search_set(workspace_id, conversation, state)
             seen = {r.item_id for r in first_items}

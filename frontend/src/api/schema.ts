@@ -3509,6 +3509,10 @@ export interface components {
         };
         /** QuestionBody */
         QuestionBody: {
+            /** Date From */
+            date_from?: string | null;
+            /** Date To */
+            date_to?: string | null;
             /** Question */
             question: string;
             /**
@@ -3963,6 +3967,10 @@ export interface components {
             concepts: components["schemas"]["ConceptView"][];
             /** Created At */
             created_at: string | null;
+            /** Date From */
+            date_from: string | null;
+            /** Date To */
+            date_to: string | null;
             /** Days */
             days: number | null;
             /** Error */

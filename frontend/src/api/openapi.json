@@ -4050,6 +4050,30 @@
       },
       "QuestionBody": {
         "properties": {
+          "date_from": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date From"
+          },
+          "date_to": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date To"
+          },
           "question": {
             "maxLength": 1000,
             "title": "Question",
@@ -5420,6 +5444,30 @@
             ],
             "title": "Created At"
           },
+          "date_from": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date From"
+          },
+          "date_to": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date To"
+          },
           "days": {
             "anyOf": [
               {
@@ -5567,6 +5615,8 @@
           "status",
           "operation",
           "excluded",
+          "date_from",
+          "date_to",
           "language",
           "days",
           "concepts",

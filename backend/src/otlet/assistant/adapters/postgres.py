@@ -165,6 +165,7 @@ class PostgresAssistantStore:
         concepts: list[Widened],
         since: datetime | None,
         limit: int,
+        until: datetime | None = None,
     ) -> list[Candidate]:
         """The items holding a term of every concept, the best ranked first: no model. A term
         of several words holds when the item has all its words, in any order: as an exact
@@ -201,9 +202,11 @@ class PostgresAssistantStore:
                     f" WHERE {here('i')}"
                     " AND (CAST(:since AS timestamptz) IS NULL"
                     " OR coalesce(i.published_at, i.collected_at) >= :since)"
+                    " AND (CAST(:until AS timestamptz) IS NULL"
+                    " OR coalesce(i.published_at, i.collected_at) < :until)"
                     " ORDER BY rank DESC, dated DESC, i.id LIMIT :limit"
                 ),
-                {**queries, "chars": SUMMARY_CHARS, "since": since, "limit": limit},
+                {**queries, "chars": SUMMARY_CHARS, "since": since, "until": until, "limit": limit},
             ).all()
         return [
             Candidate(
@@ -225,6 +228,7 @@ class PostgresAssistantStore:
         since: datetime | None,
         limit: int,
         floor: float,
+        until: datetime | None = None,
     ) -> list[Candidate]:
         """The items closest in meaning (ADR-0045). The index is read on, past the items of the
         other workspaces that row-level security hides, until `limit` are found (iterative scan
@@ -243,6 +247,8 @@ class PostgresAssistantStore:
                     " AND i.meaning IS NOT NULL AND i.meaning_model = :model"
                     " AND (CAST(:since AS timestamptz) IS NULL"
                     " OR coalesce(i.published_at, i.collected_at) >= :since)"
+                    " AND (CAST(:until AS timestamptz) IS NULL"
+                    " OR coalesce(i.published_at, i.collected_at) < :until)"
                     " ORDER BY i.meaning <=> CAST(:meaning AS vector) LIMIT :limit"
                 ),
                 {
@@ -250,6 +256,7 @@ class PostgresAssistantStore:
                     "meaning": literal(list(meaning)),
                     "model": MODEL,
                     "since": since,
+                    "until": until,
                     "limit": limit,
                 },
             ).all()

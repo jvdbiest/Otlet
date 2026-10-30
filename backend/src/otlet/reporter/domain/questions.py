@@ -52,6 +52,9 @@ class State:
     subject: int = 0
     # What the author took out of the set (« En supprimant ce qui concerne Apple »).
     excluded: tuple[str, ...] = ()
+    # Dates the author named or chose, both included; they replace `days`.
+    date_from: date | None = None
+    date_to: date | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -61,6 +64,8 @@ class Translated:
     language: str | None
     days: int | None = None
     excluded: tuple[str, ...] = ()
+    date_from: date | None = None
+    date_to: date | None = None
 
 
 OPERATION_SYSTEM = (
@@ -192,6 +197,85 @@ def asked_period(question: str, today: date | None = None) -> int | None:
     return (today - date(year, number, 1)).days + 1
 
 
+# Dates named in a question (Joël, 2026-10-30): « uniquement les articles du 29 et du 30 octobre »
+# searched the phrase « 29 et 30 octobre », and found nothing.
+_MONTH_NUMBERS = {
+    name: number
+    for names in (
+        "janvier fevrier mars avril mai juin juillet aout septembre octobre novembre decembre",
+        "januari februari maart april mei juni juli augustus september oktober november december",
+        "january february march april may june july august september october november december",
+    )
+    for number, name in enumerate(names.split(), start=1)
+}
+_MONTH = "(" + "|".join(sorted(_MONTH_NUMBERS, key=len, reverse=True)) + r")\b"
+_DAY = r"(\d{1,2})(?:er)?"
+_JOIN = r"(?:et|au|a|tot|en|to|and|-)(?: du| le| de)?"
+_YEAR = r"(?: (\d{4}))?"
+DATE_RANGE = re.compile(
+    rf"(?<![\d/]){_DAY}(?: \d{{1,2}})*(?: {_MONTH})? {_JOIN} {_DAY} {_MONTH}{_YEAR}(?![\d/])"
+)
+DATE_SINCE = re.compile(rf"(?:depuis le|a partir du|sinds|since) {_DAY} {_MONTH}{_YEAR}(?![\d/])")
+DATE_ONE = re.compile(rf"(?<![\d/]){_DAY} {_MONTH}{_YEAR}(?![\d/])")
+NUMERIC = r"(\d{1,2})/(\d{1,2})(?:/(\d{2,4}))?"
+NUMERIC_RANGE = re.compile(rf"(?<![\d/]){NUMERIC} {_JOIN} {NUMERIC}(?![\d/])")
+NUMERIC_ONE = re.compile(rf"(?<![\d/]){NUMERIC}(?![\d/])")
+
+
+def _day(day: str, month: int, year: str | None, today: date) -> date | None:
+    """A date of the question; without a year, the last one not after today."""
+    try:
+        if year:
+            return date(int(year) + (2000 if len(year) == 2 else 0), month, int(day))
+        found = date(today.year, month, int(day))
+        return found if found <= today else date(today.year - 1, month, int(day))
+    except ValueError:
+        return None
+
+
+def _date_matches(asked: str, today: date) -> tuple[date | None, date | None, str]:
+    """The dates a question names, and the question without them."""
+    numeric = NUMERIC_RANGE.search(asked)
+    if numeric:
+        d1, m1, y1, d2, m2, y2 = numeric.groups()
+        first, last = _day(d1, int(m1), y1 or y2, today), _day(d2, int(m2), y2, today)
+        return first, last, asked.replace(numeric.group(0), " ")
+    found = DATE_RANGE.search(asked)
+    if found:
+        d1, m1, d2, m2, year = found.groups()
+        last = _day(d2, _MONTH_NUMBERS[m2], year, today)
+        first = _day(d1, _MONTH_NUMBERS[m1 or m2], year, today)
+        return first, last, asked.replace(found.group(0), " ")
+    found = DATE_SINCE.search(asked)
+    if found:
+        day, month, year = found.groups()
+        since = _day(day, _MONTH_NUMBERS[month], year, today)
+        return since, today, asked.replace(found.group(0), " ")
+    found = DATE_ONE.search(asked)
+    if found:
+        day, month, year = found.groups()
+        one = _day(day, _MONTH_NUMBERS[month], year, today)
+        return one, one, asked.replace(found.group(0), " ")
+    numeric = NUMERIC_ONE.search(asked)
+    if numeric:
+        day, month, year = numeric.groups()
+        one = _day(day, int(month), year, today)
+        return one, one, asked.replace(numeric.group(0), " ")
+    return None, None, asked
+
+
+def asked_dates(question: str, today: date | None = None) -> tuple[date, date] | None:
+    """The first and last day a question names, in order; None when it names no date."""
+    first, last, _ = _date_matches(_asked(question), today or date.today())
+    if first is None or last is None:
+        return None
+    return (first, last) if first <= last else (last, first)
+
+
+def _without_dates_named(asked: str) -> str:
+    return _date_matches(asked, date.today())[2]
+
+
 PERIOD_TERMS = {
     "jour",
     "jours",
@@ -251,11 +335,14 @@ def _without_dates(concept: Concept) -> Concept:
     return Concept(concept.name, terms) if terms else concept
 
 
+_DATE_LINKS = {"et", "en", "and", "au", "du", "le", "de", "to", "tot"}
+
+
 def _of_period(concept: Concept) -> bool:
     """A concept whose terms are only the words of a period: « semaine, week », « octobre
     2025 », or a concept « date » of « aujourd'hui, vandaag, today »."""
     return all(
-        w in PERIOD_TERMS or w in MONTHS or w.isdigit()
+        w in PERIOD_TERMS or w in MONTHS or w in OTHER_MONTHS or w in _DATE_LINKS or w.isdigit()
         for t in concept.terms or (concept.name,)
         for w in re.findall(r"[\w'-]+", folded(t))
     )
@@ -329,7 +416,7 @@ PRONOUN_SUFFIX = re.compile(r"(-t)?-(il|elle|ils|elles|on)$")
 def _named(question: str) -> list[str]:
     """The words of a question that name something: neither a question word, a period nor a
     language, nor a word shorter than five letters; folded."""
-    asked = _asked(question)
+    asked = _without_dates_named(_asked(question))
     for words_of_period, _ in PERIOD_WORDS:
         asked = asked.replace(f" {words_of_period} ", " ")
     asked = MONTH_PERIOD.sub(" ", asked)
@@ -773,7 +860,7 @@ def guarded(
       week », which found every week-end of the Veille);
     - a concept the question names by its name searches that name first: « jeux vidéo » came
       with « console, PC, mobile » and not « jeux vidéo » itself (Joël, 2026-10-25)."""
-    asked = _asked(question)
+    asked = _without_dates_named(_asked(question))
     for words_of_period, _ in PERIOD_WORDS:
         asked = asked.replace(f" {words_of_period} ", " ")
     asked = MONTH_PERIOD.sub(" ", asked)
@@ -859,10 +946,20 @@ def guarded(
         Concept(c.name, _clean([_numbered_phrase(t) for t in c.terms], PLACE_TERMS_MAX))
         for c in kept_concepts or fallback
     )
-    kept = replace(translated, concepts=with_quoted(question, numbered_names), days=period)
+    dates = asked_dates(question, today)
+    first, last = dates if dates else (None, None)
+    if dates:
+        period = None
+    kept = replace(
+        translated,
+        concepts=with_quoted(question, numbered_names),
+        days=period,
+        date_from=first,
+        date_to=last,
+    )
     for code, language_names in LANGUAGE_WORDS.items():
         if words & set(language_names):
-            return Translated(Operation.RESTREINDRE, (), code, period)
+            return Translated(Operation.RESTREINDRE, (), code, period, (), first, last)
     return kept
 
 
@@ -874,7 +971,13 @@ def next_state(state: State, translated: Translated) -> State:
             # A new subject: a new set, in every language, over the period it names.
             # Three at most: a subject, a place, an aspect (« la situation financière des
             # hôpitaux en Flandre »).
-            return State(proposed[:3], None, translated.days)
+            return State(
+                proposed[:3],
+                None,
+                translated.days,
+                date_from=translated.date_from,
+                date_to=translated.date_to,
+            )
         case Operation.RESTREINDRE:
             # A place the set already holds restricts nothing more (« Seulement Bruxelles
             # Capitale » after the budget of the Région de Bruxelles-Capitale).
@@ -887,6 +990,9 @@ def next_state(state: State, translated: Translated) -> State:
                 concepts=concepts,
                 language=translated.language or state.language,
                 days=translated.days or state.days,
+                # The period named last counts: dates, or a number of days.
+                date_from=None if translated.days else translated.date_from or state.date_from,
+                date_to=None if translated.days else translated.date_to or state.date_to,
             )
         case Operation.EXCLURE:
             return replace(state, excluded=(*state.excluded, *translated.excluded))
@@ -907,9 +1013,11 @@ EXCLUDING = re.compile(
     r"|behalve|except|excluding|without) (.+) $"
 )
 EXCLUDED_HEAD = re.compile(
-    r"^(?:tout )?(?:ce qui (?:concerne|parle de|touche|porte sur) |les articles (?:sur|de) "
+    r"^(?:tout )?(?:ce qui (?:concerne|parle de|touche|porte sur) |articles? (?:sur |de |d')?"
     r"|les |la |le |l'|de |du |des |d'|het |the )+"
 )
+# « Trie-les » was once read as a restriction, and nothing was sorted (Joël, 2026-10-30).
+ASKS_SORT = re.compile(r"^ (?:et )?(?:trie[rz]?(?:-les| les)?|sorteer|sort them|sort) $")
 
 
 def excluded_terms(question: str) -> tuple[str, ...]:
@@ -931,10 +1039,16 @@ def holds_excluded(text: str, excluded: tuple[str, ...]) -> bool:
     return any(f" {term} " in written or f" {term}s " in written for term in excluded)
 
 
+def asks_sort(question: str) -> bool:
+    """« Trie-les »: its words say the operation, without a model."""
+    return ASKS_SORT.match(_asked(question)) is not None
+
+
 def only_a_period(question: str) -> bool:
     """A question that names a period and nothing else: « Les articles d'aujourd'hui ? » keeps
     the subject of the conversation, over that period."""
-    return asked_period(question) is not None and not _named(question)
+    named = asked_period(question) is not None or asked_dates(question) is not None
+    return named and not _named(question)
 
 
 def changes_set(operation: Operation) -> bool:

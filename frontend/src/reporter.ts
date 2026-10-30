@@ -10,7 +10,9 @@ export type TurnCandidate = TurnView["candidates"][number];
 export type FactView = components["schemas"]["FactView"];
 export type ReadingView = components["schemas"]["ReadingView"];
 /** A question, read by the model before its answer is shown when `read` (« Lire avant de répondre »). */
-export type Question = string | { question: string; read: boolean };
+export type Question =
+  | string
+  | { question: string; read: boolean; date_from?: string | null; date_to?: string | null };
 
 const body = (input: Question) => (typeof input === "string" ? { question: input, read: false } : input);
 export type ConceptBody = components["schemas"]["ConceptBody"];

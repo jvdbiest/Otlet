@@ -248,7 +248,8 @@ QUESTION_WORDS = set(
     recents recent recente savoir plus est-ce qu'est-ce c'est sujet sujets concerne concernent
     lesquels lesquelles seulement aussi encore toutes tous sortis sorti sortent annonce
     annonces disent parlant parler uniquement elements element trouves trouvees concernes
-    concernees moins""".split()
+    concernees moins avait avaient etait etaient aurait auraient sera seront aura auront
+    peut peuvent doit doivent""".split()
 )
 
 # Places of the Veille (Belgian press): a place the question does not name is no term of its
@@ -323,6 +324,23 @@ def _named(question: str) -> list[str]:
         if word not in language and word not in MONTHS:
             out.append(word)
     return out
+
+
+def proper_names(question: str) -> list[str]:
+    """The names of the question: runs of words written with a capital, not the first word of
+    the question, or a word in capitals (« Ahold Delhaize », « Novaïa Gazeta », « CPAS »)."""
+    words = re.findall(r"[\w'-]+", question)
+    runs: list[list[str]] = []
+    for n, word in enumerate(words):
+        bare = word.split("'")[-1]
+        capital = bare[:1].isupper() and (n > 0 or (len(bare) > 1 and bare.isupper()))
+        if capital and folded(bare) not in QUESTION_WORDS:
+            if runs and runs[-1][-1] is words[n - 1]:
+                runs[-1].append(word)
+            else:
+                runs.append([word])
+    names = [" ".join(w.split("'")[-1] if i == 0 else w for i, w in enumerate(run)) for run in runs]
+    return [n for n in names if _place_words(n) != {folded(n)} and len(n) > 1]
 
 
 def unsearched(question: str, concepts: list[Concept]) -> list[str]:
@@ -749,6 +767,12 @@ def guarded(
             return Concept(concept.name, _clean([concept.name, *concept.terms], PLACE_TERMS_MAX))
         return concept
 
+    if translated.operation is Operation.FAIT and _asked(question).split()[:1] in (
+        ["pourquoi"],
+        ["comment"],
+    ):
+        # A fact is a number or a date; « Pourquoi … ? » asks for the articles that say why.
+        translated = replace(translated, operation=Operation.CHERCHER)
     proposed = tuple(
         _without_dates(placed_part)
         for c in map(_seen, translated.concepts)
@@ -763,13 +787,32 @@ def guarded(
     kept_concepts = tuple(c for c in map(anchored, proposed) if c is not None)
     dropped = [c for c in proposed if anchored(c) is None and not _of_period(c)]
     missing = unsearched(question, list(kept_concepts))
-    if dropped and missing and kept_concepts:
+    # A name of the question no term searches is searched, whatever the operation: a name is
+    # never what a fact counts (« Pourquoi Novaïa Gazeta ferme-t-elle ? » searched « fermeture »
+    # alone, « Que rachète Ahold Delhaize ? » « rachat » alone, bench of 2026-10-30).
+    # A number left out (« VI » of « GTA VI ») is no name; a name between quotes is searched
+    # as written (with_quoted).
+    left_out = {folded(w) for w in missing if folded(w) not in ROMAN and not w.isdigit()}
+    quoted_words = {folded(w) for q in quoted(question) for w in q.split()}
+    names = [
+        n
+        for n in proper_names(question)
+        if {folded(w) for w in n.split()} & left_out
+        and not {folded(w) for w in n.split()} <= quoted_words
+    ]
+    if names and translated.operation is not Operation.RESTREINDRE or (names and not kept_concepts):
+        # Added to the model's subject, or to its first concept when the question named none.
+        subject = kept_concepts or tuple(c for c in proposed[:1] if not _of_period(c))
+        kept_concepts = (*subject, *(Concept(n, (n,)) for n in names[:2]))[:3]
+        missing = unsearched(question, list(kept_concepts))
+    if dropped and missing and kept_concepts and not names:
         # The model named the subject otherwise (« éducation » for « enseignement »): its
         # concept comes back, led by the word of the question (Joël, 2026-10-29).
         word = missing[0]
         kept_concepts = (*kept_concepts, Concept(word, _clean([word, *dropped[0].terms])))
     elif (
-        (words_left := [w for w in missing if folded(w) not in ROMAN and not w.isdigit()])
+        not names
+        and (words_left := [w for w in missing if folded(w) not in ROMAN and not w.isdigit()])
         and len(kept_concepts) == 1
         and translated.operation is Operation.CHERCHER
         # A fact names what it counts (« Combien de blessés ? »): not a subject to restrict by.
@@ -787,8 +830,8 @@ def guarded(
         for c in kept_concepts or fallback
     )
     kept = replace(translated, concepts=with_quoted(question, numbered_names), days=period)
-    for code, names in LANGUAGE_WORDS.items():
-        if words & set(names):
+    for code, language_names in LANGUAGE_WORDS.items():
+        if words & set(language_names):
             return Translated(Operation.RESTREINDRE, (), code, period)
     return kept
 

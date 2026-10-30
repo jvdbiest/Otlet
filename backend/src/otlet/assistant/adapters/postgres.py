@@ -10,7 +10,7 @@ from uuid import UUID, uuid4
 import sqlalchemy as sa
 
 from otlet.assistant.application.assistant import Candidate, StoredEntry
-from otlet.assistant.application.dossiers import QUALIFY_DOSSIER, Dossier
+from otlet.assistant.application.dossiers import QUALIFY_DOSSIER, Dossier, RunningDossier
 from otlet.assistant.domain.qualify import PROMPT_VERSION, Judged, Verdict
 from otlet.assistant.domain.terms import Concept, GlossaryEntry, Widened, websearch
 from otlet.jobs.application.registry import Enqueue, no_queue
@@ -364,6 +364,27 @@ class PostgresAssistantStore:
                 {"id": dossier_id},
             ).scalar_one()
         return [Concept(c["name"], tuple(c["terms"])) for c in requested]
+
+    def is_over(self, workspace_id: UUID, dossier_id: UUID) -> bool:
+        """Whether a dossier is done, or cancelled: what a call in progress looks at."""
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            status = connection.execute(
+                sa.text(f"SELECT status FROM assistant_dossiers WHERE id = :id AND {here()}"),
+                {"id": dossier_id},
+            ).scalar()
+        return status is None or status == "done"
+
+    def running_dossiers(self, workspace_id: UUID, user_id: UUID) -> list[RunningDossier]:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            rows = connection.execute(
+                sa.text(
+                    "SELECT id, subject, created_at FROM assistant_dossiers"
+                    f" WHERE status <> 'done' AND created_by = :user AND {here()}"
+                    " ORDER BY created_at"
+                ),
+                {"user": user_id},
+            ).all()
+        return [RunningDossier(r.id, r.subject, r.created_at) for r in rows]
 
     def save_dossier(self, workspace_id: UUID, dossier: Dossier, finished: bool) -> None:
         verdicts = {

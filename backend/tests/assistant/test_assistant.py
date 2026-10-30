@@ -289,3 +289,24 @@ def test_a_dossier_adds_the_items_closest_to_its_subject(
     assert "Brusselse begroting: besparingen op bibliotheken" not in titles[0]
     assert "Brusselse begroting: besparingen op bibliotheken" in titles[1]
     assert titles[0] < titles[1]
+
+
+def test_a_cancelled_dossier_keeps_what_it_found(
+    assistant: tuple[Assistant, WorkspaceContext, sa.Engine],
+) -> None:
+    from otlet.assistant.application.dossiers import Dossiers
+
+    _, context, engine = assistant
+    store = PostgresAssistantStore(engine, lambda *_, **__: 0)
+    dossiers = Dossiers(store, store, FakeModel())
+    started = dossiers.start(
+        context, "Budget", days=None, concepts=[Concept("budget", ("budget",))]
+    )
+    assert [d.id for d in dossiers.running(context)] == [started.id]
+    cancelled = dossiers.cancel(context, started.id)
+    assert cancelled is not None and (cancelled.status, cancelled.error) == ("done", "cancelled")
+    assert dossiers.running(context) == []
+    # The job that was waiting finds it over.
+    dossiers.run(context.workspace_id, context.user_id, started.id)
+    found = dossiers.get(context, started.id)
+    assert found is not None and found.error == "cancelled" and found.model is None

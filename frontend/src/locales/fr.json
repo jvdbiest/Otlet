@@ -16,6 +16,11 @@
     "tooManyAttempts": "Trop de tentatives. Réessayez dans {minutes, plural, one {# minute} other {# minutes}}.",
     "failed": "La connexion a échoué. Réessayez."
   },
+  "aiTasks": {
+    "cancel": "Annuler",
+    "count": "Tâche(s) IA en cours : {count}",
+    "cancelAll": "Annuler toute génération en cours"
+  },
   "nav": {
     "label": "Navigation principale",
     "watch": "Veille",
@@ -530,7 +535,8 @@
         "quota": "Quota atteint chez tous les fournisseurs du profil.",
         "unavailable": "Aucun modèle du profil n'a répondu. Pour un modèle local, vérifiez qu'il tourne et que l'administrateur a autorisé son adresse.",
         "blocked": "Les modèles du profil sont bloqués par l'instance.",
-        "out_of_room": "Le modèle a manqué de place : sa réponse a été coupée. Agrandissez la fenêtre de contexte du fournisseur, ou choisissez un modèle plus grand."
+        "out_of_room": "Le modèle a manqué de place : sa réponse a été coupée. Agrandissez la fenêtre de contexte du fournisseur, ou choisissez un modèle plus grand.",
+        "cancelled": "Test annulé."
       },
       "summary": "{answered, plural, =0 {Aucun des {count} modèles n'a répondu.} one {# modèle sur {count} a répondu.} other {# modèles sur {count} ont répondu.}}",
       "repaired": "Sa première réponse ne respectait pas le format demandé : Otlet lui a demandé une correction, qui a réussi (deuxième ligne ci-dessous)."
@@ -1196,6 +1202,7 @@
       "done": "{count} éléments examinés · {kept} retenus · {check} à vérifier · {aside} écartés"
     },
     "model": "trié par {model}",
+    "cancelled": "Dossier annulé : les articles trouvés restent là, sans tri du modèle.",
     "modelError": "Le modèle n'a pas tout trié ({error}) : les éléments non jugés sont « à vérifier ».",
     "nothing": "La Veille ne contient rien sur ces termes. Modifiez les termes, élargissez la période, ou ajoutez une source qui couvre ce sujet.",
     "groups": {
@@ -1291,6 +1298,7 @@
       "left": "{count, plural, one {(# article non lu)} other {(# articles non lus)}}",
       "toBrief": "{count, plural, one {Préparer un brief avec ce fait} other {Préparer un brief avec ces # faits}}"
     },
+    "cancelled": "Question annulée. Vous pouvez en poser une autre.",
     "sorted": "{kept} retenus · {check} à vérifier · {aside} écartés, selon votre modèle",
     "sortFirst": "Plus de {max} articles : demandez d'abord « Trie-les », et le brief ne prendra que ceux qui traitent vraiment le sujet.",
     "toBrief": "{count, plural, one {Préparer un brief avec cet article} other {Préparer un brief avec ces # articles}}",

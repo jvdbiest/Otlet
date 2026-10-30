@@ -1,6 +1,49 @@
 {
   "components": {
     "schemas": {
+      "AiTaskView": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "reporter",
+              "dossier",
+              "draft",
+              "check"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          }
+        },
+        "required": [
+          "kind",
+          "id",
+          "label",
+          "started_at"
+        ],
+        "title": "AiTaskView",
+        "type": "object"
+      },
       "AnswerView": {
         "properties": {
           "dated": {
@@ -889,6 +932,19 @@
           "at"
         ],
         "title": "CallView",
+        "type": "object"
+      },
+      "CancelledView": {
+        "properties": {
+          "cancelled": {
+            "title": "Cancelled",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "cancelled"
+        ],
+        "title": "CancelledView",
         "type": "object"
       },
       "CandidateView": {
@@ -6188,6 +6244,46 @@
         "summary": "Get Check"
       }
     },
+    "/api/ai/checks/{check_id}/cancel": {
+      "post": {
+        "operationId": "cancel_check_api_ai_checks__check_id__cancel_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "check_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Check Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileCheckView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Cancel Check"
+      }
+    },
     "/api/ai/policy": {
       "get": {
         "operationId": "get_policy_api_ai_policy_get",
@@ -6843,6 +6939,91 @@
           }
         },
         "summary": "Get Workspace"
+      }
+    },
+    "/api/workspaces/{workspace_id}/ai-tasks": {
+      "get": {
+        "operationId": "tasks_api_workspaces__workspace_id__ai_tasks_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AiTaskView"
+                  },
+                  "title": "Response Tasks Api Workspaces  Workspace Id  Ai Tasks Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Tasks"
+      }
+    },
+    "/api/workspaces/{workspace_id}/ai-tasks/cancel": {
+      "post": {
+        "description": "Ends all of them; the worker cuts the calls to the models under way.",
+        "operationId": "cancel_all_api_workspaces__workspace_id__ai_tasks_cancel_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancelledView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Cancel All"
       }
     },
     "/api/workspaces/{workspace_id}/articles": {
@@ -7524,6 +7705,56 @@
           }
         },
         "summary": "Get Dossier"
+      }
+    },
+    "/api/workspaces/{workspace_id}/assistant/dossiers/{dossier_id}/cancel": {
+      "post": {
+        "operationId": "cancel_dossier_api_workspaces__workspace_id__assistant_dossiers__dossier_id__cancel_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "dossier_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Dossier Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DossierView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Cancel Dossier"
       }
     },
     "/api/workspaces/{workspace_id}/assistant/find": {
@@ -11002,6 +11233,57 @@
           }
         },
         "summary": "Get"
+      }
+    },
+    "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/cancel": {
+      "post": {
+        "description": "Ends the question being answered; the worker cuts its call to the model.",
+        "operationId": "cancel_api_workspaces__workspace_id__reporter_conversations__conversation_id__cancel_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conversation Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Cancel"
       }
     },
     "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/turns": {

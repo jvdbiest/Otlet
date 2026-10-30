@@ -21,6 +21,6 @@ def qualify_dossier(
     environment: JobEnvironment, workspace_id: str, user_id: str, dossier_id: str
 ) -> None:
     store = PostgresAssistantStore(environment.engine, environment.enqueue)
-    Dossiers(store, store, GatewayModel(gateway(environment)), encode=encode_question).run(
-        UUID(workspace_id), UUID(user_id), UUID(dossier_id)
-    )
+    workspace, dossier = UUID(workspace_id), UUID(dossier_id)
+    model = GatewayModel(gateway(environment), cancelled=lambda: store.is_over(workspace, dossier))
+    Dossiers(store, store, model, encode=encode_question).run(workspace, UUID(user_id), dossier)

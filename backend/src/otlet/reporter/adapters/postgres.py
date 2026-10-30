@@ -14,7 +14,7 @@ from otlet.assistant.domain.terms import Concept, Widened
 from otlet.jobs.application.registry import Enqueue, no_queue
 from otlet.platform.database import workspace_transaction
 from otlet.platform.rls import here
-from otlet.reporter.application.reporter import ANSWER_TURN, Conversation, Turn
+from otlet.reporter.application.reporter import ANSWER_TURN, Conversation, RunningTurn, Turn
 from otlet.reporter.domain.facts import Agreement, Article, Compared, Fact, FactLine
 from otlet.reporter.domain.questions import PROMPT_VERSION, Operation, State
 from otlet.reporter.domain.reading import Answer, Coverage, Reading, Round
@@ -346,6 +346,28 @@ class PostgresReporterStore:
                 turn_id=str(turn_id),
             )
         return _turn(row)
+
+    def is_pending(self, workspace_id: UUID, turn_id: UUID) -> bool:
+        """Whether a question is still being answered: what a call in progress looks at."""
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            status = connection.execute(
+                sa.text(f"SELECT status FROM reporter_turns WHERE id = :id AND {here()}"),
+                {"id": turn_id},
+            ).scalar()
+        return status == "pending"
+
+    def running_turns(self, workspace_id: UUID, user_id: UUID) -> list[RunningTurn]:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            rows = connection.execute(
+                sa.text(
+                    "SELECT t.conversation_id, t.id, t.question, t.created_at FROM reporter_turns t"
+                    " JOIN reporter_conversations c ON c.id = t.conversation_id"
+                    f" WHERE t.status = 'pending' AND c.created_by = :user AND {here('t')}"
+                    " ORDER BY t.created_at"
+                ),
+                {"user": user_id},
+            ).all()
+        return [RunningTurn(r.conversation_id, r.id, r.question, r.created_at) for r in rows]
 
     def save_turn(self, workspace_id: UUID, conversation_id: UUID, turn: Turn) -> None:
         verdicts = {

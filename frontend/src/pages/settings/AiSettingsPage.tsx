@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
+import { AiButton } from "../../layout/AiButton.tsx";
 import {
   budgetQuery,
   installedQuery,
@@ -20,6 +21,7 @@ import {
   useSaveCharter,
   useSavePolicy,
   useSaveProfile,
+  useCancelCheck,
   useStartCheck,
   useClearCalls,
   useSetContextWindow,
@@ -815,6 +817,7 @@ function ModelOutcome({ model }: { model: ModelResult }) {
 function Check() {
   const { t } = useTranslation();
   const start = useStartCheck();
+  const cancel = useCancelCheck();
   const [checkId, setCheckId] = useState<string | null>(null);
   const check = useQuery({ ...checkQuery(checkId ?? ""), enabled: checkId !== null });
   const result = check.data?.result as (ModelResult & { models?: ModelResult[] }) | null | undefined;
@@ -826,10 +829,17 @@ function Check() {
       <h2 id="ai-check">{t("ai.check.title")}</h2>
       <p className={styles.help}>{t("ai.check.help")}</p>
       <p>
-        <button
+        <AiButton
+          running={checkId !== null && check.data?.finished_at == null}
+          cancelling={cancel.isPending}
+          onCancel={() => {
+            if (checkId !== null) {
+              cancel.mutate(checkId);
+            }
+          }}
           type="button"
           className={styles.primary}
-          disabled={start.isPending || (checkId !== null && check.data?.finished_at == null)}
+          disabled={start.isPending}
           onClick={() => {
             start.mutate(undefined, {
               onSuccess: (created) => {
@@ -839,7 +849,7 @@ function Check() {
           }}
         >
           {t("ai.check.start")}
-        </button>
+        </AiButton>
       </p>
       {checkId !== null && check.data?.finished_at == null && (
         <p role="status" className={styles.meta}>

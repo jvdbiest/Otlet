@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import {
   conversationQuery,
   useAsk,
+  useCancelQuestion,
   useReadMore,
   useReadSet,
   useSetTerms,
@@ -15,6 +16,7 @@ import {
   type TurnCandidate,
   type TurnView,
 } from "../../reporter.ts";
+import { AiButton } from "../../layout/AiButton.tsx";
 import { useWorkspaceId } from "../../session.ts";
 import { errorText, formatDate } from "../watch/labels.ts";
 import { styles } from "../watch/styles.ts";
@@ -83,6 +85,7 @@ function Ask({
 }) {
   const { t } = useTranslation();
   const ask = useAsk(workspaceId, conversationId);
+  const cancel = useCancelQuestion(workspaceId, conversationId);
   const [question, setQuestion] = useState("");
   const [read, setRead] = useState(readBefore);
   return (
@@ -90,6 +93,9 @@ function Ask({
       className={styles.form}
       onSubmit={(event) => {
         event.preventDefault();
+        if (busy || question.trim() === "") {
+          return;
+        }
         ask.mutate({ question: question.trim(), read }, {
           onSuccess: () => {
             setQuestion("");
@@ -109,9 +115,18 @@ function Ask({
       </label>
       <ReadFirst read={read} onChange={setRead} />
       <p className={styles.row}>
-        <button type="submit" className={styles.primary} disabled={busy || question.trim() === "" || ask.isPending}>
+        <AiButton
+          running={busy}
+          cancelling={cancel.isPending}
+          onCancel={() => {
+            cancel.mutate();
+          }}
+          type="submit"
+          className={styles.primary}
+          disabled={question.trim() === "" || ask.isPending}
+        >
           {t("reporter.ask")}
-        </button>
+        </AiButton>
       </p>
       {ask.error !== null && (
         <p role="alert" className={styles.error}>
@@ -148,7 +163,8 @@ function Turn({
             : t("reporter.pending")}
         </p>
       )}
-      {turn.status === "failed" && (
+      {turn.status === "failed" && turn.error === "cancelled" && <p className={styles.notice}>{t("reporter.cancelled")}</p>}
+      {turn.status === "failed" && turn.error !== "cancelled" && (
         <p className={styles.warning}>
           {turn.error?.includes("out_of_room") === true
             ? t("reporter.failedRoom")

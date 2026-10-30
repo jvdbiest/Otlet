@@ -18,6 +18,7 @@ The check sits in the network backend of the connection pool, under the HTTP lay
 path opens a connection without it.
 """
 
+import contextlib
 import ipaddress
 import socket
 import ssl
@@ -92,6 +93,41 @@ def system_resolver(host: str, port: int) -> list[str]:
     return [str(info[4][0]) for info in infos]
 
 
+class _CuttableStream(httpcore2.NetworkStream):
+    """A connection another thread can cut: closing a socket does not wake a thread blocked on
+    it, shutting it down does, and the other end sees the connection go."""
+
+    def __init__(self, stream: httpcore2.NetworkStream) -> None:
+        self._stream = stream
+
+    def read(self, max_bytes: int, timeout: float | None = None) -> bytes:
+        return self._stream.read(max_bytes, timeout)
+
+    def write(self, buffer: bytes, timeout: float | None = None) -> None:
+        self._stream.write(buffer, timeout)
+
+    def close(self) -> None:
+        self._stream.close()
+
+    def start_tls(
+        self,
+        ssl_context: ssl.SSLContext,
+        server_hostname: str | None = None,
+        timeout: float | None = None,
+    ) -> httpcore2.NetworkStream:
+        self._stream = self._stream.start_tls(ssl_context, server_hostname, timeout)
+        return self
+
+    def get_extra_info(self, info: str) -> Any:
+        return self._stream.get_extra_info(info)
+
+    def cut(self) -> None:
+        connection = self._stream.get_extra_info("socket")
+        if connection is not None:
+            with contextlib.suppress(OSError):
+                connection.shutdown(socket.SHUT_RDWR)
+
+
 class GuardedBackend(httpcore2.NetworkBackend):
     """Opens TCP connections only to addresses the policy permits (see the module docstring)."""
 
@@ -99,6 +135,7 @@ class GuardedBackend(httpcore2.NetworkBackend):
         self._policy = policy
         self._resolver = resolver
         self._backend = httpcore2.SyncBackend()
+        self._opened: list[_CuttableStream] = []
 
     def connect_tcp(
         self,
@@ -116,9 +153,17 @@ class GuardedBackend(httpcore2.NetworkBackend):
             # One forbidden address is enough to refuse: a name that mixes public and internal
             # addresses is an attack, not a configuration.
             raise BlockedAddressError(f"{host} resolves to {refused[0]}")
-        return self._backend.connect_tcp(
-            str(addresses[0]), port, timeout, local_address, socket_options
+        stream = _CuttableStream(
+            self._backend.connect_tcp(
+                str(addresses[0]), port, timeout, local_address, socket_options
+            )
         )
+        self._opened.append(stream)
+        return stream
+
+    def cut_all(self) -> None:
+        for stream in self._opened:
+            stream.cut()
 
     def _addresses(self, host: str, port: int) -> list[str]:
         try:
@@ -144,10 +189,16 @@ class SafeTransport(httpx2.HTTPTransport):
 
     def __init__(self, policy: AddressPolicy, resolver: Resolver = system_resolver) -> None:
         super().__init__(trust_env=False)
+        self._backend = GuardedBackend(policy, resolver)
         self._pool = httpcore2.ConnectionPool(
             ssl_context=_ssl_context(),
-            network_backend=GuardedBackend(policy, resolver),
+            network_backend=self._backend,
         )
+
+    def cut(self) -> None:
+        """Cuts the connections of this transport, from any thread: the call waiting on them
+        fails at once, and the server sees the client go (Ollama stops generating)."""
+        self._backend.cut_all()
 
 
 @dataclass(frozen=True, slots=True)

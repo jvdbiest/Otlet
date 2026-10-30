@@ -254,6 +254,22 @@ export function useStartCheck() {
   });
 }
 
+export function useCancelCheck() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (checkId: string) => {
+      const { data, error, response } = await api.POST("/api/ai/checks/{check_id}/cancel", {
+        params: { path: { check_id: checkId } },
+      });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [...KEY, "checks"] }),
+  });
+}
+
 export type InstalledView = components["schemas"]["InstalledView"];
 export type PullView = components["schemas"]["PullView"];
 

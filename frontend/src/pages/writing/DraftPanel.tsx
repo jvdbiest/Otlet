@@ -10,6 +10,7 @@ import {
   type GenerationView,
 } from "../../writing.ts";
 import { ApiError } from "../../api/client.ts";
+import { AiButton } from "../../layout/AiButton.tsx";
 import { errorText, formatDate } from "../watch/labels.ts";
 import { styles } from "../watch/styles.ts";
 import { ArticleVersions } from "./ArticleVersions.tsx";
@@ -53,10 +54,15 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
       <h2 id="draft-title">{t("draft.title")}</h2>
       <p className={styles.help}>{t("draft.help")}</p>
       <p className={styles.row}>
-        <button
+        <AiButton
+          running={running}
+          cancelling={cancel.isPending}
+          onCancel={() => {
+            cancel.mutate();
+          }}
           type="button"
           className={styles.primary}
-          disabled={running || generate.isPending}
+          disabled={generate.isPending}
           onClick={() => {
             generate.mutate(false, {
               onSuccess: () => {
@@ -66,23 +72,11 @@ export function DraftPanel({ workspaceId, briefId }: { workspaceId: string; brie
           }}
         >
           {versions.length === 0 ? t("draft.generate") : t("draft.again")}
-        </button>
+        </AiButton>
         {running && (
           <span role="status" className={styles.meta}>
             {t("draft.running", { since: formatDate(generation.created_at) })}
           </span>
-        )}
-        {running && (
-          <button
-            type="button"
-            className={styles.button}
-            disabled={cancel.isPending}
-            onClick={() => {
-              cancel.mutate();
-            }}
-          >
-            {t("draft.cancel")}
-          </button>
         )}
       </p>
       {generate.error instanceof ApiError && generate.error.detail === "insufficient_matter" ? (

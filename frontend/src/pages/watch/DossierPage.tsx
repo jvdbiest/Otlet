@@ -3,7 +3,15 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { dossierQuery, useSaveEntry, useStartDossier, type DossierCandidate, type DossierView } from "../../assistant.ts";
+import {
+  dossierQuery,
+  useCancelDossier,
+  useSaveEntry,
+  useStartDossier,
+  type DossierCandidate,
+  type DossierView,
+} from "../../assistant.ts";
+import { AiButton } from "../../layout/AiButton.tsx";
 import { useWorkspaceId } from "../../session.ts";
 import { MatterPanel } from "../writing/MatterPanel.tsx";
 import { errorText, formatDate } from "./labels.ts";
@@ -37,11 +45,13 @@ function groupOf(candidate: DossierCandidate): Group | null {
 function Loaded({ workspaceId, dossier }: { workspaceId: string; dossier: DossierView }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const cancel = useCancelDossier(workspaceId, dossier.id);
   const [selected, setSelected] = useState<string[]>(() =>
     dossier.candidates.filter((c) => groupOf(c) === "traite").map((c) => c.id),
   );
   const [showSetAside, setShowSetAside] = useState(false);
   const done = dossier.status === "done";
+  const cancelled = dossier.error === "cancelled";
   const counts = Object.fromEntries(GROUPS.map((g) => [g, dossier.candidates.filter((c) => groupOf(c) === g).length]));
   const toggle = (id: string, on: boolean) => {
     setSelected((current) => (on ? [...current, id] : current.filter((other) => other !== id)));
@@ -68,9 +78,23 @@ function Loaded({ workspaceId, dossier }: { workspaceId: string; dossier: Dossie
               })}
         {dossier.model !== null && ` · ${t("assistant.model", { model: dossier.model })}`}
       </p>
-      {dossier.error !== null && <p className={styles.notice}>{t("assistant.modelError", { error: dossier.error })}</p>}
-      {done && dossier.candidates.length === 0 && <p className={styles.warning}>{t("assistant.nothing")}</p>}
-      {!done && dossier.candidates.length > 0 && (
+      {!done && (
+        <p className={styles.row}>
+          <AiButton
+            running
+            cancelling={cancel.isPending}
+            onCancel={() => {
+              cancel.mutate();
+            }}
+          />
+        </p>
+      )}
+      {cancelled && <p className={styles.notice}>{t("assistant.cancelled")}</p>}
+      {dossier.error !== null && !cancelled && (
+        <p className={styles.notice}>{t("assistant.modelError", { error: dossier.error })}</p>
+      )}
+      {done && !cancelled && dossier.candidates.length === 0 && <p className={styles.warning}>{t("assistant.nothing")}</p>}
+      {(!done || cancelled) && dossier.candidates.length > 0 && (
         <CandidateList candidates={dossier.candidates} selected={selected} onToggle={toggle} />
       )}
       {done &&

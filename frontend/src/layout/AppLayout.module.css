@@ -49,6 +49,9 @@
   grid-area: nav;
   padding: var(--space-4) var(--space-3);
   border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 }
 
 .nav ul {

@@ -384,3 +384,41 @@ def test_the_meaning_adds_the_items_the_words_miss(
         context, conversation.id, turn.id, [Concept("Austen", ("Austen",)), Concept("c", ("kust",))]
     )
     assert "Zware storm aan de kust" in {c.title for c in changed.candidates}
+
+
+def test_a_question_is_cancelled_and_its_late_answer_is_not_kept(
+    reporter: tuple[Reporter, Reporter, WorkspaceContext, sa.Engine],
+) -> None:
+    api, worker, context, _ = reporter
+    conversation = api.start(context, "Les articles sur la tempête Austen")
+    turn = conversation.turns[0]
+    assert [t.question for t in api.running(context)] == [turn.question]
+    cancelled = api.cancel(context, conversation.id)
+    assert cancelled is not None
+    assert (cancelled.turns[0].status, cancelled.turns[0].error) == ("failed", "cancelled")
+    assert api.running(context) == []
+    # The job that was waiting finds it cancelled, and asks no model.
+    answer(worker, context, conversation.id, turn.id)
+    found = api.get(context, conversation.id)
+    assert found is not None and found.turns[0].status == "failed"
+    # The conversation goes on.
+    next_one = api.ask(context, conversation.id, "Les articles sur la tempête Austen")
+    answer(worker, context, conversation.id, next_one.id)
+    found = api.get(context, conversation.id)
+    assert found is not None and found.turns[1].status == "done"
+
+
+def test_a_reading_cancelled_leaves_the_answer_as_it_was(
+    reporter: tuple[Reporter, Reporter, WorkspaceContext, sa.Engine],
+) -> None:
+    api, worker, context, _ = reporter
+    conversation = api.start(context, "Les articles sur la tempête Austen")
+    turn = conversation.turns[0]
+    answer(worker, context, conversation.id, turn.id)
+    api.read_set(context, conversation.id, turn.id)
+    cancelled = api.cancel(context, conversation.id)
+    assert cancelled is not None
+    ended = cancelled.turns[0]
+    assert (ended.status, ended.reading, len(ended.candidates)) == ("done", None, 3)
+    found = api.get(context, conversation.id)
+    assert found is not None and found.turns[0].status == "done"

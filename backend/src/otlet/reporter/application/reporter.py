@@ -89,6 +89,7 @@ from otlet.workspaces.domain.model import WorkspaceContext
 logger = logging.getLogger(__name__)
 
 ANSWER_TURN = "reporter.answer_turn"
+CANCELLED = "cancelled"  # the error of a question the author cancelled
 FIRST_SEARCH = (
     "\n\nIl n'y a pas encore d'ensemble d'articles : réponds par l'opération « chercher » et les"
     " concepts du sujet de la question."
@@ -137,6 +138,14 @@ class Turn:
 
 
 @dataclass(frozen=True, slots=True)
+class RunningTurn:
+    conversation_id: UUID
+    turn_id: UUID
+    question: str
+    created_at: datetime | None
+
+
+@dataclass(frozen=True, slots=True)
 class Conversation:
     id: UUID
     title: str
@@ -169,6 +178,8 @@ class ReporterStore(Protocol):
         ...
 
     def save_turn(self, workspace_id: UUID, conversation_id: UUID, turn: Turn) -> None: ...
+
+    def running_turns(self, workspace_id: UUID, user_id: UUID) -> list[RunningTurn]: ...
 
     def read_further(
         self, workspace_id: UUID, user_id: UUID, conversation_id: UUID, turn_id: UUID
@@ -298,6 +309,35 @@ class Reporter:
         self._store.save_turn(context.workspace_id, conversation_id, turn)
         return turn
 
+    def running(self, context: WorkspaceContext) -> list[RunningTurn]:
+        return self._store.running_turns(context.workspace_id, context.user_id)
+
+    def cancel(self, context: WorkspaceContext, conversation_id: UUID) -> Conversation | None:
+        """Ends the question being answered (Joël, 2026-10-30); the call to the model is cut by
+        the worker. A new question ends cancelled; an answered one, read further, stays as it
+        was answered. None when there is no such conversation."""
+        conversation = self._store.conversation(context.workspace_id, conversation_id)
+        if conversation is None:
+            return None
+        turns = []
+        for turn in conversation.turns:
+            if turn.status != "pending":
+                turns.append(turn)
+                continue
+            if turn.operation is None:
+                ended = replace(turn, status="failed", error=CANCELLED, finished_at=self._now())
+            else:
+                asked = turn.reading is not None and turn.reading.requested
+                ended = replace(
+                    turn,
+                    status="done",
+                    reading=None if asked else turn.reading,
+                    finished_at=self._now(),
+                )
+            self._store.save_turn(context.workspace_id, conversation_id, ended)
+            turns.append(ended)
+        return replace(conversation, turns=turns)
+
     # The worker -----------------------------------------------------------------------------
 
     def run(self, workspace_id: UUID, user_id: UUID, conversation_id: UUID, turn_id: UUID) -> None:
@@ -362,7 +402,7 @@ class Reporter:
         else:
             # The question itself was searched as one term before: it found nothing, and said
             # nothing of why. The turn fails, and says so.
-            self._store.save_turn(
+            self._finish(
                 workspace_id,
                 conversation_id,
                 replace(
@@ -413,7 +453,7 @@ class Reporter:
                 workspace_id, user_id, conversation, done, (attempts, models, errors)
             )
             done = replace(done, reading=reading)
-        self._store.save_turn(
+        self._finish(
             workspace_id,
             conversation_id,
             replace(
@@ -427,6 +467,13 @@ class Reporter:
         )
 
     # Inside ---------------------------------------------------------------------------------
+
+    def _finish(self, workspace_id: UUID, conversation_id: UUID, turn: Turn) -> None:
+        """Saves an answer, unless the author cancelled the question meanwhile."""
+        current = self._store.conversation(workspace_id, conversation_id)
+        turns = [] if current is None else current.turns
+        if any(t.id == turn.id and t.status == "pending" for t in turns):
+            self._store.save_turn(workspace_id, conversation_id, turn)
 
     def _search_first(
         self,
@@ -583,7 +630,7 @@ class Reporter:
         models: list[str] = []
         errors: list[str] = []
         reading = self._read(workspace_id, user_id, conversation, turn, (attempts, models, errors))
-        self._store.save_turn(
+        self._finish(
             workspace_id,
             conversation.id,
             replace(
@@ -632,7 +679,7 @@ class Reporter:
         more = self._fact(workspace_id, user_id, history, turn, (attempts, models, errors))
         glossary = [stored.entry for stored in self._search.glossary(workspace_id)]
         fact = turn.fact if more is None or turn.fact is None else merged(turn.fact, more, glossary)
-        self._store.save_turn(
+        self._finish(
             workspace_id,
             conversation.id,
             replace(

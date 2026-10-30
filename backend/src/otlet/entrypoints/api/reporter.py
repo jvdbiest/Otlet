@@ -294,6 +294,14 @@ def build_router(
             raise HTTPException(status.HTTP_404_NOT_FOUND, "conversation_not_found")
         return ConversationView.of(conversation)
 
+    @router.post("/conversations/{conversation_id}/cancel")
+    def cancel(conversation_id: UUID, context: Context) -> ConversationView:
+        """Ends the question being answered; the worker cuts its call to the model."""
+        conversation = reporter.cancel(context, conversation_id)
+        if conversation is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "conversation_not_found")
+        return ConversationView.of(conversation)
+
     @router.post("/conversations/{conversation_id}/turns", status_code=status.HTTP_202_ACCEPTED)
     def ask(conversation_id: UUID, body: QuestionBody, context: Context) -> TurnView:
         """A new question; refused while the previous one is being answered."""

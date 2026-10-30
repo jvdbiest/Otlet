@@ -5,6 +5,7 @@ import { Button } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import type { SessionView } from "../api/client.ts";
 import { useLogout, workspacesQuery } from "../session.ts";
+import { AiTasks } from "./AiTasks.tsx";
 import css from "./AppLayout.module.css";
 
 const styles = css as Record<
@@ -66,6 +67,7 @@ export function AppLayout({ session }: { session: SessionView }) {
             </li>
           ))}
         </ul>
+        {workspace !== undefined && <AiTasks workspaceId={workspace.id} />}
       </nav>
       <main id="main" className={styles.main} tabIndex={-1}>
         <Outlet />

@@ -82,6 +82,24 @@ export function useAsk(workspaceId: string, conversationId: string) {
   });
 }
 
+/** Ends the question being answered; the worker cuts its call to the model. */
+export function useCancelQuestion(workspaceId: string, conversationId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { data, error, response } = await api.POST(
+        "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/cancel",
+        { params: { path: { workspace_id: workspaceId, conversation_id: conversationId } } },
+      );
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: () => client.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
+  });
+}
+
 /** A fact read further: the next items of the set; the worker adds their lines. */
 export function useReadMore(workspaceId: string, conversationId: string) {
   const client = useQueryClient();

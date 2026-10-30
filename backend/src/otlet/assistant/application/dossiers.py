@@ -10,7 +10,7 @@ not judge goes « à vérifier », and a dossier whose model failed still shows 
 
 import logging
 from collections.abc import Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime, timedelta
 from typing import Any, Protocol
 from uuid import UUID
@@ -56,6 +56,9 @@ QUALIFY_OUTPUT_TOKENS = 8192
 ANGLE_MAX_LENGTH = 500
 
 logger = logging.getLogger(__name__)
+
+
+CANCELLED = "cancelled"  # the error of a dossier the author cancelled
 
 
 class DossierError(Exception):
@@ -109,6 +112,13 @@ class Model(Protocol):
     ) -> Asked: ...
 
 
+@dataclass(frozen=True, slots=True)
+class RunningDossier:
+    id: UUID
+    subject: str
+    created_at: datetime
+
+
 class DossierStore(Protocol):
     def start_dossier(
         self,
@@ -129,6 +139,8 @@ class DossierStore(Protocol):
     def requested_concepts(self, workspace_id: UUID, dossier_id: UUID) -> list[Concept]: ...
 
     def save_dossier(self, workspace_id: UUID, dossier: Dossier, finished: bool) -> None: ...
+
+    def running_dossiers(self, workspace_id: UUID, user_id: UUID) -> list[RunningDossier]: ...
 
 
 class Dossiers:
@@ -178,6 +190,23 @@ class Dossiers:
     def recent(self, context: WorkspaceContext, limit: int = 20) -> list[Dossier]:
         return self._store.dossiers(context.workspace_id, context.user_id, limit)
 
+    def running(self, context: WorkspaceContext) -> list[RunningDossier]:
+        return self._store.running_dossiers(context.workspace_id, context.user_id)
+
+    def cancel(self, context: WorkspaceContext, dossier_id: UUID) -> Dossier | None:
+        """Ends a dossier under way (Joël, 2026-10-30): what it found is kept, and says so; the
+        call to the model is cut by the worker. None when there is no such dossier."""
+        dossier = self._store.dossier(context.workspace_id, dossier_id)
+        if dossier is None or dossier.status == "done":
+            return dossier
+        cancelled = replace(dossier, status="done", error=CANCELLED)
+        self._store.save_dossier(context.workspace_id, cancelled, finished=True)
+        return cancelled
+
+    def _over(self, workspace_id: UUID, dossier_id: UUID) -> bool:
+        current = self._store.dossier(workspace_id, dossier_id)
+        return current is None or current.status == "done"
+
     def run(self, workspace_id: UUID, user_id: UUID, dossier_id: UUID) -> None:
         """The work of the worker: concepts, candidates, verdicts; saved at each stage, so the
         interface shows the candidates while the model still judges them."""
@@ -217,8 +246,12 @@ class Dossiers:
             created_at=dossier.created_at,
             term_counts=counts,
         )
+        if self._over(workspace_id, dossier_id):
+            return  # cancelled meanwhile: it stays as the author left it
         self._store.save_dossier(workspace_id, dossier, finished=False)
         verdicts = self._qualify(user_id, dossier, attempts, models, errors)
+        if self._over(workspace_id, dossier_id):
+            return
         self._store.save_dossier(
             workspace_id,
             Dossier(

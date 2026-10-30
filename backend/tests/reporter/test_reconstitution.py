@@ -148,3 +148,23 @@ def test_the_form_and_the_articles_read() -> None:
     evenly = chosen_evenly(list(range(30)))
     assert evenly[:3] == [0, 2, 4] and len(evenly) == 15
     assert chosen_evenly([1, 2]) == [1, 2]
+
+
+def test_a_story_updated_gives_one_line_and_line_numbers_are_no_part_of_a_sentence() -> None:
+    update = Article("c", "La DH", TEXT + " Mise à jour : rien de neuf.")
+    raw = json.dumps(
+        {
+            "lignes": [
+                row("Quatre blessés selon les pompiers", "Quatre personnes ont été blessées"),
+                row("Quatre blessés selon les pompiers", "Quatre personnes ont été", article=2),
+            ]
+        }
+    )
+    dates = {"a": DAY, "c": DAY}
+    kept, _, _ = read_lines(raw, 1, [ARTICLE, update], dates, ASKED, [], [])
+    assert len(kept) == 1
+    line = RebuiltLine(1, "a", "La DH", DAY.isoformat(), "Quatre blessés", "", "", "Quatre")
+    answer = {"texte": "La tempête a touché Bruxelles (L1, L1).", "lignes": [1], "deduction": False}
+    sentences = read_analysis(json.dumps({"phrases": [answer]}), (line,), [ARTICLE])
+    assert sentences[0].text == "La tempête a touché Bruxelles."
+    assert sentences[0].unsupported == ()

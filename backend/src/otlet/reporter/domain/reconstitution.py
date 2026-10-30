@@ -372,12 +372,19 @@ def read_lines(
         )
         if extra:
             flagged.append(line)
-        elif not any(
-            other.item_id == line.item_id and folded(other.passage) == folded(passage)
-            for other in (*kept, *new)
-        ):
+        elif not any(_same_line(line, other) for other in (*kept, *new)):
             new.append(line)
     return new, flagged, dropped
+
+
+def _same_line(line: RebuiltLine, other: RebuiltLine) -> bool:
+    """One passage gives one line. A publisher that updates its story under new addresses says
+    it once too: the budget gave « Retour à l'objectif de 10 milliards » three times."""
+    if line.publisher != other.publisher:
+        return False
+    return folded(line.passage) == folded(other.passage) or (
+        folded(line.information) == folded(other.information)
+    )
 
 
 def confidence(
@@ -430,6 +437,10 @@ def confidence(
     return level, tuple(reasons)
 
 
+# « (L1, L6) » in a sentence: the numbers belong to its lines, not to its text.
+LINE_NUMBERS = re.compile(r"\s*\(?\bL\d+(?:\s*,\s*L\d+)*\)?")
+
+
 def read_analysis(
     raw: str, lines: tuple[RebuiltLine, ...], articles: list[Article]
 ) -> tuple[Sentence, ...]:
@@ -440,7 +451,7 @@ def read_analysis(
     for row in json.loads(raw)["phrases"]:
         if not isinstance(row, dict) or not str(row.get("texte", "")).strip():
             continue
-        text = " ".join(str(row["texte"]).split())
+        text = " ".join(LINE_NUMBERS.sub("", str(row["texte"])).split())
         numbers = tuple(
             n
             for n in row.get("lignes") or []

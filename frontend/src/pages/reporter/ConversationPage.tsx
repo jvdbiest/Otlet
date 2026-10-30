@@ -88,6 +88,7 @@ function Ask({
   const cancel = useCancelQuestion(workspaceId, conversationId);
   const [question, setQuestion] = useState("");
   const [read, setRead] = useState(readBefore);
+  const failure = ask.error ?? cancel.error;
   return (
     <form
       className={styles.form}
@@ -128,9 +129,9 @@ function Ask({
           {t("reporter.ask")}
         </AiButton>
       </p>
-      {(ask.error ?? cancel.error) !== null && (
+      {failure !== null && (
         <p role="alert" className={styles.error}>
-          {errorText(t, ask.error ?? cancel.error)}
+          {errorText(t, failure)}
         </p>
       )}
     </form>

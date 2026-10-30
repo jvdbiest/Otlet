@@ -15,7 +15,6 @@ import sys
 from pathlib import Path
 
 import numpy as np
-from fastembed import TextEmbedding
 
 TOP = 30
 RRF_K = 60
@@ -77,6 +76,8 @@ def main() -> None:
     vectors = np.load(folder / f"vectors-{tag}.npy")
     lexical = json.loads((folder / "lexical.json").read_text())
     by_id = {i["id"]: i for i in items}
+    from fastembed import TextEmbedding  # the spike's encoder
+
     model = TextEmbedding(model_name)
     summary = {}
     for key, (question, rules) in QUESTIONS.items():

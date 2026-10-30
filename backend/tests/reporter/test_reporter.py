@@ -336,3 +336,51 @@ def test_a_question_asked_to_be_read_is_read_before_it_is_shown(
     turn = found.turns[0]
     assert turn.status == "done" and turn.reading is not None
     assert [a.title for a in turn.reading.answers] == [AUSTEN[0][0]]
+
+
+def test_the_meaning_adds_the_items_the_words_miss(
+    reporter: tuple[Reporter, Reporter, WorkspaceContext, sa.Engine],
+) -> None:
+    """ADR-0045: the items closest to the question join the items of its words; a restriction
+    asked after applies to them too."""
+    from otlet.meaning.adapters.postgres import literal
+    from otlet.meaning.domain.meaning import DIMENSIONS, MODEL
+
+    api, _, context, engine = reporter
+    collect(engine, context, "vrt", "nl", [("Zware storm aan de kust", "Rukwinden.", 1)])
+    close = [1.0] + [0.0] * (DIMENSIONS - 1)
+    far = [0.0, 1.0] + [0.0] * (DIMENSIONS - 2)
+    with db.workspace_transaction(engine, context.workspace_id) as connection:
+        for title in [a[0] for a in AUSTEN] + ["Zware storm aan de kust"]:
+            vector = close if title == "Zware storm aan de kust" else far
+            connection.execute(
+                sa.text(
+                    "UPDATE source_items SET meaning = CAST(:v AS vector), meaning_model = :m"
+                    " WHERE title = :t"
+                ),
+                {"v": literal(vector), "m": MODEL, "t": title},
+            )
+    worker = Reporter(
+        PostgresReporterStore(engine, lambda connection, name, **kwargs: 0),
+        PostgresAssistantStore(engine),
+        FakeModel(),
+        encode=lambda question: close,
+    )
+    conversation = api.start(context, "Les articles sur la tempête Austen")
+    answer(worker, context, conversation.id, conversation.turns[0].id)
+    found = api.get(context, conversation.id)
+    assert found is not None
+    titles = {c.title for c in found.turns[0].candidates}
+    assert titles == {a[0] for a in AUSTEN} | {"Zware storm aan de kust"}
+    assert found.turns[0].state.subject == 1 and len(found.turns[0].state.meaning) == DIMENSIONS
+    # « Bruxelles » restricts the items of the meaning as well.
+    turn = api.ask(context, conversation.id, "Lesquels concernent Bruxelles ?")
+    answer(worker, context, conversation.id, turn.id)
+    found = api.get(context, conversation.id)
+    assert found is not None
+    assert {c.title for c in found.turns[1].candidates} == {AUSTEN[0][0], AUSTEN[2][0]}
+    # The terms changed by the author keep the meaning, without a model in the API.
+    changed = api.set_terms(
+        context, conversation.id, turn.id, [Concept("Austen", ("Austen",)), Concept("c", ("kust",))]
+    )
+    assert "Zware storm aan de kust" in {c.title for c in changed.candidates}

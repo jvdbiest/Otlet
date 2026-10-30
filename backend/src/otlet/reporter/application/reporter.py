@@ -9,6 +9,7 @@ question of fact is answered from the set by lines cited by source, and the agre
 sources is computed. A sort uses the sort of the Assistant; nothing leaves the set.
 """
 
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass, field, replace
 from datetime import UTC, date, datetime, timedelta
@@ -84,12 +85,21 @@ from otlet.reporter.domain.reading import (
 )
 from otlet.workspaces.domain.model import WorkspaceContext
 
+logger = logging.getLogger(__name__)
+
 ANSWER_TURN = "reporter.answer_turn"
 FIRST_SEARCH = (
     "\n\nIl n'y a pas encore d'ensemble d'articles : réponds par l'opération « chercher » et les"
     " concepts du sujet de la question."
 )
 SET_MAX = 200
+# The meaning (ADR-0045, spike of 2026-10-30): the 60 items closest to the question, if at least
+# 0.6 close (the relevant items of the bench were above, a question on nothing of the Veille
+# stayed below 0.55), fused with the items of the words by reciprocal rank.
+NEAR_MAX = 60
+NEAR_FLOOR = 0.6
+RESTRICT_MAX = 5000
+RRF_K = 60
 DAYS = 30
 OPERATION_OUTPUT_TOKENS = 4096
 FACT_OUTPUT_TOKENS = 8192
@@ -198,11 +208,15 @@ class Reporter:
         search: AssistantStore,
         model: Model | None = None,
         now: Callable[[], datetime] = lambda: datetime.now(UTC),
+        encode: Callable[[str], list[float]] | None = None,
     ) -> None:
         self._store = store
         self._search = search
         self._model = model
         self._now = now
+        # The meaning of a question (ADR-0045), in the worker only: the API has no model, and
+        # reuses the meaning kept in the state when the author changes the terms.
+        self._encode = encode
 
     # The API --------------------------------------------------------------------------------
 
@@ -281,7 +295,9 @@ class Reporter:
         last = conversation.turns[-1]
         if last.id != turn_id or last.status != "done" or not last.state.concepts:
             raise ReporterError("not_editable", "only the terms of the last set can be changed")
-        state = State(_checked(concepts), last.state.language, last.state.days)
+        checked = _checked(concepts)
+        # The meaning of the question stays: the author changed the words, not the question.
+        state = replace(last.state, concepts=checked, subject=min(last.state.subject, len(checked)))
         turn = self._found(context.workspace_id, conversation, last, state)
         self._store.save_turn(context.workspace_id, conversation_id, turn)
         return turn
@@ -369,6 +385,14 @@ class Reporter:
             if changes_set(translated.operation) or state.concepts
             else State(translated.concepts[:3], None, translated.days)
         )
+        if new_state.concepts and (
+            translated.operation is Operation.CHERCHER or not state.concepts
+        ):
+            new_state = replace(
+                new_state,
+                meaning=self._meaning(turn.question),
+                subject=len(new_state.concepts),
+            )
         done = replace(turn, operation=translated.operation, attempts=attempts)
         if changes_set(translated.operation) or previous is None:
             done = self._found(workspace_id, conversation, done, new_state)
@@ -459,6 +483,8 @@ class Reporter:
         )
         widened = too_general(widened, counts, self._search.total_items(workspace_id, since))
         found = self._search.candidates(workspace_id, widened, since, SET_MAX)
+        if state.meaning:
+            found = self._with_meaning(workspace_id, state, widened, since, found)
         found = [
             c
             for c in found
@@ -467,6 +493,44 @@ class Reporter:
         if state.language:
             found = [c for c in found if (c.language or "").startswith(state.language)]
         return widened, counts, found
+
+    def _meaning(self, question: str) -> tuple[float, ...]:
+        """The vector of a question, or none when the encoder is missing or fails: the words
+        alone then, as before ADR-0045."""
+        if self._encode is None:
+            return ()
+        try:
+            return tuple(self._encode(question))
+        except Exception:  # noqa: BLE001 (the meaning adds; its failure takes nothing away)
+            logger.warning("the meaning of a question could not be encoded", exc_info=True)
+            return ()
+
+    def _with_meaning(
+        self,
+        workspace_id: UUID,
+        state: State,
+        widened: list[Widened],
+        since: datetime | None,
+        found: list[Candidate],
+    ) -> list[Candidate]:
+        """The items of the words and the items closest to the question, ranked together by
+        reciprocal rank (ADR-0045). An item found by the meaning must hold the concepts that
+        restricted the search since (« uniquement en Belgique »)."""
+        near = self._search.near(workspace_id, state.meaning, since, NEAR_MAX, NEAR_FLOOR)
+        restrictions = widened[state.subject :]
+        if near and restrictions:
+            allowed = {
+                c.id
+                for c in self._search.candidates(workspace_id, restrictions, since, RESTRICT_MAX)
+            }
+            near = [c for c in near if c.id in allowed]
+        scores: dict[UUID, float] = {}
+        by_id: dict[UUID, Candidate] = {}
+        for ranked in (found, near):
+            for rank, candidate in enumerate(ranked):
+                scores[candidate.id] = scores.get(candidate.id, 0.0) + 1 / (RRF_K + rank)
+                by_id.setdefault(candidate.id, candidate)
+        return [by_id[i] for i in sorted(scores, key=lambda i: -scores[i])][:SET_MAX]
 
     def _read(
         self,

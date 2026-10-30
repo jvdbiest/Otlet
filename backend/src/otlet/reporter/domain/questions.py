@@ -41,6 +41,11 @@ class State:
     language: str | None = None
     # A period the author named (« ces derniers jours »), in days; None: the conversation's.
     days: int | None = None
+    # The meaning of the question that opened the search (ADR-0045): the items closest to it
+    # join the items its words find. The first `subject` concepts are that search's; the
+    # others restrict it, and the items found by the meaning must hold them too.
+    meaning: tuple[float, ...] = ()
+    subject: int = 0
 
 
 @dataclass(frozen=True, slots=True)
@@ -776,13 +781,16 @@ def next_state(state: State, translated: Translated) -> State:
                 c for c in proposed[:1] if not any(_same_concept(c, s) for s in state.concepts)
             ]
             concepts = (*state.concepts, *added)[:CONCEPTS_MAX]
-            return State(
-                concepts, translated.language or state.language, translated.days or state.days
+            return replace(
+                state,
+                concepts=concepts,
+                language=translated.language or state.language,
+                days=translated.days or state.days,
             )
         case Operation.ELARGIR if state.concepts and proposed:
             last = state.concepts[-1]
             widened = Concept(last.name, _clean([*last.terms, *proposed[0].terms]))
-            return State((*state.concepts[:-1], widened), state.language, state.days)
+            return replace(state, concepts=(*state.concepts[:-1], widened))
         case _:
             return state
 

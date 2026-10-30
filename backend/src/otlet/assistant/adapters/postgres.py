@@ -14,6 +14,8 @@ from otlet.assistant.application.dossiers import QUALIFY_DOSSIER, Dossier
 from otlet.assistant.domain.qualify import PROMPT_VERSION, Judged, Verdict
 from otlet.assistant.domain.terms import Concept, GlossaryEntry, Widened, websearch
 from otlet.jobs.application.registry import Enqueue, no_queue
+from otlet.meaning.adapters.postgres import literal
+from otlet.meaning.domain.meaning import MODEL
 from otlet.platform.database import workspace_transaction
 from otlet.platform.rls import here
 
@@ -214,6 +216,55 @@ class PostgresAssistantStore:
                 dated=row.dated,
             )
             for row in rows
+        ]
+
+    def near(
+        self,
+        workspace_id: UUID,
+        meaning: tuple[float, ...],
+        since: datetime | None,
+        limit: int,
+        floor: float,
+    ) -> list[Candidate]:
+        """The items closest in meaning (ADR-0045). The index is read on, past the items of the
+        other workspaces that row-level security hides, until `limit` are found (iterative scan
+        of pgvector); only vectors of the model of the question compare."""
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            connection.execute(sa.text("SET LOCAL hnsw.iterative_scan = strict_order"))
+            connection.execute(sa.text("SET LOCAL hnsw.ef_search = 100"))
+            rows = connection.execute(
+                sa.text(
+                    "SELECT i.id, i.title, left(coalesce(i.summary, ''), :chars) AS summary,"
+                    " i.url, i.language, coalesce(s.name, i.declared_origin) AS publisher,"
+                    " coalesce(i.published_at, i.collected_at) AS dated,"
+                    " 1 - (i.meaning <=> CAST(:meaning AS vector)) AS closeness"
+                    " FROM source_items AS i LEFT JOIN sources AS s ON s.id = i.source_id"
+                    f" WHERE {here('i')} AND i.duplicate_of IS NULL"
+                    " AND i.meaning IS NOT NULL AND i.meaning_model = :model"
+                    " AND (CAST(:since AS timestamptz) IS NULL"
+                    " OR coalesce(i.published_at, i.collected_at) >= :since)"
+                    " ORDER BY i.meaning <=> CAST(:meaning AS vector) LIMIT :limit"
+                ),
+                {
+                    "chars": SUMMARY_CHARS,
+                    "meaning": literal(list(meaning)),
+                    "model": MODEL,
+                    "since": since,
+                    "limit": limit,
+                },
+            ).all()
+        return [
+            Candidate(
+                id=row.id,
+                title=row.title,
+                summary=row.summary,
+                url=row.url,
+                language=row.language,
+                publisher=row.publisher,
+                dated=row.dated,
+            )
+            for row in rows
+            if row.closeness >= floor
         ]
 
     def term_counts(

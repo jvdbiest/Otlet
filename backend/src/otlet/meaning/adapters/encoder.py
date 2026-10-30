@@ -4,6 +4,8 @@ tokenizer; the vector of a text is the mean of its token vectors, normalised (wh
 measured with fastembed, which pins an older Pillow than Otlet's). The files are in the image
 (OTLET_MODELS_DIR): nothing is downloaded at run time."""
 
+import ctypes
+import gc
 import os
 from collections.abc import Sequence
 from pathlib import Path
@@ -69,3 +71,24 @@ class OnnxEncoder:
             means /= np.maximum(np.linalg.norm(means, axis=1, keepdims=True), 1e-12)
             out.extend(means.astype(float).tolist())
         return out
+
+
+def release_memory() -> None:
+    """Gives the memory of the model back to the system once it is no longer used: freed
+    memory otherwise stays with the worker, which lives on between jobs."""
+    gc.collect()
+    try:
+        ctypes.CDLL("libc.so.6").malloc_trim(0)
+    except OSError:  # not glibc
+        pass
+
+
+def encode_question(question: str) -> list[float]:
+    """The vector of one question, for the Reporter: the model is loaded for it and let go
+    after (some 700 MB, for a second or two)."""
+    encoder = OnnxEncoder()
+    try:
+        return encoder.encode([question])[0]
+    finally:
+        del encoder
+        release_memory()

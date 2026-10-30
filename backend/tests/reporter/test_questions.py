@@ -388,3 +388,40 @@ def test_a_country_holds_its_regions_and_towns() -> None:
     terms = {t.casefold() for t in kept.concepts[0].terms}
     assert {"belgique", "wavre", "bruxelles", "vlaanderen", "liege"} <= terms
     assert "france" not in terms
+
+
+def test_the_bench_of_2026_10_30_afternoon() -> None:
+    """Names the model left out are searched; « Pourquoi … ? » is no fact."""
+    from otlet.reporter.domain.questions import proper_names
+
+    assert proper_names("Que rachète Ahold Delhaize ?") == ["Ahold Delhaize"]
+    assert proper_names("Que change la ministre pour les CPAS ?") == ["CPAS"]
+    assert proper_names("Quels jeux vidéo ?") == []
+    closing = Concept("fermeture de journal", ("fermeture", "sluiting"))
+    kept = guarded(
+        "Pourquoi Novaïa Gazeta ferme-t-elle ?", Translated(Operation.FAIT, (closing,), None)
+    )
+    assert kept.operation is Operation.CHERCHER
+    assert [c.name for c in kept.concepts][-1] == "Novaïa Gazeta"
+    buying = Concept("rachat", ("rachat", "overname"))
+    kept = guarded("Que rachète Ahold Delhaize ?", Translated(Operation.CHERCHER, (buying,), None))
+    assert [c.name for c in kept.concepts] == ["rachat", "Ahold Delhaize"]
+    # The subject stays when the question named none of the model's concepts.
+    driver = Concept("conducteur de train", ("conducteur de train", "treinconducteur"))
+    kept = guarded(
+        "Le conducteur du train en Espagne avait-il prévenu ?",
+        Translated(Operation.CHERCHER, (driver,), None),
+    )
+    assert [c.name for c in kept.concepts] == ["conducteur de train", "Espagne"]
+
+
+def test_a_word_rescued_takes_the_model_terms_close_to_it() -> None:
+    driver = Concept("conducteur de train", ("conducteur de train", "Espagne", "Spanje"))
+    warned = Concept("avait", ("avait", "prévenir", "avertir", "waarschuwen"))
+    kept = guarded(
+        "Le conducteur du train en Espagne avait-il prévenu ?",
+        Translated(Operation.CHERCHER, (driver, warned), None),
+    )
+    assert kept.concepts[-1] == Concept(
+        "prévenu", ("prévenu", "prévenir", "avertir", "waarschuwen")
+    )

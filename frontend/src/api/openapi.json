@@ -2113,6 +2113,24 @@
         "title": "ExportSelectionBody",
         "type": "object"
       },
+      "FacetView": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "question": {
+            "title": "Question",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "question"
+        ],
+        "title": "FacetView",
+        "type": "object"
+      },
       "FactBody": {
         "properties": {
           "figure": {
@@ -4204,6 +4222,163 @@
         "title": "ReadingView",
         "type": "object"
       },
+      "RebuiltLineView": {
+        "properties": {
+          "dated": {
+            "format": "date-time",
+            "title": "Dated",
+            "type": "string"
+          },
+          "facet": {
+            "title": "Facet",
+            "type": "integer"
+          },
+          "information": {
+            "title": "Information",
+            "type": "string"
+          },
+          "item_id": {
+            "format": "uuid",
+            "title": "Item Id",
+            "type": "string"
+          },
+          "passage": {
+            "title": "Passage",
+            "type": "string"
+          },
+          "publisher": {
+            "title": "Publisher",
+            "type": "string"
+          },
+          "to_check": {
+            "items": {
+              "type": "string"
+            },
+            "title": "To Check",
+            "type": "array"
+          },
+          "when": {
+            "title": "When",
+            "type": "string"
+          },
+          "where": {
+            "title": "Where",
+            "type": "string"
+          }
+        },
+        "required": [
+          "facet",
+          "item_id",
+          "publisher",
+          "dated",
+          "information",
+          "when",
+          "where",
+          "passage",
+          "to_check"
+        ],
+        "title": "RebuiltLineView",
+        "type": "object"
+      },
+      "ReconstitutionView": {
+        "description": "« Reconstituer » (ADR-0044 §7): the lines by date, the facets as filters, the analysis.",
+        "properties": {
+          "confidence": {
+            "anyOf": [
+              {
+                "enum": [
+                  "forte",
+                  "moyenne",
+                  "faible"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "dropped": {
+            "title": "Dropped",
+            "type": "integer"
+          },
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Errors",
+            "type": "array"
+          },
+          "facets": {
+            "items": {
+              "$ref": "#/components/schemas/FacetView"
+            },
+            "title": "Facets",
+            "type": "array"
+          },
+          "flagged": {
+            "items": {
+              "$ref": "#/components/schemas/RebuiltLineView"
+            },
+            "title": "Flagged",
+            "type": "array"
+          },
+          "form": {
+            "title": "Form",
+            "type": "string"
+          },
+          "found": {
+            "title": "Found",
+            "type": "integer"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/RebuiltLineView"
+            },
+            "title": "Lines",
+            "type": "array"
+          },
+          "read": {
+            "title": "Read",
+            "type": "integer"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reasons",
+            "type": "array"
+          },
+          "requested": {
+            "title": "Requested",
+            "type": "boolean"
+          },
+          "sentences": {
+            "items": {
+              "$ref": "#/components/schemas/SentenceView"
+            },
+            "title": "Sentences",
+            "type": "array"
+          }
+        },
+        "required": [
+          "requested",
+          "form",
+          "facets",
+          "lines",
+          "flagged",
+          "sentences",
+          "confidence",
+          "reasons",
+          "found",
+          "read",
+          "dropped",
+          "errors"
+        ],
+        "title": "ReconstitutionView",
+        "type": "object"
+      },
       "RefreshView": {
         "properties": {
           "sources": {
@@ -4497,6 +4672,40 @@
           "number"
         ],
         "title": "SendBody",
+        "type": "object"
+      },
+      "SentenceView": {
+        "properties": {
+          "deduction": {
+            "title": "Deduction",
+            "type": "boolean"
+          },
+          "lines": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Lines",
+            "type": "array"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "unsupported": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Unsupported",
+            "type": "array"
+          }
+        },
+        "required": [
+          "text",
+          "lines",
+          "deduction",
+          "unsupported"
+        ],
+        "title": "SentenceView",
         "type": "object"
       },
       "SessionView": {
@@ -5616,6 +5825,16 @@
               }
             ]
           },
+          "reconstitution": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReconstitutionView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "status": {
             "enum": [
               "pending",
@@ -5655,6 +5874,7 @@
           "candidates",
           "fact",
           "reading",
+          "reconstitution",
           "unsearched",
           "themes",
           "error",
@@ -11609,6 +11829,67 @@
           }
         },
         "summary": "Read Set"
+      }
+    },
+    "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/turns/{turn_id}/reconstitute": {
+      "post": {
+        "description": "« Reconstituer »: the worker extracts the lines by facet, then the analysis.",
+        "operationId": "reconstitute_api_workspaces__workspace_id__reporter_conversations__conversation_id__turns__turn_id__reconstitute_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conversation Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "turn_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Turn Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TurnView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reconstitute"
       }
     },
     "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/turns/{turn_id}/terms": {

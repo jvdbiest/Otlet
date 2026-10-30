@@ -28,6 +28,7 @@ from otlet.reporter.application.reporter import (
     Turn,
 )
 from otlet.reporter.domain.questions import unsearched
+from otlet.reporter.domain.reconstitution import RebuiltLine, Reconstitution
 from otlet.reporter.domain.themes import themes
 from otlet.workspaces.domain.model import WorkspaceContext
 
@@ -103,6 +104,85 @@ class ReadingView(BaseModel):
     errors: list[str]
 
 
+class FacetView(BaseModel):
+    name: str
+    question: str
+
+
+class RebuiltLineView(BaseModel):
+    facet: int
+    item_id: UUID
+    publisher: str
+    dated: datetime
+    information: str
+    when: str
+    where: str
+    passage: str
+    to_check: list[str]
+
+
+class SentenceView(BaseModel):
+    text: str
+    lines: list[int]
+    deduction: bool
+    unsupported: list[str]
+
+
+class ReconstitutionView(BaseModel):
+    """« Reconstituer » (ADR-0044 §7): the lines by date, the facets as filters, the analysis."""
+
+    requested: bool
+    form: str
+    facets: list[FacetView]
+    lines: list[RebuiltLineView]
+    flagged: list[RebuiltLineView]
+    sentences: list[SentenceView]
+    confidence: Literal["forte", "moyenne", "faible"] | None
+    reasons: list[str]
+    found: int
+    read: int
+    dropped: int
+    errors: list[str]
+
+    @classmethod
+    def of(cls, rebuilt: Reconstitution) -> "ReconstitutionView":
+        def line(one: RebuiltLine) -> RebuiltLineView:
+            return RebuiltLineView(
+                facet=one.facet,
+                item_id=UUID(one.item_id),
+                publisher=one.publisher,
+                dated=datetime.fromisoformat(one.dated),
+                information=one.information,
+                when=one.when,
+                where=one.where,
+                passage=one.passage,
+                to_check=list(one.to_check),
+            )
+
+        return cls(
+            requested=rebuilt.requested,
+            form=rebuilt.form,
+            facets=[FacetView(name=f.name, question=f.question) for f in rebuilt.facets],
+            lines=[line(one) for one in rebuilt.lines],
+            flagged=[line(one) for one in rebuilt.flagged],
+            sentences=[
+                SentenceView(
+                    text=s.text,
+                    lines=list(s.lines),
+                    deduction=s.deduction,
+                    unsupported=list(s.unsupported),
+                )
+                for s in rebuilt.sentences
+            ],
+            confidence=None if rebuilt.confidence is None else rebuilt.confidence.value,
+            reasons=list(rebuilt.reasons),
+            found=rebuilt.found,
+            read=rebuilt.read,
+            dropped=rebuilt.dropped,
+            errors=list(rebuilt.errors),
+        )
+
+
 class TurnCandidateView(CandidateView):
     judged: JudgedView | None  # after a sort only
 
@@ -133,6 +213,7 @@ class TurnView(BaseModel):
     candidates: list[TurnCandidateView]
     fact: FactView | None
     reading: ReadingView | None
+    reconstitution: ReconstitutionView | None
     # Words of the question that no term searched (« enseignement »), and the main themes of
     # a large set: both without a model, to guide the author (Joël, 2026-10-29).
     unsearched: list[str]
@@ -199,6 +280,9 @@ class TurnView(BaseModel):
                 dropped=fact.dropped,
                 read=[UUID(i) for i in fact.read],
             ),
+            reconstitution=None
+            if turn.reconstitution is None
+            else ReconstitutionView.of(turn.reconstitution),
             reading=None
             if (r := turn.reading) is None
             else ReadingView(
@@ -361,6 +445,17 @@ def build_router(
         """« Vérifier en lisant »: the model reads the set of an answered question, once."""
         try:
             return TurnView.of(reporter.read_set(context, conversation_id, turn_id))
+        except ReporterError as error:
+            raise _refused(error) from error
+
+    @router.post(
+        "/conversations/{conversation_id}/turns/{turn_id}/reconstitute",
+        status_code=status.HTTP_202_ACCEPTED,
+    )
+    def reconstitute(conversation_id: UUID, turn_id: UUID, context: Context) -> TurnView:
+        """« Reconstituer »: the worker extracts the lines by facet, then the analysis."""
+        try:
+            return TurnView.of(reporter.reconstitute(context, conversation_id, turn_id))
         except ReporterError as error:
             raise _refused(error) from error
 

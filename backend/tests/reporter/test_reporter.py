@@ -551,3 +551,55 @@ def test_the_news_of_the_day_are_the_articles_of_the_day(
     answer(worker, context, conversation.id, more.id)
     found = api.get(context, conversation.id)
     assert found is not None and found.turns[1].operation is Operation.EXCLURE
+
+
+def test_without_an_article_that_treats_the_subject_the_reporter_does_not_find(
+    reporter: tuple[Reporter, Reporter, WorkspaceContext, sa.Engine],
+) -> None:
+    """The control of the bench (ADR-0044 §13): « proche » never makes the matter."""
+    api, worker, context, engine = reporter
+    store = PostgresReporterStore(engine)
+    conversation = api.start(context, "Les articles sur la tempête Austen")
+    answer(worker, context, conversation.id, conversation.turns[0].id)
+    found = api.get(context, conversation.id)
+    assert found is not None
+    turn = found.turns[0]
+    near = Judged(Verdict.PROCHE, "proche", True)
+    store.save_turn(
+        context.workspace_id,
+        conversation.id,
+        replace(turn, verdicts={c.id: near for c in turn.candidates}),
+    )
+    asked = api.reconstitute(context, conversation.id, turn.id)
+    assert asked.status == "pending" and asked.reconstitution is not None
+    assert [t.question for t in api.running(context)] == [turn.question]
+    model = FakeModel()
+    answer(
+        Reporter(store, PostgresAssistantStore(engine), model),
+        context,
+        conversation.id,
+        turn.id,
+    )
+    found = api.get(context, conversation.id)
+    assert found is not None
+    done = found.turns[0]
+    assert done.status == "done" and done.reconstitution is not None
+    assert (done.reconstitution.requested, done.reconstitution.lines) == (False, ())
+    assert (done.reconstitution.found, done.reconstitution.read) == (3, 0)
+    assert model.asked == []  # nothing to read, nothing asked
+
+
+def test_a_reconstitution_cancelled_leaves_the_answer_as_it_was(
+    reporter: tuple[Reporter, Reporter, WorkspaceContext, sa.Engine],
+) -> None:
+    api, worker, context, _ = reporter
+    conversation = api.start(context, "Les articles sur la tempête Austen")
+    answer(worker, context, conversation.id, conversation.turns[0].id)
+    turn = conversation.turns[0]
+    api.reconstitute(context, conversation.id, turn.id)
+    with pytest.raises(ReporterError):
+        api.reconstitute(context, conversation.id, turn.id)
+    cancelled = api.cancel(context, conversation.id)
+    assert cancelled is not None
+    ended = cancelled.turns[0]
+    assert (ended.status, ended.reconstitution, len(ended.candidates)) == ("done", None, 3)

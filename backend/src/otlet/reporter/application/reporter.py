@@ -27,6 +27,7 @@ from otlet.assistant.domain.qualify import (
     QUALIFY_SYSTEM,
     Judged,
     Line,
+    Verdict,
     check_qualify,
     qualify_message,
     read_qualify,
@@ -90,6 +91,29 @@ from otlet.reporter.domain.reading import (
     read_reading,
     reading_message,
 )
+from otlet.reporter.domain.reconstitution import (
+    ANALYSIS_SCHEMA,
+    ANALYSIS_SYSTEM,
+    FACETS_SCHEMA,
+    FACETS_SYSTEM,
+    LINES_SCHEMA,
+    LINES_SYSTEM,
+    MATTER_MIN,
+    RebuiltLine,
+    Reconstitution,
+    Sentence,
+    analysis_message,
+    check_analysis,
+    check_facets,
+    check_lines,
+    chosen_evenly,
+    confidence,
+    lines_message,
+    numbered_articles,
+    read_analysis,
+    read_facets,
+    read_lines,
+)
 from otlet.workspaces.domain.model import WorkspaceContext
 
 logger = logging.getLogger(__name__)
@@ -137,6 +161,8 @@ class Turn:
     verdicts: dict[UUID, Judged] = field(default_factory=dict)
     # « Vérifier en lisant »: the set read by the model, asked or done (reading.py).
     reading: Reading | None = None
+    # « Reconstituer »: asked or done (reconstitution.py).
+    reconstitution: Reconstitution | None = None
     error: str | None = None
     model: str | None = None
     prompt_version: str = PROMPT_VERSION
@@ -197,6 +223,13 @@ class ReporterStore(Protocol):
         """Deletes those of the author, with their questions; how many."""
         ...
 
+    def request_reconstitution(
+        self, workspace_id: UUID, user_id: UUID, conversation_id: UUID, turn_id: UUID
+    ) -> Turn:
+        """Puts the answer back to pending, asks for its reconstitution, and enqueues
+        ANSWER_TURN, in one transaction."""
+        ...
+
     def read_further(
         self, workspace_id: UUID, user_id: UUID, conversation_id: UUID, turn_id: UUID
     ) -> Turn:
@@ -222,6 +255,25 @@ def _checked_question(question: str) -> str:
             "invalid_question", f"a question has 1 to {QUESTION_MAX_LENGTH} characters"
         )
     return question
+
+
+def _verdict(verdicts: dict[UUID, Judged], candidate: Candidate) -> Verdict | None:
+    judged = verdicts.get(candidate.id)
+    return None if judged is None else judged.verdict
+
+
+def _subject_question(conversation: Conversation, turn: Turn) -> str:
+    """What is asked of a reconstitution: the search that opened the set, and the questions that
+    narrowed it. « Trie-les » says nothing of the subject."""
+    asked: list[str] = []
+    for one in conversation.turns:
+        if one.position > turn.position:
+            break
+        if one.operation is Operation.CHERCHER:
+            asked = [one.question]
+        elif one.operation in (Operation.RESTREINDRE, Operation.ELARGIR):
+            asked.append(one.question)
+    return " — ".join(asked) or conversation.title
 
 
 def _midnight(day: date) -> datetime:
@@ -307,6 +359,23 @@ class Reporter:
             context.workspace_id, context.user_id, conversation_id, turn_id
         )
 
+    def reconstitute(self, context: WorkspaceContext, conversation_id: UUID, turn_id: UUID) -> Turn:
+        """« Reconstituer » (ADR-0044 §7): only when the author asks; in the background."""
+        conversation = self._store.conversation(context.workspace_id, conversation_id)
+        if conversation is None:
+            raise ReporterError("not_found", "no such conversation")
+        if any(turn.status == "pending" for turn in conversation.turns):
+            raise ReporterError("turn_pending", "the previous question is still being answered")
+        turn = next((t for t in conversation.turns if t.id == turn_id), None)
+        if turn is None or turn.status != "done" or not turn.candidates:
+            raise ReporterError("not_found", "no such answered question")
+        done = turn.reconstitution
+        if done is not None and (done.facets or not done.errors):
+            raise ReporterError("already_read", "this answer has been reconstituted")
+        return self._store.request_reconstitution(
+            context.workspace_id, context.user_id, conversation_id, turn_id
+        )
+
     def get(self, context: WorkspaceContext, conversation_id: UUID) -> Conversation | None:
         return self._store.conversation(context.workspace_id, conversation_id)
 
@@ -366,6 +435,8 @@ class Reporter:
                     turn,
                     status="done",
                     reading=None if asked else turn.reading,
+                    # A reconstitution only exists once asked here: it goes.
+                    reconstitution=None,
                     finished_at=self._now(),
                 )
             self._store.save_turn(context.workspace_id, conversation_id, ended)
@@ -384,6 +455,9 @@ class Reporter:
         if position is None or conversation.turns[position].status != "pending":
             return
         turn = conversation.turns[position]
+        if turn.reconstitution is not None and turn.reconstitution.requested:
+            self._reconstitute(workspace_id, user_id, conversation, turn)
+            return
         if turn.reading is not None and turn.reading.requested and turn.operation is not None:
             self._read_saved(workspace_id, user_id, conversation, turn)
             return
@@ -536,6 +610,113 @@ class Reporter:
         )
 
     # Inside ---------------------------------------------------------------------------------
+
+    def _reconstitute(
+        self, workspace_id: UUID, user_id: UUID, conversation: Conversation, turn: Turn
+    ) -> None:
+        attempts: list[dict[str, Any]] = []
+        models: list[str] = []
+        errors: list[str] = []
+        log = (attempts, models, errors)
+        question = _subject_question(conversation, turn)
+        verdicts = turn.verdicts or self._sort(user_id, question, turn.candidates, log)
+        rebuilt = self._rebuilt(workspace_id, user_id, turn, question, verdicts, log)
+        self._finish(
+            workspace_id,
+            conversation.id,
+            replace(
+                turn,
+                status="done",
+                verdicts=verdicts,
+                reconstitution=replace(rebuilt, errors=tuple(dict.fromkeys(errors))),
+                model=", ".join(dict.fromkeys(models)) or turn.model,
+                attempts=[*turn.attempts, *attempts],
+                finished_at=self._now(),
+            ),
+        )
+
+    def _rebuilt(
+        self,
+        workspace_id: UUID,
+        user_id: UUID,
+        turn: Turn,
+        question: str,
+        verdicts: dict[UUID, Judged],
+        log: tuple[list[dict[str, Any]], list[str], list[str]],
+    ) -> Reconstitution:
+        """The chain of ADR-0044 §7. Without an article that « traite » the subject, the Reporter
+        does not find: « proche » completes the matter, it never makes it."""
+        found = len(turn.candidates)
+        matter = [c for c in turn.candidates if _verdict(verdicts, c) is Verdict.TRAITE]
+        if matter and len(matter) < MATTER_MIN:
+            matter += [c for c in turn.candidates if _verdict(verdicts, c) is Verdict.PROCHE]
+        matter.sort(key=lambda c: c.dated or self._now())
+        chosen = chosen_evenly(matter)
+        if not chosen:
+            return Reconstitution(found=found)
+        articles = self._store.articles(workspace_id, [c.id for c in chosen])
+        dates = {str(c.id): c.dated or self._now() for c in chosen}
+        raw = self._ask(
+            user_id,
+            FACETS_SYSTEM,
+            f"Question : {question}",
+            FACETS_SCHEMA,
+            check_facets,
+            OPERATION_OUTPUT_TOKENS,
+            log,
+        )
+        if raw is None:
+            return Reconstitution(found=found, read=len(articles))
+        form, facets = read_facets(raw)
+        words = " ".join([question, *(f"{f.name} {f.question}" for f in facets)])
+        numbered = numbered_articles(articles, dates)
+        glossary = [stored.entry for stored in self._search.glossary(workspace_id)]
+        kept: list[RebuiltLine] = []
+        flagged: list[RebuiltLine] = []
+        dropped = 0
+        # One call per facet: a local model holds one facet at a time better than all of them.
+        for number, facet in enumerate(facets, 1):
+            raw = self._ask(
+                user_id,
+                LINES_SYSTEM,
+                lines_message(question, facet, numbered),
+                LINES_SCHEMA,
+                check_lines,
+                FACT_OUTPUT_TOKENS,
+                log,
+            )
+            if raw is None:
+                continue
+            new, to_check, lost = read_lines(raw, number, articles, dates, words, glossary, kept)
+            kept += new
+            flagged += to_check
+            dropped += lost
+        lines = tuple(sorted(kept, key=lambda line: (line.dated, line.facet)))
+        level, reasons = confidence(form, facets, lines, glossary)
+        sentences: tuple[Sentence, ...] = ()
+        if lines:
+            raw = self._ask(
+                user_id,
+                ANALYSIS_SYSTEM,
+                analysis_message(question, lines),
+                ANALYSIS_SCHEMA,
+                check_analysis,
+                FACT_OUTPUT_TOKENS,
+                log,
+            )
+            sentences = () if raw is None else read_analysis(raw, lines, articles)
+        return Reconstitution(
+            form=form,
+            facets=facets,
+            lines=lines,
+            flagged=tuple(flagged),
+            sentences=sentences,
+            confidence=level,
+            reasons=reasons,
+            found=found,
+            read=len(articles),
+            dropped=dropped,
+        )
 
     def _finish(self, workspace_id: UUID, conversation_id: UUID, turn: Turn) -> None:
         """Saves an answer, unless the author cancelled the question meanwhile."""

@@ -128,9 +128,9 @@ function Ask({
           {t("reporter.ask")}
         </AiButton>
       </p>
-      {ask.error !== null && (
+      {(ask.error ?? cancel.error) !== null && (
         <p role="alert" className={styles.error}>
-          {errorText(t, ask.error)}
+          {errorText(t, ask.error ?? cancel.error)}
         </p>
       )}
     </form>

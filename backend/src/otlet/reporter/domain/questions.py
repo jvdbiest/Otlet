@@ -21,6 +21,8 @@ QUESTION_MAX_LENGTH = 500
 # A subject has one or two concepts; each « restreindre » adds one (Austen, Bruxelles, blessés).
 CONCEPTS_MAX = 4
 TERMS_MAX = 20
+# A place may name its towns too (« Belgique »): as many terms as the author may send back.
+PLACE_TERMS_MAX = 40
 LANGUAGES = ("fr", "nl", "en")
 
 
@@ -259,7 +261,7 @@ PLACE_NAMES = (
     "bruxelles brussel brussels bruxellois bruxelloise bruxelloises brusselse bruxelles-capitale"
     " brussel-hoofdstad brussels-capital",
     "wallonie wallonia wallonne wallon wallons wallonnes waals waalse",
-    "flandre flandres vlaanderen flanders flamand flamande flamands vlaamse",
+    "flandre vlaanderen flandres flanders flamand flamande flamands vlaamse",
     "liege luik",
     "anvers antwerpen antwerp",
     "gand gent ghent",
@@ -272,10 +274,30 @@ PLACE_NAMES = (
     "hainaut henegouwen",
     "limbourg limburg",
     "luxembourg luxemburg",
+    "wavre waver",
+    "ottignies louvain-la-neuve",
+    "nivelles nijvel",
+    "hasselt",
+    "malines mechelen",
+    "courtrai kortrijk",
+    "tournai doornik",
+    "arlon aarlen",
+    "verviers",
+    "seraing",
+    "louviere",
+    "bastogne",
+    "zaventem",
     "france frankrijk",
     "europe europa europeen europeenne europese",
 )
 PLACES = {word: line.split()[0] for line in PLACE_NAMES for word in line.split()}
+# A country holds its regions and towns: « uniquement en Belgique » lost GSK, whose job
+# losses were « à Wavre » (bench, 2026-10-29).
+COUNTRY_PARTS = {
+    "belgique": {
+        line.split()[0] for line in PLACE_NAMES if line.split()[0] not in ("france", "europe")
+    },
+}
 
 
 PRONOUN_SUFFIX = re.compile(r"(-t)?-(il|elle|ils|elles|on)$")
@@ -493,7 +515,13 @@ def _place_names(places: set[str]) -> list[str]:
     """Every name of the places, in the three languages, as the press writes them: « Brussel »
     and « Bruxelles » for « Bruxelles-Capitale » (bench, 2026-10-30: Bruzz wrote « Brussel »
     and « begroting », and the Reporter searched « Brussels-Capital »)."""
-    return [w for line in PLACE_NAMES for w in line.split() if PLACES[line.split()[0]] in places]
+    lines = [line.split() for line in PLACE_NAMES]
+    names = [w for line in lines if line[0] in places for w in line]
+    parts = {p for place in places for p in COUNTRY_PARTS.get(place, ())} - places
+    # The parts of a country after its own names: the first name of each, then the second.
+    for rank in (0, 1):
+        names += [line[rank] for line in lines if line[0] in parts and len(line) > rank]
+    return list(dict.fromkeys(names))
 
 
 # The little words a place leaves in a term: « hôpitaux en Flandre », « Région de
@@ -508,7 +536,7 @@ def _place_terms(places: set[str], own: list[str]) -> tuple[str, ...]:
     """The terms of a place concept: its common names first, in the spelling of the question
     or the model when they wrote them (« Bruxelles », « België »), then their own terms."""
     spelled = {folded(t): t for t in own}
-    return _clean([*(spelled.get(n, n) for n in _place_names(places)), *own])
+    return _clean([*(spelled.get(n, n) for n in _place_names(places)), *own], PLACE_TERMS_MAX)
 
 
 def _without_place(term: str) -> str:
@@ -596,14 +624,14 @@ def _strings(value: Any) -> list[str]:
     return [v for v in value if isinstance(v, str) and v.strip()] if isinstance(value, list) else []
 
 
-def _clean(terms: list[Any]) -> tuple[str, ...]:
+def _clean(terms: list[Any], most: int = TERMS_MAX) -> tuple[str, ...]:
     seen: dict[str, str] = {}
     for term in terms:
         if isinstance(term, str):
             text = " ".join(term.split())[:TERM_MAX_LENGTH]
             if text and folded(text) not in seen:
                 seen[folded(text)] = text
-    return tuple(seen.values())[:TERMS_MAX]
+    return tuple(seen.values())[:most]
 
 
 def read_operation(raw: str) -> Translated:
@@ -718,7 +746,7 @@ def guarded(
         if not any(said(w) for w in (concept.name, *concept.terms)):
             return None
         if said(concept.name) and folded(concept.name) not in {folded(t) for t in concept.terms}:
-            return Concept(concept.name, _clean([concept.name, *concept.terms]))
+            return Concept(concept.name, _clean([concept.name, *concept.terms], PLACE_TERMS_MAX))
         return concept
 
     proposed = tuple(
@@ -755,7 +783,7 @@ def guarded(
     # None named: the first stays, unless it is made of the words of a period.
     fallback = tuple(c for c in proposed[:1] if not _of_period(c))
     numbered_names = tuple(
-        Concept(c.name, _clean([_numbered_phrase(t) for t in c.terms]))
+        Concept(c.name, _clean([_numbered_phrase(t) for t in c.terms], PLACE_TERMS_MAX))
         for c in kept_concepts or fallback
     )
     kept = replace(translated, concepts=with_quoted(question, numbered_names), days=period)

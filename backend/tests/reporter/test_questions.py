@@ -379,3 +379,12 @@ def test_an_acronym_of_the_name_is_a_concept_of_its_own() -> None:
         Concept("grèves", ("grèves", "grèves ferroviaires", "stakingen", "strikes")),
         Concept("SNCB", ("SNCB",)),
     )
+
+
+def test_a_country_holds_its_regions_and_towns() -> None:
+    """« uniquement en Belgique » lost GSK, « à Wavre » (bench, 2026-10-29)."""
+    belgium = Concept("Belgique", ("Belgique",))
+    kept = guarded("uniquement en Belgique", Translated(Operation.RESTREINDRE, (belgium,), None))
+    terms = {t.casefold() for t in kept.concepts[0].terms}
+    assert {"belgique", "wavre", "bruxelles", "vlaanderen", "liege"} <= terms
+    assert "france" not in terms

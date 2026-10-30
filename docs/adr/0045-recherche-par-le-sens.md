@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Statut | Proposé (2026-10-30) |
+| Statut | Proposé (2026-10-30) ; spike conclu le même jour |
 | Date | 2026-10-30 |
 | Décideur | Joël |
 | Documents touchés | ADR-0035 (recherche plein texte close pour É1), ADR-0033 (fonction de recherche), ADR-0043 (moteur de l'Assistant de veille), ADR-0044 (Reporter) ; `TECH_CHOICES.md` §8 ; ADR-0025 (qualité d'abord) |
@@ -36,9 +36,24 @@ Joël ne veut pas d'un glossaire à gérer : la solution doit vivre seule.
 - **Mémoire et disque** : le poids du modèle chargé dans le worker, et la taille de l'index pour 30 000 éléments.
 - **Latence** : le p95 de la recherche hybride, comparé au seuil de L2 (300 ms) qu'ADR-0035 remet à l'épreuve à I4.
 
+## Résultats du spike (2026-10-30)
+
+Rapport complet : `spikes/a2-sens/RAPPORT.md`. Sur 7 questions qui avaient échoué, avec MiniLM-L12 multilingue (384 dimensions, ONNX, local) :
+
+- **hôpitaux en Flandre** : 0 article juste avec les mots, 3 sur 3 avec le sens, en tête ;
+- **victimes de l'accident en Espagne** : 15 avec les mots, 20 avec l'hybride ;
+- **pertes d'emploi en Belgique** : 5 avec les mots, 10 avec l'hybride ;
+- **budget bruxellois** : 6 avec les mots, 8 avec l'hybride ;
+- **IA à l'école** et **essais de motos** : gain faible ou nul ;
+- l'hybride ne recule nettement sur aucune question.
+
+Coût sur le NAS : 322 ms par élément (environ 7 minutes par jour pour le flux réel), 725 Mo de mémoire au pic, 0,22 Go de modèle, 6,5 Mo d'index pour 4 213 éléments. mpnet-base fait à peine mieux, pour trois fois le temps et deux fois la mémoire.
+
+Recommandation du spike : l'option 1 avec MiniLM-L12 multilingue, et une mesure de mémoire de la pile complète sur le NAS avant de fermer le lot.
+
 ## Décision
 
-À prendre par Joël : lancer le spike de l'option 1, ou en rester à l'option 3.
+À prendre par Joël : retenir l'option 1 (mise en œuvre par lots) ou en rester à l'option 3.
 
 ## Conséquences si l'option 1 est retenue après le spike
 

@@ -22,9 +22,11 @@ from otlet.writing.domain.draft import (
     WORDS,
     SourceText,
     asks_dates,
+    asks_order,
     check_answer,
     cited_keys,
     dated_headings,
+    in_order,
     lone_sections,
     longest_for,
     matter_level,
@@ -34,9 +36,10 @@ from otlet.writing.domain.draft import (
     repeated_paragraphs,
     source_budget,
     to_document,
+    without_copied_passages,
     without_repeats,
 )
-from otlet.writing.domain.guardrails import copying, unsupported
+from otlet.writing.domain.guardrails import copied_sequences, copying, unsupported
 from otlet.writing.domain.vocabulary import choice
 
 GENERATE_DRAFT = "writing.generate_draft"
@@ -230,16 +233,17 @@ class Drafts:
         chosen = {f: choice(f, getattr(fields, f)) for f in ("audience", "tone", "channel")}
         # The charter takes room in the window too: as much less for the sources.
         budget = max(source_budget(window, output) - len(charter), 0)
-        sources = prompt_sources(texts, budget)
+        sources = prompt_sources(texts, budget, f"{fields.title} {fields.angle}")
         keys = [source.key for source in sources]
+        copied_from = copied_sequences([f"{text.title}\n{text.text}" for text in texts])
         checks = 0
         dated = asks_dates(fields)
         refusals: list[list[str]] = []
 
         def validate(raw: str) -> list[str]:
-            # The first answer must cite every source: if not, the gateway sends it back once
-            # with the sources it left out. The repaired answer is kept even if it still
-            # leaves some out: the version then says which (a warning, not a failure).
+            # An answer that leaves a source out is sent back once by the gateway, with those
+            # sources, to add them if they speak to the subject. The repaired answer is kept even
+            # if it still leaves some out: the version then says which (a warning, not a failure).
             nonlocal checks
             checks += 1
             first = checks == 1
@@ -254,6 +258,7 @@ class Drafts:
                 repeats=first,
                 in_text=first,
                 dates=first and dated,
+                copied_from=copied_from if first else frozenset(),
             )
             refusals.append(found)
             return found
@@ -320,9 +325,12 @@ class Drafts:
             return
         # A section the model copied is taken out; the details say what was (Joël, 2026-10-25).
         answer = without_repeats(written.text)
+        answer, removed = without_copied_passages(answer, copied_from)
         if dated:
             # Asked dates the model left out: the date of the source, without a model.
             answer = dated_headings(answer, sources, fields.language)
+        if asks_order(fields):
+            answer = in_order(answer)
         title, document = to_document(answer, sources, fields.language)
         cut = [source.source.title for source in sources if source.cut]
         cited = cited_keys(answer)
@@ -351,7 +359,8 @@ class Drafts:
             # the version says which (a warning, not a failure).
             details["lone_sections"] = lone_sections(answer)
         details["repeated_paragraphs"] = repeated_paragraphs(written.text)
-        details.update(checked(written.text, texts, brief.fields))
+        details["copies_removed"] = removed
+        details.update(checked(answer, texts, brief.fields))
         self._articles.finish(workspace_id, generation_id, None, written.attempts, made, details)
 
 

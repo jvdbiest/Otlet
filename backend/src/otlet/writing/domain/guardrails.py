@@ -19,6 +19,8 @@ from dataclasses import dataclass
 # passage worth showing (a sentence, roughly).
 COPY_GRAM = 8
 COPY_PASSAGE = 12
+# A passage this long is no longer a shared turn of phrase: it is refused, then taken out.
+COPY_LONG = 25
 # Words with a capital that start sentences or are capitalized by habit, not names.
 NOT_NAMES = frozenset(
     """le la les l un une des de du d au aux ce cet cette ces il elle ils elles on en dans pour
@@ -151,13 +153,43 @@ def unsupported(paragraphs: list[str], sources: list[str], allowed: str = "") ->
     return findings
 
 
-def copying(paragraphs: list[str], sources: list[str]) -> Copying:
-    """The share of the draft's sequences of COPY_GRAM words found in a source, and its copied
-    passages of COPY_PASSAGE words or more."""
+def copied_sequences(sources: list[str]) -> frozenset[tuple[str, ...]]:
+    """The sequences of COPY_GRAM words of the sources."""
     grams: set[tuple[str, ...]] = set()
     for source in sources:
         words = fold(source).split()
         grams |= {tuple(words[i : i + COPY_GRAM]) for i in range(len(words) - COPY_GRAM + 1)}
+    return frozenset(grams)
+
+
+def longest_copy(paragraph: str, grams: frozenset[tuple[str, ...]]) -> int:
+    """The length in words of the longest passage of a paragraph found in a source."""
+    words = fold(paragraph).split()
+    longest = run = 0
+    for i in range(len(words) - COPY_GRAM + 1):
+        run = run + 1 if tuple(words[i : i + COPY_GRAM]) in grams else 0
+        longest = max(longest, run)
+    return longest + COPY_GRAM - 1 if longest else 0
+
+
+def without_copied(paragraph: str, grams: frozenset[tuple[str, ...]]) -> tuple[str, list[str]]:
+    """A paragraph with a long copied passage, without the sentences of that passage; and them."""
+    if longest_copy(paragraph, grams) < COPY_LONG:
+        return paragraph, []
+    kept: list[str] = []
+    removed: list[str] = []
+    for sentence in re.split(r"(?<=[.!?…])\s+", paragraph):
+        words = fold(sentence).split()
+        sequences = [tuple(words[i : i + COPY_GRAM]) for i in range(len(words) - COPY_GRAM + 1)]
+        hits = sum(sequence in grams for sequence in sequences)
+        (removed if sequences and hits / len(sequences) >= 0.8 else kept).append(sentence)
+    return " ".join(kept), removed
+
+
+def copying(paragraphs: list[str], sources: list[str]) -> Copying:
+    """The share of the draft's sequences of COPY_GRAM words found in a source, and its copied
+    passages of COPY_PASSAGE words or more."""
+    grams = copied_sequences(sources)
     total = copied = 0
     passages: list[tuple[str, str, int]] = []
     for paragraph in paragraphs:

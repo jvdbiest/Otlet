@@ -285,7 +285,7 @@ PLACE_NAMES = (
     "arlon aarlen",
     "verviers",
     "seraing",
-    "louviere",
+    "louviere louvière",
     "bastogne",
     "zaventem",
     "france frankrijk",

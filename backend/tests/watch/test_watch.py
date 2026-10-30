@@ -198,7 +198,8 @@ def test_search_stems_each_language_and_skips_reserved_texts(world: World) -> No
     )
     world.run_jobs()
     found = [f.item.title for f in world.watch.search(world.context, "élection")]
-    assert found == ["Les élections municipales"]
+    # Without its accent, « élection » is also the English word (migration 0043).
+    assert found == ["Les élections municipales", "Election results"]
     assert [f.item.title for f in world.watch.search(world.context, "voter")] == [
         "Election results"
     ]
@@ -413,7 +414,8 @@ def test_search_candidates_tests_one_merged_query(world: World, migrated: TestDa
         source = connection.execute(
             sa.text("SELECT prosrc FROM pg_proc WHERE proname = 'search_candidates'")
         ).scalar_one()
-    assert source.count("@@") == 1 and "string_agg(DISTINCT" in source
+    # Then each item found is read again in its own language (migration 0043).
+    assert "i.search @@ (SELECT string_agg(DISTINCT" in source
     mixed = world.source("mixed")
     world.publish(mixed, "1", "Le monde change", "Une revue du monde entier.")
     world.publish(mixed, "2", "The world changes", "A review of the whole world.", language="en")

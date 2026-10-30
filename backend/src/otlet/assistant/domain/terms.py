@@ -154,6 +154,10 @@ def publisher_country(url: str | None) -> str | None:
 # « Austen » of 50; the sets swelled to 400, then fell to 0).
 GENERAL_SHARE = 0.10
 GENERAL_RATIO = 4
+# Next to one word, many times more is not enough: « tempêtes », 52 items of 2,360, was set aside
+# next to « intempéries », 9, and the storm Austen with it (Joël, 2026-10-30). Next to a phrase
+# (« piratage de Binance »), the ratio alone decides: the phrase names something precise.
+GENERAL_RATIO_SHARE = 0.03
 # Under this many items, a term is never too general: a small Veille has no common words.
 GENERAL_MIN = 20
 
@@ -165,13 +169,18 @@ def too_general(concepts: list[Widened], counts: dict[str, int], total: int) -> 
     for widened in concepts:
         terms = widened.all_terms
         first = counts.get(terms[0], 0)
+        phrase = " " in terms[0].strip()
         general = tuple(
             term
             for term in terms[1:]
             if counts.get(term, 0) >= GENERAL_MIN
             and (
                 counts.get(term, 0) > GENERAL_SHARE * total
-                or (first > 0 and counts.get(term, 0) > GENERAL_RATIO * first)
+                or (
+                    first > 0
+                    and counts.get(term, 0) > GENERAL_RATIO * first
+                    and (phrase or counts.get(term, 0) > GENERAL_RATIO_SHARE * total)
+                )
             )
         )
         out.append(Widened(widened.concept, widened.added, general))

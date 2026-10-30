@@ -9,7 +9,7 @@ import sqlalchemy as sa
 from integration_support import TestDatabase, requires_database
 from otlet.assistant.adapters.postgres import PostgresAssistantStore
 from otlet.assistant.application.assistant import Assistant
-from otlet.assistant.domain.terms import Concept, TermsError
+from otlet.assistant.domain.terms import Concept, TermsError, Widened
 from otlet.collection.adapters.postgres import PostgresCollectionStore
 from otlet.collection.application.ports import NewItem, Outcome
 from otlet.collection.domain.model import FeedEntry, TextStatus
@@ -310,3 +310,36 @@ def test_a_cancelled_dossier_keeps_what_it_found(
     dossiers.run(context.workspace_id, context.user_id, started.id)
     found = dossiers.get(context, started.id)
     assert found is not None and found.error == "cancelled" and found.model is None
+
+
+def test_a_term_is_read_in_the_language_of_the_item(
+    assistant: tuple[Assistant, WorkspaceContext, sa.Engine],
+) -> None:
+    """« showers » is « show » for the German stemmer: it found every show of a French corpus."""
+    _, context, engine = assistant
+    collect(
+        engine,
+        context,
+        "lesoir",
+        "fr",
+        [
+            ("Un grand show à Bruxelles", "Le concert de la semaine.", 1),
+            ("Le hack de la plateforme", "Une attaque informatique.", 1),
+            ("Jorge Martin gagne le Grand Prix", "Une belle course.", 1),
+        ],
+    )
+    collect(engine, context, "vrt", "nl", [("Nieuwe stormen op komst", "Veel regen.", 1)])
+    store = PostgresAssistantStore(engine)
+
+    def titles(term: str) -> list[str]:
+        found = store.candidates(
+            context.workspace_id, [Widened(Concept(term, (term,)), ())], None, 10
+        )
+        return [c.title for c in found]
+
+    assert titles("showers") == []
+    # In its own language, in English, and without accents.
+    assert titles("stormen") == ["Nieuwe stormen op komst"]
+    assert titles("show") == ["Un grand show à Bruxelles"]
+    assert titles("hacking") == ["Le hack de la plateforme"]
+    assert titles("Jorge Martín") == ["Jorge Martin gagne le Grand Prix"]

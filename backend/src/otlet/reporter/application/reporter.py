@@ -54,9 +54,9 @@ from otlet.reporter.domain.questions import (
     CONCEPTS_MAX,
     OPERATION_SCHEMA,
     OPERATION_SYSTEM,
+    PLACE_TERMS_MAX,
     PROMPT_VERSION,
     QUESTION_MAX_LENGTH,
-    TERMS_MAX,
     Operation,
     State,
     Translated,
@@ -729,8 +729,8 @@ def _checked(concepts: list[Concept]) -> tuple[Concept, ...]:
     out = []
     for concept in concepts:
         terms = tuple(dict.fromkeys(" ".join(t.split()) for t in concept.terms if t.strip()))
-        if not 1 <= len(terms) <= TERMS_MAX:
-            raise TermsError("invalid_terms", f"a concept has 1 to {TERMS_MAX} terms")
+        if not 1 <= len(terms) <= PLACE_TERMS_MAX:
+            raise TermsError("invalid_terms", f"a concept has 1 to {PLACE_TERMS_MAX} terms")
         out.append(Concept(" ".join(concept.name.split()) or terms[0], terms))
     if not 1 <= len(out) <= CONCEPTS_MAX:
         raise TermsError("invalid_concepts", f"a set has 1 to {CONCEPTS_MAX} concepts")

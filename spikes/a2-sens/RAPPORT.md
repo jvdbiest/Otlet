@@ -54,3 +54,10 @@ Retenir l'option 1 d'ADR-0045 avec MiniLM-L12 multilingue. Mise en œuvre par é
 2. une tâche qui encode après chaque collecte, puis une reprise de l'existant ;
 3. la fusion hybride dans le moteur de l'Assistant et du Reporter, les termes restant visibles ;
 4. une mesure de mémoire de la pile complète sur le NAS avant de fermer le lot.
+
+## Après la décision : sens-2 à sens-4 (2026-10-30)
+
+- **Par question ou par concept** (`evaluate_concepts.py`) : chercher le sens concept par concept est plus précis (hôpitaux : 3 justes sur 4 ; victimes : 18 sur 23), mais trouve moins (budget bruxellois : 4 contre 8 ; emploi : 7 contre 10). Retenu : le sens de la question qui ouvre une recherche, les restrictions posées ensuite s'appliquant aussi aux éléments trouvés par le sens.
+- **Seuil** (`closeness.py`) : les éléments pertinents des bancs sont presque tous au-dessus de 0,6 de proximité ; une question sur rien de la Veille (« curling en Mongolie ») plafonne à 0,53, et les grèves SNCB, absentes, à 0,58. Retenu : les 60 plus proches, s'ils dépassent 0,6.
+- **Banc réel (sens-3, qwen3:14b, 9 sujets)** : les trois articles flamands sur les hôpitaux sortent dans les 6 premiers (aucun avant) ; « Qui sont les victimes ? » garde les deux articles qui les identifient ; les pertes d'emploi gagnent l'article néerlandais sur les licenciements collectifs ; aucune régression sur Tesla et le budget fédéral. L'IA à l'école reste bruitée.
+- **Mémoire sur le NAS (sens-4)**, avec l'encodeur retenu (ONNX Runtime, sans fastembed) : sens d'une question en 3,9 s, modèle compris, 767 Mo au pic, rendus ensuite ; encodage en tâche de fond à 327 ms par élément. La pile d'Otlet au repos sur la VM .252 : worker 150 Mo, API 300 Mo, base 180 Mo. Le pic reste dans une machine de 4 Go. Il est transitoire : 2 à 4 secondes par question, quelques minutes par passe d'encodage.

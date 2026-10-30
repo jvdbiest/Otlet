@@ -852,7 +852,7 @@ def _numbered_phrase(term: str) -> str:
 # « nouveaux moniteurs » is a search for monitors: as a term, it found nothing, and the set with
 # it (Joël, 2026-10-30). « New York » or « Nouvel An » name something: a capital follows.
 NEW_HEAD = re.compile(
-    r"^(?:nouveaux|nouveau|nouvelles|nouvelle|nouvel|new|nieuwe|nieuw)\s+(?=[a-zà-ÿ])",
+    r"^(?:nouveaux|nouveau|nouvelles|nouvelle|nouvel|new|nieuwe|nieuw)\s+(?=(?-i:[a-zà-ÿ]))",
     re.IGNORECASE,
 )
 

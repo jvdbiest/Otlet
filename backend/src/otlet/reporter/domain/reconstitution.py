@@ -12,7 +12,7 @@ which is right, and weak on the start and end of a storm, which the confidence s
 
 import json
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
 from enum import StrEnum
 from typing import Any
@@ -147,8 +147,9 @@ ANALYSIS_SYSTEM = (
     "les articles), écris deux choses. Dans « reponse », 2 à 4 phrases qui répondent directement à "
     "la question de l'auteur, comme à quelqu'un qui ne lira rien d'autre : la conclusion "
     "principale d'abord, puis chaque partie de la question ; dis clairement ce que les lignes ne "
-    "permettent pas de dire. Pas une description des articles : la réponse. Dans « phrases », une "
-    "analyse courte (3 à 6 phrases) qui détaille cette réponse. "
+    "permettent pas de dire, en parlant des articles lus, jamais des « lignes ». Pas une "
+    "description des articles : la réponse. Chaque entrée est une seule phrase, sans redite. Dans "
+    "« phrases », une analyse courte (3 à 6 phrases) qui détaille cette réponse. "
     "Pour chaque phrase, donne les numéros des lignes qui la portent, sans jamais les écrire dans "
     "le texte. Une déduction (ce que les "
     "lignes laissent penser sans le dire) est permise, mais marque-la comme déduction et "
@@ -218,7 +219,8 @@ def chosen_evenly(items: list[Any]) -> list[Any]:
 
 def numbered_articles(articles: list[Article], dates: dict[str, datetime]) -> str:
     return "\n\n".join(
-        f"[{n}] {a.publisher}, {dates[a.item_id]:%d/%m %H:%M} — {a.text[:BODY_CHARS]}"
+        # The day only: « 23/10 20:52 » was taken for the end of a storm, not of the article.
+        f"[{n}] {a.publisher}, article du {dates[a.item_id]:%d/%m} — {a.text[:BODY_CHARS]}"
         for n, a in enumerate(articles, 1)
     )
 
@@ -445,17 +447,29 @@ def confidence(
 
 
 # « (L1, L6) » in a sentence: the numbers belong to its lines, not to its text.
-LINE_NUMBERS = re.compile(r"\s*\(?\bL\d+(?:\s*,\s*L\d+)*\)?")
+LINE_NUMBERS = re.compile(
+    r"\s*(?:,\s*)?(?:comme indiqué dans\s+)?\(?\b(?:L\d+(?:\s*,\s*L\d+)*"
+    r"|(?:les\s+)?lignes?\s+\d+(?:\s*(?:,|et)\s*\d+)*)\)?",
+    re.IGNORECASE,
+)
+# The answer stops at two sentences or more: asked for one sentence an entry, a model may still
+# write the whole answer in the first, then say it again in the second (bench, 2026-10-31).
+ANSWER_ENOUGH = 2
+OUR_WORD = re.compile(r"\b([Ll]es) lignes\b")
 
 
 def read_analysis(
     raw: str, lines: tuple[RebuiltLine, ...], articles: list[Article]
 ) -> tuple[tuple[Sentence, ...], tuple[Sentence, ...]]:
     """The answer and the analysis, each sentence with its lines."""
-    return (
-        _sentences(raw, "reponse", lines, articles),
-        _sentences(raw, "phrases", lines, articles),
-    )
+    answer: list[Sentence] = []
+    for sentence in _sentences(raw, "reponse", lines, articles):
+        written = sum(len(re.findall(r"[.!?…](?:\s|$)", s.text)) for s in answer)
+        if written >= ANSWER_ENOUGH:
+            break
+        # « Lignes » is a word of the prompt: the reader knows articles.
+        answer.append(replace(sentence, text=OUR_WORD.sub(r"\1 articles lus", sentence.text)))
+    return tuple(answer), _sentences(raw, "phrases", lines, articles)
 
 
 def _sentences(

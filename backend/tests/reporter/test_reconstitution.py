@@ -171,3 +171,25 @@ def test_a_story_updated_gives_one_line_and_line_numbers_are_no_part_of_a_senten
     sentences, _ = read_analysis(raw, (line,), [ARTICLE])
     assert sentences[0].text == "La tempête a touché Bruxelles."
     assert sentences[0].unsupported == ()
+
+
+def test_the_answer_says_it_once_without_numbers_of_lines() -> None:
+    line = RebuiltLine(1, "a", "La DH", DAY.isoformat(), "Quatre blessés", "", "", "Quatre")
+    whole = {"texte": "La tempête a blessé quatre personnes. Bruxelles est touchée.", "lignes": [1]}
+    again = {"texte": "Quatre personnes ont été blessées.", "lignes": [1]}
+    detail = {
+        "texte": "Bruxelles est touchée, comme indiqué dans les lignes 1 et 1.",
+        "lignes": [1],
+    }
+    raw = json.dumps({"reponse": [whole, again], "phrases": [detail]})
+    answer, sentences = read_analysis(raw, (line,), [ARTICLE])
+    assert [s.text for s in answer] == [whole["texte"]]
+    assert sentences[0].text == "Bruxelles est touchée."
+    assert sentences[0].unsupported == ()
+
+
+def test_the_answer_speaks_of_articles() -> None:
+    line = RebuiltLine(1, "a", "La DH", DAY.isoformat(), "Quatre blessés", "", "", "Quatre")
+    one = {"texte": "Les lignes ne disent pas la fin.", "lignes": [1]}
+    answer, _ = read_analysis(json.dumps({"reponse": [one], "phrases": []}), (line,), [ARTICLE])
+    assert answer[0].text == "Les articles lus ne disent pas la fin."

@@ -405,8 +405,15 @@ function ItemSet({
   const inTheme = picked === undefined || picked === null ? turn.candidates : turn.candidates.filter((c) => picked.items.includes(c.id));
   const sorted = inTheme.some((c) => c.judged !== null);
   const kept = sorted ? inTheme.filter((c) => c.judged?.verdict === "traite") : inTheme;
-  const chosen = (kept.length > 0 ? kept : inTheme).slice(0, BRIEF_MAX);
-  const count = (verdict: string) => turn.candidates.filter((c) => c.judged?.verdict === verdict).length;
+  const count = (verdict: string) => inTheme.filter((c) => c.judged?.verdict === verdict).length;
+  const toBrief = (items: TurnCandidate[]) => {
+    void navigate({
+      to: "/redaction/nouveau",
+      search: { items: items.slice(0, BRIEF_MAX).map((c) => c.id).join(","), title, angle: "" },
+    });
+  };
+  // After a sort, the kept ones or the whole set, when it fits in a brief: the author chooses.
+  const someKept = sorted && kept.length > 0 && kept.length < inTheme.length;
   return (
     <>
       <p className={styles.row}>
@@ -471,25 +478,39 @@ function ItemSet({
       {last && turn.candidates.length > 0 && (
         <Suggestions workspaceId={workspaceId} conversationId={conversationId} turn={turn} />
       )}
-      {last && !sorted && turn.candidates.length > BRIEF_MAX && (
+      {last && !sorted && inTheme.length > BRIEF_MAX && (
         <p className={styles.help}>{t("reporter.sortFirst", { max: BRIEF_MAX })}</p>
       )}
-      {last && chosen.length > 0 && (
-        <p className={styles.row}>
-          <button
-            type="button"
-            className={styles.button}
-            onClick={() => {
-              void navigate({
-                to: "/redaction/nouveau",
-                search: { items: chosen.map((c) => c.id).join(","), title, angle: "" },
-              });
-            }}
-          >
-            {chosen.length < inTheme.length
-              ? t("reporter.toBriefFirst", { count: chosen.length })
-              : t("reporter.toBrief", { count: chosen.length })}
-          </button>
+      {inTheme.length > 0 && (
+        <p className={styles.row} style={{ flexWrap: "wrap" }}>
+          {someKept && (
+            <button
+              type="button"
+              className={styles.button}
+              onClick={() => {
+                toBrief(kept);
+              }}
+            >
+              {kept.length > BRIEF_MAX
+                ? t("reporter.toBriefKeptFirst", { count: BRIEF_MAX })
+                : t("reporter.toBriefKept", { count: kept.length })}
+            </button>
+          )}
+          {(!someKept || inTheme.length <= BRIEF_MAX) && (
+            <button
+              type="button"
+              className={styles.button}
+              onClick={() => {
+                toBrief(inTheme);
+              }}
+            >
+              {inTheme.length > BRIEF_MAX
+                ? t("reporter.toBriefFirst", { count: BRIEF_MAX })
+                : someKept
+                  ? t("reporter.toBriefAll", { count: inTheme.length })
+                  : t("reporter.toBrief", { count: inTheme.length })}
+            </button>
+          )}
         </p>
       )}
     </>

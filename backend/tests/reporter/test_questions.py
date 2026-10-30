@@ -30,7 +30,8 @@ def answer(operation: str, *concepts: tuple[str, list[str]], langue: str | None 
 
 def test_an_answer_is_read_and_cleaned() -> None:
     raw = answer("chercher", ("Austen", [" tempête  Austen", "Austen", "austen", ""]))
-    assert check_operation(raw) == []
+    # One list of terms is still read; the model is asked for one list by language.
+    assert check_operation(raw) != []
     assert read_operation(raw) == Translated(
         Operation.CHERCHER, (Concept("Austen", ("tempête Austen", "Austen")),), None
     )
@@ -339,3 +340,28 @@ def test_the_third_bench_of_2026_10_30() -> None:
         "Qu'en pensent les indépendants ?", Translated(Operation.RESTREINDRE, (view,), None)
     )
     assert kept.concepts == (Concept("indépendants", ("indépendants", "zelfstandigen")),)
+
+
+def test_terms_are_asked_in_every_language() -> None:
+    """« hôpitaux » alone missed « Vlaamse ziekenhuizen » (bench, 2026-10-30)."""
+    by_language = json.dumps(
+        {
+            "operation": "chercher",
+            "concepts": [
+                {
+                    "name": "hôpitaux",
+                    "fr": ["hôpitaux"],
+                    "nl": ["ziekenhuizen"],
+                    "en": ["hospitals"],
+                }
+            ],
+        }
+    )
+    assert check_operation(by_language) == []
+    assert read_operation(by_language).concepts == (
+        Concept("hôpitaux", ("hôpitaux", "ziekenhuizen", "hospitals")),
+    )
+    missing = by_language.replace('["ziekenhuizen"]', "[]")
+    assert check_operation(missing) == [
+        "concepts[0]: give terms in nl (a proper name is repeated as it is)"
+    ]

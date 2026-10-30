@@ -16,7 +16,7 @@ from typing import Any
 
 from otlet.assistant.domain.terms import TERM_MAX_LENGTH, Concept, folded
 
-PROMPT_VERSION = "reporter-2"
+PROMPT_VERSION = "reporter-3"
 QUESTION_MAX_LENGTH = 500
 # A subject has one or two concepts; each « restreindre » adds one (Austen, Bruxelles, blessés).
 CONCEPTS_MAX = 4
@@ -62,8 +62,10 @@ OPERATION_SYSTEM = (
     "- « trier » : garder ceux qui portent vraiment sur le sujet ;\n"
     "- « fait » : une question dont la réponse est un nombre ou une date ;\n"
     "- « agir » : garder le dossier, préparer un brief.\n"
-    "Termes : 1 à 3 mots, les formes courtes des titres de presse d'abord (Bruxelles, bruxellois, "
-    "Brussel), dans les trois langues, 8 au plus par concept, jamais de terme trop général "
+    "Termes : pour chaque concept, trois listes, « fr », « nl » et « en », chacune de 1 à 4 "
+    "termes de 1 à 3 mots, tels que la presse de cette langue les écrit dans ses titres "
+    "(fr : hôpitaux, budget ; nl : ziekenhuizen, begroting ; en : hospitals, budget) ; un nom "
+    "propre se répète tel quel dans chaque langue (Tesla), jamais de terme trop général "
     "(« météo », « course », « nouveau »). Un concept ne contient que des mots qui le désignent : "
     "jamais un lieu ou un aspect dans le concept du sujet. Un sujet simple (un nom, un événement) "
     "n'a qu'un concept ; restreindre ajoute exactement un concept. Un groupe (« les clubs "
@@ -80,9 +82,11 @@ OPERATION_SCHEMA: dict[str, Any] = {
                 "type": "object",
                 "properties": {
                     "name": {"type": "string"},
-                    "terms": {"type": "array", "items": {"type": "string"}},
+                    "fr": {"type": "array", "items": {"type": "string"}},
+                    "nl": {"type": "array", "items": {"type": "string"}},
+                    "en": {"type": "array", "items": {"type": "string"}},
                 },
-                "required": ["name", "terms"],
+                "required": ["name", "fr", "nl", "en"],
             },
         },
         "langue": {"type": ["string", "null"]},
@@ -559,7 +563,19 @@ def check_operation(raw: str) -> list[str]:
         return ["operation: one of " + ", ".join(o.value for o in Operation) + " is required"]
     if not isinstance(data.get("concepts"), list):
         return ["concepts: a list is required"]
-    return []
+    # Every language of the Veille, or its items are never found: the model gave « hôpitaux »
+    # and the Flemish hospitals wrote « ziekenhuizen » (bench, 2026-10-30).
+    return [
+        f"concepts[{n}]: give terms in {lang} (a proper name is repeated as it is)"
+        for n, entry in enumerate(data["concepts"])
+        if isinstance(entry, dict)
+        for lang in LANGUAGES
+        if not _strings(entry.get(lang))
+    ]
+
+
+def _strings(value: Any) -> list[str]:
+    return [v for v in value if isinstance(v, str) and v.strip()] if isinstance(value, list) else []
 
 
 def _clean(terms: list[Any]) -> tuple[str, ...]:
@@ -576,8 +592,13 @@ def read_operation(raw: str) -> Translated:
     data = json.loads(raw)
     concepts = []
     for entry in data["concepts"]:
-        if isinstance(entry, dict) and isinstance(entry.get("terms"), list):
-            terms = _clean(entry["terms"])
+        if not isinstance(entry, dict):
+            continue
+        # Terms by language (reporter-3), or one list (before).
+        written = [t for lang in LANGUAGES for t in _strings(entry.get(lang))]
+        written += _strings(entry.get("terms"))
+        if written:
+            terms = _clean(written)
             if terms:
                 name = " ".join(str(entry.get("name") or terms[0]).split())[:TERM_MAX_LENGTH]
                 concepts.append(Concept(name or terms[0], terms))

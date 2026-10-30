@@ -821,7 +821,15 @@ def guarded(
         # A word of the question the model left out of every term is searched too: « SNCB »
         # stayed in the name « grèves SNCB », « école » was dropped (bench, 2026-10-29).
         # A number (« VI » of « GTA VI ») is never a subject of its own.
-        kept_concepts = (*kept_concepts, Concept(words_left[0], (words_left[0],)))
+        word = words_left[0]
+        # With the model's own terms for it, when one of its concepts holds a close word
+        # (« prévenu » and « prévenir, avertir, waarschuwen » of a concept named « avait »).
+        related = next(
+            (c.terms for c in translated.concepts if any(_likeness(word, t) >= 5 for t in c.terms)),
+            (),
+        )
+        terms = [t for t in related if folded(t) not in QUESTION_WORDS]
+        kept_concepts = (*kept_concepts, Concept(word, _clean([word, *terms])))
     period = asked_period(question, today)
     # None named: the first stays, unless it is made of the words of a period.
     fallback = tuple(c for c in proposed[:1] if not _of_period(c))

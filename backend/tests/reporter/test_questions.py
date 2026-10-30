@@ -413,3 +413,15 @@ def test_the_bench_of_2026_10_30_afternoon() -> None:
         Translated(Operation.CHERCHER, (driver,), None),
     )
     assert [c.name for c in kept.concepts] == ["conducteur de train", "Espagne"]
+
+
+def test_a_word_rescued_takes_the_model_terms_close_to_it() -> None:
+    driver = Concept("conducteur de train", ("conducteur de train", "Espagne", "Spanje"))
+    warned = Concept("avait", ("avait", "prévenir", "avertir", "waarschuwen"))
+    kept = guarded(
+        "Le conducteur du train en Espagne avait-il prévenu ?",
+        Translated(Operation.CHERCHER, (driver, warned), None),
+    )
+    assert kept.concepts[-1] == Concept(
+        "prévenu", ("prévenu", "prévenir", "avertir", "waarschuwen")
+    )

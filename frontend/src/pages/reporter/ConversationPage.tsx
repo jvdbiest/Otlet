@@ -45,6 +45,8 @@ export function ConversationPage({ conversationId }: { conversationId: string })
 function Conversation({ workspaceId, conversationId }: { workspaceId: string; conversationId: string }) {
   const { t } = useTranslation();
   const conversation = useQuery(conversationQuery(workspaceId, conversationId));
+  // The articles chosen for a brief: of the whole conversation, whatever the question asked next.
+  const [selected, setSelected] = useState<string[]>([]);
   if (conversation.data === undefined) {
     return conversation.error !== null ? (
       <p role="alert">{errorText(t, conversation.error)}</p>
@@ -69,6 +71,8 @@ function Conversation({ workspaceId, conversationId }: { workspaceId: string; co
           turn={turn}
           last={turn.id === last?.id}
           busy={busy}
+          selected={selected}
+          onSelect={setSelected}
         />
       ))}
       {/* Once used, the reading stays on for the next questions (Joël, 2026-10-29). */}
@@ -149,12 +153,16 @@ function Turn({
   turn,
   last,
   busy,
+  selected,
+  onSelect,
 }: {
   workspaceId: string;
   conversation: ConversationView;
   turn: TurnView;
   last: boolean;
   busy: boolean;
+  selected: string[];
+  onSelect: (selected: string[]) => void;
 }) {
   const { t } = useTranslation();
   return (
@@ -205,6 +213,8 @@ function Turn({
               turn={turn}
               title={conversation.title}
               last={last}
+              selected={selected}
+              onSelect={onSelect}
             />
           )}
           <Reading workspaceId={workspaceId} conversationId={conversation.id} turn={turn} busy={busy} />
@@ -414,12 +424,16 @@ function ItemSet({
   turn,
   title,
   last,
+  selected,
+  onSelect,
 }: {
   workspaceId: string;
   conversationId: string;
   turn: TurnView;
   title: string;
   last: boolean;
+  selected: string[];
+  onSelect: (selected: string[]) => void;
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -435,11 +449,17 @@ function ItemSet({
   const aside = sorted ? inTheme.filter((c) => c.judged?.verdict === "hors_sujet") : [];
   const toCheck = sorted ? inTheme.filter((c) => !kept.includes(c) && !aside.includes(c)) : [];
   const count = (verdict: string) => inTheme.filter((c) => c.judged?.verdict === verdict).length;
-  const toBrief = (items: TurnCandidate[]) => {
+  const toBriefWith = (ids: string[]) => {
     void navigate({
       to: "/redaction/nouveau",
-      search: { items: items.slice(0, BRIEF_MAX).map((c) => c.id).join(","), title, angle: "" },
+      search: { items: ids.slice(0, BRIEF_MAX).join(","), title, angle: "" },
     });
+  };
+  const toBrief = (items: TurnCandidate[]) => {
+    toBriefWith(items.map((c) => c.id));
+  };
+  const toggle = (id: string, on: boolean) => {
+    onSelect(on ? [...selected, id] : selected.filter((other) => other !== id));
   };
   // After a sort, the kept ones or the whole set, when it fits in a brief: the author chooses.
   const someKept = sorted && kept.length > 0 && kept.length < inTheme.length;
@@ -507,7 +527,7 @@ function ItemSet({
         </p>
       )}
       {turn.candidates.length >= SET_MAX && <p className={styles.notice}>{t("reporter.broad", { max: SET_MAX })}</p>}
-      {open && <Items candidates={[...kept, ...toCheck]} />}
+      {open && <Items candidates={[...kept, ...toCheck]} selected={selected} onToggle={toggle} />}
       {open && aside.length > 0 && (
         <p className={styles.row}>
           <button
@@ -522,14 +542,38 @@ function ItemSet({
           </button>
         </p>
       )}
-      {open && showAside && <Items candidates={aside} />}
+      {open && showAside && <Items candidates={aside} selected={selected} onToggle={toggle} />}
       {last && turn.candidates.length > 0 && (
         <Suggestions workspaceId={workspaceId} conversationId={conversationId} turn={turn} />
       )}
-      {last && !sorted && inTheme.length > BRIEF_MAX && (
+      {last && !sorted && selected.length === 0 && inTheme.length > BRIEF_MAX && (
         <p className={styles.help}>{t("reporter.sortFirst", { max: BRIEF_MAX })}</p>
       )}
-      {inTheme.length > 0 && (
+      {selected.length > 0 && (
+        <p className={styles.row} style={{ flexWrap: "wrap" }}>
+          <button
+            type="button"
+            className={styles.button}
+            disabled={selected.length > BRIEF_MAX}
+            onClick={() => {
+              toBriefWith(selected);
+            }}
+          >
+            {t("reporter.toBrief", { count: selected.length })}
+          </button>
+          <button
+            type="button"
+            className={styles.button}
+            onClick={() => {
+              onSelect([]);
+            }}
+          >
+            {t("reporter.unselect")}
+          </button>
+          {selected.length > BRIEF_MAX && <span className={styles.notice}>{t("reporter.tooMany", { max: BRIEF_MAX })}</span>}
+        </p>
+      )}
+      {selected.length === 0 && inTheme.length > 0 && (
         <p className={styles.row} style={{ flexWrap: "wrap" }}>
           {someKept && (
             <button
@@ -567,12 +611,28 @@ function ItemSet({
   );
 }
 
-function Items({ candidates }: { candidates: TurnCandidate[] }) {
+function Items({
+  candidates,
+  selected,
+  onToggle,
+}: {
+  candidates: TurnCandidate[];
+  selected: string[];
+  onToggle: (id: string, on: boolean) => void;
+}) {
   const { t } = useTranslation();
   return (
     <ul style={{ listStyle: "none", padding: 0 }}>
       {candidates.map((candidate) => (
         <li key={candidate.id} style={{ margin: "0.5rem 0" }}>
+          <input
+            type="checkbox"
+            aria-label={t("reporter.selectArticle", { title: candidate.title })}
+            checked={selected.includes(candidate.id)}
+            onChange={(event) => {
+              onToggle(candidate.id, event.target.checked);
+            }}
+          />{" "}
           <span className={styles.meta}>[{(candidate.language ?? "?").slice(0, 2).toUpperCase()}]</span>{" "}
           <Link to="/veille/elements/$itemId" params={{ itemId: candidate.id }}>
             {candidate.title}

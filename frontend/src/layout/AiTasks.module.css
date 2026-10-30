@@ -28,7 +28,7 @@
 }
 
 /* The bubble touches the block: the pointer goes from one to the other without leaving. */
-.bubble {
+.tasks .bubble {
   display: none;
   position: absolute;
   z-index: 10;
@@ -50,6 +50,7 @@
 .tasks:hover .bubble,
 .tasks:focus-within .bubble {
   display: grid;
+  grid-auto-flow: row;
   gap: var(--space-1);
 }
 

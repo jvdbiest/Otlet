@@ -722,7 +722,9 @@ def next_state(state: State, translated: Translated) -> State:
     match translated.operation:
         case Operation.CHERCHER if proposed:
             # A new subject: a new set, in every language, over the period it names.
-            return State(proposed[:2], None, translated.days)
+            # Three at most: a subject, a place, an aspect (« la situation financière des
+            # hôpitaux en Flandre »).
+            return State(proposed[:3], None, translated.days)
         case Operation.RESTREINDRE:
             # A place the set already holds restricts nothing more (« Seulement Bruxelles
             # Capitale » after the budget of the Région de Bruxelles-Capitale).

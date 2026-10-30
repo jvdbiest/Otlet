@@ -365,3 +365,17 @@ def test_terms_are_asked_in_every_language() -> None:
     assert check_operation(missing) == [
         "concepts[0]: give terms in nl (a proper name is repeated as it is)"
     ]
+
+
+def test_an_acronym_of_the_name_is_a_concept_of_its_own() -> None:
+    """« grèves à la SNCB » searched strikes OR SNCB (bench, 2026-10-30)."""
+    from otlet.reporter.domain.questions import split_mixed
+
+    strikes = Concept(
+        "grèves à la SNCB",
+        ("grèves à la SNCB", "grèves", "grèves ferroviaires", "stakingen", "strikes"),
+    )
+    assert split_mixed(strikes) == (
+        Concept("grèves", ("grèves", "grèves ferroviaires", "stakingen", "strikes")),
+        Concept("SNCB", ("SNCB",)),
+    )

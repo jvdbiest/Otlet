@@ -441,8 +441,18 @@ def split_mixed(concept: Concept) -> tuple[Concept, ...]:
     inside = [t for t in concept.terms if _words(t).strip() and _words(t) != name]
     inside = [t for t in inside if _words(t) in name]
     parts = [t for t in inside if not any(o != t and _words(o) in _words(t) for o in inside)]
+    # An acronym of the name is a thing of its own even when no term is it alone: « grèves à
+    # la SNCB » searched strikes OR the SNCB, and found the Dacia Striker (bench, 2026-10-30).
+    covered = {w for p in parts for w in _words(p).split()}
+    acronyms = [
+        w
+        for w in re.findall(r"[\w-]+", concept.name)
+        if len(w) >= 2 and w.isupper() and folded(w) not in ROMAN and folded(w) not in covered
+    ]
+    parts += acronyms
     if len(parts) < 2:
         return (concept,)
+    subject = next((p for p in parts if p not in acronyms), parts[0])
     groups: dict[str, list[str]] = {p: [p] for p in parts}
     for term in concept.terms:
         if term in parts or _words(term) == name:
@@ -450,6 +460,9 @@ def split_mixed(concept: Concept) -> tuple[Concept, ...]:
         scores = sorted(((_likeness(term, p), p) for p in parts), reverse=True)
         if scores[0][0] >= 3 and scores[0][0] > scores[1][0]:
             groups[scores[0][1]].append(term)
+        elif acronyms and not any(_words(a) in _words(term) for a in acronyms):
+            # « stakingen » is like no part: it names the subject, not the acronym.
+            groups[subject].append(term)
     return tuple(Concept(p, _clean(groups[p])) for p in parts)
 
 

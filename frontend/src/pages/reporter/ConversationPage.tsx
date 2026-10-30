@@ -540,6 +540,7 @@ function Fact({
   fact: FactView | null;
 }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const more = useReadMore(workspaceId, conversationId);
   if (fact === null) {
     return <p className={styles.warning}>{t("reporter.fact.noModel", { error: turn.error ?? "" })}</p>;
@@ -636,6 +637,27 @@ function Fact({
       )}
       {fact.conclusion !== "" && fact.lines.length > 0 && (
         <p className={styles.meta}>{t("reporter.fact.conclusion", { text: fact.conclusion })}</p>
+      )}
+      {fact.lines.length > 0 && (
+        <p className={styles.row}>
+          <button
+            type="button"
+            className={styles.button}
+            onClick={() => {
+              void navigate({
+                to: "/redaction/nouveau",
+                search: {
+                  items: [...new Set(fact.lines.map((line) => line.item_id))].slice(0, BRIEF_MAX).join(","),
+                  title: turn.question,
+                  conversation: conversationId,
+                  turn: turn.id,
+                },
+              });
+            }}
+          >
+            {t("reporter.fact.toBrief", { count: fact.lines.length })}
+          </button>
+        </p>
       )}
     </>
   );

@@ -212,3 +212,22 @@ def test_the_matter_of_a_brief_being_written(setup: Setup) -> None:
     assert brief.fields.nature is Nature.BACKGROUND
     loaded = briefs.get(context, brief.id)
     assert loaded is not None and loaded.fields.nature is Nature.BACKGROUND
+
+
+def test_a_brief_keeps_the_verified_facts_and_its_conversation(setup: Setup) -> None:
+    """ADR-0044 §10: the lines of a fact of the Reporter go with the brief, and their source."""
+    from otlet.writing.domain.brief import VerifiedFact
+
+    briefs, context, ids = setup.briefs, setup.context, setup.ids
+    fact = VerifiedFact(ids["Article A"], "journal", "6,3 milliards", "volés", passage="Volés.")
+    brief = briefs.create(
+        context, BriefFields(title="Binance", item_ids=(ids["Article A"],), facts=(fact,))
+    )
+    found = briefs.get(context, brief.id)
+    assert found is not None and found.fields.facts == (fact,)
+    assert found.fields.conversation_id is None
+    # A figure is checked against the text it comes from: its source is in the brief.
+    other = VerifiedFact(ids["Article B"], "journal", "12")
+    with pytest.raises(BriefError) as refused:
+        briefs.create(context, BriefFields(title="X", item_ids=(ids["Article A"],), facts=(other,)))
+    assert refused.value.code == "invalid_facts"

@@ -19,6 +19,7 @@ from otlet.writing.application.exports import Exports
 from otlet.writing.application.library import Library, Outcome, TagError, TitleError
 from otlet.writing.domain.article import Article, Generation, LibraryEntry, Version
 from otlet.writing.domain.brief import (
+    FACTS_MAX,
     ITEMS_MAX,
     Brief,
     BriefError,
@@ -28,6 +29,7 @@ from otlet.writing.domain.brief import (
     Mode,
     ModelChoice,
     Nature,
+    VerifiedFact,
 )
 from otlet.writing.domain.document import body_text
 from otlet.writing.domain.draft import (
@@ -71,6 +73,16 @@ class BriefItemView(BaseModel):
         )
 
 
+class BriefFactView(BaseModel):
+    item_id: UUID
+    publisher: str
+    figure: str
+    measure: str
+    when: str
+    where: str
+    passage: str
+
+
 class BriefView(BaseModel):
     id: UUID
     title: str
@@ -85,6 +97,8 @@ class BriefView(BaseModel):
     channel: str
     provider_id: UUID | None  # None: the profile of the author
     model: str | None
+    facts: list[BriefFactView]
+    conversation_id: UUID | None  # the conversation of the Reporter it comes from
     items: list[BriefItemView]
     sources: int
     single_source: bool  # fewer than two sources: said, not refused
@@ -113,6 +127,19 @@ class BriefView(BaseModel):
             channel=fields.channel,
             provider_id=None if fields.model is None else fields.model.provider_id,
             model=None if fields.model is None else fields.model.model,
+            facts=[
+                BriefFactView(
+                    item_id=f.item_id,
+                    publisher=f.publisher,
+                    figure=f.figure,
+                    measure=f.measure,
+                    when=f.when,
+                    where=f.where,
+                    passage=f.passage,
+                )
+                for f in fields.facts
+            ],
+            conversation_id=fields.conversation_id,
             items=[BriefItemView.of(item) for item in brief.items],
             sources=brief.sources,
             single_source=brief.single_source,
@@ -164,6 +191,16 @@ class VocabularyView(BaseModel):
     matter_floor: int  # below, the matter is insufficient (draft.py, matter_level)
 
 
+class FactBody(BaseModel):
+    item_id: UUID
+    publisher: str
+    figure: str
+    measure: str = ""
+    when: str = ""
+    where: str = ""
+    passage: str = ""
+
+
 class BriefBody(BaseModel):
     title: str
     item_ids: list[UUID] = Field(min_length=1, max_length=ITEMS_MAX)
@@ -178,6 +215,9 @@ class BriefBody(BaseModel):
     channel: str = ""
     provider_id: UUID | None = None  # with `model`; none for the profile of the author
     model: str | None = None
+    # From a conversation of the Reporter (ADR-0044 §10).
+    facts: list[FactBody] = Field(default_factory=list, max_length=FACTS_MAX)
+    conversation_id: UUID | None = None
 
     def fields(self) -> BriefFields:
         return BriefFields(
@@ -195,6 +235,8 @@ class BriefBody(BaseModel):
             model=None
             if self.provider_id is None
             else ModelChoice(self.provider_id, self.model or ""),
+            facts=tuple(VerifiedFact(**fact.model_dump()) for fact in self.facts),
+            conversation_id=self.conversation_id,
         )
 
 

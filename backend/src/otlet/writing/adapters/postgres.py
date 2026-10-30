@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Briefs on PostgreSQL, in the context of each workspace."""
 
+import json
 from datetime import datetime
 from typing import Any
 from uuid import UUID, uuid4
@@ -18,6 +19,7 @@ from otlet.writing.domain.brief import (
     Mode,
     ModelChoice,
     Nature,
+    VerifiedFact,
 )
 from otlet.writing.domain.matter import MatterItem, publisher
 from otlet.writing.domain.vocabulary import settled
@@ -25,7 +27,8 @@ from otlet.writing.domain.vocabulary import settled
 BRIEF_COLUMNS = (
     "b.id, b.workspace_id, b.created_by, b.title, b.angle, b.instructions, b.audience, b.tone,"
     " b.length, b.mode, b.nature,"
-    " b.language, b.channel, b.provider_id, b.model, b.created_at, b.updated_at"
+    " b.language, b.channel, b.provider_id, b.model, b.created_at, b.updated_at,"
+    " b.facts, b.conversation_id"
 )
 # The items of the brief, in order, with what the brief shows of them.
 BRIEF_ITEMS = (
@@ -83,6 +86,19 @@ def _brief(row: sa.Row[Any]) -> Brief:
                 language=row.language,
                 channel=row.channel,
                 model=model,
+                facts=tuple(
+                    VerifiedFact(
+                        item_id=UUID(f["item_id"]),
+                        publisher=f["publisher"],
+                        figure=f["figure"],
+                        measure=f["measure"],
+                        when=f["when"],
+                        where=f["where"],
+                        passage=f["passage"],
+                    )
+                    for f in row.facts
+                ),
+                conversation_id=row.conversation_id,
             )
         ),
         items=items,
@@ -105,6 +121,21 @@ def _values(fields: BriefFields) -> dict[str, object]:
         "channel": fields.channel,
         "provider": None if fields.model is None else fields.model.provider_id,
         "model": None if fields.model is None else fields.model.model,
+        "facts": json.dumps(
+            [
+                {
+                    "item_id": str(f.item_id),
+                    "publisher": f.publisher,
+                    "figure": f.figure,
+                    "measure": f.measure,
+                    "when": f.when,
+                    "where": f.where,
+                    "passage": f.passage,
+                }
+                for f in fields.facts
+            ]
+        ),
+        "conversation": fields.conversation_id,
     }
 
 
@@ -133,9 +164,11 @@ class PostgresBriefStore:
             self._write(
                 connection,
                 "INSERT INTO briefs (id, workspace_id, created_by, title, angle, instructions,"
-                " audience, tone, length, mode, nature, language, channel, provider_id, model)"
+                " audience, tone, length, mode, nature, language, channel, provider_id, model,"
+                " facts, conversation_id)"
                 " VALUES (:id, :workspace, :user, :title, :angle, :instructions, :audience, :tone,"
-                " :length, :mode, :nature, :language, :channel, :provider, :model) RETURNING id",
+                " :length, :mode, :nature, :language, :channel, :provider, :model,"
+                " CAST(:facts AS jsonb), :conversation) RETURNING id",
                 {"id": brief_id, "workspace": workspace_id, "user": user_id, **_values(fields)},
             )
             self._set_items(connection, workspace_id, brief_id, fields)
@@ -185,7 +218,8 @@ class PostgresBriefStore:
                 " tone = :tone, length = :length, mode = :mode, nature = :nature,"
                 " language = :language,"
                 " channel = :channel,"
-                " provider_id = :provider, model = :model, updated_at = now()"
+                " provider_id = :provider, model = :model, facts = CAST(:facts AS jsonb),"
+                " conversation_id = :conversation, updated_at = now()"
                 f" WHERE id = :id AND {here()} RETURNING id",
                 {"id": brief_id, **_values(fields)},
             )

@@ -657,7 +657,8 @@
       "unknown_provider": "Ce fournisseur n'est pas l'un des vôtres.",
       "unknown_model": "Ce fournisseur ne propose pas ce modèle.",
       "model_blocked": "Ce modèle est bloqué sur cette instance.",
-      "invalid_instructions": "Les consignes comptent 2 000 caractères au plus."
+      "invalid_instructions": "Les consignes comptent 2 000 caractères au plus.",
+      "invalid_facts": "Les faits vérifiés de ce brief ne sont pas valables : retirez-en un, ou gardez sa source dans le brief."
     },
     "angleExample": "Par exemple : je roule en moto électrique depuis deux ans. Je veux montrer ce que ces annonces changent vraiment au quotidien, et ce que les articles cités ne disent pas sur l'autonomie en hiver.",
     "instructions": "Consignes de rédaction",
@@ -688,7 +689,13 @@
       "news": "Actualité",
       "background": "Dossier de fond"
     },
-    "natureHelp": "Ne change que la façon de juger la matière : un dossier de fond n'a pas besoin d'éléments récents."
+    "natureHelp": "Ne change que la façon de juger la matière : un dossier de fond n'a pas besoin d'éléments récents.",
+    "facts": {
+      "title": "Faits vérifiés",
+      "help": "Vérifiés avec le Reporter, avec leur source. La rédaction les reçoit comme des faits à respecter, et les chiffres et dates du brouillon sont contrôlés contre eux et contre les sources.",
+      "remove": "Retirer",
+      "conversation": "Voir la conversation du Reporter"
+    }
   },
   "draft": {
     "title": "Brouillon",
@@ -1281,7 +1288,8 @@
       },
       "agreementHelp": "Calculé par Otlet, pas par le modèle : deux lignes de sources différentes sont comparées quand elles mesurent la même chose, au même moment et au même lieu.",
       "more": "{count, plural, one {Lire l'article suivant} other {Lire # articles de plus}}",
-      "left": "{count, plural, one {(# article non lu)} other {(# articles non lus)}}"
+      "left": "{count, plural, one {(# article non lu)} other {(# articles non lus)}}",
+      "toBrief": "{count, plural, one {Préparer un brief avec ce fait} other {Préparer un brief avec ces # faits}}"
     },
     "sorted": "{kept} retenus · {check} à vérifier · {aside} écartés, selon votre modèle",
     "sortFirst": "Plus de {max} articles : demandez d'abord « Trie-les », et le brief ne prendra que ceux qui traitent vraiment le sujet.",

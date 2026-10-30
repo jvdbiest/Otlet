@@ -4,6 +4,7 @@ import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query
 import { api, apiError, type components } from "./api/client.ts";
 
 export type BriefView = components["schemas"]["BriefView"];
+export type BriefFactView = components["schemas"]["BriefFactView"];
 export type BriefBody = components["schemas"]["BriefBody"];
 export type BriefLength = BriefView["length"];
 export type BriefMode = BriefView["mode"];

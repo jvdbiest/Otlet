@@ -66,6 +66,7 @@ from otlet.reporter.domain.questions import (
     check_operation,
     guarded,
     next_state,
+    only_a_period,
     only_false_friends,
     operation_message,
     points_back,
@@ -382,7 +383,9 @@ class Reporter:
         today = self._now().date()
         if raw is not None:
             translated = guarded(turn.question, read_operation(raw), today)
-            if about_the_set(turn.question, translated, state):
+            if state.concepts and only_a_period(turn.question):
+                translated = replace(translated, operation=Operation.RESTREINDRE, concepts=())
+            elif about_the_set(turn.question, translated, state):
                 # Asked of the set, answered from it: its articles that truly treat the subject.
                 translated = replace(translated, operation=Operation.TRIER, concepts=())
             elif (
@@ -432,6 +435,12 @@ class Reporter:
         done = replace(turn, operation=translated.operation, attempts=attempts)
         if changes_set(translated.operation) or previous is None:
             done = self._found(workspace_id, conversation, done, new_state)
+            if translated.operation is Operation.RESTREINDRE and previous is not None:
+                # Within the set: what the author had sorted stays sorted (Joël, 2026-10-30).
+                found = {c.id for c in done.candidates}
+                done = replace(
+                    done, verdicts={k: v for k, v in previous.verdicts.items() if k in found}
+                )
         else:
             done = replace(
                 done,
@@ -519,7 +528,11 @@ class Reporter:
     ) -> tuple[list[Widened], dict[str, int], list[Candidate]]:
         glossary = [stored.entry for stored in self._search.glossary(workspace_id)]
         days = state.days or conversation.days
-        since = None if days is None else self._now() - timedelta(days=days)
+        now = self._now()
+        since = None if days is None else now - timedelta(days=days)
+        if days == 1:
+            # « Aujourd'hui » is today, not the last 24 hours.
+            since = now.replace(hour=0, minute=0, second=0, microsecond=0)
         widened = widen(list(state.concepts), glossary)
         counts = self._search.term_counts(
             workspace_id, [term for w in widened for term in w.all_terms], since

@@ -425,3 +425,17 @@ def test_a_word_rescued_takes_the_model_terms_close_to_it() -> None:
     assert kept.concepts[-1] == Concept(
         "prévenu", ("prévenu", "prévenir", "avertir", "waarschuwen")
     )
+
+
+def test_only_a_period_keeps_the_subject_of_the_conversation() -> None:
+    """« Les articles d'aujourd'hui ? » searched the word « aujourd'hui », over 7 days."""
+    from otlet.reporter.domain.questions import asked_period, only_a_period
+
+    question = "Les articles d'aujourd'hui ?"
+    assert asked_period(question) == 1 and asked_period("Les articles d’aujourd’hui ?") == 1
+    assert only_a_period(question) and only_a_period("Et hier ?") and only_a_period("Vandaag ?")
+    assert not only_a_period("Les orages d'aujourd'hui ?")
+    assert not only_a_period("Les intempéries")
+    date_concept = Concept("date", ("aujourd'hui", "vandaag", "today"))
+    kept = guarded(question, Translated(Operation.RESTREINDRE, (date_concept,), None))
+    assert kept.concepts == () and kept.days == 1

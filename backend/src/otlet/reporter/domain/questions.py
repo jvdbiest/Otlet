@@ -116,11 +116,17 @@ PERIOD_WORDS = (
     ("aujourd'hui", 1),
     ("du jour", 1),
     ("ce jour", 1),
+    ("vandaag", 1),
+    ("today", 1),
     ("hier", 2),
+    ("gisteren", 2),
+    ("yesterday", 2),
     ("ces derniers jours", 7),
     ("ces jours-ci", 7),
     ("cette semaine", 7),
     ("de la semaine", 7),
+    ("deze week", 7),
+    ("this week", 7),
     ("la semaine derniere", 14),
     ("ce mois", 31),
     ("du mois", 31),
@@ -150,9 +156,11 @@ MONTH_PERIOD = re.compile(
 
 def _asked(question: str) -> str:
     """A question as its folded words between spaces, its marks and quotes aside."""
-    text = folded(question)
+    text = folded(question).replace("’", "'")
     for mark in '?,"«»“”':
         text = text.replace(mark, " ")
+    # « Les articles d'aujourd'hui » names a period too (Joël, 2026-10-30).
+    text = text.replace("d'aujourd'hui", "aujourd'hui").replace("d'hier", "hier")
     return f" {' '.join(text.split())} "
 
 
@@ -231,10 +239,11 @@ def _without_dates(concept: Concept) -> Concept:
 
 
 def _of_period(concept: Concept) -> bool:
-    """A concept made only of the words of a period: « semaine, week », « octobre 2025 »."""
+    """A concept whose terms are only the words of a period: « semaine, week », « octobre
+    2025 », or a concept « date » of « aujourd'hui, vandaag, today »."""
     return all(
         w in PERIOD_TERMS or w in MONTHS or w.isdigit()
-        for t in (concept.name, *concept.terms)
+        for t in concept.terms or (concept.name,)
         for w in re.findall(r"[\w'-]+", folded(t))
     )
 
@@ -872,6 +881,12 @@ def next_state(state: State, translated: Translated) -> State:
             return replace(state, concepts=(*state.concepts[:-1], widened))
         case _:
             return state
+
+
+def only_a_period(question: str) -> bool:
+    """A question that names a period and nothing else: « Les articles d'aujourd'hui ? » keeps
+    the subject of the conversation, over that period."""
+    return asked_period(question) is not None and not _named(question)
 
 
 def changes_set(operation: Operation) -> bool:

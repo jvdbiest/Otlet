@@ -418,10 +418,14 @@ function ItemSet({
   const [open, setOpen] = useState(last && turn.candidates.length <= SHOWN_AT_ONCE);
   const [showThemes, setShowThemes] = useState(turn.candidates.length >= THEMES_OPEN);
   const [theme, setTheme] = useState<number | null>(null);
+  const [showAside, setShowAside] = useState(false);
   const picked = theme === null ? null : turn.themes[theme];
   const inTheme = picked === undefined || picked === null ? turn.candidates : turn.candidates.filter((c) => picked.items.includes(c.id));
   const sorted = inTheme.some((c) => c.judged !== null);
   const kept = sorted ? inTheme.filter((c) => c.judged?.verdict === "traite") : inTheme;
+  // Set aside by the sort: out of the list, one click away (Joël, 2026-10-30).
+  const aside = sorted ? inTheme.filter((c) => c.judged?.verdict === "hors_sujet") : [];
+  const toCheck = sorted ? inTheme.filter((c) => !kept.includes(c) && !aside.includes(c)) : [];
   const count = (verdict: string) => inTheme.filter((c) => c.judged?.verdict === verdict).length;
   const toBrief = (items: TurnCandidate[]) => {
     void navigate({
@@ -491,7 +495,22 @@ function ItemSet({
       )}
       {turn.candidates.length === 0 && <p className={styles.notice}>{t("reporter.emptySet")}</p>}
       {turn.candidates.length >= SET_MAX && <p className={styles.notice}>{t("reporter.broad", { max: SET_MAX })}</p>}
-      {open && <Items candidates={sorted ? [...kept, ...inTheme.filter((c) => !kept.includes(c))] : inTheme} />}
+      {open && <Items candidates={[...kept, ...toCheck]} />}
+      {open && aside.length > 0 && (
+        <p className={styles.row}>
+          <button
+            type="button"
+            className={styles.chip}
+            aria-expanded={showAside}
+            onClick={() => {
+              setShowAside(!showAside);
+            }}
+          >
+            {showAside ? t("reporter.hideAside") : t("reporter.showAside", { count: aside.length })}
+          </button>
+        </p>
+      )}
+      {open && showAside && <Items candidates={aside} />}
       {last && turn.candidates.length > 0 && (
         <Suggestions workspaceId={workspaceId} conversationId={conversationId} turn={turn} />
       )}
@@ -524,7 +543,9 @@ function ItemSet({
               {inTheme.length > BRIEF_MAX
                 ? t("reporter.toBriefFirst", { count: BRIEF_MAX })
                 : someKept
-                  ? t("reporter.toBriefAll", { count: inTheme.length })
+                  ? aside.length > 0
+                    ? t("reporter.toBriefAllAside", { count: inTheme.length })
+                    : t("reporter.toBriefAll", { count: inTheme.length })
                   : t("reporter.toBrief", { count: inTheme.length })}
             </button>
           )}

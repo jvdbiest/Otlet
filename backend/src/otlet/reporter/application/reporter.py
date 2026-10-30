@@ -367,7 +367,7 @@ class Reporter:
         new_state = (
             next_state(state, translated)
             if changes_set(translated.operation) or state.concepts
-            else State(translated.concepts[:2], None, translated.days)
+            else State(translated.concepts[:3], None, translated.days)
         )
         done = replace(turn, operation=translated.operation, attempts=attempts)
         if changes_set(translated.operation) or previous is None:

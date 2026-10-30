@@ -482,6 +482,13 @@ PLACE_LINKS = set(
 )
 
 
+def _place_terms(places: set[str], own: list[str]) -> tuple[str, ...]:
+    """The terms of a place concept: its common names first, in the spelling of the question
+    or the model when they wrote them (« Bruxelles », « België »), then their own terms."""
+    spelled = {folded(t): t for t in own}
+    return _clean([*(spelled.get(n, n) for n in _place_names(places)), *own])
+
+
 def _without_place(term: str) -> str:
     """A term without its place words and the little words they leave: « hôpitaux en
     Flandre » is « hôpitaux », « Vlaamse ziekenhuizen » is « ziekenhuizen »."""
@@ -500,7 +507,10 @@ def placed(question: str, concept: Concept) -> tuple[Concept, ...]:
     if not subject_name:
         # A place alone (« Flandre », « Bruxelles-Capitale »).
         alone = _place_words(concept.name) & asked or _place_words(concept.name)
-        return (Concept(concept.name, _clean([*concept.terms, *_place_names(alone)])),)
+        # The common names first: the first term is the measure of the others, and
+        # « Brussel » (223 items) was set aside as too general next to « Bruxelles-Capitale »
+        # (14) (bench, 2026-10-30).
+        return (Concept(concept.name, _place_terms(alone, [concept.name, *concept.terms])),)
     subject = [s for s in (_without_place(t) for t in concept.terms) if s]
     out = [Concept(subject_name, _clean([subject_name, *subject]))]
     places = set().union(*(_place_words(t) for t in (concept.name, *concept.terms))) & asked
@@ -509,7 +519,7 @@ def placed(question: str, concept: Concept) -> tuple[Concept, ...]:
         written = [w for w in re.findall(r"[\w-]+", question) if _place_words(w) & places]
         name = written[0]
         named = [t for t in concept.terms if _place_words(t) & places and not _without_place(t)]
-        out.append(Concept(name, _clean([name, *named, *_place_names(places)])))
+        out.append(Concept(name, _place_terms(places, [name, *named])))
     return tuple(out)
 
 

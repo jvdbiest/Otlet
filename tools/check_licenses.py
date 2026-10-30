@@ -40,6 +40,7 @@ ALIASES = {
     "bsd license": "BSD-3-Clause",
     "bsd 2-clause license": "BSD-2-Clause",
     "bsd 3-clause license": "BSD-3-Clause",
+    "3-clause bsd license": "BSD-3-Clause",
     "apache 2.0": "Apache-2.0",
     "apache-2.0": "Apache-2.0",
     "apache software license": "Apache-2.0",
@@ -120,8 +121,9 @@ def python_licence(name: str) -> str | None:
     if known:
         return " OR ".join(known)
     text = (metadata.get("License") or "").strip()
-    # Some packages write a bare SPDX identifier in the free-text field (lxml: BSD-3-Clause).
-    if text in ALLOWED:
+    # Some packages write a bare SPDX identifier, or an SPDX expression, in the free-text field
+    # (lxml: BSD-3-Clause; tqdm: MPL-2.0 AND MIT).
+    if text in ALLOWED or (text and allowed_expression(text)):
         return text
     return ALIASES.get(text.lower())
 

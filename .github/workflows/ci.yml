@@ -166,7 +166,7 @@ jobs:
           UV_PROJECT_ENVIRONMENT: ${{ runner.temp }}/runtime
           UV_PYTHON: "3.13"
         run: |
-          uv sync --locked --no-dev
+          uv sync --locked --no-dev --extra meaning
           "$UV_PROJECT_ENVIRONMENT/bin/python" ../tools/check_licenses.py python
       - name: Interface (paquets livrés dans le bundle)
         run: python3 tools/check_licenses.py npm frontend/package-lock.json

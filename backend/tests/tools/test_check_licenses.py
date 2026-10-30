@@ -94,7 +94,14 @@ def test_current_python_environment_passes() -> None:
 
 @pytest.mark.parametrize(
     ("field", "expected"),
-    [("BSD-3-Clause", "BSD-3-Clause"), ("MIT License", "MIT"), ("Dual License", None)],
+    [
+        ("BSD-3-Clause", "BSD-3-Clause"),
+        ("MIT License", "MIT"),
+        ("Dual License", None),
+        # protobuf and tqdm (ADR-0045).
+        ("3-Clause BSD License", "BSD-3-Clause"),
+        ("MPL-2.0 AND MIT", "MPL-2.0 AND MIT"),
+    ],
 )
 def test_licence_field_may_hold_a_bare_spdx_identifier(
     monkeypatch: pytest.MonkeyPatch, field: str, expected: str | None

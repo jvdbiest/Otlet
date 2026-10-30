@@ -532,3 +532,22 @@ def test_conversations_are_deleted_by_their_author_only(
     answer(worker, context, second.id, second.turns[0].id)
     assert [c.id for c in api.recent(context)] == [kept.id]
     assert [t.conversation_id for t in api.running(context)] == [kept.id]
+
+
+def test_the_news_of_the_day_are_the_articles_of_the_day(
+    reporter: tuple[Reporter, Reporter, WorkspaceContext, sa.Engine],
+) -> None:
+    api, worker, context, engine = reporter
+    collect(engine, context, "rtbf", "fr", [("Un article de ce matin", "Sur autre chose.", 0)])
+    conversation = api.start(context, "Quelles-sont les actualités du jour ?")
+    answer(worker, context, conversation.id, conversation.turns[0].id)
+    found = api.get(context, conversation.id)
+    assert found is not None
+    turn = found.turns[0]
+    assert (turn.status, turn.state.days, turn.concepts) == ("done", 1, [])
+    assert [c.title for c in turn.candidates] == ["Un article de ce matin"]
+    # The set goes on: restricted without a subject.
+    more = api.ask(context, conversation.id, "Sans autre chose")
+    answer(worker, context, conversation.id, more.id)
+    found = api.get(context, conversation.id)
+    assert found is not None and found.turns[1].operation is Operation.EXCLURE

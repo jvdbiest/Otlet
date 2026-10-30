@@ -501,7 +501,11 @@ function ItemSet({
           <p className={styles.help}>{t("reporter.themesHelp")}</p>
         </div>
       )}
-      {turn.candidates.length === 0 && <p className={styles.notice}>{t("reporter.emptySet")}</p>}
+      {turn.candidates.length === 0 && (
+        <p className={styles.notice}>
+          {turn.concepts.length === 0 && turn.days === null ? t("reporter.noSubject") : t("reporter.emptySet")}
+        </p>
+      )}
       {turn.candidates.length >= SET_MAX && <p className={styles.notice}>{t("reporter.broad", { max: SET_MAX })}</p>}
       {open && <Items candidates={[...kept, ...toCheck]} />}
       {open && aside.length > 0 && (

@@ -106,7 +106,7 @@ def test_a_period_names_no_concept_and_a_named_subject_is_searched() -> None:
     week = Concept("semaine", ("semaine", "week"))
     games = Concept("jeux vidéo", ("nouveau jeu", "console", "PC"))
     kept = guarded(question, Translated(Operation.CHERCHER, (week, games), None))
-    assert kept.concepts == (Concept("jeux vidéo", ("jeux vidéo", "nouveau jeu", "console", "PC")),)
+    assert kept.concepts == (Concept("jeux vidéo", ("jeux vidéo", "jeu", "console", "PC")),)
     assert kept.days == 7
     only_week = guarded(question, Translated(Operation.CHERCHER, (week,), None))
     assert only_week.concepts == () and only_week.days == 7
@@ -493,3 +493,14 @@ def test_dates_named_in_a_question() -> None:
     assert (kept.concepts, kept.date_from, kept.date_to) == ((), *both)
     assert asks_sort("Trie-les") and asks_sort("Trier") and not asks_sort("Trie les écrans")
     assert excluded_terms("en supprimant les articles Apple et Macbook") == ("apple", "macbook")
+
+
+def test_nothing_but_a_period_and_what_is_new_is_no_subject() -> None:
+    from otlet.reporter.domain.questions import asked_period, only_a_period
+
+    for question in ("Quelles-sont les actualités du jour ?", "Quel-est l'actualité du jour"):
+        assert asked_period(question) == 1 and only_a_period(question)
+    new = Concept("nouveaux moniteurs", ("nouveaux moniteurs", "New York", "nouvel An", "new TV"))
+    kept = guarded("Les moniteurs", Translated(Operation.CHERCHER, (new,), None))
+    assert kept.concepts[0].name == "moniteurs"
+    assert kept.concepts[0].terms == ("moniteurs", "New York", "nouvel An", "new TV")

@@ -1270,6 +1270,7 @@
       "exclure": "Retrait"
     },
     "excluded": "sans : {terms}",
+    "noSubject": "Cette question ne nomme ni sujet ni période : précisez l'un ou l'autre, par exemple « Les actualités du jour ».",
     "selectAll": "{count, plural, one {Sélectionner la conversation} other {Tout sélectionner (#)}}",
     "selectOne": "Sélectionner : {title}",
     "deleteChosen": "{count, plural, one {Effacer la conversation sélectionnée} other {Effacer les # conversations sélectionnées}}",

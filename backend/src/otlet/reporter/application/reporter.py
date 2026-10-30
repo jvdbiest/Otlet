@@ -68,6 +68,7 @@ from otlet.reporter.domain.questions import (
     excluded_terms,
     guarded,
     holds_excluded,
+    names_no_subject,
     next_state,
     only_a_period,
     only_false_friends,
@@ -399,8 +400,10 @@ class Reporter:
         raw = None
         # A thinking model may spend its whole answer reasoning (« out_of_room »): asked again,
         # the same question was answered in 33 s (Joël, 2026-10-25). Once more, then no more.
-        excluded = excluded_terms(turn.question) if state.concepts else ()
-        sort = bool(state.concepts) and asks_sort(turn.question)
+        # A set may have no subject: « Les actualités du jour ».
+        has_set = bool(state.concepts or state.days or state.date_from or state.date_to)
+        excluded = excluded_terms(turn.question) if has_set else ()
+        sort = has_set and asks_sort(turn.question)
         for _ in range(0 if excluded or sort else 2):
             raw = self._ask(
                 user_id,
@@ -428,8 +431,10 @@ class Reporter:
                     date_from=turn.state.date_from,
                     date_to=turn.state.date_to,
                 )
-            if state.concepts and only_a_period(turn.question):
-                translated = replace(translated, operation=Operation.RESTREINDRE, concepts=())
+            chosen = turn.state.date_from or turn.state.date_to
+            if only_a_period(turn.question) or (chosen and names_no_subject(turn.question)):
+                operation = Operation.RESTREINDRE if has_set else Operation.CHERCHER
+                translated = replace(translated, operation=operation, concepts=())
             elif about_the_set(turn.question, translated, state):
                 # Asked of the set, answered from it: its articles that truly treat the subject.
                 translated = replace(translated, operation=Operation.TRIER, concepts=())
@@ -440,7 +445,7 @@ class Reporter:
             ):
                 # « Qu'en pensent les enseignants ? »: within the set, not a new subject.
                 translated = replace(translated, operation=Operation.RESTREINDRE)
-            if not state.concepts and not changes_set(translated.operation):
+            if not has_set and not changes_set(translated.operation):
                 # A fact asked first (« Quels sont les derniers faits concernant
                 # l'enseignement ? », Joël, 2026-10-29): there is no set yet to read. The set is
                 # searched first, then the fact read in it.
@@ -466,7 +471,7 @@ class Reporter:
 
         new_state = (
             next_state(state, translated)
-            if changes_set(translated.operation) or state.concepts
+            if changes_set(translated.operation) or has_set
             else State(
                 translated.concepts[:3],
                 None,
@@ -507,7 +512,7 @@ class Reporter:
             fact = self._fact(workspace_id, user_id, history, done, (attempts, models, errors))
             done = replace(done, fact=fact)
         elif translated.operation is Operation.TRIER and done.candidates:
-            subject = " ".join(c.concept.name for c in done.concepts) or turn.question
+            subject = " ".join(c.concept.name for c in done.concepts) or conversation.title
             verdicts = self._sort(user_id, subject, done.candidates, (attempts, models, errors))
             done = replace(done, verdicts=verdicts)
         if turn.reading is not None and turn.reading.requested:
@@ -572,7 +577,7 @@ class Reporter:
     ) -> Turn:
         """The set of the state: concepts widened by the glossary, general terms set aside,
         items holding a term of every concept, in the language asked. No model."""
-        if not state.concepts:
+        if not state.concepts and not (state.days or state.date_from or state.date_to):
             return replace(turn, state=state, concepts=[], term_counts={}, candidates=[])
         widened, counts, found = self._search_set(workspace_id, conversation, state)
         return replace(turn, state=state, concepts=widened, term_counts=counts, candidates=found)
@@ -582,6 +587,8 @@ class Reporter:
     ) -> tuple[list[Widened], dict[str, int], list[Candidate]]:
         glossary = [stored.entry for stored in self._search.glossary(workspace_id)]
         days = state.days or conversation.days
+        if not state.concepts:
+            days = state.days
         now = self._now()
         since = None if days is None else now - timedelta(days=days)
         until = None
@@ -591,6 +598,15 @@ class Reporter:
         if state.date_from is not None or state.date_to is not None:
             since = None if state.date_from is None else _midnight(state.date_from)
             until = None if state.date_to is None else _midnight(state.date_to) + timedelta(days=1)
+        if not state.concepts:
+            # No subject: the articles of the period, the most recent first.
+            found = [
+                c
+                for c in self._search.latest(workspace_id, since, until, SET_MAX)
+                if not holds_excluded(f"{c.title} {c.summary}", state.excluded)
+                and (not state.language or (c.language or "").startswith(state.language))
+            ]
+            return [], {}, found
         widened = widen(list(state.concepts), glossary)
         counts = self._search.term_counts(
             workspace_id, [term for w in widened for term in w.all_terms], since

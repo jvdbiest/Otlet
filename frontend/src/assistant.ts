@@ -56,6 +56,24 @@ export function useStartDossier(workspaceId: string) {
   });
 }
 
+/** Ends a dossier under way: what it found stays; the worker cuts its call to the model. */
+export function useCancelDossier(workspaceId: string, dossierId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { data, error, response } = await api.POST(
+        "/api/workspaces/{workspace_id}/assistant/dossiers/{dossier_id}/cancel",
+        { params: { path: { workspace_id: workspaceId, dossier_id: dossierId } } },
+      );
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: () => client.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
+  });
+}
+
 export const glossaryQuery = (workspaceId: string) =>
   queryOptions({
     queryKey: ["workspaces", workspaceId, "glossary"],

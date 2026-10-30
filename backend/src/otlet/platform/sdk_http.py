@@ -30,13 +30,16 @@ def check_endpoint(url: httpx2.URL, policy: AddressPolicy) -> None:
 
 
 def guarded_sdk_client(
-    policy: AddressPolicy, timeout_seconds: float, resolver: Resolver = default_resolver
+    policy: AddressPolicy,
+    timeout_seconds: float,
+    resolver: Resolver = default_resolver,
+    transport: SafeTransport | None = None,
 ) -> httpx2.Client:
     def check(request: httpx2.Request) -> None:
         check_endpoint(request.url, policy)
 
     return httpx2.Client(
-        transport=SafeTransport(policy, resolver),
+        transport=transport or SafeTransport(policy, resolver),
         timeout=timeout_seconds,
         follow_redirects=False,
         trust_env=False,

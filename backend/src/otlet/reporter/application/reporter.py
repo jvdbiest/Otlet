@@ -62,10 +62,14 @@ from otlet.reporter.domain.questions import (
     State,
     Translated,
     about_the_set,
+    asks_sort,
     changes_set,
     check_operation,
+    excluded_terms,
     guarded,
+    holds_excluded,
     next_state,
+    only_a_period,
     only_false_friends,
     operation_message,
     points_back,
@@ -89,6 +93,7 @@ from otlet.workspaces.domain.model import WorkspaceContext
 logger = logging.getLogger(__name__)
 
 ANSWER_TURN = "reporter.answer_turn"
+CANCELLED = "cancelled"  # the error of a question the author cancelled
 FIRST_SEARCH = (
     "\n\nIl n'y a pas encore d'ensemble d'articles : réponds par l'opération « chercher » et les"
     " concepts du sujet de la question."
@@ -137,6 +142,14 @@ class Turn:
 
 
 @dataclass(frozen=True, slots=True)
+class RunningTurn:
+    conversation_id: UUID
+    turn_id: UUID
+    question: str
+    created_at: datetime | None
+
+
+@dataclass(frozen=True, slots=True)
 class Conversation:
     id: UUID
     title: str
@@ -163,12 +176,16 @@ class ReporterStore(Protocol):
         conversation_id: UUID,
         question: str,
         read: bool = False,
+        dates: tuple[date | None, date | None] = (None, None),
     ) -> Turn:
-        """Records the question, pending, and enqueues ANSWER_TURN, in one transaction; `read`
+        """Records the question, pending, and enqueues ANSWER_TURN, in one transaction; `dates`,
+        those chosen with the question, wait in its state; `read`
         asks for its set to be read once found."""
         ...
 
     def save_turn(self, workspace_id: UUID, conversation_id: UUID, turn: Turn) -> None: ...
+
+    def running_turns(self, workspace_id: UUID, user_id: UUID) -> list[RunningTurn]: ...
 
     def read_further(
         self, workspace_id: UUID, user_id: UUID, conversation_id: UUID, turn_id: UUID
@@ -197,6 +214,10 @@ def _checked_question(question: str) -> str:
     return question
 
 
+def _midnight(day: date) -> datetime:
+    return datetime(day.year, day.month, day.day, tzinfo=UTC)
+
+
 class Reporter:
     def __init__(
         self,
@@ -216,13 +237,19 @@ class Reporter:
 
     # The API --------------------------------------------------------------------------------
 
-    def start(self, context: WorkspaceContext, question: str, read: bool = False) -> Conversation:
+    def start(
+        self,
+        context: WorkspaceContext,
+        question: str,
+        read: bool = False,
+        dates: tuple[date | None, date | None] = (None, None),
+    ) -> Conversation:
         question = _checked_question(question)
         conversation = self._store.start_conversation(
             context.workspace_id, context.user_id, question[:200], DAYS
         )
         turn = self._store.add_turn(
-            context.workspace_id, context.user_id, conversation.id, question, read
+            context.workspace_id, context.user_id, conversation.id, question, read, dates
         )
         return replace(conversation, turns=[turn])
 
@@ -298,6 +325,35 @@ class Reporter:
         self._store.save_turn(context.workspace_id, conversation_id, turn)
         return turn
 
+    def running(self, context: WorkspaceContext) -> list[RunningTurn]:
+        return self._store.running_turns(context.workspace_id, context.user_id)
+
+    def cancel(self, context: WorkspaceContext, conversation_id: UUID) -> Conversation | None:
+        """Ends the question being answered (Joël, 2026-10-30); the call to the model is cut by
+        the worker. A new question ends cancelled; an answered one, read further, stays as it
+        was answered. None when there is no such conversation."""
+        conversation = self._store.conversation(context.workspace_id, conversation_id)
+        if conversation is None:
+            return None
+        turns = []
+        for turn in conversation.turns:
+            if turn.status != "pending":
+                turns.append(turn)
+                continue
+            if turn.operation is None:
+                ended = replace(turn, status="failed", error=CANCELLED, finished_at=self._now())
+            else:
+                asked = turn.reading is not None and turn.reading.requested
+                ended = replace(
+                    turn,
+                    status="done",
+                    reading=None if asked else turn.reading,
+                    finished_at=self._now(),
+                )
+            self._store.save_turn(context.workspace_id, conversation_id, ended)
+            turns.append(ended)
+        return replace(conversation, turns=turns)
+
     # The worker -----------------------------------------------------------------------------
 
     def run(self, workspace_id: UUID, user_id: UUID, conversation_id: UUID, turn_id: UUID) -> None:
@@ -327,7 +383,9 @@ class Reporter:
         raw = None
         # A thinking model may spend its whole answer reasoning (« out_of_room »): asked again,
         # the same question was answered in 33 s (Joël, 2026-10-25). Once more, then no more.
-        for _ in range(2):
+        excluded = excluded_terms(turn.question) if state.concepts else ()
+        sort = bool(state.concepts) and asks_sort(turn.question)
+        for _ in range(0 if excluded or sort else 2):
             raw = self._ask(
                 user_id,
                 OPERATION_SYSTEM,
@@ -340,9 +398,23 @@ class Reporter:
             if raw is not None or not any("out_of_room" in e for e in errors):
                 break
         today = self._now().date()
-        if raw is not None:
+        if excluded:
+            translated = Translated(Operation.EXCLURE, (), None, None, excluded)
+        elif sort:
+            translated = Translated(Operation.TRIER, (), None)
+        elif raw is not None:
             translated = guarded(turn.question, read_operation(raw), today)
-            if about_the_set(turn.question, translated, state):
+            if turn.state.date_from or turn.state.date_to:
+                # The dates chosen on the calendar, with the first question.
+                translated = replace(
+                    translated,
+                    days=None,
+                    date_from=turn.state.date_from,
+                    date_to=turn.state.date_to,
+                )
+            if state.concepts and only_a_period(turn.question):
+                translated = replace(translated, operation=Operation.RESTREINDRE, concepts=())
+            elif about_the_set(turn.question, translated, state):
                 # Asked of the set, answered from it: its articles that truly treat the subject.
                 translated = replace(translated, operation=Operation.TRIER, concepts=())
             elif (
@@ -362,7 +434,7 @@ class Reporter:
         else:
             # The question itself was searched as one term before: it found nothing, and said
             # nothing of why. The turn fails, and says so.
-            self._store.save_turn(
+            self._finish(
                 workspace_id,
                 conversation_id,
                 replace(
@@ -379,7 +451,13 @@ class Reporter:
         new_state = (
             next_state(state, translated)
             if changes_set(translated.operation) or state.concepts
-            else State(translated.concepts[:3], None, translated.days)
+            else State(
+                translated.concepts[:3],
+                None,
+                translated.days,
+                date_from=translated.date_from,
+                date_to=translated.date_to,
+            )
         )
         if new_state.concepts and (
             translated.operation is Operation.CHERCHER or not state.concepts
@@ -392,6 +470,15 @@ class Reporter:
         done = replace(turn, operation=translated.operation, attempts=attempts)
         if changes_set(translated.operation) or previous is None:
             done = self._found(workspace_id, conversation, done, new_state)
+            if (
+                translated.operation in (Operation.RESTREINDRE, Operation.EXCLURE)
+                and previous is not None
+            ):
+                # Within the set: what the author had sorted stays sorted (Joël, 2026-10-30).
+                found = {c.id for c in done.candidates}
+                done = replace(
+                    done, verdicts={k: v for k, v in previous.verdicts.items() if k in found}
+                )
         else:
             done = replace(
                 done,
@@ -413,7 +500,7 @@ class Reporter:
                 workspace_id, user_id, conversation, done, (attempts, models, errors)
             )
             done = replace(done, reading=reading)
-        self._store.save_turn(
+        self._finish(
             workspace_id,
             conversation_id,
             replace(
@@ -427,6 +514,13 @@ class Reporter:
         )
 
     # Inside ---------------------------------------------------------------------------------
+
+    def _finish(self, workspace_id: UUID, conversation_id: UUID, turn: Turn) -> None:
+        """Saves an answer, unless the author cancelled the question meanwhile."""
+        current = self._store.conversation(workspace_id, conversation_id)
+        turns = [] if current is None else current.turns
+        if any(t.id == turn.id and t.status == "pending" for t in turns):
+            self._store.save_turn(workspace_id, conversation_id, turn)
 
     def _search_first(
         self,
@@ -472,19 +566,28 @@ class Reporter:
     ) -> tuple[list[Widened], dict[str, int], list[Candidate]]:
         glossary = [stored.entry for stored in self._search.glossary(workspace_id)]
         days = state.days or conversation.days
-        since = None if days is None else self._now() - timedelta(days=days)
+        now = self._now()
+        since = None if days is None else now - timedelta(days=days)
+        until = None
+        if days == 1:
+            # « Aujourd'hui » is today, not the last 24 hours.
+            since = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        if state.date_from is not None or state.date_to is not None:
+            since = None if state.date_from is None else _midnight(state.date_from)
+            until = None if state.date_to is None else _midnight(state.date_to) + timedelta(days=1)
         widened = widen(list(state.concepts), glossary)
         counts = self._search.term_counts(
             workspace_id, [term for w in widened for term in w.all_terms], since
         )
         widened = too_general(widened, counts, self._search.total_items(workspace_id, since))
-        found = self._search.candidates(workspace_id, widened, since, SET_MAX)
+        found = self._search.candidates(workspace_id, widened, since, SET_MAX, until)
         if state.meaning:
-            found = self._with_meaning(workspace_id, state, widened, since, found)
+            found = self._with_meaning(workspace_id, state, widened, since, until, found)
         found = [
             c
             for c in found
             if not any(only_false_friends(f"{c.title} {c.summary}", w.terms) for w in widened)
+            and not holds_excluded(f"{c.title} {c.summary}", state.excluded)
         ]
         if state.language:
             found = [c for c in found if (c.language or "").startswith(state.language)]
@@ -507,17 +610,20 @@ class Reporter:
         state: State,
         widened: list[Widened],
         since: datetime | None,
+        until: datetime | None,
         found: list[Candidate],
     ) -> list[Candidate]:
         """The items of the words and the items closest to the question, ranked together by
         reciprocal rank (ADR-0045). An item found by the meaning must hold the concepts that
         restricted the search since (« uniquement en Belgique »)."""
-        near = self._search.near(workspace_id, state.meaning, since, NEAR_MAX, NEAR_FLOOR)
+        near = self._search.near(workspace_id, state.meaning, since, NEAR_MAX, NEAR_FLOOR, until)
         restrictions = widened[state.subject :]
         if near and restrictions:
             allowed = {
                 c.id
-                for c in self._search.candidates(workspace_id, restrictions, since, RESTRICT_MAX)
+                for c in self._search.candidates(
+                    workspace_id, restrictions, since, RESTRICT_MAX, until
+                )
             }
             near = [c for c in near if c.id in allowed]
         return fused([found, near], lambda c: c.id, SET_MAX)
@@ -544,7 +650,14 @@ class Reporter:
         first = read_reading(raw, first_items, 1)
         second = None
         if first.coverage is not Coverage.OUI and first.others:
-            state = State(first.others, turn.state.language, turn.state.days)
+            state = State(
+                first.others,
+                turn.state.language,
+                turn.state.days,
+                excluded=turn.state.excluded,
+                date_from=turn.state.date_from,
+                date_to=turn.state.date_to,
+            )
             _, _, found = self._search_set(workspace_id, conversation, state)
             seen = {r.item_id for r in first_items}
             fresh = [_read_item(c) for c in found if str(c.id) not in seen][:READ_MAX]
@@ -583,7 +696,7 @@ class Reporter:
         models: list[str] = []
         errors: list[str] = []
         reading = self._read(workspace_id, user_id, conversation, turn, (attempts, models, errors))
-        self._store.save_turn(
+        self._finish(
             workspace_id,
             conversation.id,
             replace(
@@ -632,7 +745,7 @@ class Reporter:
         more = self._fact(workspace_id, user_id, history, turn, (attempts, models, errors))
         glossary = [stored.entry for stored in self._search.glossary(workspace_id)]
         fact = turn.fact if more is None or turn.fact is None else merged(turn.fact, more, glossary)
-        self._store.save_turn(
+        self._finish(
             workspace_id,
             conversation.id,
             replace(

@@ -6,13 +6,16 @@ explicitly; every other test runs under the default policy, which allows public 
 """
 
 import ipaddress
+import socket
 import threading
+import time
 from collections.abc import Iterator
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
+import httpx2
 import pytest
 
-from otlet.platform.http import AddressPolicy, FetchError, SafeClient, is_public
+from otlet.platform.http import AddressPolicy, FetchError, SafeClient, SafeTransport, is_public
 
 LOCAL = ipaddress.ip_network("127.0.0.1/32")
 
@@ -167,3 +170,47 @@ def test_the_size_is_bounded(server: int) -> None:
         with pytest.raises(FetchError) as caught:
             client.get(f"http://127.0.0.1:{server}/big", max_bytes=1024)
     assert caught.value.reason == "too_large"
+
+
+def test_a_connection_cut_from_another_thread_wakes_the_call_and_the_server_sees_it() -> None:
+    listener = socket.create_server(("127.0.0.1", 0))
+    port = listener.getsockname()[1]
+    ended: list[bytes] = []
+
+    def serve() -> None:
+        connection, _ = listener.accept()
+        connection.recv(65536)  # the request; no answer is ever sent
+        ended.append(connection.recv(65536))  # b"": the client went
+        connection.close()
+
+    threading.Thread(target=serve, daemon=True).start()
+    transport = SafeTransport(
+        AddressPolicy(
+            allowed_networks=(ipaddress.ip_network("127.0.0.0/8"),),
+            allowed_ports=frozenset({port}),
+        )
+    )
+    failure: list[BaseException] = []
+
+    def call() -> None:
+        try:
+            with httpx2.Client(transport=transport, timeout=30, trust_env=False) as client:
+                client.get(f"http://127.0.0.1:{port}/")
+        except httpx2.TransportError as error:
+            failure.append(error)
+
+    caller = threading.Thread(target=call, daemon=True)
+    caller.start()
+    deadline = time.monotonic() + 5
+    while not transport._backend._opened and time.monotonic() < deadline:
+        time.sleep(0.01)
+    time.sleep(0.1)
+    transport.cut()
+    caller.join(5)
+    assert not caller.is_alive() and failure
+    for _ in range(100):
+        if ended:
+            break
+        time.sleep(0.05)
+    assert ended == [b""]
+    listener.close()

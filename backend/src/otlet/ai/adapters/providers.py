@@ -18,12 +18,13 @@ from collections.abc import Callable, Mapping
 from typing import Any, cast
 
 import anthropic
+import httpx2
 import openai
 
 from otlet.ai.application.ports import Adapter
 from otlet.ai.domain.model import AiError, Answer, Completion, ModelEntry, Protocol
 from otlet.ai.domain.settings import InstancePolicy
-from otlet.platform.http import DEFAULT_PORTS, AddressPolicy, BlockedAddressError
+from otlet.platform.http import DEFAULT_PORTS, AddressPolicy, BlockedAddressError, SafeTransport
 from otlet.platform.sdk_http import guarded_sdk_client, refused
 
 
@@ -41,17 +42,30 @@ def _status_error(status: int, detail: str) -> AiError:
     return AiError(kind, f"HTTP {status} {detail}"[:200])
 
 
-class OpenAICompatible:
+class _Abortable:
+    """The transport of the call under way, which another thread may cut."""
+
     def __init__(self, policy: AddressPolicy) -> None:
         self._policy = policy
+        self._transport: SafeTransport | None = None
 
+    def _client(self, timeout_seconds: float) -> httpx2.Client:
+        self._transport = SafeTransport(self._policy)
+        return guarded_sdk_client(self._policy, timeout_seconds, transport=self._transport)
+
+    def abort(self) -> None:
+        if self._transport is not None:
+            self._transport.cut()
+
+
+class OpenAICompatible(_Abortable):
     def complete(self, call: Completion) -> Answer:
         client = openai.OpenAI(
             base_url=call.endpoint,
             api_key=call.api_key or "none",
             max_retries=0,
             timeout=call.timeout_seconds,
-            http_client=guarded_sdk_client(self._policy, call.timeout_seconds),
+            http_client=self._client(call.timeout_seconds),
         )
         try:
             response = client.chat.completions.create(
@@ -91,17 +105,14 @@ class OpenAICompatible:
         )
 
 
-class AnthropicNative:
-    def __init__(self, policy: AddressPolicy) -> None:
-        self._policy = policy
-
+class AnthropicNative(_Abortable):
     def complete(self, call: Completion) -> Answer:
         client = anthropic.Anthropic(
             base_url=call.endpoint,
             api_key=call.api_key or "none",
             max_retries=0,
             timeout=call.timeout_seconds,
-            http_client=guarded_sdk_client(self._policy, call.timeout_seconds),
+            http_client=self._client(call.timeout_seconds),
         )
         system = "\n\n".join(m.content for m in call.messages if m.role == "system")
         try:

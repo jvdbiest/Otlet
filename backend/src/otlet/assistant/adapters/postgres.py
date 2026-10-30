@@ -10,7 +10,7 @@ from uuid import UUID, uuid4
 import sqlalchemy as sa
 
 from otlet.assistant.application.assistant import Candidate, StoredEntry
-from otlet.assistant.application.dossiers import QUALIFY_DOSSIER, Dossier
+from otlet.assistant.application.dossiers import QUALIFY_DOSSIER, Dossier, RunningDossier
 from otlet.assistant.domain.qualify import PROMPT_VERSION, Judged, Verdict
 from otlet.assistant.domain.terms import Concept, GlossaryEntry, Widened, websearch
 from otlet.jobs.application.registry import Enqueue, no_queue
@@ -165,6 +165,7 @@ class PostgresAssistantStore:
         concepts: list[Widened],
         since: datetime | None,
         limit: int,
+        until: datetime | None = None,
     ) -> list[Candidate]:
         """The items holding a term of every concept, the best ranked first: no model. A term
         of several words holds when the item has all its words, in any order: as an exact
@@ -201,9 +202,11 @@ class PostgresAssistantStore:
                     f" WHERE {here('i')}"
                     " AND (CAST(:since AS timestamptz) IS NULL"
                     " OR coalesce(i.published_at, i.collected_at) >= :since)"
+                    " AND (CAST(:until AS timestamptz) IS NULL"
+                    " OR coalesce(i.published_at, i.collected_at) < :until)"
                     " ORDER BY rank DESC, dated DESC, i.id LIMIT :limit"
                 ),
-                {**queries, "chars": SUMMARY_CHARS, "since": since, "limit": limit},
+                {**queries, "chars": SUMMARY_CHARS, "since": since, "until": until, "limit": limit},
             ).all()
         return [
             Candidate(
@@ -225,6 +228,7 @@ class PostgresAssistantStore:
         since: datetime | None,
         limit: int,
         floor: float,
+        until: datetime | None = None,
     ) -> list[Candidate]:
         """The items closest in meaning (ADR-0045). The index is read on, past the items of the
         other workspaces that row-level security hides, until `limit` are found (iterative scan
@@ -243,6 +247,8 @@ class PostgresAssistantStore:
                     " AND i.meaning IS NOT NULL AND i.meaning_model = :model"
                     " AND (CAST(:since AS timestamptz) IS NULL"
                     " OR coalesce(i.published_at, i.collected_at) >= :since)"
+                    " AND (CAST(:until AS timestamptz) IS NULL"
+                    " OR coalesce(i.published_at, i.collected_at) < :until)"
                     " ORDER BY i.meaning <=> CAST(:meaning AS vector) LIMIT :limit"
                 ),
                 {
@@ -250,6 +256,7 @@ class PostgresAssistantStore:
                     "meaning": literal(list(meaning)),
                     "model": MODEL,
                     "since": since,
+                    "until": until,
                     "limit": limit,
                 },
             ).all()
@@ -364,6 +371,27 @@ class PostgresAssistantStore:
                 {"id": dossier_id},
             ).scalar_one()
         return [Concept(c["name"], tuple(c["terms"])) for c in requested]
+
+    def is_over(self, workspace_id: UUID, dossier_id: UUID) -> bool:
+        """Whether a dossier is done, or cancelled: what a call in progress looks at."""
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            status = connection.execute(
+                sa.text(f"SELECT status FROM assistant_dossiers WHERE id = :id AND {here()}"),
+                {"id": dossier_id},
+            ).scalar()
+        return status is None or status == "done"
+
+    def running_dossiers(self, workspace_id: UUID, user_id: UUID) -> list[RunningDossier]:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            rows = connection.execute(
+                sa.text(
+                    "SELECT id, subject, created_at FROM assistant_dossiers"
+                    f" WHERE status <> 'done' AND created_by = :user AND {here()}"
+                    " ORDER BY created_at"
+                ),
+                {"user": user_id},
+            ).all()
+        return [RunningDossier(r.id, r.subject, r.created_at) for r in rows]
 
     def save_dossier(self, workspace_id: UUID, dossier: Dossier, finished: bool) -> None:
         verdicts = {

@@ -3,7 +3,8 @@
 read by the interface (F05, acceptance: « un appel structuré réussit avec Ollama »)."""
 
 import json
-from dataclasses import dataclass
+from collections.abc import Callable
+from dataclasses import dataclass, replace
 from datetime import datetime
 from typing import Any, Protocol
 from uuid import UUID
@@ -70,7 +71,11 @@ class CheckStore(Protocol):
 
     def get(self, user_id: UUID, check_id: UUID) -> Check | None: ...
 
-    def finish(self, user_id: UUID, check_id: UUID, result: dict[str, Any]) -> None: ...
+    def finish(self, user_id: UUID, check_id: UUID, result: dict[str, Any]) -> None:
+        """Ends a check still running; one already ended stays as it is."""
+        ...
+
+    def running(self, user_id: UUID) -> list[Check]: ...
 
 
 def summary(outcome: Outcome) -> dict[str, Any]:
@@ -98,14 +103,32 @@ def summary(outcome: Outcome) -> dict[str, Any]:
     }
 
 
-def run_check(gateway: Gateway, store: CheckStore, user_id: UUID, check_id: UUID) -> None:
+CANCELLED = {
+    "ok": False,
+    "error": "cancelled",
+    "provider": None,
+    "model": None,
+    "answer": None,
+    "repaired": False,
+    "attempts": [],
+}
+
+
+def run_check(
+    gateway: Gateway,
+    store: CheckStore,
+    user_id: UUID,
+    check_id: UUID,
+    cancelled: Callable[[], bool] | None = None,
+) -> None:
     """Each model of the profile in turn, alone: a test says which models answer, where a
     generation stops at the first that does. The first model gives the summary on top."""
+    request = replace(REQUEST, cancelled=cancelled)
     entries = gateway.profile(user_id)
     if not entries:
-        store.finish(user_id, check_id, summary(gateway.generate(user_id, REQUEST, validate)))
+        store.finish(user_id, check_id, summary(gateway.generate(user_id, request, validate)))
         return
-    models = [summary(gateway.generate(user_id, REQUEST, validate, [entry])) for entry in entries]
+    models = [summary(gateway.generate(user_id, request, validate, [entry])) for entry in entries]
     store.finish(
         user_id, check_id, {**models[0], "ok": all(m["ok"] for m in models), "models": models}
     )

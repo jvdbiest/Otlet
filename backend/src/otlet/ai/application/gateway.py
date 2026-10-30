@@ -19,6 +19,8 @@ For a request, the gateway tries the models of the user's profile, in order:
 Every attempt is written to the call journal of the user.
 """
 
+import logging
+import threading
 import time
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
@@ -51,6 +53,10 @@ from otlet.ai.domain.settings import (
 RETRY_AFTER_MAX = 2.0
 QUOTA_RETRIES = 2
 UNAVAILABLE_RETRIES = 1
+# How often a call in progress looks whether its work was cancelled.
+CANCEL_POLL_SECONDS = 2.0
+
+logger = logging.getLogger(__name__)
 
 # Checks a raw output; answers the list of errors, empty when the output is usable.
 Validate = Callable[[str], list[str]]
@@ -87,6 +93,9 @@ class Request:
     schema_name: str
     max_output_tokens: int = 1200
     timeout_seconds: float = 120.0
+    # Whether the author cancelled the work this call is for: asked before a call, and every
+    # few seconds during it. Cancelled, the call is cut and nothing more is tried.
+    cancelled: Callable[[], bool] | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -114,6 +123,38 @@ class Outcome:
     attempts: list[Attempt] = field(default_factory=list)
 
 
+class _Watch:
+    """While a call runs, asks whether its work was cancelled; if so, cuts the call."""
+
+    def __init__(
+        self, cancelled: Callable[[], bool] | None, adapter: Adapter, every: float
+    ) -> None:
+        self._cancelled = cancelled
+        self._adapter = adapter
+        self._every = every
+        self._over = threading.Event()
+        self.fired = False
+
+    def __enter__(self) -> "_Watch":
+        if self._cancelled is not None:
+            threading.Thread(target=self._run, daemon=True).start()
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        self._over.set()
+
+    def _run(self) -> None:
+        cancelled = self._cancelled
+        while cancelled is not None and not self._over.wait(self._every):
+            try:
+                if cancelled():
+                    self.fired = True
+                    self._adapter.abort()
+                    return
+            except Exception:  # noqa: BLE001 (a failed look must not end the call)
+                logger.warning("could not check whether a call was cancelled", exc_info=True)
+
+
 class Gateway:
     def __init__(
         self,
@@ -124,6 +165,7 @@ class Gateway:
         adapters: AdapterFactory,
         journal: CallJournal,
         sleep: Callable[[float], None] = time.sleep,
+        watch_every: float = CANCEL_POLL_SECONDS,
     ) -> None:
         self._settings = settings
         self._catalogue = catalogue
@@ -132,6 +174,7 @@ class Gateway:
         self._adapters = adapters
         self._journal = journal
         self._sleep = sleep
+        self._watch_every = watch_every
 
     def profile(self, user_id: UUID) -> tuple[ProfileEntry, ...]:
         return tuple(self._settings.profile(user_id).entries)
@@ -177,7 +220,7 @@ class Gateway:
                 )
             except AiError as error:
                 outcome.error = error.kind
-                if error.kind in ("budget", "refused"):
+                if error.kind in ("budget", "refused", "cancelled"):
                     return outcome
                 # quota or unavailable: the next model of the profile
         return outcome
@@ -272,6 +315,8 @@ class Gateway:
         def attempt(result: str, **values: Any) -> Attempt:
             return Attempt(request.usage, provider.id, provider.kind, model.model, result, **values)
 
+        if request.cancelled is not None and request.cancelled():
+            raise AiError("cancelled")
         try:
             reservation = self._budget.reserve(
                 user_id, estimate_cost(model, messages, request.max_output_tokens)
@@ -280,31 +325,34 @@ class Gateway:
             self._note(user_id, outcome, attempt("budget", detail=error.detail[:200]))
             raise
         started = time.perf_counter()
+        watch = _Watch(request.cancelled, adapter, self._watch_every)
         try:
-            answer = adapter.complete(
-                Completion(
-                    endpoint=api_endpoint(provider.endpoint, self._local(provider)),
-                    api_key=key,
-                    model=model,
-                    messages=tuple(messages),
-                    schema=request.schema,
-                    schema_name=request.schema_name,
-                    max_output_tokens=request.max_output_tokens,
-                    timeout_seconds=request.timeout_seconds,
+            with watch:
+                answer = adapter.complete(
+                    Completion(
+                        endpoint=api_endpoint(provider.endpoint, self._local(provider)),
+                        api_key=key,
+                        model=model,
+                        messages=tuple(messages),
+                        schema=request.schema,
+                        schema_name=request.schema_name,
+                        max_output_tokens=request.max_output_tokens,
+                        timeout_seconds=request.timeout_seconds,
+                    )
                 )
-            )
-        except AiError as error:
+        except AiError as failure:
+            ended = AiError("cancelled") if watch.fired else failure
             self._budget.settle(reservation, Decimal(0))
             self._note(
                 user_id,
                 outcome,
                 attempt(
-                    error.kind,
-                    detail=error.detail[:200],
+                    ended.kind,
+                    detail=ended.detail[:200],
                     seconds=round(time.perf_counter() - started, 2),
                 ),
             )
-            raise
+            raise ended from failure
         cost = real_cost(model, answer)
         self._budget.settle(reservation, cost)
         self._note(

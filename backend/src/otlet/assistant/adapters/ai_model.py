@@ -16,9 +16,15 @@ TIMEOUT_SECONDS = 300.0
 
 
 class GatewayModel:
-    def __init__(self, gateway: Gateway, usage: str = USAGE) -> None:
+    def __init__(
+        self,
+        gateway: Gateway,
+        usage: str = USAGE,
+        cancelled: Callable[[], bool] | None = None,
+    ) -> None:
         self._gateway = gateway
         self._usage = usage
+        self._cancelled = cancelled
 
     def ask(
         self,
@@ -38,6 +44,7 @@ class GatewayModel:
                 schema_name=SCHEMA_NAME,
                 max_output_tokens=max_output_tokens,
                 timeout_seconds=TIMEOUT_SECONDS,
+                cancelled=self._cancelled,
             ),
             validate,
         )

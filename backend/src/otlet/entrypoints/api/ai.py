@@ -16,7 +16,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
 from otlet.ai.application.budget import Budget
-from otlet.ai.application.checks import Check, CheckStore
+from otlet.ai.application.checks import CANCELLED, Check, CheckStore
 from otlet.ai.application.models import Installed, Models, Pull
 from otlet.ai.application.settings import AiSettings
 from otlet.ai.domain.budget import LIMIT_MAX
@@ -470,6 +470,14 @@ def build_router(
     def start_check(session: CurrentSession) -> ProfileCheckView:
         """« Tester » : one small structured answer through the profile, by the worker."""
         return ProfileCheckView.of(checks.create(session.user_id, uuid.uuid4()))
+
+    @router.post("/checks/{check_id}/cancel")
+    def cancel_check(check_id: UUID, session: CurrentSession) -> ProfileCheckView:
+        checks.finish(session.user_id, check_id, CANCELLED)
+        check = checks.get(session.user_id, check_id)
+        if check is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "check_not_found")
+        return ProfileCheckView.of(check)
 
     @router.get("/checks/{check_id}")
     def get_check(check_id: UUID, session: CurrentSession) -> ProfileCheckView:

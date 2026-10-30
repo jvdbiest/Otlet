@@ -13,7 +13,7 @@ from otlet.collection.adapters.postgres import ITEM_COLUMNS, ITEMS_FROM, item_fr
 from otlet.jobs.application.registry import Enqueue
 from otlet.platform.database import workspace_transaction
 from otlet.platform.rls import here
-from otlet.writing.application.drafts import GENERATE_DRAFT, Written
+from otlet.writing.application.drafts import GENERATE_DRAFT, RunningDraft, Written
 from otlet.writing.domain.article import Article, Generation, LibraryEntry, Version
 from otlet.writing.domain.document import body_text
 from otlet.writing.domain.draft import PROMPT_VERSION, SourceText
@@ -249,6 +249,19 @@ class PostgresArticleStore:
                 {"brief": brief_id},
             ).first()
         return None if row is None else _generation(row)
+
+    def running(self, workspace_id: UUID, user_id: UUID) -> list[RunningDraft]:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            rows = connection.execute(
+                sa.text(
+                    "SELECT b.id, b.title, g.created_at FROM article_generations g"
+                    " JOIN briefs b ON b.id = g.brief_id"
+                    f" WHERE g.status = 'running' AND g.created_by = :user AND {here('g')}"
+                    " ORDER BY g.created_at"
+                ),
+                {"user": user_id},
+            ).all()
+        return [RunningDraft(r.id, r.title, r.created_at) for r in rows]
 
     def clear_details(self, workspace_id: UUID, brief_id: UUID) -> int:
         with workspace_transaction(self._engine, workspace_id) as connection:

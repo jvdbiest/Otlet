@@ -10,6 +10,7 @@ kept as it was.
 import json
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, replace
+from datetime import datetime
 from typing import Any, Protocol
 from uuid import UUID
 
@@ -91,7 +92,15 @@ class Writer(Protocol):
         validate: Callable[[str], list[str]],
         model: ModelChoice | None,
         max_output_tokens: int,
+        cancelled: Callable[[], bool] | None = None,
     ) -> Written: ...
+
+
+@dataclass(frozen=True, slots=True)
+class RunningDraft:
+    brief_id: UUID
+    title: str
+    created_at: datetime
 
 
 class ArticleStore(Protocol):
@@ -143,6 +152,8 @@ class ArticleStore(Protocol):
         ...
 
     def article_of(self, workspace_id: UUID, brief_id: UUID) -> Article | None: ...
+
+    def running(self, workspace_id: UUID, user_id: UUID) -> list[RunningDraft]: ...
 
 
 class BriefSource(Protocol):
@@ -196,15 +207,22 @@ class Drafts:
         return self._articles.sources(context.workspace_id, brief_id)
 
     def cancel(self, context: WorkspaceContext, brief_id: UUID) -> Generation | None:
-        """Cancels the running draft of a brief (Joël, 2026-10-18): nothing of it is kept, even
-        when the model answers afterwards. The call to a local model runs to its end."""
+        """Cancels the running draft of a brief (Joël, 2026-10-18): nothing of it is kept. The
+        worker cuts its call to the model (Joël, 2026-10-30)."""
         return self._articles.cancel(context.workspace_id, brief_id)
+
+    def running(self, context: WorkspaceContext) -> list[RunningDraft]:
+        return self._articles.running(context.workspace_id, context.user_id)
 
     def clear_details(self, context: WorkspaceContext, brief_id: UUID) -> int | None:
         """Empties the details of the drafts of a brief; None when the brief does not exist."""
         if self._briefs.get_brief(context.workspace_id, brief_id) is None:
             return None
         return self._articles.clear_details(context.workspace_id, brief_id)
+
+    def _cancelled(self, workspace_id: UUID, generation_id: UUID) -> bool:
+        current = self._articles.generation(workspace_id, generation_id)
+        return current is None or current.status != "running"
 
     def run(self, workspace_id: UUID, user_id: UUID, generation_id: UUID) -> None:
         """The job: writes the draft, or records why it could not."""
@@ -270,6 +288,7 @@ class Drafts:
             validate,
             fields.model,
             max(output, LOCAL_OUTPUT_TOKENS if local else 0),
+            lambda: self._cancelled(workspace_id, generation_id),
         )
         details = {
             "brief": {

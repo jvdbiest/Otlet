@@ -29,6 +29,10 @@ def answer_turn(
 ) -> None:
     store = PostgresReporterStore(environment.engine, environment.enqueue)
     search = PostgresAssistantStore(environment.engine)
-    Reporter(store, search, GatewayModel(gateway(environment), USAGE), encode=encode_question).run(
-        UUID(workspace_id), UUID(user_id), UUID(conversation_id), UUID(turn_id)
+    workspace, turn = UUID(workspace_id), UUID(turn_id)
+    model = GatewayModel(
+        gateway(environment), USAGE, cancelled=lambda: not store.is_pending(workspace, turn)
+    )
+    Reporter(store, search, model, encode=encode_question).run(
+        workspace, UUID(user_id), UUID(conversation_id), turn
     )

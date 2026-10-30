@@ -84,3 +84,17 @@ def test_a_term_too_general_is_set_aside_but_shown() -> None:
     assert checked[0].terms == ("Austen", "tempête Austen")
     assert checked[0].all_terms == ("Austen", "tempête Austen", "Bruxelles", "course")
     assert checked[1].general == ()  # 265 of 2,940 is under 10 %, and it leads its concept
+
+
+def test_next_to_one_word_a_term_needs_a_real_share_to_be_too_general() -> None:
+    """« tempêtes » beside « intempéries » is a synonym; « cyberattaque » beside « piratage de
+    Binance » widens a precise subject (Joël, 2026-10-30)."""
+    from otlet.assistant.domain.terms import Widened, too_general
+
+    weather = Widened(Concept("intempéries", ("intempéries", "tempêtes")), ())
+    assert too_general([weather], {"intempéries": 9, "tempêtes": 52}, 2360)[0].general == ()
+    binance = Widened(Concept("Binance", ("piratage de Binance", "cyberattaque")), ())
+    counts = {"piratage de Binance": 7, "cyberattaque": 57}
+    assert too_general([binance], counts, 2360)[0].general == ("cyberattaque",)
+    strike = Widened(Concept("grève", ("grève", "transport")), ())
+    assert too_general([strike], {"grève": 27, "transport": 169}, 2360)[0].general == ("transport",)

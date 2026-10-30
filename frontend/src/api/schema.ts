@@ -207,6 +207,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/ai/checks/{check_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel Check */
+        post: operations["cancel_check_api_ai_checks__check_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/ai/policy": {
         parameters: {
             query?: never;
@@ -478,6 +495,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/ai-tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Tasks */
+        get: operations["tasks_api_workspaces__workspace_id__ai_tasks_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/ai-tasks/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel All
+         * @description Ends all of them; the worker cuts the calls to the models under way.
+         */
+        post: operations["cancel_all_api_workspaces__workspace_id__ai_tasks_cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/articles": {
         parameters: {
             query?: never;
@@ -675,6 +729,23 @@ export interface paths {
         get: operations["get_dossier_api_workspaces__workspace_id__assistant_dossiers__dossier_id__get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/assistant/dossiers/{dossier_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel Dossier */
+        post: operations["cancel_dossier_api_workspaces__workspace_id__assistant_dossiers__dossier_id__cancel_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1652,6 +1723,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel
+         * @description Ends the question being answered; the worker cuts its call to the model.
+         */
+        post: operations["cancel_api_workspaces__workspace_id__reporter_conversations__conversation_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/turns": {
         parameters: {
             query?: never;
@@ -1954,6 +2045,23 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AiTaskView */
+        AiTaskView: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "reporter" | "dossier" | "draft" | "check";
+            /** Label */
+            label: string;
+            /** Started At */
+            started_at: string | null;
+        };
         /** AnswerView */
         AnswerView: {
             /** Dated */
@@ -2295,6 +2403,11 @@ export interface components {
             tokens_out: number;
             /** Usage */
             usage: string;
+        };
+        /** CancelledView */
+        CancelledView: {
+            /** Cancelled */
+            cancelled: number;
         };
         /** CandidateView */
         CandidateView: {
@@ -3396,6 +3509,10 @@ export interface components {
         };
         /** QuestionBody */
         QuestionBody: {
+            /** Date From */
+            date_from?: string | null;
+            /** Date To */
+            date_to?: string | null;
             /** Question */
             question: string;
             /**
@@ -3850,10 +3967,16 @@ export interface components {
             concepts: components["schemas"]["ConceptView"][];
             /** Created At */
             created_at: string | null;
+            /** Date From */
+            date_from: string | null;
+            /** Date To */
+            date_to: string | null;
             /** Days */
             days: number | null;
             /** Error */
             error: string | null;
+            /** Excluded */
+            excluded: string[];
             fact: components["schemas"]["FactView"] | null;
             /** Finished At */
             finished_at: string | null;
@@ -3867,7 +3990,7 @@ export interface components {
             /** Model */
             model: string | null;
             /** Operation */
-            operation: ("chercher" | "restreindre" | "élargir" | "trier" | "fait" | "agir") | null;
+            operation: ("chercher" | "restreindre" | "élargir" | "trier" | "fait" | "agir" | "exclure") | null;
             /** Position */
             position: number;
             /** Question */
@@ -4320,6 +4443,37 @@ export interface operations {
         };
     };
     get_check_api_ai_checks__check_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                check_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileCheckView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_check_api_ai_checks__check_id__cancel_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -4922,6 +5076,68 @@ export interface operations {
             };
         };
     };
+    tasks_api_workspaces__workspace_id__ai_tasks_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiTaskView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_all_api_workspaces__workspace_id__ai_tasks_cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CancelledView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     create_article_api_workspaces__workspace_id__articles_post: {
         parameters: {
             query?: never;
@@ -5302,6 +5518,38 @@ export interface operations {
         };
     };
     get_dossier_api_workspaces__workspace_id__assistant_dossiers__dossier_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dossier_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DossierView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_dossier_api_workspaces__workspace_id__assistant_dossiers__dossier_id__cancel_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -7298,6 +7546,38 @@ export interface operations {
         };
     };
     get_api_workspaces__workspace_id__reporter_conversations__conversation_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_api_workspaces__workspace_id__reporter_conversations__conversation_id__cancel_post: {
         parameters: {
             query?: never;
             header?: never;

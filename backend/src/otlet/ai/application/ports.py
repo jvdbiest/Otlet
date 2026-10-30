@@ -17,6 +17,10 @@ class Adapter(Protocol):
         (ADR-0027 §4). Raises AiError with a kind the gateway acts on."""
         ...
 
+    def abort(self) -> None:
+        """Called from another thread: cuts the call under way, which then raises."""
+        ...
+
 
 class CatalogueSource(Protocol):
     def load(self) -> Catalogue: ...

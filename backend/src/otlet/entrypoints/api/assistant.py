@@ -241,6 +241,13 @@ def build_router(
             for d in dossiers.recent(context)
         ]
 
+    @router.post("/assistant/dossiers/{dossier_id}/cancel")
+    def cancel_dossier(dossier_id: UUID, context: Context) -> DossierView:
+        dossier = dossiers.cancel(context, dossier_id)
+        if dossier is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "dossier_not_found")
+        return DossierView.of(dossier)
+
     @router.get("/assistant/dossiers/{dossier_id}")
     def get_dossier(dossier_id: UUID, context: Context) -> DossierView:
         dossier = dossiers.get(context, dossier_id)

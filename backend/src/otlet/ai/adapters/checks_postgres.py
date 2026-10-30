@@ -47,7 +47,18 @@ class PostgresChecks:
             connection.execute(
                 sa.text(
                     "UPDATE ai_checks SET result = CAST(:result AS jsonb), finished_at = now()"
-                    " WHERE id = :id AND user_id = :user"
+                    " WHERE id = :id AND user_id = :user AND finished_at IS NULL"
                 ),
                 {"id": check_id, "user": user_id, "result": json.dumps(result)},
             )
+
+    def running(self, user_id: UUID) -> list[Check]:
+        with scoped_transaction(self._engine, user_id=user_id) as connection:
+            rows = connection.execute(
+                sa.text(
+                    f"SELECT {COLUMNS} FROM ai_checks"
+                    " WHERE user_id = :user AND finished_at IS NULL ORDER BY created_at"
+                ),
+                {"user": user_id},
+            ).all()
+        return [_check(row) for row in rows]

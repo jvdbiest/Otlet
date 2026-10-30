@@ -2,6 +2,7 @@
 """A conversation of the Reporter on a real PostgreSQL, with a fake model (ADR-0044)."""
 
 import json
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import UUID
@@ -13,6 +14,7 @@ from integration_support import TestDatabase, requires_database
 from otlet.assistant.adapters.postgres import PostgresAssistantStore
 from otlet.assistant.application.assistant import Assistant
 from otlet.assistant.application.dossiers import Asked
+from otlet.assistant.domain.qualify import Judged, Verdict
 from otlet.assistant.domain.terms import Concept
 from otlet.collection.adapters.postgres import PostgresCollectionStore
 from otlet.collection.application.ports import NewItem, Outcome
@@ -384,3 +386,130 @@ def test_the_meaning_adds_the_items_the_words_miss(
         context, conversation.id, turn.id, [Concept("Austen", ("Austen",)), Concept("c", ("kust",))]
     )
     assert "Zware storm aan de kust" in {c.title for c in changed.candidates}
+
+
+def test_a_question_is_cancelled_and_its_late_answer_is_not_kept(
+    reporter: tuple[Reporter, Reporter, WorkspaceContext, sa.Engine],
+) -> None:
+    api, worker, context, _ = reporter
+    conversation = api.start(context, "Les articles sur la tempête Austen")
+    turn = conversation.turns[0]
+    assert [t.question for t in api.running(context)] == [turn.question]
+    cancelled = api.cancel(context, conversation.id)
+    assert cancelled is not None
+    assert (cancelled.turns[0].status, cancelled.turns[0].error) == ("failed", "cancelled")
+    assert api.running(context) == []
+    # The job that was waiting finds it cancelled, and asks no model.
+    answer(worker, context, conversation.id, turn.id)
+    found = api.get(context, conversation.id)
+    assert found is not None and found.turns[0].status == "failed"
+    # The conversation goes on.
+    next_one = api.ask(context, conversation.id, "Les articles sur la tempête Austen")
+    answer(worker, context, conversation.id, next_one.id)
+    found = api.get(context, conversation.id)
+    assert found is not None and found.turns[1].status == "done"
+
+
+def test_a_reading_cancelled_leaves_the_answer_as_it_was(
+    reporter: tuple[Reporter, Reporter, WorkspaceContext, sa.Engine],
+) -> None:
+    api, worker, context, _ = reporter
+    conversation = api.start(context, "Les articles sur la tempête Austen")
+    turn = conversation.turns[0]
+    answer(worker, context, conversation.id, turn.id)
+    api.read_set(context, conversation.id, turn.id)
+    cancelled = api.cancel(context, conversation.id)
+    assert cancelled is not None
+    ended = cancelled.turns[0]
+    assert (ended.status, ended.reading, len(ended.candidates)) == ("done", None, 3)
+    found = api.get(context, conversation.id)
+    assert found is not None and found.turns[0].status == "done"
+
+
+def test_the_articles_of_today_keep_the_subject_and_the_sort(
+    reporter: tuple[Reporter, Reporter, WorkspaceContext, sa.Engine],
+) -> None:
+    """Intempéries, « Trie-les », « Les articles d'aujourd'hui ? » (Joël, 2026-10-30)."""
+    api, worker, context, engine = reporter
+    collect(engine, context, "rtbf", "fr", [("Tempête Austen : ce matin", "Encore du vent.", 0)])
+    store = PostgresReporterStore(engine)
+    conversation = api.start(context, "Les articles sur la tempête Austen")
+    first = conversation.turns[0]
+    answer(worker, context, conversation.id, first.id)
+    found = api.get(context, conversation.id)
+    assert found is not None and len(found.turns[0].candidates) == 4
+    today = next(c for c in found.turns[0].candidates if c.title == "Tempête Austen : ce matin")
+    aside = Judged(Verdict.HORS_SUJET, "sans lien", True)
+    store.save_turn(
+        context.workspace_id,
+        conversation.id,
+        replace(found.turns[0], verdicts={c.id: aside for c in found.turns[0].candidates}),
+    )
+    turn = api.ask(context, conversation.id, "Les articles d'aujourd'hui ?")
+    answer(worker, context, conversation.id, turn.id)
+    found = api.get(context, conversation.id)
+    assert found is not None
+    last = found.turns[1]
+    assert (last.operation, last.state.days) == (Operation.RESTREINDRE, 1)
+    assert [w.concept.name for w in last.concepts] == ["Austen"]
+    assert [c.title for c in last.candidates] == [today.title]
+    assert last.verdicts == {today.id: aside}
+
+
+def test_a_subject_taken_out_stays_out_without_a_model(
+    reporter: tuple[Reporter, Reporter, WorkspaceContext, sa.Engine],
+) -> None:
+    api, _, context, engine = reporter
+    model = FakeModel()
+    worker = Reporter(PostgresReporterStore(engine), PostgresAssistantStore(engine), model)
+    conversation = api.start(context, "Les articles sur la tempête Austen")
+    answer(worker, context, conversation.id, conversation.turns[0].id)
+    asked = len(model.asked)
+    turn = api.ask(context, conversation.id, "En supprimant ce qui concerne la côte")
+    answer(worker, context, conversation.id, turn.id)
+    found = api.get(context, conversation.id)
+    assert found is not None
+    last = found.turns[1]
+    assert (last.operation, last.state.excluded) == (Operation.EXCLURE, ("cote",))
+    assert {c.title for c in last.candidates} == {AUSTEN[0][0], AUSTEN[2][0]}
+    assert len(model.asked) == asked
+    # The next question keeps it out.
+    again = api.ask(context, conversation.id, "Et en néerlandais ?")
+    answer(worker, context, conversation.id, again.id)
+    found = api.get(context, conversation.id)
+    assert found is not None and found.turns[2].state.excluded == ("cote",)
+
+
+def test_dates_chosen_or_named_bound_the_set_and_trie_les_sorts_without_translation(
+    reporter: tuple[Reporter, Reporter, WorkspaceContext, sa.Engine],
+) -> None:
+    api, worker, context, engine = reporter
+    collect(engine, context, "rtbf", "fr", [("Tempête Austen : ce matin", "Encore du vent.", 0)])
+    today = NOW.date()
+    # On the calendar, with the first question.
+    chosen = api.start(context, "Les articles sur la tempête Austen", dates=(today, today))
+    answer(worker, context, chosen.id, chosen.turns[0].id)
+    found = api.get(context, chosen.id)
+    assert found is not None
+    assert [c.title for c in found.turns[0].candidates] == ["Tempête Austen : ce matin"]
+    assert found.turns[0].state.date_from == today
+    # Named in a question, on a set found without dates.
+    conversation = api.start(context, "Les articles sur la tempête Austen")
+    answer(worker, context, conversation.id, conversation.turns[0].id)
+    named = f"{today.day:02d}/{today.month:02d}/{today.year}"
+    turn = api.ask(context, conversation.id, f"Uniquement les articles du {named}")
+    answer(worker, context, conversation.id, turn.id)
+    found = api.get(context, conversation.id)
+    assert found is not None
+    assert found.turns[1].operation is Operation.RESTREINDRE
+    assert [c.title for c in found.turns[1].candidates] == ["Tempête Austen : ce matin"]
+    assert [w.concept.name for w in found.turns[1].concepts] == ["Austen"]
+    # « Trie-les » is a sort by its words: the model is only asked to sort.
+    model = FakeModel()
+    model.fail = True
+    sorting = Reporter(PostgresReporterStore(engine), PostgresAssistantStore(engine), model)
+    sort = api.ask(context, conversation.id, "Trie-les")
+    answer(sorting, context, conversation.id, sort.id)
+    found = api.get(context, conversation.id)
+    assert found is not None and found.turns[2].operation is Operation.TRIER
+    assert model.asked and not any("Dernière question : " in asked for asked in model.asked)

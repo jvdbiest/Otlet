@@ -40,12 +40,14 @@ def gateway(environment: JobEnvironment) -> Gateway:
 # the providers again.
 @job(CHECK_PROFILE, attempts=1)
 def check_profile(environment: JobEnvironment, user_id: str, check_id: str) -> None:
-    run_check(
-        gateway(environment),
-        PostgresChecks(environment.engine, environment.enqueue),
-        UUID(user_id),
-        UUID(check_id),
-    )
+    store = PostgresChecks(environment.engine, environment.enqueue)
+    user, check = UUID(user_id), UUID(check_id)
+
+    def cancelled() -> bool:
+        found = store.get(user, check)
+        return found is None or found.finished_at is not None
+
+    run_check(gateway(environment), store, user, check, cancelled)
 
 
 # One attempt: a download that failed says why in its record; the user starts it again.

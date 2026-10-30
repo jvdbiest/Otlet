@@ -10,7 +10,9 @@ export type TurnCandidate = TurnView["candidates"][number];
 export type FactView = components["schemas"]["FactView"];
 export type ReadingView = components["schemas"]["ReadingView"];
 /** A question, read by the model before its answer is shown when `read` (« Lire avant de répondre »). */
-export type Question = string | { question: string; read: boolean };
+export type Question =
+  | string
+  | { question: string; read: boolean; date_from?: string | null; date_to?: string | null };
 
 const body = (input: Question) => (typeof input === "string" ? { question: input, read: false } : input);
 export type ConceptBody = components["schemas"]["ConceptBody"];
@@ -79,6 +81,24 @@ export function useAsk(workspaceId: string, conversationId: string) {
       return data;
     },
     onSuccess: () => client.invalidateQueries({ queryKey: [...key(workspaceId), conversationId] }),
+  });
+}
+
+/** Ends the question being answered; the worker cuts its call to the model. */
+export function useCancelQuestion(workspaceId: string, conversationId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { data, error, response } = await api.POST(
+        "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/cancel",
+        { params: { path: { workspace_id: workspaceId, conversation_id: conversationId } } },
+      );
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: () => client.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
   });
 }
 

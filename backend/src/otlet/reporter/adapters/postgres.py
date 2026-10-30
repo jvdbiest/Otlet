@@ -2,7 +2,7 @@
 """The conversations of the Reporter on PostgreSQL, in the context of each workspace."""
 
 import json
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -14,7 +14,7 @@ from otlet.assistant.domain.terms import Concept, Widened
 from otlet.jobs.application.registry import Enqueue, no_queue
 from otlet.platform.database import workspace_transaction
 from otlet.platform.rls import here
-from otlet.reporter.application.reporter import ANSWER_TURN, Conversation, Turn
+from otlet.reporter.application.reporter import ANSWER_TURN, Conversation, RunningTurn, Turn
 from otlet.reporter.domain.facts import Agreement, Article, Compared, Fact, FactLine
 from otlet.reporter.domain.questions import PROMPT_VERSION, Operation, State
 from otlet.reporter.domain.reading import Answer, Coverage, Reading, Round
@@ -30,6 +30,10 @@ def _concept(data: dict[str, Any]) -> Concept:
     return Concept(data["name"], tuple(data["terms"]))
 
 
+def _day(value: str | None) -> date | None:
+    return None if value is None else date.fromisoformat(value)
+
+
 def _state_json(state: State) -> str:
     return json.dumps(
         {
@@ -38,6 +42,9 @@ def _state_json(state: State) -> str:
             "days": state.days,
             "meaning": list(state.meaning),
             "subject": state.subject,
+            "excluded": list(state.excluded),
+            "date_from": None if state.date_from is None else state.date_from.isoformat(),
+            "date_to": None if state.date_to is None else state.date_to.isoformat(),
         }
     )
 
@@ -176,6 +183,9 @@ def _turn(row: sa.Row[Any]) -> Turn:
             row.state.get("days"),
             tuple(row.state.get("meaning", ())),
             row.state.get("subject", 0),
+            tuple(row.state.get("excluded", ())),
+            _day(row.state.get("date_from")),
+            _day(row.state.get("date_to")),
         ),
         concepts=[
             Widened(_concept(c), tuple(c["added"]), tuple(c.get("general", ())))
@@ -272,14 +282,15 @@ class PostgresReporterStore:
         conversation_id: UUID,
         question: str,
         read: bool = False,
+        dates: tuple[date | None, date | None] = (None, None),
     ) -> Turn:
         with workspace_transaction(self._engine, workspace_id) as connection:
             row = connection.execute(
                 sa.text(
                     "INSERT INTO reporter_turns (id, workspace_id, conversation_id, position,"
-                    " question, prompt_version, reading) SELECT :id, :workspace, :conversation,"
-                    " coalesce(max(position), 0) + 1, :question, :version,"
-                    " CAST(:reading AS jsonb) FROM reporter_turns"
+                    " question, prompt_version, reading, state) SELECT :id, :workspace,"
+                    " :conversation, coalesce(max(position), 0) + 1, :question, :version,"
+                    " CAST(:reading AS jsonb), CAST(:state AS jsonb) FROM reporter_turns"
                     f" WHERE conversation_id = :conversation AND {here()}"
                     f" RETURNING {TURN_COLUMNS}"
                 ),
@@ -290,6 +301,7 @@ class PostgresReporterStore:
                     "question": question,
                     "version": PROMPT_VERSION,
                     "reading": REQUESTED if read else None,
+                    "state": _state_json(State(date_from=dates[0], date_to=dates[1])),
                 },
             ).one()
             self._enqueue(
@@ -346,6 +358,28 @@ class PostgresReporterStore:
                 turn_id=str(turn_id),
             )
         return _turn(row)
+
+    def is_pending(self, workspace_id: UUID, turn_id: UUID) -> bool:
+        """Whether a question is still being answered: what a call in progress looks at."""
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            status = connection.execute(
+                sa.text(f"SELECT status FROM reporter_turns WHERE id = :id AND {here()}"),
+                {"id": turn_id},
+            ).scalar()
+        return status == "pending"
+
+    def running_turns(self, workspace_id: UUID, user_id: UUID) -> list[RunningTurn]:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            rows = connection.execute(
+                sa.text(
+                    "SELECT t.conversation_id, t.id, t.question, t.created_at FROM reporter_turns t"
+                    " JOIN reporter_conversations c ON c.id = t.conversation_id"
+                    f" WHERE t.status = 'pending' AND c.created_by = :user AND {here('t')}"
+                    " ORDER BY t.created_at"
+                ),
+                {"user": user_id},
+            ).all()
+        return [RunningTurn(r.conversation_id, r.id, r.question, r.created_at) for r in rows]
 
     def save_turn(self, workspace_id: UUID, conversation_id: UUID, turn: Turn) -> None:
         verdicts = {

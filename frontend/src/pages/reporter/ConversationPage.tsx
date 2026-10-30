@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import {
   conversationQuery,
   useAsk,
+  useCancelQuestion,
   useReadMore,
   useReadSet,
   useSetTerms,
@@ -15,6 +16,7 @@ import {
   type TurnCandidate,
   type TurnView,
 } from "../../reporter.ts";
+import { AiButton } from "../../layout/AiButton.tsx";
 import { useWorkspaceId } from "../../session.ts";
 import { errorText, formatDate } from "../watch/labels.ts";
 import { styles } from "../watch/styles.ts";
@@ -27,6 +29,11 @@ const SET_MAX = 200;
 const CHANGES_SET: readonly string[] = ["chercher", "restreindre", "élargir"];
 // From this many items, the main themes are shown at once (Joël, 2026-10-29).
 const THEMES_OPEN = 100;
+
+/** « 2026-10-29 » as the reader writes it. */
+function formatDay(day: string): string {
+  return day.split("-").reverse().join("/");
+}
 
 /** A conversation of the Reporter (ADR-0044): each question and its answer, a set of items or
  * lines of fact cited by source, then the next question. */
@@ -83,13 +90,18 @@ function Ask({
 }) {
   const { t } = useTranslation();
   const ask = useAsk(workspaceId, conversationId);
+  const cancel = useCancelQuestion(workspaceId, conversationId);
   const [question, setQuestion] = useState("");
   const [read, setRead] = useState(readBefore);
+  const failure = ask.error ?? cancel.error;
   return (
     <form
       className={styles.form}
       onSubmit={(event) => {
         event.preventDefault();
+        if (busy || question.trim() === "") {
+          return;
+        }
         ask.mutate({ question: question.trim(), read }, {
           onSuccess: () => {
             setQuestion("");
@@ -109,13 +121,22 @@ function Ask({
       </label>
       <ReadFirst read={read} onChange={setRead} />
       <p className={styles.row}>
-        <button type="submit" className={styles.primary} disabled={busy || question.trim() === "" || ask.isPending}>
+        <AiButton
+          running={busy}
+          cancelling={cancel.isPending}
+          onCancel={() => {
+            cancel.mutate();
+          }}
+          type="submit"
+          className={styles.primary}
+          disabled={question.trim() === "" || ask.isPending}
+        >
           {t("reporter.ask")}
-        </button>
+        </AiButton>
       </p>
-      {ask.error !== null && (
+      {failure !== null && (
         <p role="alert" className={styles.error}>
-          {errorText(t, ask.error)}
+          {errorText(t, failure)}
         </p>
       )}
     </form>
@@ -148,7 +169,8 @@ function Turn({
             : t("reporter.pending")}
         </p>
       )}
-      {turn.status === "failed" && (
+      {turn.status === "failed" && turn.error === "cancelled" && <p className={styles.notice}>{t("reporter.cancelled")}</p>}
+      {turn.status === "failed" && turn.error !== "cancelled" && (
         <p className={styles.warning}>
           {turn.error?.includes("out_of_room") === true
             ? t("reporter.failedRoom")
@@ -160,7 +182,10 @@ function Turn({
           <p className={styles.meta}>
             {turn.operation !== null && t(`reporter.operation.${turn.operation}`)}
             {turn.language !== null && ` · ${t("reporter.language", { language: turn.language })}`}
-            {turn.days !== null && ` · ${t("reporter.period", { count: turn.days })}`}
+            {turn.date_from === null && turn.date_to === null && turn.days !== null && ` · ${t("reporter.period", { count: turn.days })}`}
+            {(turn.date_from !== null || turn.date_to !== null) &&
+              ` · ${t("reporter.dates", { from: turn.date_from === null ? "…" : formatDay(turn.date_from), to: turn.date_to === null ? "…" : formatDay(turn.date_to) })}`}
+            {turn.excluded.length > 0 && ` · ${t("reporter.excluded", { terms: turn.excluded.join(", ") })}`}
             {turn.model !== null && ` · ${t("reporter.model", { model: turn.model })}`}
           </p>
           {/* A fact, a sort or an action reads the set of the previous answer: its terms are
@@ -401,10 +426,14 @@ function ItemSet({
   const [open, setOpen] = useState(last && turn.candidates.length <= SHOWN_AT_ONCE);
   const [showThemes, setShowThemes] = useState(turn.candidates.length >= THEMES_OPEN);
   const [theme, setTheme] = useState<number | null>(null);
+  const [showAside, setShowAside] = useState(false);
   const picked = theme === null ? null : turn.themes[theme];
   const inTheme = picked === undefined || picked === null ? turn.candidates : turn.candidates.filter((c) => picked.items.includes(c.id));
   const sorted = inTheme.some((c) => c.judged !== null);
   const kept = sorted ? inTheme.filter((c) => c.judged?.verdict === "traite") : inTheme;
+  // Set aside by the sort: out of the list, one click away (Joël, 2026-10-30).
+  const aside = sorted ? inTheme.filter((c) => c.judged?.verdict === "hors_sujet") : [];
+  const toCheck = sorted ? inTheme.filter((c) => !kept.includes(c) && !aside.includes(c)) : [];
   const count = (verdict: string) => inTheme.filter((c) => c.judged?.verdict === verdict).length;
   const toBrief = (items: TurnCandidate[]) => {
     void navigate({
@@ -474,7 +503,22 @@ function ItemSet({
       )}
       {turn.candidates.length === 0 && <p className={styles.notice}>{t("reporter.emptySet")}</p>}
       {turn.candidates.length >= SET_MAX && <p className={styles.notice}>{t("reporter.broad", { max: SET_MAX })}</p>}
-      {open && <Items candidates={sorted ? [...kept, ...inTheme.filter((c) => !kept.includes(c))] : inTheme} />}
+      {open && <Items candidates={[...kept, ...toCheck]} />}
+      {open && aside.length > 0 && (
+        <p className={styles.row}>
+          <button
+            type="button"
+            className={styles.chip}
+            aria-expanded={showAside}
+            onClick={() => {
+              setShowAside(!showAside);
+            }}
+          >
+            {showAside ? t("reporter.hideAside") : t("reporter.showAside", { count: aside.length })}
+          </button>
+        </p>
+      )}
+      {open && showAside && <Items candidates={aside} />}
       {last && turn.candidates.length > 0 && (
         <Suggestions workspaceId={workspaceId} conversationId={conversationId} turn={turn} />
       )}
@@ -507,7 +551,9 @@ function ItemSet({
               {inTheme.length > BRIEF_MAX
                 ? t("reporter.toBriefFirst", { count: BRIEF_MAX })
                 : someKept
-                  ? t("reporter.toBriefAll", { count: inTheme.length })
+                  ? aside.length > 0
+                    ? t("reporter.toBriefAllAside", { count: inTheme.length })
+                    : t("reporter.toBriefAll", { count: inTheme.length })
                   : t("reporter.toBrief", { count: inTheme.length })}
             </button>
           )}

@@ -34,6 +34,7 @@ class GatewayWriter:
         validate: Callable[[str], list[str]],
         model: ModelChoice | None,
         max_output_tokens: int,
+        cancelled: Callable[[], bool] | None = None,
     ) -> Written:
         outcome = self._gateway.generate(
             user_id,
@@ -44,6 +45,7 @@ class GatewayWriter:
                 schema_name=SCHEMA_NAME,
                 max_output_tokens=max_output_tokens,
                 timeout_seconds=TIMEOUT_SECONDS,
+                cancelled=cancelled,
             ),
             validate,
             None if model is None else [ProfileEntry(model.provider_id, model.model)],

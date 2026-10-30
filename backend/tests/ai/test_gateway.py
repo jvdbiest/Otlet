@@ -2,7 +2,9 @@
 """`generate` (F05, ADR-0027 §4): the order of the profile, retries, fallbacks, the repair, the
 budget and the journal, with in-memory providers."""
 
+import dataclasses
 import json
+import threading
 import uuid
 from collections import deque
 from collections.abc import Callable
@@ -76,6 +78,9 @@ class Scripted:
             raise step
         return Answer(step, 100, 50)
 
+    def abort(self) -> None:
+        raise AssertionError("no call of this provider is cut")
+
 
 class Journal:
     def __init__(self) -> None:
@@ -125,6 +130,7 @@ def world(
         by_kind,
         journal,
         sleep=slept.append,
+        watch_every=0.01,
     )
     return gateway, journal, budgets, slept
 
@@ -236,3 +242,41 @@ def test_without_a_profile_nothing_is_called() -> None:
 def test_an_error_kind_is_known() -> None:
     with pytest.raises(ValueError):
         AiError("nonsense")
+
+
+def test_work_already_cancelled_calls_no_model() -> None:
+    local = Scripted([])
+    gateway, journal, _, _ = world({"ollama": local, "groq": Scripted([])})
+    request = dataclasses.replace(REQUEST, cancelled=lambda: True)
+    assert gateway.generate(USER, request, valid).error == "cancelled"
+    assert local.calls == [] and journal.attempts == []
+
+
+def test_a_cancelled_call_is_cut_and_nothing_more_is_tried() -> None:
+    class Waiting(Scripted):
+        def __init__(self) -> None:
+            super().__init__([])
+            self.cut = threading.Event()
+
+        def complete(self, call: Completion) -> Answer:
+            self.calls.append(call)
+            assert self.cut.wait(5), "the call was not cut"
+            raise AiError("unavailable", "connection")
+
+        def abort(self) -> None:
+            self.cut.set()
+
+    local, groq = Waiting(), Scripted([])
+    gateway, journal, budgets, _ = world({"ollama": local, "groq": groq})
+    asked: list[bool] = []
+
+    def cancelled() -> bool:
+        asked.append(True)
+        return len(asked) > 1  # not before the call, then during it
+
+    outcome = gateway.generate(USER, dataclasses.replace(REQUEST, cancelled=cancelled), valid)
+    assert outcome.error == "cancelled"
+    # No retry on this model, no fallback on the next, nothing left reserved.
+    assert len(local.calls) == 1 and groq.calls == []
+    assert [a.result for a in journal.attempts] == ["cancelled"]
+    assert budgets.reserved == 0

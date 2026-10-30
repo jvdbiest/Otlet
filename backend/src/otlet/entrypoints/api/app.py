@@ -36,6 +36,7 @@ from otlet.collection.adapters.postgres import PostgresCollectionStore
 from otlet.collection.application.collection import Collection
 from otlet.entrypoints.api import (
     ai,
+    ai_tasks,
     assistant,
     auth,
     backups,
@@ -200,8 +201,13 @@ def create_app(settings: Settings) -> FastAPI:
             Dossiers(assistant_store, assistant_store),
             workspace_context,
         )
-        reporter_router = reporter.build_router(
-            Reporter(PostgresReporterStore(engine, enqueue), assistant_store), workspace_context
+        reporter_service = Reporter(PostgresReporterStore(engine, enqueue), assistant_store)
+        reporter_router = reporter.build_router(reporter_service, workspace_context)
+        dossier_service = Dossiers(assistant_store, assistant_store)
+        draft_service = Drafts(brief_store, article_store)
+        check_store = PostgresChecks(engine, enqueue)
+        ai_tasks_router = ai_tasks.build_router(
+            reporter_service, dossier_service, draft_service, check_store, workspace_context
         )
         ai_router = ai.build_router(
             ai_settings,
@@ -235,6 +241,7 @@ def create_app(settings: Settings) -> FastAPI:
             media_router,
             assistant_router,
             reporter_router,
+            ai_tasks_router,
         ]
         for router in routers:
             app.include_router(router)

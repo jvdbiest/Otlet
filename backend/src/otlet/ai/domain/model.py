@@ -40,9 +40,11 @@ class StructuredOutput(StrEnum):
 class AiError(Exception):
     """A call did not give a usable answer. `kind` decides what the gateway does next
     (ADR-0027 §4): quota and unavailable may be retried or fall back to the next provider;
-    refused, blocked and budget stop; invalid gets one repair."""
+    refused, blocked, budget and cancelled stop; invalid gets one repair."""
 
-    KINDS = frozenset({"quota", "unavailable", "refused", "blocked", "budget", "invalid"})
+    KINDS = frozenset(
+        {"quota", "unavailable", "refused", "blocked", "budget", "invalid", "cancelled"}
+    )
 
     def __init__(self, kind: str, detail: str = "", retry_after: float | None = None) -> None:
         if kind not in self.KINDS:

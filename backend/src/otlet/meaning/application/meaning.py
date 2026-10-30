@@ -8,6 +8,7 @@ batches until its time is spent: on the NAS, 322 ms per item, so the flow of a d
 
 import time
 from collections.abc import Callable, Sequence
+from contextlib import AbstractContextManager
 from dataclasses import dataclass
 from typing import Protocol
 from uuid import UUID
@@ -41,6 +42,11 @@ class MeaningStore(Protocol):
 
     def save(self, vectors: list[tuple[Pending, list[float]]], model: str) -> None: ...
 
+    def alone(self) -> AbstractContextManager[bool]:
+        """True while no other run encodes: two runs took the same items and deadlocked, with
+        the model loaded twice (sens-1 on the work VM, 2026-10-30)."""
+        ...
+
 
 class Meaning:
     def __init__(
@@ -59,14 +65,15 @@ class Meaning:
         started = self._clock()
         encoder: Encoder | None = None
         done = 0
-        while self._clock() - started < budget:
-            batch = self._store.pending(BATCH)
-            if not batch:
-                break
-            encoder = encoder or self._encoder()
-            vectors = encoder.encode([text_of(p.title, p.summary) for p in batch])
-            if len(vectors) != len(batch) or any(len(v) != DIMENSIONS for v in vectors):
-                raise ValueError("the encoder gave vectors of the wrong number or size")
-            self._store.save(list(zip(batch, vectors, strict=True)), MODEL)
-            done += len(batch)
+        with self._store.alone() as alone:
+            while alone and self._clock() - started < budget:
+                batch = self._store.pending(BATCH)
+                if not batch:
+                    break
+                encoder = encoder or self._encoder()
+                vectors = encoder.encode([text_of(p.title, p.summary) for p in batch])
+                if len(vectors) != len(batch) or any(len(v) != DIMENSIONS for v in vectors):
+                    raise ValueError("the encoder gave vectors of the wrong number or size")
+                self._store.save(list(zip(batch, vectors, strict=True)), MODEL)
+                done += len(batch)
         return done

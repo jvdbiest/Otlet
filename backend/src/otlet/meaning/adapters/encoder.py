@@ -41,8 +41,12 @@ class OnnxEncoder:
         self._tokenizer = Tokenizer.from_file(str(folder / "tokenizer.json"))
         self._tokenizer.enable_truncation(MAX_TOKENS)
         self._tokenizer.enable_padding()
+        # Two threads at most: the worker shares the machine with the API and PostgreSQL (four
+        # cores were taken on the work VM with the defaults).
         options = onnxruntime.SessionOptions()
-        options.intra_op_num_threads = max(1, (os.cpu_count() or 2) // 2)
+        options.intra_op_num_threads = min(2, os.cpu_count() or 1)
+        options.inter_op_num_threads = 1
+        options.execution_mode = onnxruntime.ExecutionMode.ORT_SEQUENTIAL
         self._session = onnxruntime.InferenceSession(
             str(folder / "model_optimized.onnx"), options, providers=["CPUExecutionProvider"]
         )

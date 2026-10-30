@@ -2,6 +2,8 @@
 """The vectors of the items on PostgreSQL (pgvector), each written in its workspace."""
 
 import itertools
+from collections.abc import Iterator
+from contextlib import contextmanager
 
 import sqlalchemy as sa
 
@@ -14,9 +16,26 @@ def literal(vector: list[float]) -> str:
     return "[" + ",".join(f"{x:.7g}" for x in vector) + "]"
 
 
+# The advisory lock of the encoding job: one run at a time, on the whole instance.
+LOCK = 450045
+
+
 class PostgresMeaningStore:
     def __init__(self, engine: sa.Engine) -> None:
         self._engine = engine
+
+    @contextmanager
+    def alone(self) -> Iterator[bool]:
+        with self._engine.connect() as connection:
+            taken = bool(
+                connection.execute(sa.text("SELECT pg_try_advisory_lock(:k)"), {"k": LOCK}).scalar()
+            )
+            try:
+                yield taken
+            finally:
+                if taken:
+                    connection.execute(sa.text("SELECT pg_advisory_unlock(:k)"), {"k": LOCK})
+                connection.commit()
 
     def pending(self, limit: int) -> list[Pending]:
         with scoped_transaction(self._engine) as connection:

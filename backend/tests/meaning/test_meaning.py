@@ -3,7 +3,8 @@
 in spikes/a2-sens."""
 
 import uuid
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
+from contextlib import contextmanager
 from datetime import UTC, datetime, timedelta
 
 import pytest
@@ -47,6 +48,12 @@ def test_the_text_encoded_is_the_title_and_the_start_of_the_summary() -> None:
 
 
 class MemoryStore(MeaningStore):
+    taken = False
+
+    @contextmanager
+    def alone(self) -> Iterator[bool]:
+        yield not self.taken
+
     def __init__(self, count: int) -> None:
         self.left = [Pending(NOW_ID, NOW_ID, f"titre {n}", "") for n in range(count)]
         self.saved: list[tuple[Pending, list[float]]] = []
@@ -73,6 +80,13 @@ def test_the_model_is_loaded_only_when_there_is_work_and_the_budget_stops_it() -
     store = MemoryStore(100)
     assert Meaning(store, encoder, clock=lambda: next(ticks)).encode_pending(budget=10) == 64
     assert len(built) == 1 and len(store.saved) == 64
+
+
+def test_a_second_run_waits_for_the_first() -> None:
+    store = MemoryStore(5)
+    store.taken = True
+    assert Meaning(store, FakeEncoder).encode_pending() == 0
+    assert len(store.left) == 5
 
 
 def test_a_vector_of_the_wrong_size_is_refused() -> None:
@@ -154,6 +168,10 @@ def test_the_items_of_every_workspace_are_encoded_once(migrated: TestDatabase) -
     assert "Budget bruxellois. Résumé de Budget bruxellois." in encoder.texts
     # Nothing left: the model is not even built.
     assert Meaning(PostgresMeaningStore(engine), lambda: FakeEncoder()).encode_pending() == 0
+    # While a run holds the lock, another does nothing.
+    store = PostgresMeaningStore(engine)
+    with store.alone() as first, store.alone() as second:
+        assert first and not second
     # A workspace reads only its own items, vectors included.
     with db.workspace_transaction(engine, bob.workspace_id) as connection:
         count = connection.execute(

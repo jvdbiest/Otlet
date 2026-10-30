@@ -6,22 +6,22 @@ requires-python = ">=3.13"
 license = "AGPL-3.0-or-later"
 authors = [{ name = "Joël" }]
 dependencies = [
-    "alembic>=1.20.0",
-    "anthropic>=0.40",
+    "alembic>=1.20.1",
+    "anthropic>=2.1.0",
     "argon2-cffi>=25.1.0",
     "cryptography>=50.0.2",
-    "fastapi>=0.143.0",
+    "fastapi>=0.161.1",
     "feedparser>=6.0.14",
-    "httpx2>=2.13.1",
+    "httpx2>=2.16.0",
     "nh3>=0.3.7",
-    "openai>=1.50",
+    "openai>=3.37.0",
     "pillow>=13,<14",
     "procrastinate~=3.10.0",
     "protego>=0.7.0",
     "psycopg[binary]>=3.3.6",
     "python-docx>=1.2,<2",
     "readability-lxml>=0.9",
-    "sqlalchemy>=2.1.4",
+    "sqlalchemy>=2.1.6",
     "uvicorn>=0.54.0",
     "weasyprint>=70,<71",
 ]
@@ -36,13 +36,13 @@ otlet = "otlet.entrypoints.cli:main"
 
 [dependency-groups]
 dev = [
-    "httpx2>=2.13.1",
-    "hypothesis>=6.169.0",
+    "httpx2>=2.16.0",
+    "hypothesis>=6.170.8",
     "import-linter>=2.15",
     "mypy>=2.4",
-    "pre-commit>=4.6",
+    "pre-commit>=4.7.0",
     "pytest>=9.1",
-    "ruff>=0.17",
+    "ruff>=0.17.2",
 ]
 
 [build-system]

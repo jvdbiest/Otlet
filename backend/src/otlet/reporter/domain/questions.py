@@ -635,6 +635,10 @@ def split_mixed(concept: Concept) -> tuple[Concept, ...]:
         elif acronyms and not any(_words(a) in _words(term) for a in acronyms):
             # « stakingen » is like no part: it names the subject, not the acronym.
             groups[subject].append(term)
+        elif not _place_words(term) and any(_place_words(p) for p in parts):
+            # « begroting » is like no part: the subject of « budget de Bruxelles-Capitale », not
+            # its place. Dropped, it left out the Brussels budget of Bruzz (Joël, 2026-10-30).
+            groups[next((p for p in parts if not _place_words(p)), subject)].append(term)
     return tuple(Concept(p, _clean(groups[p])) for p in parts)
 
 
@@ -689,6 +693,20 @@ def _without_place(term: str) -> str:
     Flandre » is « hôpitaux », « Vlaamse ziekenhuizen » is « ziekenhuizen »."""
     words = [w for w in term.split() if not _place_words(w) and folded(w) not in PLACE_LINKS]
     return " ".join(words)
+
+
+def is_place(concept: Concept) -> bool:
+    """A concept that is only a place: what a set must hold, whatever found it."""
+    return bool(_place_words(concept.name)) and not _without_place(concept.name)
+
+
+# « bruxelles capitale », without its hyphen, left « budget capitale » once the place was taken
+# out of the subject: the budget of the Region was searched as that phrase (Joël, 2026-10-30).
+_BRUSSELS_REGION = re.compile(r"\b(bruxelles)\s+(capitale)\b", re.IGNORECASE)
+
+
+def _hyphenated(text: str) -> str:
+    return _BRUSSELS_REGION.sub(r"\1-\2", text)
 
 
 def placed(question: str, concept: Concept) -> tuple[Concept, ...]:
@@ -892,7 +910,14 @@ def guarded(
       week », which found every week-end of the Veille);
     - a concept the question names by its name searches that name first: « jeux vidéo » came
       with « console, PC, mobile » and not « jeux vidéo » itself (Joël, 2026-10-25)."""
-    translated = replace(translated, concepts=tuple(_not_new(c) for c in translated.concepts))
+    question = _hyphenated(question)
+    translated = replace(
+        translated,
+        concepts=tuple(
+            _not_new(Concept(_hyphenated(c.name), tuple(_hyphenated(t) for t in c.terms)))
+            for c in translated.concepts
+        ),
+    )
     asked = PERIOD_COUNT.sub(" ", _without_dates_named(_asked(question)))
     for words_of_period, _ in PERIOD_WORDS:
         asked = asked.replace(f" {words_of_period} ", " ")

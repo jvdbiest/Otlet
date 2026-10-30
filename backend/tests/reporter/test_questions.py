@@ -543,3 +543,18 @@ def test_a_new_subject_keeps_the_period_until_another_is_named() -> None:
         State((AUSTEN,), "fr", 7, excluded=("x",)), Translated(Operation.CHERCHER, (BXL,), None)
     )
     assert (again.language, again.excluded, again.days) == (None, (), 7)
+
+
+def test_the_budget_of_brussels_capitale_is_a_subject_and_a_place() -> None:
+    from otlet.reporter.domain.questions import is_place
+
+    question = "Quelle nouvelle sur le budget de la région de bruxelles capitale ?"
+    concept = Concept(
+        "budget de la région de bruxelles capitale",
+        ("budget", "begroting", "bruxelles capitale"),
+    )
+    kept = guarded(question, Translated(Operation.CHERCHER, (concept,), None))
+    assert [is_place(c) for c in kept.concepts] == [False, True]
+    subject = kept.concepts[0]
+    assert "capitale" not in subject.name and "budget" in subject.terms
+    assert "begroting" in subject.terms

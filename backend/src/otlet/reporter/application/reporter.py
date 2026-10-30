@@ -68,6 +68,7 @@ from otlet.reporter.domain.questions import (
     excluded_terms,
     guarded,
     holds_excluded,
+    is_place,
     names_no_subject,
     next_state,
     only_a_period,
@@ -649,7 +650,11 @@ class Reporter:
         reciprocal rank (ADR-0045). An item found by the meaning must hold the concepts that
         restricted the search since (« uniquement en Belgique »)."""
         near = self._search.near(workspace_id, state.meaning, since, NEAR_MAX, NEAR_FLOOR, until)
-        restrictions = widened[state.subject :]
+        # A place too, even in the subject: the meaning of « le budget de Bruxelles » is near the
+        # budget of Seneffe (Joël, 2026-10-30).
+        restrictions = [
+            w for n, w in enumerate(widened) if n >= state.subject or is_place(w.concept)
+        ]
         if near and restrictions:
             allowed = {
                 c.id

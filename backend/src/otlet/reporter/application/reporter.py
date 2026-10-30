@@ -295,7 +295,9 @@ class Reporter:
         last = conversation.turns[-1]
         if last.id != turn_id or last.status != "done" or not last.state.concepts:
             raise ReporterError("not_editable", "only the terms of the last set can be changed")
-        state = State(_checked(concepts), last.state.language, last.state.days)
+        checked = _checked(concepts)
+        # The meaning of the question stays: the author changed the words, not the question.
+        state = replace(last.state, concepts=checked, subject=min(last.state.subject, len(checked)))
         turn = self._found(context.workspace_id, conversation, last, state)
         self._store.save_turn(context.workspace_id, conversation_id, turn)
         return turn

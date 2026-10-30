@@ -434,6 +434,20 @@ def test_only_a_period_keeps_the_subject_of_the_conversation() -> None:
     question = "Les articles d'aujourd'hui ?"
     assert asked_period(question) == 1 and asked_period("Les articles d’aujourd’hui ?") == 1
     assert only_a_period(question) and only_a_period("Et hier ?") and only_a_period("Vandaag ?")
+    for asked, days in (
+        ("sur les 7 derniers jours", 7),
+        ("les 30 derniers jours", 30),
+        ("sur 2 semaines", 14),
+        ("depuis 3 mois", 90),
+        ("de laatste 7 dagen", 7),
+        ("the last 7 days", 7),
+    ):
+        assert asked_period(asked) == days and only_a_period(asked), asked
+    assert asked_period("Les 5 meilleurs écrans") is None
+    assert not only_a_period("Les étudiants des 7 derniers jours")
+    recent = Concept("derniers jours", ("derniers jours",))
+    asked = "sur les 7 derniers jours"
+    assert guarded(asked, Translated(Operation.RESTREINDRE, (recent,), None)).days == 7
     assert not only_a_period("Les orages d'aujourd'hui ?")
     assert not only_a_period("Les intempéries")
     date_concept = Concept("date", ("aujourd'hui", "vandaag", "today"))
@@ -504,3 +518,28 @@ def test_nothing_but_a_period_and_what_is_new_is_no_subject() -> None:
     kept = guarded("Les moniteurs", Translated(Operation.CHERCHER, (new,), None))
     assert kept.concepts[0].name == "moniteurs"
     assert kept.concepts[0].terms == ("moniteurs", "New York", "nouvel An", "new TV")
+
+
+def test_a_new_subject_keeps_the_period_until_another_is_named() -> None:
+    from datetime import date
+
+    today = next_state(State(), Translated(Operation.CHERCHER, (), None, 1))
+    assert today == State(days=1)
+    students = next_state(today, Translated(Operation.CHERCHER, (AUSTEN,), None))
+    assert (students.concepts, students.days) == ((AUSTEN,), 1)
+    week = next_state(students, Translated(Operation.CHERCHER, (BXL,), None, 7))
+    assert (week.concepts, week.days) == ((BXL,), 7)
+    day = date(2026, 10, 29)
+    dated = next_state(week, Translated(Operation.CHERCHER, (AUSTEN,), None, None, (), day, day))
+    assert (dated.days, dated.date_from, dated.date_to) == (None, day, day)
+    assert next_state(dated, Translated(Operation.CHERCHER, (BXL,), None)).date_from == day
+    # On a set without a subject, a language chosen and what was taken out stay.
+    narrowed = next_state(
+        State(language="fr", days=1, excluded=("x",)), Translated(Operation.CHERCHER, (BXL,), None)
+    )
+    assert (narrowed.language, narrowed.excluded) == ("fr", ("x",))
+    # On a subject, a new subject starts again in every language.
+    again = next_state(
+        State((AUSTEN,), "fr", 7, excluded=("x",)), Translated(Operation.CHERCHER, (BXL,), None)
+    )
+    assert (again.language, again.excluded, again.days) == (None, (), 7)

@@ -26,6 +26,11 @@ dependencies = [
     "weasyprint>=70,<71",
 ]
 
+[project.optional-dependencies]
+# The local encoder of ADR-0045: in the image (deploy/Containerfile), not in the tests, which
+# use a fake encoder; kept apart so that a development environment does not install ONNX.
+meaning = ["numpy>=2.2", "onnxruntime>=1.22", "tokenizers>=0.21"]
+
 [project.scripts]
 otlet = "otlet.entrypoints.cli:main"
 
@@ -74,6 +79,11 @@ mypy_path = "tests"
 # Libraries of the collection without type information (U01).
 [[tool.mypy.overrides]]
 module = ["feedparser", "readability", "lxml", "lxml.*"]
+ignore_missing_imports = true
+
+# The local encoder (ADR-0045), optional dependencies.
+[[tool.mypy.overrides]]
+module = ["onnxruntime", "onnxruntime.*", "tokenizers", "numpy", "numpy.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Statut | Proposé (2026-10-30) ; spike conclu le même jour |
+| Statut | Accepté (2026-10-30) ; mise en œuvre par lots (sens-1 à sens-4) |
 | Date | 2026-10-30 |
 | Décideur | Joël |
 | Documents touchés | ADR-0035 (recherche plein texte close pour É1), ADR-0033 (fonction de recherche), ADR-0043 (moteur de l'Assistant de veille), ADR-0044 (Reporter) ; `TECH_CHOICES.md` §8 ; ADR-0025 (qualité d'abord) |
@@ -53,7 +53,13 @@ Recommandation du spike : l'option 1 avec MiniLM-L12 multilingue, et une mesure 
 
 ## Décision
 
-À prendre par Joël : retenir l'option 1 (mise en œuvre par lots) ou en rester à l'option 3.
+Décision de Joël du 2026-10-30 (« ok » à la recommandation du spike) : **l'option 1, avec MiniLM-L12 multilingue** (`sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`, Apache-2.0, 384 dimensions), exécuté localement par fastembed (ONNX). Le modèle est **inclus dans l'image** : aucun téléchargement au démarrage, aucune sortie réseau, une installation hors ligne possible.
+
+Lots :
+1. **sens-1** : pgvector activé, un vecteur par élément (`source_items.meaning`), une tâche qui encode les éléments sans vecteur, les plus récents d'abord, par petits lots ;
+2. **sens-2** : la recherche hybride (mots et sens, fusion par rang réciproque) dans le moteur de l'Assistant et du Reporter, les termes restant visibles ;
+3. **sens-3** : un banc sur les questions des bancs A2 ;
+4. **sens-4** : la mesure de mémoire de la pile complète sur le NAS, avant de fermer le lot.
 
 ## Conséquences si l'option 1 est retenue après le spike
 

@@ -994,15 +994,20 @@ def next_state(state: State, translated: Translated) -> State:
         )
     match translated.operation:
         case Operation.CHERCHER if proposed:
-            # A new subject: a new set, in every language, over the period it names.
-            # Three at most: a subject, a place, an aspect (« la situation financière des
-            # hôpitaux en Flandre »).
+            # A new subject: a new set, in every language. Three concepts at most: a subject, a
+            # place, an aspect (« la situation financière des hôpitaux en Flandre »).
+            # The period stays until another is named: « L'actualité du jour », then « sur les
+            # étudiants ? », went back to 30 days (Joël, 2026-10-30). On a set without a subject,
+            # the question narrows that set: its language and what was taken out stay too.
+            named = translated.days or translated.date_from or translated.date_to
+            narrows = not state.concepts
             return State(
                 proposed[:3],
-                None,
-                translated.days,
-                date_from=translated.date_from,
-                date_to=translated.date_to,
+                state.language if narrows else None,
+                translated.days if named else state.days,
+                excluded=state.excluded if narrows else (),
+                date_from=translated.date_from if named else state.date_from,
+                date_to=translated.date_to if named else state.date_to,
             )
         case Operation.RESTREINDRE:
             # A place the set already holds restricts nothing more (« Seulement Bruxelles

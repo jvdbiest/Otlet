@@ -183,10 +183,23 @@ def _asked(question: str) -> str:
     return f" {' '.join(text.split())} "
 
 
+# « sur les 7 derniers jours » was searched as a concept « derniers jours » (bench, 2026-10-30).
+PERIOD_COUNT = re.compile(
+    r" (?:(?:les|ces|de|des|depuis|laatste|afgelopen|last|past) )?(\d{1,3}) "
+    r"(?:(?:derniers|dernieres|laatste|last|past) )?"
+    r"(jours?|semaines?|mois|dagen|weken|maanden|days?|weeks?|months?)"
+    r"(?: (?:derniers|dernieres|passes|passees))?(?= )"
+)
+_PERIOD_UNITS = {"j": 1, "d": 1, "s": 7, "w": 7, "m": 30}
+
+
 def asked_period(question: str, today: date | None = None) -> int | None:
-    """The days a question names, from its words: « cette semaine » 7, « depuis octobre » from
-    the first of October (the last October not after today)."""
+    """The days a question names, from its words: « cette semaine » 7, « les 7 derniers jours »
+    7, « depuis octobre » from the first of October (the last October not after today)."""
     asked = _asked(question)
+    counted = PERIOD_COUNT.search(asked)
+    if counted is not None and int(counted.group(1)) > 0:
+        return int(counted.group(1)) * _PERIOD_UNITS[counted.group(2)[0]]
     named = next((days for words, days in PERIOD_WORDS if f" {words} " in asked), None)
     if named is not None:
         return named
@@ -337,7 +350,10 @@ def _without_dates(concept: Concept) -> Concept:
     return Concept(concept.name, terms) if terms else concept
 
 
-_DATE_LINKS = {"et", "en", "and", "au", "du", "le", "de", "to", "tot"}
+_DATE_LINKS = {
+    "et", "en", "and", "au", "du", "le", "de", "to", "tot",
+    "derniers", "dernieres", "laatste", "last", "past",
+}  # fmt: skip
 
 
 def _of_period(concept: Concept) -> bool:
@@ -418,7 +434,7 @@ PRONOUN_SUFFIX = re.compile(r"(-t)?-(il|elle|ils|elles|on)$")
 def _named(question: str) -> list[str]:
     """The words of a question that name something: neither a question word, a period nor a
     language, nor a word shorter than five letters; folded."""
-    asked = _without_dates_named(_asked(question))
+    asked = PERIOD_COUNT.sub(" ", _without_dates_named(_asked(question)))
     for words_of_period, _ in PERIOD_WORDS:
         asked = asked.replace(f" {words_of_period} ", " ")
     asked = MONTH_PERIOD.sub(" ", asked)
@@ -877,7 +893,7 @@ def guarded(
     - a concept the question names by its name searches that name first: « jeux vidéo » came
       with « console, PC, mobile » and not « jeux vidéo » itself (Joël, 2026-10-25)."""
     translated = replace(translated, concepts=tuple(_not_new(c) for c in translated.concepts))
-    asked = _without_dates_named(_asked(question))
+    asked = PERIOD_COUNT.sub(" ", _without_dates_named(_asked(question)))
     for words_of_period, _ in PERIOD_WORDS:
         asked = asked.replace(f" {words_of_period} ", " ")
     asked = MONTH_PERIOD.sub(" ", asked)

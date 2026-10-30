@@ -78,10 +78,11 @@ def test_the_room_for_sources_comes_from_the_window() -> None:
     )
 
 
-def test_sources_are_numbered_and_shared_evenly() -> None:
+def test_sources_are_numbered_and_share_the_room() -> None:
     sources = prompt_sources([source("A", "a  b\n c " * 1000), source("B", "court")], budget=3000)
     assert [(s.key, s.cut) for s in sources] == [("S1", True), ("S2", False)]
-    assert len(sources[0].text) <= 1500 and "  " not in sources[0].text
+    # The room the short source leaves goes to the long one.
+    assert 1500 < len(sources[0].text) <= 2995 and "  " not in sources[0].text
     assert sources[1].text == "court"
     # Never less than a few hundred characters each, however many sources.
     many = prompt_sources([source(str(n), "x" * 5000) for n in range(20)], budget=3000)
@@ -206,21 +207,22 @@ def test_every_source_of_the_brief_must_be_cited() -> None:
     keys = ["S1", "S2", "S3"]
     errors = check_answer(answer(), keys)
     assert errors == [
-        "sources not used: S3; use each of them once, in the one paragraph where it brings"
-        " something the other sources do not: add that fact there, never repeat a fact the"
-        " article already gives, and leave the rest of the article as it is"
+        "sources not used: S3; if one of them speaks to the subject of the article, use it once,"
+        " in the one paragraph where it brings something the other sources do not: add that fact"
+        " there, never repeat a fact the article already gives; if it does not, leave it out and"
+        " do not stretch it to fit; leave the rest of the article as it is"
     ]
     # After a repair, the answer is kept even if it still leaves a source out.
     assert check_answer(answer(), keys, every_source=False) == []
     schema = output_schema(keys)
-    assert schema["properties"]["sources_used"]["minItems"] == 3
+    assert schema["properties"]["sources_used"]["minItems"] == 1
     assert schema["properties"]["sources_used"]["uniqueItems"] is True
     fields = BriefFields(title="T", item_ids=(), language="fr")
     sources = prompt_sources([source(str(n), "texte") for n in range(3)], 9000)
     user = messages(fields, sources)[1][1]
-    assert "Every source (S1, S2, S3) is cited at least once" in user
+    assert "Cite each of the sources (S1, S2, S3) that speaks to the subject" in user
     alone = messages(fields, sources[:1])[1][1]
-    assert "Every source" not in alone and "Mode:" not in alone
+    assert "Cite each" not in alone and "Mode:" not in alone
 
 
 def test_ids_written_in_the_prose_are_taken_out() -> None:

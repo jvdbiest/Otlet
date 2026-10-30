@@ -29,6 +29,7 @@ interface Details {
   context_overflow?: boolean;
   lone_sections?: string[];
   repeated_paragraphs?: string[];
+  copies_removed?: string[];
   matter_words?: number;
   thin_matter?: boolean;
   unsupported?: { kind: string; text: string }[];
@@ -81,6 +82,9 @@ function detailsText(raw: Record<string, unknown>, heading: string): string {
   }
   if (details.repeated_paragraphs?.length) {
     lines.push(`Paragraphes répétés : ${details.repeated_paragraphs.join(" ; ")}`);
+  }
+  if (details.copies_removed?.length) {
+    lines.push(`Phrases recopiées d'une source, retirées : ${details.copies_removed.join(" ; ")}`);
   }
   if (details.matter_words !== undefined) {
     lines.push(

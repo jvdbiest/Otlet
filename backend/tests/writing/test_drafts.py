@@ -252,7 +252,7 @@ def test_a_draft_becomes_a_version_of_the_article_of_the_brief(world: World) -> 
     version = article.versions[0]
     assert (version.origin, version.provider_kind, version.model) == ("ia", "ollama", "llama3.1")
     assert (
-        version.prompt_version == "redaction-17"
+        version.prompt_version == "redaction-18"
         and version.cut_sources == () == version.unused_sources
         and not version.context_overflow
     )
@@ -366,7 +366,8 @@ def test_a_draft_that_leaves_a_source_out_is_sent_back_then_says_so(world: World
     assert "sections drawing on one source" not in repair
     # The source left out is used once, the rest left as it is (Joël, 2026-10-24): no « keep
     # the length », which made a model spread the one fact of a short source.
-    assert "use each of them once" in repair and "do not shorten" not in repair
+    assert "use it once" in repair and "do not shorten" not in repair
+    assert "do not stretch it to fit" in repair
     article = world.drafts.article(context, brief.id)
     assert article is not None
     assert article.versions[0].unused_sources == ("Article de agence",)

@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { catalogueQuery, installedQuery, profileQuery, providersQuery } from "../../ai.ts";
 import { ApiError } from "../../api/client.ts";
 import { itemQuery } from "../../collection.ts";
+import { conversationQuery } from "../../reporter.ts";
 import { useWorkspaceId } from "../../session.ts";
 import { feedQuery, ANY_TIME } from "../../triage.ts";
 import {
@@ -17,6 +18,7 @@ import {
   type BriefLength,
   type BriefMode,
   type BriefNature,
+  type BriefFactView,
   type BriefItemView,
   type BriefView,
   type ChoiceView,
@@ -35,6 +37,7 @@ const BRIEF_ERRORS = [
   "invalid_title",
   "invalid_angle",
   "invalid_instructions",
+  "invalid_facts",
   "invalid_audience",
   "invalid_tone",
   "invalid_channel",
@@ -96,17 +99,73 @@ export function NewBriefPage({
   items,
   title,
   angle,
+  conversation,
+  turn,
 }: {
   items: string;
   title?: string | undefined;
   angle?: string | undefined;
+  conversation?: string | undefined;
+  turn?: string | undefined;
 }) {
   const workspaceId = useWorkspaceId();
   if (workspaceId === undefined) {
     return null;
   }
   const ids = items.split(",").filter((id) => id !== "");
+  if (conversation !== undefined && turn !== undefined) {
+    return (
+      <BriefFromFact
+        workspaceId={workspaceId}
+        conversationId={conversation}
+        turnId={turn}
+        items={ids}
+        title={title}
+      />
+    );
+  }
   return <BriefForm workspaceId={workspaceId} brief={null} initialItems={ids} initialTitle={title} initialAngle={angle} />;
+}
+
+/** A new brief from a fact of the Reporter (ADR-0044 §10): its lines become the verified facts. */
+function BriefFromFact({
+  workspaceId,
+  conversationId,
+  turnId,
+  items,
+  title,
+}: {
+  workspaceId: string;
+  conversationId: string;
+  turnId: string;
+  items: string[];
+  title?: string | undefined;
+}) {
+  const { t } = useTranslation();
+  const conversation = useQuery(conversationQuery(workspaceId, conversationId));
+  if (conversation.data === undefined) {
+    return conversation.error !== null ? <p role="alert">{errorText(t, conversation.error)}</p> : <p>{t("app.loading")}</p>;
+  }
+  const lines = conversation.data.turns.find((one) => one.id === turnId)?.fact?.lines ?? [];
+  const facts = lines.map(({ item_id, publisher, figure, measure, when, where, passage }) => ({
+    item_id,
+    publisher,
+    figure,
+    measure,
+    when,
+    where,
+    passage,
+  }));
+  return (
+    <BriefForm
+      workspaceId={workspaceId}
+      brief={null}
+      initialItems={items}
+      initialTitle={title}
+      initialFacts={facts}
+      conversationId={conversationId}
+    />
+  );
 }
 
 export function BriefPage({ briefId }: { briefId: string }) {
@@ -141,12 +200,16 @@ function BriefForm({
   initialItems,
   initialTitle,
   initialAngle,
+  initialFacts,
+  conversationId,
 }: {
   workspaceId: string;
   brief: BriefView | null;
   initialItems: string[];
   initialTitle?: string | undefined;
   initialAngle?: string | undefined;
+  initialFacts?: BriefFactView[] | undefined;
+  conversationId?: string | undefined;
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -165,6 +228,10 @@ function BriefForm({
   const [channel, setChannel] = useState(brief?.channel ?? "");
   const [model, setModel] = useState(brief?.provider_id ? `${brief.provider_id}|${brief.model ?? ""}` : "");
   const [itemIds, setItemIds] = useState<string[]>(brief?.items.map((item) => item.id) ?? initialItems);
+  const [facts, setFacts] = useState<BriefFactView[]>(brief?.facts ?? initialFacts ?? []);
+  const conversation = brief?.conversation_id ?? conversationId ?? null;
+  // A fact goes with its source: an item taken out of the brief takes its facts with it.
+  const keptFacts = facts.filter((fact) => itemIds.includes(fact.item_id));
   const [confirming, setConfirming] = useState(false);
   const [autoTitle, setAutoTitle] = useState<string | null>(null);
   const channels = vocabulary.data?.channel ?? [];
@@ -205,6 +272,8 @@ function BriefForm({
                 item_ids: itemIds,
                 provider_id: providerId ?? null,
                 model: modelName ?? null,
+                facts: keptFacts,
+                conversation_id: conversation,
               },
             },
             {
@@ -264,6 +333,47 @@ function BriefForm({
           <span className={styles.help}>{t("brief.angleHelp")}</span>
           <span className={styles.meta}>{angle.trim() === "" ? t("brief.angleUnset") : t("brief.angleSet")}</span>
         </div>
+        {keptFacts.length > 0 && (
+          <div className={styles.field}>
+            <span>{t("brief.facts.title")}</span>
+            <span className={styles.help}>{t("brief.facts.help")}</span>
+            <ul>
+              {keptFacts.map((fact, index) => (
+                <li key={String(index) + fact.item_id}>
+                  <strong>{fact.figure}</strong>
+                  {fact.measure !== "" && ` ${fact.measure}`}
+                  {fact.when !== "" && ` · ${fact.when}`}
+                  {fact.where !== "" && ` · ${fact.where}`}{" "}
+                  <Link to="/veille/elements/$itemId" params={{ itemId: fact.item_id }}>
+                    {fact.publisher}
+                  </Link>{" "}
+                  <button
+                    type="button"
+                    className={styles.button}
+                    onClick={() => {
+                      setFacts(facts.filter((one) => one !== fact));
+                    }}
+                  >
+                    {t("brief.facts.remove")}
+                  </button>
+                  {fact.passage !== "" && (
+                    <>
+                      <br />
+                      <q className={styles.meta}>{fact.passage}</q>
+                    </>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {conversation !== null && (
+          <p className={styles.meta}>
+            <Link to="/reporter/$conversationId" params={{ conversationId: conversation }}>
+              {t("brief.facts.conversation")}
+            </Link>
+          </p>
+        )}
         <div className={styles.field}>
           <label htmlFor="brief-instructions">{t("brief.instructions")}</label>
           <textarea

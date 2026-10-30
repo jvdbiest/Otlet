@@ -16,6 +16,9 @@ ANGLE_MAX_LENGTH = 4000
 INSTRUCTIONS_MAX_LENGTH = 2000
 MODEL_MAX_LENGTH = 200
 ITEMS_MAX = 20
+FACTS_MAX = 40
+FACT_FIELD_MAX = 300
+FACT_PASSAGE_MAX = 1000
 LANGUAGES = ("fr", "en", "de", "nl", "es", "it", "pt")
 SOURCES_ADVISED = 2
 
@@ -59,6 +62,20 @@ class ModelChoice:
 
 
 @dataclass(frozen=True, slots=True)
+class VerifiedFact:
+    """A line of a fact of the Reporter (ADR-0044 §10): a figure or a date, with its source and
+    the passage that holds it. The draft is written with them, and checked against them."""
+
+    item_id: UUID
+    publisher: str
+    figure: str
+    measure: str = ""
+    when: str = ""
+    where: str = ""
+    passage: str = ""
+
+
+@dataclass(frozen=True, slots=True)
 class BriefFields:
     title: str
     item_ids: tuple[UUID, ...]
@@ -75,6 +92,9 @@ class BriefFields:
     language: str = "fr"
     channel: str = ""
     model: ModelChoice | None = None
+    facts: tuple[VerifiedFact, ...] = ()
+    # The conversation of the Reporter it comes from: the way back to the question and the lines.
+    conversation_id: UUID | None = None
 
     def checked(self) -> "BriefFields":
         """The fields trimmed, or a BriefError naming the first rule they break."""
@@ -107,7 +127,24 @@ class BriefFields:
             if not 1 <= len(name) <= MODEL_MAX_LENGTH:
                 raise BriefError("invalid_model", "a model name is required with a provider")
             model = ModelChoice(model.provider_id, name)
+        if len(self.facts) > FACTS_MAX:
+            raise BriefError("invalid_facts", f"a brief has at most {FACTS_MAX} verified facts")
+        facts = []
+        for fact in self.facts:
+            described = (fact.publisher, fact.figure, fact.measure, fact.when, fact.where)
+            if (
+                not fact.figure.strip()
+                or any(len(value) > FACT_FIELD_MAX for value in described)
+                or len(fact.passage) > FACT_PASSAGE_MAX
+            ):
+                raise BriefError("invalid_facts", "a verified fact is a figure, briefly described")
+            if fact.item_id not in items:
+                # Its source goes with it: a figure is checked against the text it comes from.
+                raise BriefError("invalid_facts", "a verified fact comes from an item of the brief")
+            facts.append(fact)
         return BriefFields(
+            facts=tuple(facts),
+            conversation_id=self.conversation_id,
             title=title,
             item_ids=items,
             angle=angle,

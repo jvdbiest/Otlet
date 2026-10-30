@@ -2074,6 +2074,10 @@ export interface components {
              * @default
              */
             channel: string;
+            /** Conversation Id */
+            conversation_id?: string | null;
+            /** Facts */
+            facts?: components["schemas"]["FactBody"][];
             /**
              * Instructions
              * @default
@@ -2116,6 +2120,26 @@ export interface components {
              */
             tone: string;
         };
+        /** BriefFactView */
+        BriefFactView: {
+            /** Figure */
+            figure: string;
+            /**
+             * Item Id
+             * Format: uuid
+             */
+            item_id: string;
+            /** Measure */
+            measure: string;
+            /** Passage */
+            passage: string;
+            /** Publisher */
+            publisher: string;
+            /** When */
+            when: string;
+            /** Where */
+            where: string;
+        };
         /** BriefItemView */
         BriefItemView: {
             /** Declared */
@@ -2148,11 +2172,15 @@ export interface components {
             audience: string;
             /** Channel */
             channel: string;
+            /** Conversation Id */
+            conversation_id: string | null;
             /**
              * Created At
              * Format: date-time
              */
             created_at: string;
+            /** Facts */
+            facts: components["schemas"]["BriefFactView"][];
             /**
              * Id
              * Format: uuid
@@ -2648,6 +2676,38 @@ export interface components {
              * @enum {string}
              */
             kind: "pdf" | "docx" | "html" | "md" | "txt";
+        };
+        /** FactBody */
+        FactBody: {
+            /** Figure */
+            figure: string;
+            /**
+             * Item Id
+             * Format: uuid
+             */
+            item_id: string;
+            /**
+             * Measure
+             * @default
+             */
+            measure: string;
+            /**
+             * Passage
+             * @default
+             */
+            passage: string;
+            /** Publisher */
+            publisher: string;
+            /**
+             * When
+             * @default
+             */
+            when: string;
+            /**
+             * Where
+             * @default
+             */
+            where: string;
         };
         /** FactLineView */
         FactLineView: {

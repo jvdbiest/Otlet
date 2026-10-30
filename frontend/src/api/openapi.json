@@ -327,6 +327,26 @@
             "title": "Channel",
             "type": "string"
           },
+          "conversation_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation Id"
+          },
+          "facts": {
+            "items": {
+              "$ref": "#/components/schemas/FactBody"
+            },
+            "maxItems": 40,
+            "title": "Facts",
+            "type": "array"
+          },
           "instructions": {
             "default": "",
             "title": "Instructions",
@@ -413,6 +433,50 @@
           "item_ids"
         ],
         "title": "BriefBody",
+        "type": "object"
+      },
+      "BriefFactView": {
+        "properties": {
+          "figure": {
+            "title": "Figure",
+            "type": "string"
+          },
+          "item_id": {
+            "format": "uuid",
+            "title": "Item Id",
+            "type": "string"
+          },
+          "measure": {
+            "title": "Measure",
+            "type": "string"
+          },
+          "passage": {
+            "title": "Passage",
+            "type": "string"
+          },
+          "publisher": {
+            "title": "Publisher",
+            "type": "string"
+          },
+          "when": {
+            "title": "When",
+            "type": "string"
+          },
+          "where": {
+            "title": "Where",
+            "type": "string"
+          }
+        },
+        "required": [
+          "item_id",
+          "publisher",
+          "figure",
+          "measure",
+          "when",
+          "where",
+          "passage"
+        ],
+        "title": "BriefFactView",
         "type": "object"
       },
       "BriefItemView": {
@@ -513,10 +577,29 @@
             "title": "Channel",
             "type": "string"
           },
+          "conversation_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation Id"
+          },
           "created_at": {
             "format": "date-time",
             "title": "Created At",
             "type": "string"
+          },
+          "facts": {
+            "items": {
+              "$ref": "#/components/schemas/BriefFactView"
+            },
+            "title": "Facts",
+            "type": "array"
           },
           "id": {
             "format": "uuid",
@@ -651,6 +734,8 @@
           "channel",
           "provider_id",
           "model",
+          "facts",
+          "conversation_id",
           "items",
           "sources",
           "single_source",
@@ -1938,6 +2023,50 @@
           "kind"
         ],
         "title": "ExportSelectionBody",
+        "type": "object"
+      },
+      "FactBody": {
+        "properties": {
+          "figure": {
+            "title": "Figure",
+            "type": "string"
+          },
+          "item_id": {
+            "format": "uuid",
+            "title": "Item Id",
+            "type": "string"
+          },
+          "measure": {
+            "default": "",
+            "title": "Measure",
+            "type": "string"
+          },
+          "passage": {
+            "default": "",
+            "title": "Passage",
+            "type": "string"
+          },
+          "publisher": {
+            "title": "Publisher",
+            "type": "string"
+          },
+          "when": {
+            "default": "",
+            "title": "When",
+            "type": "string"
+          },
+          "where": {
+            "default": "",
+            "title": "Where",
+            "type": "string"
+          }
+        },
+        "required": [
+          "item_id",
+          "publisher",
+          "figure"
+        ],
+        "title": "FactBody",
         "type": "object"
       },
       "FactLineView": {

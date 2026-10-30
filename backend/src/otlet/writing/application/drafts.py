@@ -362,7 +362,9 @@ def checked(raw: str, texts: Sequence[SourceText], fields: BriefFields) -> dict[
     data = json.loads(raw)
     paragraphs = [data["lead"]] + [p["text"] for s in data["sections"] for p in s["paragraphs"]]
     sources = [f"{text.title}\n{text.text}" for text in texts]
-    allowed = " ".join([fields.title, fields.angle, fields.instructions])
+    # Nor are the facts the author verified (ADR-0044 §10).
+    verified = [f"{f.figure} {f.measure} {f.when} {f.where}" for f in fields.facts]
+    allowed = " ".join([fields.title, fields.angle, fields.instructions, *verified])
     copied = copying(paragraphs, sources)
     return {
         "unsupported": [

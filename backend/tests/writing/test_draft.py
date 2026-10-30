@@ -434,3 +434,19 @@ def test_a_heading_without_its_day_gets_the_date_of_its_source() -> None:
         "17 octobre 2026 : Les annonces",
         "19 octobre 2026 : Mon expérience",
     ]
+
+
+def test_the_verified_facts_are_given_as_data_and_respected() -> None:
+    """ADR-0044 §10: the facts verified with the Reporter go to the model, as data."""
+    from otlet.writing.domain.brief import VerifiedFact
+
+    item = uuid.uuid4()
+    fact = VerifiedFact(item, "L'Echo", "6,3 milliards", "le montant volé", "jeudi", "Binance")
+    fields = BriefFields(title="Binance", item_ids=(item,), facts=(fact,))
+    sources = prompt_sources([source("Binance", "Un piratage record.")], 9000)
+    user = messages(fields, sources)[1][1]
+    assert "<verified_facts>" in user
+    assert "- 6,3 milliards (le montant volé, jeudi, Binance), according to L'Echo" in user
+    assert user.index("</verified_facts>") < user.index("<sources>")
+    alone = messages(BriefFields(title="Binance", item_ids=(item,)), sources)[1][1]
+    assert "verified_facts" not in alone

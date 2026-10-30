@@ -249,3 +249,43 @@ def test_a_dossier_whose_model_fails_still_shows_every_candidate(
     done = dossiers.get(context, started.id)
     assert done is not None and done.error == "no model" and len(done.candidates) == 3
     assert all(done.verdicts[c.id] == NOT_JUDGED for c in done.candidates)
+
+
+def test_a_dossier_adds_the_items_closest_to_its_subject(
+    assistant: tuple[Assistant, WorkspaceContext, sa.Engine],
+) -> None:
+    """ADR-0045: with no glossary, the Dutch item has no term of the subject; its meaning
+    brings it."""
+    from otlet.assistant.application.dossiers import Dossiers
+    from otlet.meaning.adapters.postgres import literal
+    from otlet.meaning.domain.meaning import DIMENSIONS, MODEL
+
+    _, context, engine = assistant
+    close = [1.0] + [0.0] * (DIMENSIONS - 1)
+    far = [0.0, 1.0] + [0.0] * (DIMENSIONS - 2)
+    with db.workspace_transaction(engine, context.workspace_id) as connection:
+        connection.execute(
+            sa.text(
+                "UPDATE source_items SET meaning = CAST(CASE WHEN title LIKE 'Brusselse%'"
+                " THEN :close ELSE :far END AS vector), meaning_model = :model"
+            ),
+            {"close": literal(close), "far": literal(far), "model": MODEL},
+        )
+    store = PostgresAssistantStore(engine, lambda connection, name, **kwargs: 1)
+    words_only = Dossiers(store, store, FakeModel())
+    with_meaning = Dossiers(store, store, FakeModel(), encode=lambda subject: close)
+    titles = []
+    for dossiers in (words_only, with_meaning):
+        started = dossiers.start(
+            context,
+            "Le budget de la Région bruxelloise",
+            days=7,
+            concepts=[Concept("budget", ("budget",)), Concept("Bruxelles", ("bruxelloise",))],
+        )
+        dossiers.run(context.workspace_id, context.user_id, started.id)
+        done = dossiers.get(context, started.id)
+        assert done is not None
+        titles.append({c.title for c in done.candidates})
+    assert "Brusselse begroting: besparingen op bibliotheken" not in titles[0]
+    assert "Brusselse begroting: besparingen op bibliotheken" in titles[1]
+    assert titles[0] < titles[1]

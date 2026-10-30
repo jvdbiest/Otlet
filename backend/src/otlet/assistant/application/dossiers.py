@@ -8,6 +8,7 @@ candidates by batches. Whatever the model does, no item leaves the dossier: an i
 not judge goes « à vérifier », and a dossier whose model failed still shows every candidate.
 """
 
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
@@ -15,6 +16,7 @@ from typing import Any, Protocol
 from uuid import UUID
 
 from otlet.assistant.application.assistant import CANDIDATES_MAX, AssistantStore, Candidate
+from otlet.assistant.domain.fusion import NEAR_FLOOR, NEAR_MAX, fused
 from otlet.assistant.domain.qualify import (
     BATCH,
     EXPAND_SCHEMA,
@@ -52,6 +54,8 @@ SUBJECT_MAX_LENGTH = 200
 EXPAND_OUTPUT_TOKENS = 4096
 QUALIFY_OUTPUT_TOKENS = 8192
 ANGLE_MAX_LENGTH = 500
+
+logger = logging.getLogger(__name__)
 
 
 class DossierError(Exception):
@@ -134,11 +138,14 @@ class Dossiers:
         search: AssistantStore,
         model: Model | None = None,
         now: Callable[[], datetime] = lambda: datetime.now(UTC),
+        encode: Callable[[str], list[float]] | None = None,
     ) -> None:
         self._store = store
         self._search = search
         self._model = model
         self._now = now
+        # The meaning of the subject (ADR-0045), in the worker only.
+        self._encode = encode
 
     def start(
         self,
@@ -193,6 +200,12 @@ class Dossiers:
         )
         widened = too_general(widened, counts, self._search.total_items(workspace_id, since))
         candidates = self._search.candidates(workspace_id, widened, since, CANDIDATES_MAX)
+        meaning = self._meaning(dossier.subject)
+        if meaning:
+            # The items closest to the subject join the items of its words (ADR-0045): « le
+            # budget de la Région bruxelloise » finds « Brusselse begroting » with no term.
+            near = self._search.near(workspace_id, meaning, since, NEAR_MAX, NEAR_FLOOR)
+            candidates = fused([candidates, near], lambda c: c.id, CANDIDATES_MAX)
         dossier = Dossier(
             id=dossier.id,
             subject=dossier.subject,
@@ -225,6 +238,17 @@ class Dossiers:
             ),
             finished=True,
         )
+
+    def _meaning(self, subject: str) -> tuple[float, ...]:
+        """The vector of the subject, or none when the encoder is missing or fails: the words
+        alone then, as before ADR-0045."""
+        if self._encode is None:
+            return ()
+        try:
+            return tuple(self._encode(subject))
+        except Exception:  # noqa: BLE001 (the meaning adds; its failure takes nothing away)
+            logger.warning("the meaning of a subject could not be encoded", exc_info=True)
+            return ()
 
     def _ask(
         self,

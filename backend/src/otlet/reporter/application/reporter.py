@@ -18,6 +18,7 @@ from uuid import UUID
 
 from otlet.assistant.application.assistant import AssistantStore, Candidate
 from otlet.assistant.application.dossiers import Model
+from otlet.assistant.domain.fusion import NEAR_FLOOR, NEAR_MAX, fused
 from otlet.assistant.domain.qualify import (
     BATCH,
     NO_SUMMARY,
@@ -93,13 +94,8 @@ FIRST_SEARCH = (
     " concepts du sujet de la question."
 )
 SET_MAX = 200
-# The meaning (ADR-0045, spike of 2026-10-30): the 60 items closest to the question, if at least
-# 0.6 close (the relevant items of the bench were above, a question on nothing of the Veille
-# stayed below 0.55), fused with the items of the words by reciprocal rank.
-NEAR_MAX = 60
-NEAR_FLOOR = 0.6
+# The items of the meaning that a restriction may keep (ADR-0045).
 RESTRICT_MAX = 5000
-RRF_K = 60
 DAYS = 30
 OPERATION_OUTPUT_TOKENS = 4096
 FACT_OUTPUT_TOKENS = 8192
@@ -524,13 +520,7 @@ class Reporter:
                 for c in self._search.candidates(workspace_id, restrictions, since, RESTRICT_MAX)
             }
             near = [c for c in near if c.id in allowed]
-        scores: dict[UUID, float] = {}
-        by_id: dict[UUID, Candidate] = {}
-        for ranked in (found, near):
-            for rank, candidate in enumerate(ranked):
-                scores[candidate.id] = scores.get(candidate.id, 0.0) + 1 / (RRF_K + rank)
-                by_id.setdefault(candidate.id, candidate)
-        return [by_id[i] for i in sorted(scores, key=lambda i: -scores[i])][:SET_MAX]
+        return fused([found, near], lambda c: c.id, SET_MAX)
 
     def _read(
         self,

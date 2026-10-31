@@ -720,6 +720,7 @@
     "versionLabel": "Version {number} · {who} ({date}) ({words, plural, one {# mot} other {# mots}})",
     "byModel": "Version {number}, écrite par {model} ({provider}) le {date}",
     "byPerson": "Version {number}, la vôtre, d'après la version {based}, enregistrée le {date}",
+    "byPersonFirst": "Version {number}, la vôtre, enregistrée le {date}",
     "cut": "Le texte de ces sources a été raccourci pour tenir dans le modèle : {sources}.",
     "sources": "Sources",
     "failed": {

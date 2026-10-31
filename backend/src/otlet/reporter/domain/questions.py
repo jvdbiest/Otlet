@@ -416,20 +416,55 @@ PLACE_NAMES = (
     "louviere louvière",
     "bastogne",
     "zaventem",
+)
+# Beyond Belgium: « l'accident de train en Espagne », with no place to hold, let in a mine in
+# Colombia and a storm in Belgium by their meaning (bench of 2026-10-31).
+WORLD_PLACE_NAMES = (
     "france frankrijk",
     "europe europa europeen europeenne europese",
+    "espagne spanje spain espagnol espagnole espagnols",
+    "italie italia italy italien italienne",
+    "allemagne duitsland germany allemand allemande",
+    "pays-bas nederland netherlands",
+    "royaume-uni grande-bretagne britannique britanniques",
+    "etats-unis usa americain americaine americains",
+    "chine china chinois chinoise",
+    "russie rusland russia russe russes",
+    "ukraine oekraine ukrainien ukrainienne ukrainiens",
+    "japon japan japonais japonaise",
+    "inde india indien indienne",
+    "israel israelien israelienne",
+    "iran iranien iranienne",
+    "portugal portugais portugaise",
+    "grece griekenland greece grec grecque",
+    "suisse zwitserland switzerland",
+    "turquie turkije turkey turc turque",
+    "pologne polen poland polonais polonaise",
+    "canada canadien canadienne",
+    "bresil brazilie brazil bresilien bresilienne",
+    "mexique mexico mexicain mexicaine",
+    "colombie colombia colombien colombienne",
 )
-PLACES = {word: line.split()[0] for line in PLACE_NAMES for word in line.split()}
+PLACES = {
+    word: line.split()[0] for line in (*PLACE_NAMES, *WORLD_PLACE_NAMES) for word in line.split()
+}
 # A country holds its regions and towns: « uniquement en Belgique » lost GSK, whose job
 # losses were « à Wavre » (bench, 2026-10-29).
 COUNTRY_PARTS = {
-    "belgique": {
-        line.split()[0] for line in PLACE_NAMES if line.split()[0] not in ("france", "europe")
-    },
+    "belgique": {line.split()[0] for line in PLACE_NAMES},
 }
 
 
 PRONOUN_SUFFIX = re.compile(r"(-t)?-(il|elle|ils|elles|on)$")
+# The verb of a question names nothing: « Que prévoit la réforme des pensions en Belgique ? »
+# searched « prévoit » and lost Belgium, « Quelles cyberattaques utilisent l'IA ? » « utilisent »
+# (bench of 2026-10-31).
+ASKING_VERB = re.compile(r"^ *(?:(?:que|qu'en) (\w+)|(?:quels?|quelles?) \w+ (\w+ent)\b)")
+
+
+def _asking_verb(question: str) -> str | None:
+    found = ASKING_VERB.match(_asked(question))
+    return None if found is None else found.group(1) or found.group(2)
 
 
 def _named(question: str) -> list[str]:
@@ -439,7 +474,7 @@ def _named(question: str) -> list[str]:
     for words_of_period, _ in PERIOD_WORDS:
         asked = asked.replace(f" {words_of_period} ", " ")
     asked = MONTH_PERIOD.sub(" ", asked)
-    language = {w for names in LANGUAGE_WORDS.values() for w in names}
+    language = {w for names in LANGUAGE_WORDS.values() for w in names} | {_asking_verb(question)}
     # Short names written in capitals name something too: « MR », « F1 », « GSK ».
     acronyms = {folded(w) for w in re.findall(r"[\w-]+", question) if len(w) >= 2 and w.isupper()}
     out = []
@@ -665,7 +700,7 @@ def _place_names(places: set[str]) -> list[str]:
     """Every name of the places, in the three languages, as the press writes them: « Brussel »
     and « Bruxelles » for « Bruxelles-Capitale » (bench, 2026-10-30: Bruzz wrote « Brussel »
     and « begroting », and the Reporter searched « Brussels-Capital »)."""
-    lines = [line.split() for line in PLACE_NAMES]
+    lines = [line.split() for line in (*PLACE_NAMES, *WORLD_PLACE_NAMES)]
     names = [w for line in lines if line[0] in places for w in line]
     parts = {p for place in places for p in COUNTRY_PARTS.get(place, ())} - places
     # The parts of a country after its own names: the first name of each, then the second.
@@ -691,8 +726,22 @@ def _place_terms(places: set[str], own: list[str]) -> tuple[str, ...]:
 
 def _without_place(term: str) -> str:
     """A term without its place words and the little words they leave: « hôpitaux en
-    Flandre » is « hôpitaux », « Vlaamse ziekenhuizen » is « ziekenhuizen »."""
-    words = [w for w in term.split() if not _place_words(w) and folded(w) not in PLACE_LINKS]
+    Flandre » is « hôpitaux », « Vlaamse ziekenhuizen » is « ziekenhuizen ». A little word away
+    from the place stays: « accident de train en Espagne » is « accident de train »."""
+    words: list[str] = []
+    after_place = False
+    for word in term.split():
+        if _place_words(word):
+            while words and folded(words[-1]) in PLACE_LINKS:
+                words.pop()
+            after_place = True
+        elif not (after_place and folded(word) in PLACE_LINKS):
+            words.append(word)
+            after_place = False
+    while words and folded(words[0]) in PLACE_LINKS:
+        words.pop(0)
+    while words and folded(words[-1]) in PLACE_LINKS:
+        words.pop()
     return " ".join(words)
 
 
@@ -949,6 +998,7 @@ def guarded(
         # A concept named by a word of the question that names nothing (« parlant »), also
         # once split (« nouveautés » of « nouveautés Apple »).
         if folded(placed_part.name) not in QUESTION_WORDS
+        and folded(placed_part.name) != _asking_verb(question)
     )
     # The same concept twice (« GTA » and « GTA »): once.
     proposed = tuple({folded(c.name): c for c in reversed(proposed)}.values())[::-1]
@@ -973,7 +1023,15 @@ def guarded(
         subject = kept_concepts or tuple(c for c in proposed[:1] if not _of_period(c))
         kept_concepts = (*subject, *(Concept(n, (n,)) for n in names[:2]))[:3]
         missing = unsearched(question, list(kept_concepts))
-    if dropped and missing and kept_concepts and not names:
+    left_places = [w for w in missing if is_place(Concept(w, (w,)))]
+    if left_places and not names and translated.operation is not Operation.RESTREINDRE:
+        # A place the question names is what the set must hold (is_place), whatever the model
+        # searched: « Le conducteur du train en Espagne… ».
+        subject = kept_concepts or tuple(c for c in proposed[:1] if not _of_period(c))
+        place = Concept(left_places[0], _place_terms(_place_words(left_places[0]), left_places[:1]))
+        kept_concepts = (*subject, place)[:3]
+        missing = unsearched(question, list(kept_concepts))
+    elif dropped and missing and kept_concepts and not names:
         # The model named the subject otherwise (« éducation » for « enseignement »): its
         # concept comes back, led by the word of the question (Joël, 2026-10-29).
         word = missing[0]

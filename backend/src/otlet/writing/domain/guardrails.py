@@ -48,6 +48,11 @@ PLACES = tuple(
     wallonie,wallon,wallonne,wallons,wallonia
     flandre,flandres,flamand,flamande,flamands,flanders,flemish
     bruxelles,bruxellois,bruxelloise,brussels
+    bruges,brugge
+    gand,gent,ghent
+    anvers,antwerpen,antwerp
+    liege,luik
+    louvain,leuven
     europe,europeen,europeenne,europeens,europeennes,european
     allemagne,allemand,allemande,allemands,allemandes,germany,german
     angleterre,anglais,anglaise,england,english

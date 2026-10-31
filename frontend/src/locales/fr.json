@@ -1346,7 +1346,8 @@
     },
     "rebuild": {
       "button": "Reconstituer",
-      "help": "Votre modèle trie les articles si besoin, en lit jusqu'à 15 et relève ce qui répond, volet par volet. Comptez plusieurs minutes avec un modèle local.",
+      "offer": "Comprendre une affaire complexe",
+      "help": "Pour une affaire suivie par plusieurs sources (budget, accident, tempête) : ce qui s'est passé, dans quel ordre, et si les sources concordent. Pour choisir la matière d'un brief, la liste des articles suffit. Comptez plusieurs minutes avec un modèle local.",
       "pending": "Je reconstitue : tri, lecture par volet, puis analyse…",
       "title": "Reconstitution",
       "subjects": "Les principaux sujets",

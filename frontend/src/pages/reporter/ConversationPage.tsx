@@ -692,19 +692,23 @@ function Rebuild({
         {done !== null && (
           <p className={styles.warning}>{t("reporter.rebuild.failed", { error: done.errors.join("; ") })}</p>
         )}
-        <p className={styles.row}>
-          <button
-            type="button"
-            className={styles.button}
-            disabled={busy || rebuild.isPending}
-            onClick={() => {
-              rebuild.mutate(turn.id);
-            }}
-          >
-            {t("reporter.rebuild.button")}
-          </button>
-          <span className={styles.meta}>{t("reporter.rebuild.help")}</span>
-        </p>
+        {/* A tool for one complex affair, not a step: the list is the usual way to a brief. */}
+        <details open={done !== null || rebuild.error !== null}>
+          <summary>{t("reporter.rebuild.offer")}</summary>
+          <p className={styles.row}>
+            <button
+              type="button"
+              className={styles.button}
+              disabled={busy || rebuild.isPending}
+              onClick={() => {
+                rebuild.mutate(turn.id);
+              }}
+            >
+              {t("reporter.rebuild.button")}
+            </button>
+            <span className={styles.meta}>{t("reporter.rebuild.help")}</span>
+          </p>
+        </details>
         {rebuild.error !== null && (
           <p role="alert" className={styles.error}>
             {errorText(t, rebuild.error)}

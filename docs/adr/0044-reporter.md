@@ -97,4 +97,5 @@ Dans chaque banc, l'essentiel du progrès est venu de règles sans modèle, pas 
 - Les règles sans modèle (concordance, calendrier, ancrage dans l'article) deviennent des briques communes, réutilisables par l'évaluateur, la rédaction et le futur pilote automatique.
 - Le tri du modèle varie d'un passage à l'autre ; la sélection d'une reconstitution peut donc varier, ce que l'auteur voit puisque les lignes et leurs articles sont affichés.
 - Les nombres écrits en lettres (« quatre milliards ») restent à lire par une règle avant A2-2, pour ne plus mettre « à vérifier » une ligne juste.
+- Question ouverte (Joël, 2026-10-31) : une reconstitution ne mène aujourd'hui à aucune action. Son débouché, transformer ses lignes vérifiées en brief, sera revu lorsqu'un vrai besoin se présentera.
 - Le pilote automatique (perspective, ADR-0041) pourra partir d'une question enregistrée et suivre le même chemin, sans rien publier que l'auteur n'ait explicitement autorisé.

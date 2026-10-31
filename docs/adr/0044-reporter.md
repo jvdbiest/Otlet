@@ -86,6 +86,8 @@ Dans chaque banc, l'essentiel du progrès est venu de règles sans modèle, pas 
     - **plusieurs sujets indépendants**, aucun ne tenant 60 % des articles lus : un **panorama**, la liste des principaux sujets avec leurs sources, et « Reconstituer ce sujet » sur chacun, qui ouvre une question sur ses seuls articles ;
     - **un sujet** : la reconstitution de §7, « En bref » en tête, puis les faits et l'analyse repliés.
 
+    **Un seul sujet, malgré plusieurs titres** : le modèle découpe parfois une même affaire en angles. Le budget fédéral a donné 8 « sujets », le plus gros tenant 8 articles sur 15, mais 29 mentions pour 15 articles : ils se partagent les articles. Plus de 1,3 mention par article signifie donc une seule affaire (astronomie 9 pour 8, motos 11 pour 15, Austen 22 pour 15, budget 29 pour 15). Seuil tiré de cinq ensembles, à revoir si d'autres cas le contredisent.
+
     **Confiance** : un volet vide n'est plus à lui seul une faiblesse, le modèle en invente (« Impact environnemental »). Elle devient moyenne, et faible quand la moitié des volets au moins sont vides, ou qu'un volet diverge.
 
 ## Conséquences

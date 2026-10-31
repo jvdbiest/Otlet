@@ -77,6 +77,8 @@ from otlet.reporter.domain.questions import (
     operation_message,
     points_back,
     read_operation,
+    refers_back,
+    without_the_subject,
 )
 from otlet.reporter.domain.reading import (
     READ_MAX,
@@ -563,6 +565,16 @@ class Reporter:
             elif about_the_set(turn.question, translated, state):
                 # Asked of the set, answered from it: its articles that truly treat the subject.
                 translated = replace(translated, operation=Operation.TRIER, concepts=())
+            elif (
+                translated.operation is Operation.CHERCHER
+                and state.concepts
+                and refers_back(turn.question, state)
+            ):
+                translated = replace(
+                    translated,
+                    operation=Operation.RESTREINDRE,
+                    concepts=without_the_subject(translated.concepts, state),
+                )
             elif (
                 translated.operation is Operation.CHERCHER
                 and state.concepts

@@ -138,6 +138,9 @@ SUBJECTS_SCHEMA: dict[str, Any] = {
 # A set whose main subject holds this share of the articles read is about that subject: the rest
 # is what a search brings along.
 MAIN_SUBJECT_SHARE = 0.6
+# Independent subjects hardly share an article. The budget gave 29 mentions for 15 articles, its
+# « subjects » being the sides of one debate; astronomy 9 for 8, motorcycles 11 for 15.
+SHARED_MENTIONS_MAX = 1.3
 FACETS_SYSTEM = (
     "Tu es le Reporter d'Otlet, un documentaliste. L'auteur demande une reconstitution à partir de "
     "plusieurs articles. Dis sa forme : « chronologie » (ce qui s'est passé, quand, où, comment "
@@ -294,10 +297,12 @@ def read_subjects(raw: str, articles: list[Article]) -> tuple[Subject, ...]:
 def several_subjects(subjects: tuple[Subject, ...], read: int) -> bool:
     """Whether the articles speak of several independent subjects: decided from the articles, not
     from the words of the question, which a model reads wrong (« le budget fédéral » as a domain,
-    bench of 2026-10-31). One subject that holds most of them is that subject."""
+    bench of 2026-10-31). One subject that holds most of them is that subject; subjects that share
+    their articles are the sides of one affair."""
     if len(subjects) < 2 or read == 0:
         return False
-    return max(len(s.articles) for s in subjects) / read < MAIN_SUBJECT_SHARE
+    sizes = [len(s.articles) for s in subjects]
+    return max(sizes) / read < MAIN_SUBJECT_SHARE and sum(sizes) / read <= SHARED_MENTIONS_MAX
 
 
 def read_facets(raw: str) -> tuple[str, tuple[Facet, ...]]:

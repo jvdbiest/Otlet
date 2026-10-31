@@ -558,3 +558,18 @@ def test_the_budget_of_brussels_capitale_is_a_subject_and_a_place() -> None:
     subject = kept.concepts[0]
     assert "capitale" not in subject.name and "budget" in subject.terms
     assert "begroting" in subject.terms
+
+
+def test_a_question_that_names_the_subject_as_a_complement_stays_in_the_set() -> None:
+    from otlet.reporter.domain.questions import refers_back, without_the_subject
+
+    state = State((Concept("accident de train", ("accident",)), Concept("Espagne", ("Espagne",))))
+    assert refers_back("les raisons de l'accident ?", state)
+    assert refers_back("Les victimes du train ?", state)
+    # A new subject, even with a word in common.
+    assert not refers_back("Et les accidents de voiture ?", State((Concept("train", ("train",)),)))
+    assert not refers_back("le budget fédéral", State((Concept("budget", ("budget",)),)))
+    games = State((Concept("jeux vidéo", ("jeux vidéo",)),))
+    assert not refers_back("Quelles sont les actualités des jeux vidéo cette semaine ?", games)
+    concepts = (Concept("cause", ("cause",)), Concept("accident", ("accident",)))
+    assert [c.name for c in without_the_subject(concepts, state)] == ["cause"]

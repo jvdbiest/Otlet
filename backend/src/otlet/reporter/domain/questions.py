@@ -350,6 +350,7 @@ def _without_dates(concept: Concept) -> Concept:
     return Concept(concept.name, terms) if terms else concept
 
 
+STEM_LENGTH = 6
 _DATE_LINKS = {
     "et", "en", "and", "au", "du", "le", "de", "to", "tot",
     "derniers", "dernieres", "laatste", "last", "past",
@@ -1119,6 +1120,32 @@ def asks_sort(question: str) -> bool:
 def names_no_subject(question: str) -> bool:
     """A question of question words alone: « Les actualités ? »."""
     return not _named(question)
+
+
+# « les raisons de l'accident ? » after the train accident in Spain searched every accident:
+# rental cars, touchscreens (Joël, 2026-10-30). « de l'accident » names what the set is about.
+_OF_THE = re.compile(r"(?:\bde l'|\bdu |\bde la |\bdes )(\w+)")
+
+
+def _subject_stems(state: State) -> set[str]:
+    return {w[:STEM_LENGTH] for c in state.concepts for w in re.findall(r"\w{4,}", folded(c.name))}
+
+
+def refers_back(question: str, state: State) -> bool:
+    """A question that names the subject of the set as a complement, so of that very thing. Over
+    a period of its own it is a new search: « les actualités des jeux vidéo cette semaine »."""
+    if asked_period(question) is not None or asked_dates(question) is not None:
+        return False
+    stems = _subject_stems(state)
+    return any(w[:STEM_LENGTH] in stems for w in _OF_THE.findall(_asked(question)))
+
+
+def without_the_subject(concepts: tuple[Concept, ...], state: State) -> tuple[Concept, ...]:
+    """The concepts of such a question that are not the set's own: « cause », not « accident »."""
+    stems = _subject_stems(state)
+    return tuple(
+        c for c in concepts if not {w[:STEM_LENGTH] for w in folded(c.name).split()} & stems
+    )
 
 
 def only_a_period(question: str) -> bool:

@@ -9,6 +9,7 @@ from otlet.reporter.domain.reconstitution import (
     Confidence,
     Facet,
     RebuiltLine,
+    Subject,
     chosen_evenly,
     confidence,
     dated_days,
@@ -234,6 +235,12 @@ def test_several_subjects_are_decided_from_the_articles() -> None:
     assert not several_subjects(subjects, 2)
     # Several, none of them holding most: a panorama.
     assert several_subjects(subjects, 5)
+    # Subjects that share their articles are one affair: the budget, 29 mentions for 15 articles.
+    one = subjects[0].articles[:1]
+    shared = tuple(Subject("Un côté", "Un débat.", one * size) for size in (8, 7, 6, 4, 4))
+    assert not several_subjects(shared, 15)
+    apart = tuple(Subject("Sujet", "Seul.", one) for _ in range(9))
+    assert several_subjects(apart, 8)
 
 
 def test_an_answer_left_empty_comes_from_the_analysis() -> None:

@@ -9,6 +9,9 @@ export type TurnView = components["schemas"]["TurnView"];
 export type TurnCandidate = TurnView["candidates"][number];
 export type FactView = components["schemas"]["FactView"];
 export type ReadingView = components["schemas"]["ReadingView"];
+export type ReconstitutionView = components["schemas"]["ReconstitutionView"];
+export type RebuiltLineView = components["schemas"]["RebuiltLineView"];
+export type SentenceView = components["schemas"]["SentenceView"];
 /** A question, read by the model before its answer is shown when `read` (« Lire avant de répondre »). */
 export type Question =
   | string
@@ -153,6 +156,46 @@ export function useReadSet(workspaceId: string, conversationId: string) {
       return data;
     },
     onSuccess: () => client.invalidateQueries({ queryKey: [...key(workspaceId), conversationId] }),
+  });
+}
+
+/** « Reconstituer »: the worker extracts the lines by facet, then writes the analysis. */
+export function useReconstitute(workspaceId: string, conversationId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (turnId: string) => {
+      const { data, error, response } = await api.POST(
+        "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/turns/{turn_id}/reconstitute",
+        { params: { path: { workspace_id: workspaceId, conversation_id: conversationId, turn_id: turnId } } },
+      );
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: () => client.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
+  });
+}
+
+/** « Reconstituer ce sujet »: a new question on the articles of one subject of a panorama. */
+export function useReconstituteSubject(workspaceId: string, conversationId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ turnId, subject }: { turnId: string; subject: number }) => {
+      const { data, error, response } = await api.POST(
+        "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/turns/{turn_id}/subjects/{subject}/reconstitute",
+        {
+          params: {
+            path: { workspace_id: workspaceId, conversation_id: conversationId, turn_id: turnId, subject },
+          },
+        },
+      );
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: () => client.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
   });
 }
 

@@ -82,6 +82,14 @@ Dans chaque banc, l'essentiel du progrès est venu de règles sans modèle, pas 
 
 15. **Règles ajoutées à l'usage** (2026-10-25, premiers essais de Joël) : seules des mesures identiques se comparent (une température minimale et une maximale ne divergent pas) ; une réponse de fait peut lire 15 articles de plus, ses lignes s'ajoutent et la concordance est recalculée ; au-delà de 20 articles non triés, le Reporter invite à trier avant le brief. Côté rédaction : des dates demandées par l'auteur sont annoncées au modèle et contrôlées après la génération, et une section recopiée par le modèle est retirée sans modèle.
 
+16. **Deux types de reconstitution** (Joël, 2026-10-31, après « Les découvertes en astronomie » : le bloc « En bref » résumait des actualités indépendantes sans les reconstituer). « Reconstituer » repère d'abord les sujets distincts dans les articles lus. Le choix se fait **sur les articles et non sur la question**, que le modèle classe mal (le budget fédéral et les péages lus comme des domaines, banc du 2026-10-31) :
+    - **plusieurs sujets indépendants**, aucun ne tenant 60 % des articles lus : un **panorama**, la liste des principaux sujets avec leurs sources, et « Reconstituer ce sujet » sur chacun, qui ouvre une question sur ses seuls articles ;
+    - **un sujet** : la reconstitution de §7, « En bref » en tête, puis les faits et l'analyse repliés.
+
+    **Un seul sujet, malgré plusieurs titres** : le modèle découpe parfois une même affaire en angles. Le budget fédéral a donné 8 « sujets », le plus gros tenant 8 articles sur 15, mais 29 mentions pour 15 articles : ils se partagent les articles. Plus de 1,3 mention par article signifie donc une seule affaire (astronomie 9 pour 8, motos 11 pour 15, Austen 22 pour 15, budget 29 pour 15). Seuil tiré de cinq ensembles, à revoir si d'autres cas le contredisent.
+
+    **Confiance** : un volet vide n'est plus à lui seul une faiblesse, le modèle en invente (« Impact environnemental »). Elle devient moyenne, et faible quand la moitié des volets au moins sont vides, ou qu'un volet diverge.
+
 ## Conséquences
 
 - Le Reporter réutilise le moteur de l'Assistant de veille (concepts, glossaire, termes trop généraux, tri) ; il ne le recopie pas. L'Assistant reste le mode avancé.
@@ -89,4 +97,5 @@ Dans chaque banc, l'essentiel du progrès est venu de règles sans modèle, pas 
 - Les règles sans modèle (concordance, calendrier, ancrage dans l'article) deviennent des briques communes, réutilisables par l'évaluateur, la rédaction et le futur pilote automatique.
 - Le tri du modèle varie d'un passage à l'autre ; la sélection d'une reconstitution peut donc varier, ce que l'auteur voit puisque les lignes et leurs articles sont affichés.
 - Les nombres écrits en lettres (« quatre milliards ») restent à lire par une règle avant A2-2, pour ne plus mettre « à vérifier » une ligne juste.
+- Question ouverte (Joël, 2026-10-31) : une reconstitution ne mène aujourd'hui à aucune action. Son débouché, transformer ses lignes vérifiées en brief, sera revu lorsqu'un vrai besoin se présentera.
 - Le pilote automatique (perspective, ADR-0041) pourra partir d'une question enregistrée et suivre le même chemin, sans rien publier que l'auteur n'ait explicitement autorisé.

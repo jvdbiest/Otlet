@@ -1823,6 +1823,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/turns/{turn_id}/reconstitute": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reconstitute
+         * @description « Reconstituer »: the worker extracts the lines by facet, then the analysis.
+         */
+        post: operations["reconstitute_api_workspaces__workspace_id__reporter_conversations__conversation_id__turns__turn_id__reconstitute_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/turns/{turn_id}/subjects/{subject}/reconstitute": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reconstitute Subject
+         * @description « Reconstituer ce sujet »: a new question on the articles of one subject.
+         */
+        post: operations["reconstitute_subject_api_workspaces__workspace_id__reporter_conversations__conversation_id__turns__turn_id__subjects__subject__reconstitute_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/turns/{turn_id}/terms": {
         parameters: {
             query?: never;
@@ -2820,6 +2860,13 @@ export interface components {
              */
             kind: "pdf" | "docx" | "html" | "md" | "txt";
         };
+        /** FacetView */
+        FacetView: {
+            /** Name */
+            name: string;
+            /** Question */
+            question: string;
+        };
         /** FactBody */
         FactBody: {
             /** Figure */
@@ -3576,6 +3623,69 @@ export interface components {
             /** Rounds */
             rounds: components["schemas"]["RoundView"][];
         };
+        /** RebuiltLineView */
+        RebuiltLineView: {
+            /**
+             * Dated
+             * Format: date-time
+             */
+            dated: string;
+            /** Facet */
+            facet: number;
+            /** Information */
+            information: string;
+            /**
+             * Item Id
+             * Format: uuid
+             */
+            item_id: string;
+            /** Passage */
+            passage: string;
+            /** Publisher */
+            publisher: string;
+            /** To Check */
+            to_check: string[];
+            /** When */
+            when: string;
+            /** Where */
+            where: string;
+        };
+        /**
+         * ReconstitutionView
+         * @description « Reconstituer » (ADR-0044 §7): the lines by date, the facets as filters, the analysis.
+         */
+        ReconstitutionView: {
+            /** Answer */
+            answer: components["schemas"]["SentenceView"][];
+            /** Confidence */
+            confidence: ("forte" | "moyenne" | "faible") | null;
+            /** Dropped */
+            dropped: number;
+            /** Errors */
+            errors: string[];
+            /** Facets */
+            facets: components["schemas"]["FacetView"][];
+            /** Flagged */
+            flagged: components["schemas"]["RebuiltLineView"][];
+            /** Focus */
+            focus: string;
+            /** Form */
+            form: string;
+            /** Found */
+            found: number;
+            /** Lines */
+            lines: components["schemas"]["RebuiltLineView"][];
+            /** Read */
+            read: number;
+            /** Reasons */
+            reasons: string[];
+            /** Requested */
+            requested: boolean;
+            /** Sentences */
+            sentences: components["schemas"]["SentenceView"][];
+            /** Subjects */
+            subjects: components["schemas"]["SubjectView"][];
+        };
         /** RefreshView */
         RefreshView: {
             /** Sources */
@@ -3692,6 +3802,17 @@ export interface components {
         SendBody: {
             /** Number */
             number: number;
+        };
+        /** SentenceView */
+        SentenceView: {
+            /** Deduction */
+            deduction: boolean;
+            /** Lines */
+            lines: number[];
+            /** Text */
+            text: string;
+            /** Unsupported */
+            unsupported: string[];
         };
         /** SessionView */
         SessionView: {
@@ -3849,6 +3970,27 @@ export interface components {
             total_bytes: number | null;
             /** Writable */
             writable: boolean;
+        };
+        /** SubjectArticleView */
+        SubjectArticleView: {
+            /**
+             * Item Id
+             * Format: uuid
+             */
+            item_id: string;
+            /** Publisher */
+            publisher: string;
+        };
+        /** SubjectView */
+        SubjectView: {
+            /** Articles */
+            articles: components["schemas"]["SubjectArticleView"][];
+            /** Summary */
+            summary: string;
+            /** Title */
+            title: string;
+            /** Unsupported */
+            unsupported: string[];
         };
         /** TagsBody */
         TagsBody: {
@@ -4026,6 +4168,7 @@ export interface components {
             /** Question */
             question: string;
             reading: components["schemas"]["ReadingView"] | null;
+            reconstitution: components["schemas"]["ReconstitutionView"] | null;
             /**
              * Status
              * @enum {string}
@@ -7750,6 +7893,73 @@ export interface operations {
             path: {
                 conversation_id: string;
                 turn_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TurnView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reconstitute_api_workspaces__workspace_id__reporter_conversations__conversation_id__turns__turn_id__reconstitute_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+                turn_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TurnView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reconstitute_subject_api_workspaces__workspace_id__reporter_conversations__conversation_id__turns__turn_id__subjects__subject__reconstitute_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+                turn_id: string;
+                subject: number;
                 workspace_id: string;
             };
             cookie?: never;

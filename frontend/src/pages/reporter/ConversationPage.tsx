@@ -8,11 +8,14 @@ import {
   useAsk,
   useCancelQuestion,
   useReadMore,
+  useReconstitute,
+  useReconstituteSubject,
   useReadSet,
   useSetTerms,
   type ConversationView,
   type FactView,
   type ReadingView,
+  type SentenceView,
   type TurnCandidate,
   type TurnView,
 } from "../../reporter.ts";
@@ -172,9 +175,11 @@ function Turn({
       </p>
       {turn.status === "pending" && (
         <p role="status" className={styles.meta}>
-          {turn.reading?.requested === true && turn.operation !== null
-            ? t("reporter.reading.pending")
-            : t("reporter.pending")}
+          {turn.reconstitution?.requested === true
+            ? t("reporter.rebuild.pending")
+            : turn.reading?.requested === true && turn.operation !== null
+              ? t("reporter.reading.pending")
+              : t("reporter.pending")}
         </p>
       )}
       {turn.status === "failed" && turn.error === "cancelled" && <p className={styles.notice}>{t("reporter.cancelled")}</p>}
@@ -218,6 +223,7 @@ function Turn({
             />
           )}
           <Reading workspaceId={workspaceId} conversationId={conversation.id} turn={turn} busy={busy} />
+          <Rebuild workspaceId={workspaceId} conversationId={conversation.id} turn={turn} busy={busy} />
         </>
       )}
     </section>
@@ -608,6 +614,231 @@ function ItemSet({
         </p>
       )}
     </>
+  );
+}
+
+/** « Reconstituer » (ADR-0044 §7): only when asked; the lines by date, the facets as filters; the
+ * analysis apart, with its computed confidence. */
+function Rebuild({
+  workspaceId,
+  conversationId,
+  turn,
+  busy,
+}: {
+  workspaceId: string;
+  conversationId: string;
+  turn: TurnView;
+  busy: boolean;
+}) {
+  const { t } = useTranslation();
+  const rebuild = useReconstitute(workspaceId, conversationId);
+  const onSubject = useReconstituteSubject(workspaceId, conversationId);
+  const [facet, setFacet] = useState<number | null>(null);
+  const done = turn.reconstitution;
+  if (done !== null && done.subjects.length > 0) {
+    return (
+      <section aria-label={t("reporter.rebuild.subjects")}>
+        <h3>{t("reporter.rebuild.subjects")}</h3>
+        <p className={styles.help}>{t("reporter.rebuild.subjectsHelp", { read: done.read, found: done.found })}</p>
+        <ol>
+          {done.subjects.map((subject, index) => (
+            <li key={index} style={{ margin: "0.75rem 0" }}>
+              <strong>{subject.title}</strong>
+              <br />
+              {subject.summary}
+              {subject.unsupported.length > 0 && (
+                <>
+                  <br />
+                  <span className={styles.warning}>
+                    {t("reporter.rebuild.unsupported", { words: subject.unsupported.join(", ") })}
+                  </span>
+                </>
+              )}
+              <br />
+              <span className={styles.meta}>
+                {subject.articles.map((article, position) => (
+                  <span key={article.item_id}>
+                    {position > 0 && " · "}
+                    <Link to="/veille/elements/$itemId" params={{ itemId: article.item_id }}>
+                      {article.publisher}
+                    </Link>
+                  </span>
+                ))}
+              </span>{" "}
+              <button
+                type="button"
+                className={styles.button}
+                disabled={busy || onSubject.isPending}
+                onClick={() => {
+                  onSubject.mutate({ turnId: turn.id, subject: index });
+                }}
+              >
+                {t("reporter.rebuild.oneSubject")}
+              </button>
+            </li>
+          ))}
+        </ol>
+        {onSubject.error !== null && (
+          <p role="alert" className={styles.error}>
+            {errorText(t, onSubject.error)}
+          </p>
+        )}
+      </section>
+    );
+  }
+  if (done === null || (done.facets.length === 0 && done.errors.length > 0)) {
+    return turn.candidates.length === 0 ? null : (
+      <>
+        {done !== null && (
+          <p className={styles.warning}>{t("reporter.rebuild.failed", { error: done.errors.join("; ") })}</p>
+        )}
+        {/* A tool for one complex affair, not a step: the list is the usual way to a brief. */}
+        <details open={done !== null || rebuild.error !== null}>
+          <summary>{t("reporter.rebuild.offer")}</summary>
+          <p className={styles.row}>
+            <button
+              type="button"
+              className={styles.button}
+              disabled={busy || rebuild.isPending}
+              onClick={() => {
+                rebuild.mutate(turn.id);
+              }}
+            >
+              {t("reporter.rebuild.button")}
+            </button>
+            <span className={styles.meta}>{t("reporter.rebuild.help")}</span>
+          </p>
+        </details>
+        {rebuild.error !== null && (
+          <p role="alert" className={styles.error}>
+            {errorText(t, rebuild.error)}
+          </p>
+        )}
+      </>
+    );
+  }
+  if (done.facets.length === 0) {
+    return <p className={styles.notice}>{t("reporter.rebuild.nothing", { count: done.found })}</p>;
+  }
+  const numbered = done.lines.map((line, index) => ({ line, number: index + 1 }));
+  const shown = facet === null ? numbered : numbered.filter(({ line }) => line.facet === facet);
+  return (
+    <section aria-label={t("reporter.rebuild.title")}>
+      <div className={styles.panel}>
+        <h3>{t("reporter.rebuild.inBrief")}</h3>
+        {done.answer.length === 0 && done.sentences.length === 0 && (
+          <p className={styles.notice}>{t("reporter.rebuild.noAnalysis")}</p>
+        )}
+        {done.answer.map((sentence, index) => (
+          <RebuiltSentence key={index} sentence={sentence} strong={index === 0} />
+        ))}
+        {done.confidence !== null && (
+          <p>
+            <strong>{t(`reporter.rebuild.confidence.${done.confidence}`)}</strong>
+            {done.reasons.length > 0 && <span className={styles.meta}> · {done.reasons.join(" ; ")}</span>}
+          </p>
+        )}
+        <p className={styles.help}>{t("reporter.rebuild.byModel", { read: done.read, found: done.found })}</p>
+      </div>
+      <details>
+        <summary>{t("reporter.rebuild.facts", { count: done.lines.length })}</summary>
+      <p className={styles.row} style={{ flexWrap: "wrap" }}>
+        {done.facets.map((one, index) => (
+          <button
+            key={one.name}
+            type="button"
+            className={styles.chip}
+            title={one.question}
+            aria-pressed={facet === index + 1}
+            style={facet === index + 1 ? { fontWeight: 600 } : undefined}
+            onClick={() => {
+              setFacet(facet === index + 1 ? null : index + 1);
+            }}
+          >
+            {one.name} ({done.lines.filter((line) => line.facet === index + 1).length})
+          </button>
+        ))}
+      </p>
+      {shown.length === 0 && <p className={styles.notice}>{t("reporter.rebuild.noLine")}</p>}
+      {shown.length > 0 && (
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">{t("reporter.rebuild.line")}</th>
+              <th scope="col">{t("reporter.fact.source")}</th>
+              <th scope="col">{t("reporter.rebuild.information")}</th>
+              <th scope="col">{t("reporter.fact.when")}</th>
+              <th scope="col">{t("reporter.fact.where")}</th>
+              <th scope="col">{t("reporter.fact.passage")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {shown.map(({ line, number }) => (
+              <tr key={number}>
+                <td>L{number}</td>
+                <td>
+                  <Link to="/veille/elements/$itemId" params={{ itemId: line.item_id }}>
+                    {line.publisher}
+                  </Link>
+                  <br />
+                  <span className={styles.meta}>{formatDate(line.dated)}</span>
+                </td>
+                <td>{line.information}</td>
+                <td>{line.when}</td>
+                <td>{line.where}</td>
+                <td>
+                  <q>{line.passage}</q>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      {done.flagged.length > 0 && (
+        <details>
+          <summary>{t("reporter.rebuild.flagged", { count: done.flagged.length })}</summary>
+          <ul>
+            {done.flagged.map((line, index) => (
+              <li key={index}>
+                {line.information} ({line.publisher}) · <span className={styles.warning}>{line.to_check.join(", ")}</span>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+      </details>
+      {done.sentences.length > 0 && (
+        <details>
+          <summary>{t("reporter.rebuild.analysis")}</summary>
+          {done.sentences.map((sentence, index) => (
+            <RebuiltSentence key={index} sentence={sentence} />
+          ))}
+        </details>
+      )}
+      {done.errors.length > 0 && (
+        <p className={styles.notice}>{t("reporter.rebuild.failed", { error: done.errors.join("; ") })}</p>
+      )}
+    </section>
+  );
+}
+
+/** A sentence of the answer or of the analysis, with its lines and what they do not hold. */
+function RebuiltSentence({ sentence, strong = false }: { sentence: SentenceView; strong?: boolean }) {
+  const { t } = useTranslation();
+  return (
+    <p>
+      {sentence.deduction && <em>{t("reporter.rebuild.deduction")} </em>}
+      {strong ? <strong>{sentence.text}</strong> : sentence.text}{" "}
+      <span className={styles.meta}>{sentence.lines.map((n) => `L${String(n)}`).join(" ")}</span>
+      {sentence.unsupported.length > 0 && (
+        <>
+          <br />
+          <span className={styles.warning}>
+            {t("reporter.rebuild.unsupported", { words: sentence.unsupported.join(", ") })}
+          </span>
+        </>
+      )}
+    </p>
   );
 }
 

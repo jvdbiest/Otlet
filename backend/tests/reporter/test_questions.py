@@ -10,8 +10,10 @@ from otlet.reporter.domain.questions import (
     Translated,
     check_operation,
     guarded,
+    is_place,
     next_state,
     read_operation,
+    unsearched,
 )
 
 AUSTEN = Concept("tempête Austen", ("tempête Austen", "storm Austen", "Austen"))
@@ -416,10 +418,10 @@ def test_the_bench_of_2026_10_30_afternoon() -> None:
 
 
 def test_a_word_rescued_takes_the_model_terms_close_to_it() -> None:
-    driver = Concept("conducteur de train", ("conducteur de train", "Espagne", "Spanje"))
+    driver = Concept("conducteur de train", ("conducteur de train", "treinconducteur"))
     warned = Concept("avait", ("avait", "prévenir", "avertir", "waarschuwen"))
     kept = guarded(
-        "Le conducteur du train en Espagne avait-il prévenu ?",
+        "Le conducteur de train avait-il prévenu ?",
         Translated(Operation.CHERCHER, (driver, warned), None),
     )
     assert kept.concepts[-1] == Concept(
@@ -543,3 +545,85 @@ def test_a_new_subject_keeps_the_period_until_another_is_named() -> None:
         State((AUSTEN,), "fr", 7, excluded=("x",)), Translated(Operation.CHERCHER, (BXL,), None)
     )
     assert (again.language, again.excluded, again.days) == (None, (), 7)
+
+
+def test_the_budget_of_brussels_capitale_is_a_subject_and_a_place() -> None:
+    from otlet.reporter.domain.questions import is_place
+
+    question = "Quelle nouvelle sur le budget de la région de bruxelles capitale ?"
+    concept = Concept(
+        "budget de la région de bruxelles capitale",
+        ("budget", "begroting", "bruxelles capitale"),
+    )
+    kept = guarded(question, Translated(Operation.CHERCHER, (concept,), None))
+    assert [is_place(c) for c in kept.concepts] == [False, True]
+    subject = kept.concepts[0]
+    assert "capitale" not in subject.name and "budget" in subject.terms
+    assert "begroting" in subject.terms
+
+
+def test_a_question_that_names_the_subject_as_a_complement_stays_in_the_set() -> None:
+    from otlet.reporter.domain.questions import refers_back, without_the_subject
+
+    state = State((Concept("accident de train", ("accident",)), Concept("Espagne", ("Espagne",))))
+    assert refers_back("les raisons de l'accident ?", state)
+    assert refers_back("Les victimes du train ?", state)
+    # A new subject, even with a word in common.
+    assert not refers_back("Et les accidents de voiture ?", State((Concept("train", ("train",)),)))
+    assert not refers_back("le budget fédéral", State((Concept("budget", ("budget",)),)))
+    games = State((Concept("jeux vidéo", ("jeux vidéo",)),))
+    assert not refers_back("Quelles sont les actualités des jeux vidéo cette semaine ?", games)
+    concepts = (Concept("cause", ("cause",)), Concept("accident", ("accident",)))
+    assert [c.name for c in without_the_subject(concepts, state)] == ["cause"]
+
+
+def test_the_verb_of_a_question_names_nothing() -> None:
+    reform = Concept("réforme des pensions", ("réforme des pensions", "pensions"))
+    kept = guarded(
+        "Que prévoit la réforme des pensions en Belgique ?",
+        Translated(Operation.CHERCHER, (reform, Concept("prévoit", ("prévoit",))), None),
+    )
+    assert [c.name for c in kept.concepts] == ["réforme des pensions", "Belgique"]
+    attacks = Concept("IA", ("IA", "cyberattaques"))
+    assert unsearched("Quelles cyberattaques utilisent l'IA ?", [attacks]) == []
+    # A word in -ent elsewhere is no verb.
+    governments = Concept("g", ("gouvernements",))
+    assert unsearched("Quels gouvernements européens et le parlement ?", [governments])
+
+
+def test_a_place_of_the_world_is_a_concept_of_its_own() -> None:
+    name = "accident de train en Espagne"
+    train = Concept(name, (name, "accident de train"))
+    kept = guarded("L'accident de train en Espagne", Translated(Operation.CHERCHER, (train,), None))
+    assert [is_place(c) for c in kept.concepts] == [False, True]
+    assert kept.concepts[0].name == "accident de train"
+    assert "Spanje".lower() in {t.lower() for t in kept.concepts[1].terms}
+    # Belgium holds its towns, never the world.
+    alone = Concept("Belgique", ("Belgique",))
+    belgium = guarded("en Belgique", Translated(Operation.CHERCHER, (alone,), None))
+    assert not {"espagne", "france"} & {t.lower() for t in belgium.concepts[0].terms}
+
+
+def test_an_acronym_of_the_question_is_a_concept_of_its_own() -> None:
+    strikes = Concept("grèves", ("grèves", "SNCB", "stakingen"))
+    kept = guarded("Les grèves à la SNCB", Translated(Operation.CHERCHER, (strikes,), None))
+    assert [(c.name, c.terms) for c in kept.concepts] == [
+        ("grèves", ("grèves", "stakingen")),
+        ("SNCB", ("SNCB",)),
+    ]
+    # Its initials: the same thing.
+    ai = Concept("intelligence artificielle", ("intelligence artificielle", "IA"))
+    question = "L'IA et l'intelligence artificielle"
+    kept = guarded(question, Translated(Operation.CHERCHER, (ai,), None))
+    assert [c.name for c in kept.concepts] == ["intelligence artificielle"]
+
+
+def test_another_place_takes_the_place_of_the_one_held() -> None:
+    youth = Concept("jeunes", ("jeunes",))
+    belgium = Concept("Belgique", ("Belgique",))
+    state = State((youth, belgium))
+    france = Translated(Operation.RESTREINDRE, (Concept("France", ("France",)),), None)
+    assert [c.name for c in next_state(state, france).concepts] == ["jeunes", "France"]
+    # A part of it narrows.
+    liege = Translated(Operation.RESTREINDRE, (Concept("Liège", ("Liège",)),), None)
+    assert [c.name for c in next_state(state, liege).concepts] == ["jeunes", "Belgique", "Liège"]

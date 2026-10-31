@@ -350,6 +350,7 @@ def _without_dates(concept: Concept) -> Concept:
     return Concept(concept.name, terms) if terms else concept
 
 
+STEM_LENGTH = 6
 _DATE_LINKS = {
     "et", "en", "and", "au", "du", "le", "de", "to", "tot",
     "derniers", "dernieres", "laatste", "last", "past",
@@ -415,20 +416,55 @@ PLACE_NAMES = (
     "louviere louvière",
     "bastogne",
     "zaventem",
+)
+# Beyond Belgium: « l'accident de train en Espagne », with no place to hold, let in a mine in
+# Colombia and a storm in Belgium by their meaning (bench of 2026-10-31).
+WORLD_PLACE_NAMES = (
     "france frankrijk",
     "europe europa europeen europeenne europese",
+    "espagne spanje spain espagnol espagnole espagnols",
+    "italie italia italy italien italienne",
+    "allemagne duitsland germany allemand allemande",
+    "pays-bas nederland netherlands",
+    "royaume-uni grande-bretagne britannique britanniques",
+    "etats-unis usa americain americaine americains",
+    "chine china chinois chinoise",
+    "russie rusland russia russe russes",
+    "ukraine oekraine ukrainien ukrainienne ukrainiens",
+    "japon japan japonais japonaise",
+    "inde india indien indienne",
+    "israel israelien israelienne",
+    "iran iranien iranienne",
+    "portugal portugais portugaise",
+    "grece griekenland greece grec grecque",
+    "suisse zwitserland switzerland",
+    "turquie turkije turkey turc turque",
+    "pologne polen poland polonais polonaise",
+    "canada canadien canadienne",
+    "bresil brazilie brazil bresilien bresilienne",
+    "mexique mexico mexicain mexicaine",
+    "colombie colombia colombien colombienne",
 )
-PLACES = {word: line.split()[0] for line in PLACE_NAMES for word in line.split()}
+PLACES = {
+    word: line.split()[0] for line in (*PLACE_NAMES, *WORLD_PLACE_NAMES) for word in line.split()
+}
 # A country holds its regions and towns: « uniquement en Belgique » lost GSK, whose job
 # losses were « à Wavre » (bench, 2026-10-29).
 COUNTRY_PARTS = {
-    "belgique": {
-        line.split()[0] for line in PLACE_NAMES if line.split()[0] not in ("france", "europe")
-    },
+    "belgique": {line.split()[0] for line in PLACE_NAMES},
 }
 
 
 PRONOUN_SUFFIX = re.compile(r"(-t)?-(il|elle|ils|elles|on)$")
+# The verb of a question names nothing: « Que prévoit la réforme des pensions en Belgique ? »
+# searched « prévoit » and lost Belgium, « Quelles cyberattaques utilisent l'IA ? » « utilisent »
+# (bench of 2026-10-31).
+ASKING_VERB = re.compile(r"^ *(?:(?:que|qu'en|wat) (\w+)|(?:quels?|quelles?) \w+ (\w+ent)\b)")
+
+
+def _asking_verb(question: str) -> str | None:
+    found = ASKING_VERB.match(_asked(question))
+    return None if found is None else found.group(1) or found.group(2)
 
 
 def _named(question: str) -> list[str]:
@@ -438,7 +474,7 @@ def _named(question: str) -> list[str]:
     for words_of_period, _ in PERIOD_WORDS:
         asked = asked.replace(f" {words_of_period} ", " ")
     asked = MONTH_PERIOD.sub(" ", asked)
-    language = {w for names in LANGUAGE_WORDS.values() for w in names}
+    language = {w for names in LANGUAGE_WORDS.values() for w in names} | {_asking_verb(question)}
     # Short names written in capitals name something too: « MR », « F1 », « GSK ».
     acronyms = {folded(w) for w in re.findall(r"[\w-]+", question) if len(w) >= 2 and w.isupper()}
     out = []
@@ -600,6 +636,29 @@ def _likeness(term: str, part: str) -> int:
     return best
 
 
+def _acronym_apart(question: str, concept: Concept) -> tuple[Concept, ...]:
+    """An acronym the question writes is a thing of its own, also when the model made it a mere
+    term of its subject: « grèves » with the terms « grèves, SNCB, stakingen » searched strikes OR
+    the SNCB: a Dacia Striker, a hunger strike in Tanzania (bench of 2026-10-31). Unless it is the
+    initials of the concept: « IA » of « intelligence artificielle »."""
+    initials = "".join(w[0] for w in folded(concept.name).split() if len(w) > 2)
+    terms = {folded(t) for t in concept.terms}
+    for word in re.findall(r"[\w-]+", question):
+        key = folded(word)
+        apart = (
+            len(word) >= 2
+            and word.isupper()
+            and key not in ROMAN
+            and key in terms
+            and key != initials
+            and key not in _words(concept.name).split()
+        )
+        if apart:
+            rest = tuple(t for t in concept.terms if key not in _words(t).split())
+            return (Concept(concept.name, rest or (concept.name,)), Concept(word, (word,)))
+    return (concept,)
+
+
 def split_mixed(concept: Concept) -> tuple[Concept, ...]:
     """A concept that names two things, as one concept for each. « budget de la région
     Bruxelles-Capitale » with the terms « budget » and « Bruxelles-Capitale » searched budget OR
@@ -635,6 +694,10 @@ def split_mixed(concept: Concept) -> tuple[Concept, ...]:
         elif acronyms and not any(_words(a) in _words(term) for a in acronyms):
             # « stakingen » is like no part: it names the subject, not the acronym.
             groups[subject].append(term)
+        elif not _place_words(term) and any(_place_words(p) for p in parts):
+            # « begroting » is like no part: the subject of « budget de Bruxelles-Capitale », not
+            # its place. Dropped, it left out the Brussels budget of Bruzz (Joël, 2026-10-30).
+            groups[next((p for p in parts if not _place_words(p)), subject)].append(term)
     return tuple(Concept(p, _clean(groups[p])) for p in parts)
 
 
@@ -660,7 +723,7 @@ def _place_names(places: set[str]) -> list[str]:
     """Every name of the places, in the three languages, as the press writes them: « Brussel »
     and « Bruxelles » for « Bruxelles-Capitale » (bench, 2026-10-30: Bruzz wrote « Brussel »
     and « begroting », and the Reporter searched « Brussels-Capital »)."""
-    lines = [line.split() for line in PLACE_NAMES]
+    lines = [line.split() for line in (*PLACE_NAMES, *WORLD_PLACE_NAMES)]
     names = [w for line in lines if line[0] in places for w in line]
     parts = {p for place in places for p in COUNTRY_PARTS.get(place, ())} - places
     # The parts of a country after its own names: the first name of each, then the second.
@@ -686,9 +749,37 @@ def _place_terms(places: set[str], own: list[str]) -> tuple[str, ...]:
 
 def _without_place(term: str) -> str:
     """A term without its place words and the little words they leave: « hôpitaux en
-    Flandre » is « hôpitaux », « Vlaamse ziekenhuizen » is « ziekenhuizen »."""
-    words = [w for w in term.split() if not _place_words(w) and folded(w) not in PLACE_LINKS]
+    Flandre » is « hôpitaux », « Vlaamse ziekenhuizen » is « ziekenhuizen ». A little word away
+    from the place stays: « accident de train en Espagne » is « accident de train »."""
+    words: list[str] = []
+    after_place = False
+    for word in term.split():
+        if _place_words(word):
+            while words and folded(words[-1]) in PLACE_LINKS:
+                words.pop()
+            after_place = True
+        elif not (after_place and folded(word) in PLACE_LINKS):
+            words.append(word)
+            after_place = False
+    while words and folded(words[0]) in PLACE_LINKS:
+        words.pop(0)
+    while words and folded(words[-1]) in PLACE_LINKS:
+        words.pop()
     return " ".join(words)
+
+
+def is_place(concept: Concept) -> bool:
+    """A concept that is only a place: what a set must hold, whatever found it."""
+    return bool(_place_words(concept.name)) and not _without_place(concept.name)
+
+
+# « bruxelles capitale », without its hyphen, left « budget capitale » once the place was taken
+# out of the subject: the budget of the Region was searched as that phrase (Joël, 2026-10-30).
+_BRUSSELS_REGION = re.compile(r"\b(bruxelles)\s+(capitale)\b", re.IGNORECASE)
+
+
+def _hyphenated(text: str) -> str:
+    return _BRUSSELS_REGION.sub(r"\1-\2", text)
 
 
 def placed(question: str, concept: Concept) -> tuple[Concept, ...]:
@@ -892,7 +983,14 @@ def guarded(
       week », which found every week-end of the Veille);
     - a concept the question names by its name searches that name first: « jeux vidéo » came
       with « console, PC, mobile » and not « jeux vidéo » itself (Joël, 2026-10-25)."""
-    translated = replace(translated, concepts=tuple(_not_new(c) for c in translated.concepts))
+    question = _hyphenated(question)
+    translated = replace(
+        translated,
+        concepts=tuple(
+            _not_new(Concept(_hyphenated(c.name), tuple(_hyphenated(t) for t in c.terms)))
+            for c in translated.concepts
+        ),
+    )
     asked = PERIOD_COUNT.sub(" ", _without_dates_named(_asked(question)))
     for words_of_period, _ in PERIOD_WORDS:
         asked = asked.replace(f" {words_of_period} ", " ")
@@ -918,11 +1016,13 @@ def guarded(
     proposed = tuple(
         _without_dates(placed_part)
         for c in map(_seen, translated.concepts)
-        for part in split_mixed(c)
+        for apart in _acronym_apart(question, c)
+        for part in split_mixed(apart)
         for placed_part in placed(question, part)
         # A concept named by a word of the question that names nothing (« parlant »), also
         # once split (« nouveautés » of « nouveautés Apple »).
         if folded(placed_part.name) not in QUESTION_WORDS
+        and folded(placed_part.name) != _asking_verb(question)
     )
     # The same concept twice (« GTA » and « GTA »): once.
     proposed = tuple({folded(c.name): c for c in reversed(proposed)}.values())[::-1]
@@ -947,7 +1047,15 @@ def guarded(
         subject = kept_concepts or tuple(c for c in proposed[:1] if not _of_period(c))
         kept_concepts = (*subject, *(Concept(n, (n,)) for n in names[:2]))[:3]
         missing = unsearched(question, list(kept_concepts))
-    if dropped and missing and kept_concepts and not names:
+    left_places = [w for w in missing if is_place(Concept(w, (w,)))]
+    if left_places and not names and translated.operation is not Operation.RESTREINDRE:
+        # A place the question names is what the set must hold (is_place), whatever the model
+        # searched: « Le conducteur du train en Espagne… ».
+        subject = kept_concepts or tuple(c for c in proposed[:1] if not _of_period(c))
+        place = Concept(left_places[0], _place_terms(_place_words(left_places[0]), left_places[:1]))
+        kept_concepts = (*subject, place)[:3]
+        missing = unsearched(question, list(kept_concepts))
+    elif dropped and missing and kept_concepts and not names:
         # The model named the subject otherwise (« éducation » for « enseignement »): its
         # concept comes back, led by the word of the question (Joël, 2026-10-29).
         word = missing[0]
@@ -996,6 +1104,13 @@ def guarded(
     return kept
 
 
+def _replaces_place(new: Concept, held: Concept) -> bool:
+    if not is_place(new) or not is_place(held):
+        return False
+    parts = {p for place in _place_words(held.name) for p in COUNTRY_PARTS.get(place, ())}
+    return not _place_words(new.name) <= parts
+
+
 def next_state(state: State, translated: Translated) -> State:
     """The concepts and language after the operation; the set follows them, without a model."""
     proposed = translated.concepts
@@ -1031,10 +1146,15 @@ def next_state(state: State, translated: Translated) -> State:
             added = [
                 c for c in proposed[:1] if not any(_same_concept(c, s) for s in state.concepts)
             ]
-            concepts = (*state.concepts, *added)[:CONCEPTS_MAX]
+            # Another place takes the place of the one held: « en Belgique », then « plutôt en
+            # France », asked for articles on both (bench of 2026-10-31). A part of it narrows.
+            gone = [added and _replaces_place(added[0], s) for s in state.concepts]
+            held = tuple(s for s, out in zip(state.concepts, gone, strict=True) if not out)
+            concepts = (*held, *added)[:CONCEPTS_MAX]
             return replace(
                 state,
                 concepts=concepts,
+                subject=state.subject - sum(1 for out in gone[: state.subject] if out),
                 language=translated.language or state.language,
                 days=translated.days or state.days,
                 # The period named last counts: dates, or a number of days.
@@ -1094,6 +1214,32 @@ def asks_sort(question: str) -> bool:
 def names_no_subject(question: str) -> bool:
     """A question of question words alone: « Les actualités ? »."""
     return not _named(question)
+
+
+# « les raisons de l'accident ? » after the train accident in Spain searched every accident:
+# rental cars, touchscreens (Joël, 2026-10-30). « de l'accident » names what the set is about.
+_OF_THE = re.compile(r"(?:\bde l'|\bdu |\bde la |\bdes )(\w+)")
+
+
+def _subject_stems(state: State) -> set[str]:
+    return {w[:STEM_LENGTH] for c in state.concepts for w in re.findall(r"\w{4,}", folded(c.name))}
+
+
+def refers_back(question: str, state: State) -> bool:
+    """A question that names the subject of the set as a complement, so of that very thing. Over
+    a period of its own it is a new search: « les actualités des jeux vidéo cette semaine »."""
+    if asked_period(question) is not None or asked_dates(question) is not None:
+        return False
+    stems = _subject_stems(state)
+    return any(w[:STEM_LENGTH] in stems for w in _OF_THE.findall(_asked(question)))
+
+
+def without_the_subject(concepts: tuple[Concept, ...], state: State) -> tuple[Concept, ...]:
+    """The concepts of such a question that are not the set's own: « cause », not « accident »."""
+    stems = _subject_stems(state)
+    return tuple(
+        c for c in concepts if not {w[:STEM_LENGTH] for w in folded(c.name).split()} & stems
+    )
 
 
 def only_a_period(question: str) -> bool:

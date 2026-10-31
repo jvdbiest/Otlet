@@ -400,6 +400,12 @@ def asks_dates(fields: BriefFields) -> bool:
     return bool(DATES_ASKED.search(f"{fields.instructions} {fields.angle}"))
 
 
+LENGTH_FAR = (0.7, 1.4)
+OTHER_SCRIPT = re.compile(
+    "[\u0400-\u04ff\u0590-\u06ff\u0900-\u0dff\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]"
+)
+
+
 def check_answer(
     raw: str,
     keys: list[str],
@@ -410,6 +416,8 @@ def check_answer(
     in_text: bool = False,
     dates: bool = False,
     copied_from: frozenset[tuple[str, ...]] = frozenset(),
+    source_letters: str | None = None,
+    length_goal: int | None = None,
 ) -> list[str]:
     """The errors of an answer, in words a model can act on; empty when it is usable. With
     `every_source`, a source of the brief no paragraph cites is an error too; with `crossing`
@@ -419,7 +427,10 @@ def check_answer(
     paragraph that repeats another: a model short of matter pads the length with copies.
     With `in_text`, so is an id of a source written in a text (title, lead, heading, paragraph).
     With `dates` (the author asked for them), so is a heading without a date. With `copied_from`
-    (the sequences of words of the sources), so is a long passage copied word for word."""
+    (the sequences of words of the sources), so is a long passage copied word for word. With
+    `source_letters` (the texts of the sources), so is a letter of another script that they do not
+    write: « l'hôpital de Tolè身 de Tolède » (bench of 2026-10-31). With `length_goal`, so is an
+    article far from it: asked for 1,200 words, every draft of the bench stayed near 550."""
     try:
         data = json.loads(raw)
     except json.JSONDecodeError as error:
@@ -529,6 +540,33 @@ def check_answer(
             " heading with the date of its event when its sources give it, otherwise with the date"
             " of its source (the date field of the source); never invent a date" + keep
         )
+    if length_goal is not None and sections:
+        written_words = len(str(data.get("lead") or "").split()) + sum(
+            len(str(paragraph.get("text") or "").split())
+            for section in sections
+            if isinstance(section, dict)
+            for paragraph in section.get("paragraphs") or []
+            if isinstance(paragraph, dict)
+        )
+        if written_words < LENGTH_FAR[0] * length_goal:
+            errors.append(
+                f"too short: {written_words} words, about {length_goal} are asked; develop what the"
+                " sources say with more of their facts, in new paragraphs or sections; never pad,"
+                " never repeat, never add what they do not say"
+            )
+        elif written_words > LENGTH_FAR[1] * length_goal:
+            errors.append(
+                f"too long: {written_words} words, about {length_goal} are asked; keep the facts"
+                " that matter most and cut the rest"
+            )
+    if source_letters is not None:
+        plain = json.dumps(data, ensure_ascii=False)
+        foreign = sorted(set(OTHER_SCRIPT.findall(plain)) - set(source_letters))
+        if foreign:
+            errors.append(
+                f"characters of another script: {' '.join(foreign)}; write every word in the"
+                " language of the article" + keep
+            )
     if copied:
         errors.append(
             f"passages copied word for word from a source: {', '.join(copied)}; write them in your"

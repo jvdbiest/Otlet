@@ -44,10 +44,15 @@ PLACES = tuple(
     frozenset(forms.strip().split(","))
     for forms in """
     france,francais,francaise,francaises,french
-    belgique,belge,belges,belgium,belgian
-    wallonie,wallon,wallonne,wallons,wallonia
-    flandre,flandres,flamand,flamande,flamands,flanders,flemish
-    bruxelles,bruxellois,bruxelloise,brussels
+    belgique,belge,belges,belgium,belgian,belgie,belgische
+    wallonie,wallon,wallonne,wallons,wallonia,waals,waalse
+    flandre,flandres,flamand,flamande,flamands,flanders,flemish,vlaanderen,vlaamse,vlaams
+    bruxelles,bruxellois,bruxelloise,brussels,brussel,brusselse
+    bruges,brugge
+    gand,gent,ghent
+    anvers,antwerpen,antwerp
+    liege,luik
+    louvain,leuven
     europe,europeen,europeenne,europeens,europeennes,european
     allemagne,allemand,allemande,allemands,allemandes,germany,german
     angleterre,anglais,anglaise,england,english
@@ -93,7 +98,8 @@ def fold(text: str) -> str:
 
 
 def _digits(text: str) -> str:
-    return re.sub(r"[\s  ]", "", text)
+    # « 47.000 euros » of a source is the « 47 000 € » of a draft (bench of 2026-10-31).
+    return re.sub(r"[\s  ]|(?<=\d)[.,](?=\d{3}(?!\d))", "", text)
 
 
 def start_of(paragraph: str) -> str:

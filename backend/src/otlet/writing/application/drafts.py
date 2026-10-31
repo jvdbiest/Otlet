@@ -39,6 +39,7 @@ from otlet.writing.domain.draft import (
     to_document,
     without_copied_passages,
     without_repeats,
+    written_date,
 )
 from otlet.writing.domain.guardrails import copied_sequences, copying, unsupported
 from otlet.writing.domain.vocabulary import choice
@@ -277,6 +278,8 @@ class Drafts:
                 in_text=first,
                 dates=first and dated,
                 copied_from=copied_from if first else frozenset(),
+                source_letters=" ".join(t.text for t in texts) if first else None,
+                length_goal=WORDS[fields.length] if first else None,
             )
             refusals.append(found)
             return found
@@ -392,7 +395,11 @@ def checked(raw: str, texts: Sequence[SourceText], fields: BriefFields) -> dict[
     sources = [f"{text.title}\n{text.text}" for text in texts]
     # Nor are the facts the author verified (ADR-0044 §10).
     verified = [f"{f.figure} {f.measure} {f.when} {f.where}" for f in fields.facts]
-    allowed = " ".join([fields.title, fields.angle, fields.instructions, *verified])
+    # Nor is the date of a source: the model receives it, and dates what it says by it.
+    dated = [
+        written_date(t.published_at, fields.language) for t in texts if t.published_at is not None
+    ]
+    allowed = " ".join([fields.title, fields.angle, fields.instructions, *verified, *dated])
     copied = copying(paragraphs, sources)
     return {
         "unsupported": [

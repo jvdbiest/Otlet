@@ -720,6 +720,7 @@
     "versionLabel": "Version {number} · {who} ({date}) ({words, plural, one {# mot} other {# mots}})",
     "byModel": "Version {number}, écrite par {model} ({provider}) le {date}",
     "byPerson": "Version {number}, la vôtre, d'après la version {based}, enregistrée le {date}",
+    "byPersonFirst": "Version {number}, la vôtre, enregistrée le {date}",
     "cut": "Le texte de ces sources a été raccourci pour tenir dans le modèle : {sources}.",
     "sources": "Sources",
     "failed": {
@@ -1343,6 +1344,36 @@
       "dutch": "Seulement en néerlandais",
       "french": "Seulement en français",
       "themes": "Quels sujets dominent ?"
+    },
+    "rebuild": {
+      "button": "Reconstituer",
+      "offer": "Comprendre une affaire complexe",
+      "help": "Pour une affaire suivie par plusieurs sources (budget, accident, tempête) : ce qui s'est passé, dans quel ordre, et si les sources concordent. Pour choisir la matière d'un brief, la liste des articles suffit. Comptez plusieurs minutes avec un modèle local.",
+      "pending": "Je reconstitue : tri, lecture par volet, puis analyse…",
+      "title": "Reconstitution",
+      "subjects": "Les principaux sujets",
+      "subjectsHelp": "Ces articles parlent de sujets indépendants : voici les principaux, repérés par votre modèle dans {read} articles lus sur {found}.",
+      "oneSubject": "Reconstituer ce sujet",
+      "inBrief": "En bref",
+      "facts": "{count, plural, one {Voir le fait et ses volets} other {Voir les # faits et leurs volets}}",
+      "chronology": "Chronologie",
+      "synthesis": "Synthèse",
+      "line": "Ligne",
+      "information": "Information",
+      "noLine": "Aucune ligne pour ce volet.",
+      "nothing": "Je ne trouve pas : aucun des {count} articles ne traite vraiment ce sujet.",
+      "flagged": "{count, plural, one {Une ligne à vérifier, écartée de l'analyse} other {# lignes à vérifier, écartées de l'analyse}}",
+      "analysis": "Voir l'analyse détaillée",
+      "confidence": {
+        "forte": "Confiance forte",
+        "moyenne": "Confiance moyenne",
+        "faible": "Confiance faible"
+      },
+      "noAnalysis": "Pas d'analyse : aucune ligne ne tient.",
+      "deduction": "Déduction :",
+      "unsupported": "Sans appui dans ses articles : {words}",
+      "byModel": "Écrit par votre modèle à partir des faits relevés dans {read} articles lus sur {found}. Les faits restent la référence.",
+      "failed": "Le modèle n'a pas tout fait : {error}"
     },
     "reading": {
       "button": "Vérifier en lisant",

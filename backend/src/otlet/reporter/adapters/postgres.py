@@ -2,6 +2,7 @@
 """The conversations of the Reporter on PostgreSQL, in the context of each workspace."""
 
 import json
+from dataclasses import asdict, replace
 from datetime import date, datetime
 from typing import Any
 from uuid import UUID, uuid4
@@ -18,10 +19,19 @@ from otlet.reporter.application.reporter import ANSWER_TURN, Conversation, Runni
 from otlet.reporter.domain.facts import Agreement, Article, Compared, Fact, FactLine
 from otlet.reporter.domain.questions import PROMPT_VERSION, Operation, State
 from otlet.reporter.domain.reading import Answer, Coverage, Reading, Round
+from otlet.reporter.domain.reconstitution import (
+    Confidence,
+    Facet,
+    RebuiltLine,
+    Reconstitution,
+    Sentence,
+    Subject,
+    SubjectArticle,
+)
 
 TURN_COLUMNS = (
     "id, position, question, status, operation, state, concepts, candidates, fact, verdicts,"
-    " reading, error, model, prompt_version, attempts, created_at, finished_at"
+    " reading, reconstitution, error, model, prompt_version, attempts, created_at, finished_at"
 )
 REQUESTED = json.dumps({"requested": True})
 
@@ -154,6 +164,56 @@ def _reading_json(reading: Reading | None) -> str | None:
     )
 
 
+def _reconstitution_json(rebuilt: Reconstitution | None) -> str | None:
+    if rebuilt is None:
+        return None
+    data = asdict(rebuilt)
+    data["confidence"] = None if rebuilt.confidence is None else rebuilt.confidence.value
+    return json.dumps(data)
+
+
+def _rebuilt_line(data: dict[str, Any]) -> RebuiltLine:
+    return RebuiltLine(**{**data, "to_check": tuple(data.get("to_check", ()))})
+
+
+def _read_sentences(rows: list[dict[str, Any]]) -> tuple[Sentence, ...]:
+    return tuple(
+        Sentence(s["text"], tuple(s["lines"]), s["deduction"], tuple(s["unsupported"]))
+        for s in rows
+    )
+
+
+def _reconstitution(data: dict[str, Any] | None) -> Reconstitution | None:
+    if data is None:
+        return None
+    level = data.get("confidence")
+    return Reconstitution(
+        requested=bool(data.get("requested")),
+        focus=data.get("focus", ""),
+        form=data.get("form", ""),
+        subjects=tuple(
+            Subject(
+                s["title"],
+                s["summary"],
+                tuple(SubjectArticle(**a) for a in s["articles"]),
+                tuple(s["unsupported"]),
+            )
+            for s in data.get("subjects", [])
+        ),
+        facets=tuple(Facet(**f) for f in data.get("facets", [])),
+        lines=tuple(_rebuilt_line(line) for line in data.get("lines", [])),
+        flagged=tuple(_rebuilt_line(line) for line in data.get("flagged", [])),
+        answer=_read_sentences(data.get("answer", [])),
+        sentences=_read_sentences(data.get("sentences", [])),
+        confidence=None if level is None else Confidence(level),
+        reasons=tuple(data.get("reasons", [])),
+        found=data.get("found", 0),
+        read=data.get("read", 0),
+        dropped=data.get("dropped", 0),
+        errors=tuple(data.get("errors", [])),
+    )
+
+
 def _reading(data: dict[str, Any] | None) -> Reading | None:
     if data is None:
         return None
@@ -210,6 +270,7 @@ def _turn(row: sa.Row[Any]) -> Turn:
             for key, v in row.verdicts.items()
         },
         reading=_reading(row.reading),
+        reconstitution=_reconstitution(row.reconstitution),
         error=row.error,
         model=row.model,
         prompt_version=row.prompt_version,
@@ -336,6 +397,29 @@ class PostgresReporterStore:
             )
         return _turn(row)
 
+    def request_reconstitution(
+        self, workspace_id: UUID, user_id: UUID, conversation_id: UUID, turn_id: UUID
+    ) -> Turn:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            row = connection.execute(
+                sa.text(
+                    "UPDATE reporter_turns SET status = 'pending', finished_at = NULL,"
+                    " reconstitution = CAST(:requested AS jsonb)"
+                    f" WHERE id = :id AND conversation_id = :conversation AND {here()}"
+                    f" RETURNING {TURN_COLUMNS}"
+                ),
+                {"id": turn_id, "conversation": conversation_id, "requested": REQUESTED},
+            ).one()
+            self._enqueue(
+                connection,
+                ANSWER_TURN,
+                workspace_id=str(workspace_id),
+                user_id=str(user_id),
+                conversation_id=str(conversation_id),
+                turn_id=str(turn_id),
+            )
+        return _turn(row)
+
     def request_reading(
         self, workspace_id: UUID, user_id: UUID, conversation_id: UUID, turn_id: UUID
     ) -> Turn:
@@ -393,39 +477,80 @@ class PostgresReporterStore:
             ).all()
         return [RunningTurn(r.conversation_id, r.id, r.question, r.created_at) for r in rows]
 
+    def add_prepared_turn(
+        self, workspace_id: UUID, user_id: UUID, conversation_id: UUID, turn: Turn
+    ) -> Turn:
+        new_id = uuid4()
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            connection.execute(
+                sa.text(
+                    "INSERT INTO reporter_turns (id, workspace_id, conversation_id, position,"
+                    " question, prompt_version) SELECT :id, :workspace, :conversation,"
+                    " coalesce(max(position), 0) + 1, :question, :version FROM reporter_turns"
+                    f" WHERE conversation_id = :conversation AND {here()}"
+                ),
+                {
+                    "id": new_id,
+                    "workspace": workspace_id,
+                    "conversation": conversation_id,
+                    "question": turn.question,
+                    "version": PROMPT_VERSION,
+                },
+            )
+            self._write_turn(connection, conversation_id, replace(turn, id=new_id))
+            row = connection.execute(
+                sa.text(f"SELECT {TURN_COLUMNS} FROM reporter_turns WHERE id = :id AND {here()}"),
+                {"id": new_id},
+            ).one()
+            self._enqueue(
+                connection,
+                ANSWER_TURN,
+                workspace_id=str(workspace_id),
+                user_id=str(user_id),
+                conversation_id=str(conversation_id),
+                turn_id=str(new_id),
+            )
+        return _turn(row)
+
     def save_turn(self, workspace_id: UUID, conversation_id: UUID, turn: Turn) -> None:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            self._write_turn(connection, conversation_id, turn)
+
+    @staticmethod
+    def _write_turn(connection: sa.Connection, conversation_id: UUID, turn: Turn) -> None:
         verdicts = {
             str(key): {"verdict": j.verdict.value, "reason": j.reason, "by_model": j.by_model}
             for key, j in turn.verdicts.items()
         }
-        with workspace_transaction(self._engine, workspace_id) as connection:
-            connection.execute(
-                sa.text(
-                    "UPDATE reporter_turns SET status = :status, operation = :operation,"
-                    " state = CAST(:state AS jsonb), concepts = CAST(:concepts AS jsonb),"
-                    " candidates = CAST(:candidates AS jsonb), fact = CAST(:fact AS jsonb),"
-                    " verdicts = CAST(:verdicts AS jsonb), reading = CAST(:reading AS jsonb),"
-                    " error = :error, model = :model,"
-                    " attempts = CAST(:attempts AS jsonb), finished_at = :finished"
-                    f" WHERE id = :id AND conversation_id = :conversation AND {here()}"
-                ),
-                {
-                    "id": turn.id,
-                    "conversation": conversation_id,
-                    "status": turn.status,
-                    "operation": None if turn.operation is None else turn.operation.value,
-                    "state": _state_json(turn.state),
-                    "concepts": _concepts_json(turn.concepts, turn.term_counts),
-                    "candidates": _candidates_json(turn.candidates),
-                    "fact": _fact_json(turn.fact),
-                    "verdicts": json.dumps(verdicts),
-                    "reading": _reading_json(turn.reading),
-                    "error": turn.error,
-                    "model": turn.model,
-                    "attempts": json.dumps(turn.attempts),
-                    "finished": turn.finished_at,
-                },
-            )
+        connection.execute(
+            sa.text(
+                "UPDATE reporter_turns SET status = :status, operation = :operation,"
+                " state = CAST(:state AS jsonb), concepts = CAST(:concepts AS jsonb),"
+                " candidates = CAST(:candidates AS jsonb), fact = CAST(:fact AS jsonb),"
+                " verdicts = CAST(:verdicts AS jsonb), reading = CAST(:reading AS jsonb),"
+                " reconstitution = CAST(:reconstitution AS jsonb),"
+                " error = :error, model = :model,"
+                " attempts = CAST(:attempts AS jsonb), finished_at = :finished"
+                f" WHERE id = :id AND conversation_id = :conversation AND {here()}"
+            ),
+            {
+                "id": turn.id,
+                "conversation": conversation_id,
+                "status": turn.status,
+                "operation": None if turn.operation is None else turn.operation.value,
+                "state": _state_json(turn.state),
+                "concepts": _concepts_json(turn.concepts, turn.term_counts),
+                "candidates": _candidates_json(turn.candidates),
+                "fact": _fact_json(turn.fact),
+                "verdicts": json.dumps(verdicts),
+                "reading": _reading_json(turn.reading),
+                "reconstitution": _reconstitution_json(turn.reconstitution),
+                "error": turn.error,
+                "model": turn.model,
+                "attempts": json.dumps(turn.attempts),
+                "finished": turn.finished_at,
+            },
+        )
 
     def articles(self, workspace_id: UUID, item_ids: list[UUID]) -> list[Article]:
         with workspace_transaction(self._engine, workspace_id) as connection:

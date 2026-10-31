@@ -551,3 +551,90 @@ def test_the_news_of_the_day_are_the_articles_of_the_day(
     answer(worker, context, conversation.id, more.id)
     found = api.get(context, conversation.id)
     assert found is not None and found.turns[1].operation is Operation.EXCLURE
+
+
+def test_without_an_article_that_treats_the_subject_the_reporter_does_not_find(
+    reporter: tuple[Reporter, Reporter, WorkspaceContext, sa.Engine],
+) -> None:
+    """The control of the bench (ADR-0044 §13): « proche » never makes the matter."""
+    api, worker, context, engine = reporter
+    store = PostgresReporterStore(engine)
+    conversation = api.start(context, "Les articles sur la tempête Austen")
+    answer(worker, context, conversation.id, conversation.turns[0].id)
+    found = api.get(context, conversation.id)
+    assert found is not None
+    turn = found.turns[0]
+    near = Judged(Verdict.PROCHE, "proche", True)
+    store.save_turn(
+        context.workspace_id,
+        conversation.id,
+        replace(turn, verdicts={c.id: near for c in turn.candidates}),
+    )
+    asked = api.reconstitute(context, conversation.id, turn.id)
+    assert asked.status == "pending" and asked.reconstitution is not None
+    assert [t.question for t in api.running(context)] == [turn.question]
+    model = FakeModel()
+    answer(
+        Reporter(store, PostgresAssistantStore(engine), model),
+        context,
+        conversation.id,
+        turn.id,
+    )
+    found = api.get(context, conversation.id)
+    assert found is not None
+    done = found.turns[0]
+    assert done.status == "done" and done.reconstitution is not None
+    assert (done.reconstitution.requested, done.reconstitution.lines) == (False, ())
+    assert (done.reconstitution.found, done.reconstitution.read) == (3, 0)
+    assert model.asked == []  # nothing to read, nothing asked
+
+
+def test_a_reconstitution_cancelled_leaves_the_answer_as_it_was(
+    reporter: tuple[Reporter, Reporter, WorkspaceContext, sa.Engine],
+) -> None:
+    api, worker, context, _ = reporter
+    conversation = api.start(context, "Les articles sur la tempête Austen")
+    answer(worker, context, conversation.id, conversation.turns[0].id)
+    turn = conversation.turns[0]
+    api.reconstitute(context, conversation.id, turn.id)
+    with pytest.raises(ReporterError):
+        api.reconstitute(context, conversation.id, turn.id)
+    cancelled = api.cancel(context, conversation.id)
+    assert cancelled is not None
+    ended = cancelled.turns[0]
+    assert (ended.status, ended.reconstitution, len(ended.candidates)) == ("done", None, 3)
+
+
+def test_a_subject_of_a_panorama_is_reconstituted_on_its_articles(
+    reporter: tuple[Reporter, Reporter, WorkspaceContext, sa.Engine],
+) -> None:
+    from otlet.reporter.domain.reconstitution import Reconstitution, Subject, SubjectArticle
+
+    api, worker, context, engine = reporter
+    store = PostgresReporterStore(engine)
+    conversation = api.start(context, "Les articles sur la tempête Austen")
+    answer(worker, context, conversation.id, conversation.turns[0].id)
+    found = api.get(context, conversation.id)
+    assert found is not None
+    turn = found.turns[0]
+    item = turn.candidates[0]
+    subject = Subject("Un sujet", "Son résumé.", (SubjectArticle(str(item.id), "ladh"),))
+    panorama = Reconstitution(form="panorama", subjects=(subject,), found=3, read=3)
+    store.save_turn(context.workspace_id, conversation.id, replace(turn, reconstitution=panorama))
+    with pytest.raises(ReporterError):
+        api.reconstitute_subject(context, conversation.id, turn.id, 5)
+    asked = api.reconstitute_subject(context, conversation.id, turn.id, 0)
+    assert asked.status == "pending" and asked.question == "Reconstituer : Un sujet"
+    assert [c.id for c in asked.candidates] == [item.id]
+    assert asked.reconstitution is not None and asked.reconstitution.focus == "Un sujet"
+    # The model is asked to sort and to read, never whether there are several subjects.
+    model = FakeModel()
+    model.fail = True
+    down = Reporter(store, PostgresAssistantStore(engine), model)
+    answer(down, context, conversation.id, asked.id)
+    found = api.get(context, conversation.id)
+    assert found is not None
+    done = found.turns[1]
+    assert done.status == "done" and done.reconstitution is not None
+    assert done.reconstitution.focus == "Un sujet" and done.reconstitution.form != "panorama"
+    assert found.turns[0].reconstitution == panorama

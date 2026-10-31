@@ -158,11 +158,13 @@ export function ArticleVersions({
                 provider: shown.provider_kind ?? "",
                 date: formatDate(shown.created_at),
               })
-            : t("draft.byPerson", {
-                number: shown.number,
-                based: shown.based_on ?? "?",
-                date: formatDate(shown.updated_at),
-              })}
+            : shown.based_on === null
+              ? t("draft.byPersonFirst", { number: shown.number, date: formatDate(shown.updated_at) })
+              : t("draft.byPerson", {
+                  number: shown.number,
+                  based: shown.based_on,
+                  date: formatDate(shown.updated_at),
+                })}
         </span>
       </div>
       {shown.context_overflow && <Warning text={t("draft.overflow")} />}

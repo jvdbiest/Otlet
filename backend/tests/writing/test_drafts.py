@@ -263,7 +263,7 @@ def test_a_draft_becomes_a_version_of_the_article_of_the_brief(world: World) -> 
     ]
     # What was sent: the sources as data, numbered in the order of the brief, their ids
     # enumerated in the schema; the call went to /v1 although the address was given without.
-    sent = world.fake.requests[-1]
+    sent = world.fake.requests[0]
     assert sent["path"] == "/v1/chat/completions"
     user = sent["body"]["messages"][-1]["content"]
     assert user.index("[S1] Article de journal") < user.index("[S2] Article de agence")

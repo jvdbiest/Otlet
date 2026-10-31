@@ -44,10 +44,10 @@ PLACES = tuple(
     frozenset(forms.strip().split(","))
     for forms in """
     france,francais,francaise,francaises,french
-    belgique,belge,belges,belgium,belgian
-    wallonie,wallon,wallonne,wallons,wallonia
-    flandre,flandres,flamand,flamande,flamands,flanders,flemish
-    bruxelles,bruxellois,bruxelloise,brussels
+    belgique,belge,belges,belgium,belgian,belgie,belgische
+    wallonie,wallon,wallonne,wallons,wallonia,waals,waalse
+    flandre,flandres,flamand,flamande,flamands,flanders,flemish,vlaanderen,vlaamse,vlaams
+    bruxelles,bruxellois,bruxelloise,brussels,brussel,brusselse
     bruges,brugge
     gand,gent,ghent
     anvers,antwerpen,antwerp

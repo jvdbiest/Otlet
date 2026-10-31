@@ -452,3 +452,16 @@ def test_the_verified_facts_are_given_as_data_and_respected() -> None:
     assert user.index("</verified_facts>") < user.index("<sources>")
     alone = messages(BriefFields(title="Binance", item_ids=(item,)), sources)[1][1]
     assert "verified_facts" not in alone
+
+
+def test_an_article_far_from_its_length_and_a_letter_of_another_script_are_sent_back() -> None:
+    keys = ["S1", "S2"]
+    good = check_answer(answer(), keys)
+    assert not good
+    too_short = check_answer(answer(), keys, length_goal=1200)
+    assert too_short and too_short[0].startswith("too short")
+    too_long = check_answer(answer(), keys, length_goal=1)
+    assert too_long and too_long[0].startswith("too long")
+    tainted = answer(lead="Un roi à l'hôpital de Tolè身 de Tolède, un texte assez long.")
+    assert "another script" in check_answer(tainted, keys, source_letters="")[0]
+    assert not check_answer(tainted, keys, source_letters="身")

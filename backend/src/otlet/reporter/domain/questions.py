@@ -459,7 +459,7 @@ PRONOUN_SUFFIX = re.compile(r"(-t)?-(il|elle|ils|elles|on)$")
 # The verb of a question names nothing: « Que prévoit la réforme des pensions en Belgique ? »
 # searched « prévoit » and lost Belgium, « Quelles cyberattaques utilisent l'IA ? » « utilisent »
 # (bench of 2026-10-31).
-ASKING_VERB = re.compile(r"^ *(?:(?:que|qu'en) (\w+)|(?:quels?|quelles?) \w+ (\w+ent)\b)")
+ASKING_VERB = re.compile(r"^ *(?:(?:que|qu'en|wat) (\w+)|(?:quels?|quelles?) \w+ (\w+ent)\b)")
 
 
 def _asking_verb(question: str) -> str | None:
@@ -634,6 +634,29 @@ def _likeness(term: str, part: str) -> int:
                 n += 1
             best = max(best, n)
     return best
+
+
+def _acronym_apart(question: str, concept: Concept) -> tuple[Concept, ...]:
+    """An acronym the question writes is a thing of its own, also when the model made it a mere
+    term of its subject: « grèves » with the terms « grèves, SNCB, stakingen » searched strikes OR
+    the SNCB: a Dacia Striker, a hunger strike in Tanzania (bench of 2026-10-31). Unless it is the
+    initials of the concept: « IA » of « intelligence artificielle »."""
+    initials = "".join(w[0] for w in folded(concept.name).split() if len(w) > 2)
+    terms = {folded(t) for t in concept.terms}
+    for word in re.findall(r"[\w-]+", question):
+        key = folded(word)
+        apart = (
+            len(word) >= 2
+            and word.isupper()
+            and key not in ROMAN
+            and key in terms
+            and key != initials
+            and key not in _words(concept.name).split()
+        )
+        if apart:
+            rest = tuple(t for t in concept.terms if key not in _words(t).split())
+            return (Concept(concept.name, rest or (concept.name,)), Concept(word, (word,)))
+    return (concept,)
 
 
 def split_mixed(concept: Concept) -> tuple[Concept, ...]:
@@ -993,7 +1016,8 @@ def guarded(
     proposed = tuple(
         _without_dates(placed_part)
         for c in map(_seen, translated.concepts)
-        for part in split_mixed(c)
+        for apart in _acronym_apart(question, c)
+        for part in split_mixed(apart)
         for placed_part in placed(question, part)
         # A concept named by a word of the question that names nothing (« parlant »), also
         # once split (« nouveautés » of « nouveautés Apple »).

@@ -279,6 +279,7 @@ class Drafts:
                 dates=first and dated,
                 copied_from=copied_from if first else frozenset(),
                 source_letters=" ".join(t.text for t in texts) if first else None,
+                length_goal=WORDS[fields.length] if first else None,
             )
             refusals.append(found)
             return found

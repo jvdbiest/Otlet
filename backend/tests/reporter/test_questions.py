@@ -602,3 +602,17 @@ def test_a_place_of_the_world_is_a_concept_of_its_own() -> None:
     alone = Concept("Belgique", ("Belgique",))
     belgium = guarded("en Belgique", Translated(Operation.CHERCHER, (alone,), None))
     assert not {"espagne", "france"} & {t.lower() for t in belgium.concepts[0].terms}
+
+
+def test_an_acronym_of_the_question_is_a_concept_of_its_own() -> None:
+    strikes = Concept("grèves", ("grèves", "SNCB", "stakingen"))
+    kept = guarded("Les grèves à la SNCB", Translated(Operation.CHERCHER, (strikes,), None))
+    assert [(c.name, c.terms) for c in kept.concepts] == [
+        ("grèves", ("grèves", "stakingen")),
+        ("SNCB", ("SNCB",)),
+    ]
+    # Its initials: the same thing.
+    ai = Concept("intelligence artificielle", ("intelligence artificielle", "IA"))
+    question = "L'IA et l'intelligence artificielle"
+    kept = guarded(question, Translated(Operation.CHERCHER, (ai,), None))
+    assert [c.name for c in kept.concepts] == ["intelligence artificielle"]

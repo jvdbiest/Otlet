@@ -12,8 +12,8 @@ which is right, and weak on the start and end of a storm, which the confidence s
 
 import json
 import re
-from dataclasses import dataclass, replace
-from datetime import datetime, timedelta
+from dataclasses import dataclass
+from datetime import date, datetime, timedelta
 from enum import StrEnum
 from typing import Any
 
@@ -219,8 +219,9 @@ def chosen_evenly(items: list[Any]) -> list[Any]:
 
 def numbered_articles(articles: list[Article], dates: dict[str, datetime]) -> str:
     return "\n\n".join(
-        # The day only: « 23/10 20:52 » was taken for the end of a storm, not of the article.
-        f"[{n}] {a.publisher}, article du {dates[a.item_id]:%d/%m} — {a.text[:BODY_CHARS]}"
+        # The day, not the hour: « 23/10 20:52 » was taken for the end of a storm. With its year:
+        # without it, a model dated articles of 2026 from « octobre 2023 » (Joël, 2026-10-31).
+        f"[{n}] {a.publisher}, article du {dates[a.item_id]:%d/%m/%Y} — {a.text[:BODY_CHARS]}"
         for n, a in enumerate(articles, 1)
     )
 
@@ -232,17 +233,17 @@ def lines_message(question: str, facet: Facet, numbered: str) -> str:
     )
 
 
-def analysis_message(question: str, lines: tuple[RebuiltLine, ...]) -> str:
+def analysis_message(question: str, lines: tuple[RebuiltLine, ...], today: date) -> str:
     listed = "\n".join(
         f"L{n} ({line.publisher}, article du {_day(line.dated)}) {line.information}"
         f" | quand : {line.when} | où : {line.where}"
         for n, line in enumerate(lines, 1)
     )
-    return f"Question : {question}\n\nLignes :\n{listed}"
+    return f"Nous sommes le {today:%d/%m/%Y}.\n\nQuestion : {question}\n\nLignes :\n{listed}"
 
 
 def _day(dated: str) -> str:
-    return datetime.fromisoformat(dated).strftime("%d/%m") if dated else "?"
+    return datetime.fromisoformat(dated).strftime("%d/%m/%Y") if dated else "?"
 
 
 # Words that may start with a capital without being a name.
@@ -456,6 +457,7 @@ LINE_NUMBERS = re.compile(
 # write the whole answer in the first, then say it again in the second (bench, 2026-10-31).
 ANSWER_ENOUGH = 2
 OUR_WORD = re.compile(r"\b([Ll]es) lignes\b")
+A_YEAR = re.compile(r"\b(?:19|20)\d\d\b")
 
 
 def read_analysis(
@@ -467,8 +469,7 @@ def read_analysis(
         written = sum(len(re.findall(r"[.!?…](?:\s|$)", s.text)) for s in answer)
         if written >= ANSWER_ENOUGH:
             break
-        # « Lignes » is a word of the prompt: the reader knows articles.
-        answer.append(replace(sentence, text=OUR_WORD.sub(r"\1 articles lus", sentence.text)))
+        answer.append(sentence)
     return tuple(answer), _sentences(raw, "phrases", lines, articles)
 
 
@@ -483,6 +484,8 @@ def _sentences(
         if not isinstance(row, dict) or not str(row.get("texte", "")).strip():
             continue
         text = " ".join(LINE_NUMBERS.sub("", str(row["texte"])).split())
+        # « Lignes » is a word of the prompt: the reader knows articles.
+        text = OUR_WORD.sub(r"\1 articles lus", text)
         numbers = tuple(
             n
             for n in row.get("lignes") or []
@@ -495,8 +498,15 @@ def _sentences(
             for line in cited
         )
         year = datetime.fromisoformat(cited[0].dated).year if cited else 0
+        # A year stands on the lines themselves and their dates: an article that mentions 2023 in
+        # passing does not date what the sentence says.
+        said = " ".join(
+            f"{line.information} {line.when} {line.where} {line.passage} {line.dated}"
+            for line in cited
+        )
+        years = [y for y in A_YEAR.findall(text) if y not in said]
         missing = (
-            [*unsupported(text, support), *wrong_days(text, year)]
+            [*unsupported(text, support), *wrong_days(text, year), *years]
             if cited
             else ["aucune ligne citée"]
         )

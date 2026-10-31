@@ -193,3 +193,18 @@ def test_the_answer_speaks_of_articles() -> None:
     one = {"texte": "Les lignes ne disent pas la fin.", "lignes": [1]}
     answer, _ = read_analysis(json.dumps({"reponse": [one], "phrases": []}), (line,), [ARTICLE])
     assert answer[0].text == "Les articles lus ne disent pas la fin."
+
+
+def test_the_year_is_told_and_a_year_the_lines_do_not_hold_is_flagged() -> None:
+    from otlet.reporter.domain.reconstitution import analysis_message, numbered_articles
+
+    line = RebuiltLine(1, "a", "La DH", DAY.isoformat(), "Quatre blessés", "", "", "Quatre")
+    message = analysis_message("Combien ?", (line,), DAY.date())
+    assert "Nous sommes le 23/10/2026." in message and "article du 23/10/2026" in message
+    assert "article du 23/10/2026" in numbered_articles([ARTICLE], {"a": DAY})
+    old = Article("a", "La DH", TEXT + " Depuis 2023, rien de tel.")
+    wrong = {"texte": "Les articles datent de 2023.", "lignes": [1]}
+    right = {"texte": "Les articles datent de 2026.", "lignes": [1]}
+    raw = json.dumps({"reponse": [wrong, right], "phrases": []})
+    answer, _ = read_analysis(raw, (line,), [old])
+    assert answer[0].unsupported == ("2023",) and answer[1].unsupported == ()

@@ -699,7 +699,7 @@ class Reporter:
             raw = self._ask(
                 user_id,
                 ANALYSIS_SYSTEM,
-                analysis_message(question, lines),
+                analysis_message(question, lines, self._now().date()),
                 ANALYSIS_SCHEMA,
                 check_analysis,
                 FACT_OUTPUT_TOKENS,

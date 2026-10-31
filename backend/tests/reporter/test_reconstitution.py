@@ -125,6 +125,9 @@ def test_the_confidence_is_computed() -> None:
     one = (line(1, "A"), line(1, "B"), line(2, "A"))
     level, reasons = confidence("chronologie", facets, one, [])
     assert level is Confidence.MOYENNE and "ne tient qu'à une source (A)" in reasons[0]
+    three = (*facets, Facet("Impact", "?"))
+    level, reasons = confidence("synthèse", three, two, [])
+    assert level is Confidence.MOYENNE and "rien dans les articles lus" in reasons[0]
     empty = (line(1, "A"), line(1, "B"))
     assert confidence("synthèse", facets, empty, [])[0] is Confidence.FAIBLE
     # Figures diverge in a chronology; in a synthesis, they are two proposals.
@@ -208,3 +211,36 @@ def test_the_year_is_told_and_a_year_the_lines_do_not_hold_is_flagged() -> None:
     raw = json.dumps({"reponse": [wrong, right], "phrases": []})
     answer, _ = read_analysis(raw, (line,), [old])
     assert answer[0].unsupported == ("2023",) and answer[1].unsupported == ()
+
+
+def test_several_subjects_are_decided_from_the_articles() -> None:
+    from otlet.reporter.domain.reconstitution import read_subjects, several_subjects
+
+    raw = json.dumps(
+        {
+            "sujets": [
+                {"titre": "Austen", "resume": "Quatre personnes blessées.", "articles": [1, 2]},
+                {"titre": "Rien", "resume": "Sans article.", "articles": [9]},
+                {"titre": "Namur", "resume": "Une crue à Namur.", "articles": [1]},
+            ]
+        }
+    )
+    subjects = read_subjects(raw, [ARTICLE, OTHER])
+    assert [s.title for s in subjects] == ["Austen", "Namur"]
+    assert [a.publisher for a in subjects[0].articles] == ["La DH", "Bruzz"]
+    assert subjects[0].unsupported == () and subjects[1].unsupported == ("Namur",)
+    # One subject, or one that holds most of the articles: that subject.
+    assert not several_subjects(subjects[:1], 2)
+    assert not several_subjects(subjects, 2)
+    # Several, none of them holding most: a panorama.
+    assert several_subjects(subjects, 5)
+
+
+def test_an_answer_left_empty_comes_from_the_analysis() -> None:
+    from otlet.reporter.domain.reconstitution import check_analysis
+
+    assert check_analysis('{"reponse": [], "phrases": []}')
+    line = RebuiltLine(1, "a", "La DH", DAY.isoformat(), "Quatre blessés", "", "", "Quatre")
+    one = {"texte": "La tempête a touché Bruxelles.", "lignes": [1]}
+    answer, _ = read_analysis(json.dumps({"reponse": [], "phrases": [one]}), (line,), [ARTICLE])
+    assert [s.text for s in answer] == ["La tempête a touché Bruxelles."]

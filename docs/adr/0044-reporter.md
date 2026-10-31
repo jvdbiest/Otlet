@@ -82,6 +82,12 @@ Dans chaque banc, l'essentiel du progrès est venu de règles sans modèle, pas 
 
 15. **Règles ajoutées à l'usage** (2026-10-25, premiers essais de Joël) : seules des mesures identiques se comparent (une température minimale et une maximale ne divergent pas) ; une réponse de fait peut lire 15 articles de plus, ses lignes s'ajoutent et la concordance est recalculée ; au-delà de 20 articles non triés, le Reporter invite à trier avant le brief. Côté rédaction : des dates demandées par l'auteur sont annoncées au modèle et contrôlées après la génération, et une section recopiée par le modèle est retirée sans modèle.
 
+16. **Deux types de reconstitution** (Joël, 2026-10-31, après « Les découvertes en astronomie » : le bloc « En bref » résumait des actualités indépendantes sans les reconstituer). « Reconstituer » repère d'abord les sujets distincts dans les articles lus. Le choix se fait **sur les articles et non sur la question**, que le modèle classe mal (le budget fédéral et les péages lus comme des domaines, banc du 2026-10-31) :
+    - **plusieurs sujets indépendants**, aucun ne tenant 60 % des articles lus : un **panorama**, la liste des principaux sujets avec leurs sources, et « Reconstituer ce sujet » sur chacun, qui ouvre une question sur ses seuls articles ;
+    - **un sujet** : la reconstitution de §7, « En bref » en tête, puis les faits et l'analyse repliés.
+
+    **Confiance** : un volet vide n'est plus à lui seul une faiblesse, le modèle en invente (« Impact environnemental »). Elle devient moyenne, et faible quand la moitié des volets au moins sont vides, ou qu'un volet diverge.
+
 ## Conséquences
 
 - Le Reporter réutilise le moteur de l'Assistant de veille (concepts, glossaire, termes trop généraux, tri) ; il ne le recopie pas. L'Assistant reste le mode avancé.

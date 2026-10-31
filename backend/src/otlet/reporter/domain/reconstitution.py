@@ -67,9 +67,30 @@ class Sentence:
 
 
 @dataclass(frozen=True, slots=True)
+class SubjectArticle:
+    item_id: str
+    publisher: str
+
+
+@dataclass(frozen=True, slots=True)
+class Subject:
+    """One subject of a set about a whole domain, with the articles that speak of it."""
+
+    title: str
+    summary: str
+    articles: tuple[SubjectArticle, ...]
+    unsupported: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
 class Reconstitution:
     requested: bool = False
+    # « Reconstituer ce sujet »: the subject asked, in place of the question of the set.
+    focus: str = ""
+    # « chronologie », « synthèse », or « panorama » when the articles speak of several subjects
+    # (Joël, 2026-10-31: l'astronomie is no event to reconstitute).
     form: str = ""
+    subjects: tuple[Subject, ...] = ()
     facets: tuple[Facet, ...] = ()
     lines: tuple[RebuiltLine, ...] = ()
     flagged: tuple[RebuiltLine, ...] = ()
@@ -85,6 +106,38 @@ class Reconstitution:
     errors: tuple[str, ...] = ()
 
 
+SUBJECTS_SYSTEM = (
+    "Tu es le Reporter d'Otlet, un documentaliste. Les articles numérotés ont été trouvés pour la "
+    "question de l'auteur. Repère les sujets distincts dont ils parlent : un sujet est une "
+    "découverte, un événement, une annonce, une affaire. Tout ce qui touche à une même affaire "
+    "(ses causes, ses suites, les réactions, les critiques, ses différentes étapes) est un seul "
+    "sujet, même sous des angles différents. Ne relie jamais des sujets indépendants. Pour "
+    "chacun : un titre court, ce que les articles en disent en une ou deux phrases, sans rien "
+    "affirmer de "
+    "plus qu'eux, et les numéros des articles qui en parlent. Du sujet le plus repris au moins "
+    "repris, 8 au plus."
+)
+SUBJECTS_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "sujets": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "titre": {"type": "string"},
+                    "resume": {"type": "string"},
+                    "articles": {"type": "array", "items": {"type": "integer"}},
+                },
+                "required": ["titre", "resume", "articles"],
+            },
+        }
+    },
+    "required": ["sujets"],
+}
+# A set whose main subject holds this share of the articles read is about that subject: the rest
+# is what a search brings along.
+MAIN_SUBJECT_SHARE = 0.6
 FACETS_SYSTEM = (
     "Tu es le Reporter d'Otlet, un documentaliste. L'auteur demande une reconstitution à partir de "
     "plusieurs articles. Dis sa forme : « chronologie » (ce qui s'est passé, quand, où, comment "
@@ -170,7 +223,7 @@ _SENTENCE: dict[str, Any] = {
 ANALYSIS_SCHEMA: dict[str, Any] = {
     "type": "object",
     "properties": {
-        "reponse": {"type": "array", "items": _SENTENCE},
+        "reponse": {"type": "array", "items": _SENTENCE, "minItems": 1},
         "phrases": {"type": "array", "items": _SENTENCE},
     },
     "required": ["reponse", "phrases"],
@@ -196,7 +249,55 @@ def check_lines(raw: str) -> list[str]:
 
 
 def check_analysis(raw: str) -> list[str]:
-    return _list_of(raw, "reponse") + _list_of(raw, "phrases")
+    errors = _list_of(raw, "reponse") + _list_of(raw, "phrases")
+    if not errors and not json.loads(raw)["reponse"]:
+        errors.append("reponse: answer the question in two to four sentences")
+    return errors
+
+
+def check_subjects(raw: str) -> list[str]:
+    return _list_of(raw, "sujets")
+
+
+def subjects_message(question: str, numbered: str) -> str:
+    return f"Question : {question}\n\nArticles :\n{numbered}"
+
+
+def read_subjects(raw: str, articles: list[Article]) -> tuple[Subject, ...]:
+    """The subjects that stand on at least one article, each article in the first that names
+    it, and what a summary says that its articles do not."""
+    out: list[Subject] = []
+    for row in json.loads(raw)["sujets"]:
+        if not isinstance(row, dict) or not str(row.get("titre", "")).strip():
+            continue
+        numbers = dict.fromkeys(
+            n
+            for n in row.get("articles") or []
+            if isinstance(n, int) and not isinstance(n, bool) and 1 <= n <= len(articles)
+        )
+        if not numbers:
+            continue
+        cited = [articles[n - 1] for n in numbers]
+        summary = " ".join(str(row.get("resume", "")).split())
+        support = " ".join(a.text[:BODY_CHARS] for a in cited)
+        out.append(
+            Subject(
+                " ".join(str(row["titre"]).split()),
+                summary,
+                tuple(SubjectArticle(a.item_id, a.publisher) for a in cited),
+                tuple(unsupported(summary, support)),
+            )
+        )
+    return tuple(out)
+
+
+def several_subjects(subjects: tuple[Subject, ...], read: int) -> bool:
+    """Whether the articles speak of several independent subjects: decided from the articles, not
+    from the words of the question, which a model reads wrong (« le budget fédéral » as a domain,
+    bench of 2026-10-31). One subject that holds most of them is that subject."""
+    if len(subjects) < 2 or read == 0:
+        return False
+    return max(len(s.articles) for s in subjects) / read < MAIN_SUBJECT_SHARE
 
 
 def read_facets(raw: str) -> tuple[str, tuple[Facet, ...]]:
@@ -408,6 +509,7 @@ def confidence(
     two sources in disagreement."""
     level = Confidence.FORTE
     reasons = []
+    empty = 0
     for number, facet in enumerate(facets, 1):
         here = [line for line in lines if line.facet == number]
         sources = {line.publisher for line in here}
@@ -432,8 +534,12 @@ def confidence(
         _, compared = concordance(pairs, glossary)
         diverging = next((c for c in compared if not c.same), None)
         if not here:
-            reasons.append(f"« {facet.name} » : aucune source")
-            level = Confidence.FAIBLE
+            # A facet the model thought of may be empty for good reason: « Impact environnemental »
+            # made the news of motorcycles weak. It lowers, without condemning (below).
+            reasons.append(f"« {facet.name} » : rien dans les articles lus")
+            empty += 1
+            if level is Confidence.FORTE:
+                level = Confidence.MOYENNE
         elif diverging is not None:
             reasons.append(
                 f"« {facet.name} » : les sources divergent ({pairs[diverging.first].figure}"
@@ -444,6 +550,8 @@ def confidence(
             reasons.append(f"« {facet.name} » ne tient qu'à une source ({next(iter(sources))})")
             if level is Confidence.FORTE:
                 level = Confidence.MOYENNE
+    if empty * 2 >= len(facets):
+        level = Confidence.FAIBLE
     return level, tuple(reasons)
 
 
@@ -470,7 +578,9 @@ def read_analysis(
         if written >= ANSWER_ENOUGH:
             break
         answer.append(sentence)
-    return tuple(answer), _sentences(raw, "phrases", lines, articles)
+    sentences = _sentences(raw, "phrases", lines, articles)
+    # No answer after its repair: the start of the analysis says it best.
+    return tuple(answer) or sentences[:ANSWER_ENOUGH], sentences
 
 
 def _sentences(

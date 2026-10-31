@@ -99,6 +99,8 @@ from otlet.reporter.domain.reconstitution import (
     LINES_SCHEMA,
     LINES_SYSTEM,
     MATTER_MIN,
+    SUBJECTS_SCHEMA,
+    SUBJECTS_SYSTEM,
     RebuiltLine,
     Reconstitution,
     Sentence,
@@ -106,6 +108,7 @@ from otlet.reporter.domain.reconstitution import (
     check_analysis,
     check_facets,
     check_lines,
+    check_subjects,
     chosen_evenly,
     confidence,
     lines_message,
@@ -113,6 +116,9 @@ from otlet.reporter.domain.reconstitution import (
     read_analysis,
     read_facets,
     read_lines,
+    read_subjects,
+    several_subjects,
+    subjects_message,
 )
 from otlet.workspaces.domain.model import WorkspaceContext
 
@@ -120,6 +126,7 @@ logger = logging.getLogger(__name__)
 
 ANSWER_TURN = "reporter.answer_turn"
 CANCELLED = "cancelled"  # the error of a question the author cancelled
+FOCUS_MARK = "Reconstituer : "
 # The list of the author's conversations: all of them, within reason, so that each can be deleted.
 LIST_MAX = 1000
 FIRST_SEARCH = (
@@ -228,6 +235,12 @@ class ReporterStore(Protocol):
     ) -> Turn:
         """Puts the answer back to pending, asks for its reconstitution, and enqueues
         ANSWER_TURN, in one transaction."""
+        ...
+
+    def add_prepared_turn(
+        self, workspace_id: UUID, user_id: UUID, conversation_id: UUID, turn: Turn
+    ) -> Turn:
+        """Adds a question already filled in, and enqueues ANSWER_TURN, in one transaction."""
         ...
 
     def read_further(
@@ -374,6 +387,43 @@ class Reporter:
             raise ReporterError("already_read", "this answer has been reconstituted")
         return self._store.request_reconstitution(
             context.workspace_id, context.user_id, conversation_id, turn_id
+        )
+
+    def reconstitute_subject(
+        self, context: WorkspaceContext, conversation_id: UUID, turn_id: UUID, subject: int
+    ) -> Turn:
+        """« Reconstituer ce sujet »: one subject of a panorama, as a new question on its articles
+        only (Joël, 2026-10-31)."""
+        conversation = self._store.conversation(context.workspace_id, conversation_id)
+        if conversation is None:
+            raise ReporterError("not_found", "no such conversation")
+        if any(turn.status == "pending" for turn in conversation.turns):
+            raise ReporterError("turn_pending", "the previous question is still being answered")
+        turn = next((t for t in conversation.turns if t.id == turn_id), None)
+        rebuilt = None if turn is None else turn.reconstitution
+        if turn is None or rebuilt is None or not 0 <= subject < len(rebuilt.subjects):
+            raise ReporterError("not_found", "no such subject")
+        chosen = rebuilt.subjects[subject]
+        wanted = {a.item_id for a in chosen.articles}
+        candidates = [c for c in turn.candidates if str(c.id) in wanted]
+        return self._store.add_prepared_turn(
+            context.workspace_id,
+            context.user_id,
+            conversation_id,
+            replace(
+                turn,
+                question=f"{FOCUS_MARK}{chosen.title}"[:QUESTION_MAX_LENGTH],
+                status="pending",
+                operation=Operation.RESTREINDRE,
+                candidates=candidates,
+                verdicts={c.id: v for c in candidates if (v := turn.verdicts.get(c.id))},
+                fact=None,
+                reading=None,
+                reconstitution=Reconstitution(requested=True, focus=chosen.title),
+                error=None,
+                attempts=[],
+                finished_at=None,
+            ),
         )
 
     def get(self, context: WorkspaceContext, conversation_id: UUID) -> Conversation | None:
@@ -618,9 +668,12 @@ class Reporter:
         models: list[str] = []
         errors: list[str] = []
         log = (attempts, models, errors)
-        question = _subject_question(conversation, turn)
+        asked = turn.reconstitution
+        focus = "" if asked is None else asked.focus
+        question = focus or _subject_question(conversation, turn)
         verdicts = turn.verdicts or self._sort(user_id, question, turn.candidates, log)
-        rebuilt = self._rebuilt(workspace_id, user_id, turn, question, verdicts, log)
+        rebuilt = self._rebuilt(workspace_id, user_id, turn, question, verdicts, log, bool(focus))
+        rebuilt = replace(rebuilt, focus=focus)
         self._finish(
             workspace_id,
             conversation.id,
@@ -643,6 +696,7 @@ class Reporter:
         question: str,
         verdicts: dict[UUID, Judged],
         log: tuple[list[dict[str, Any]], list[str], list[str]],
+        one_subject: bool = False,
     ) -> Reconstitution:
         """The chain of ADR-0044 §7. Without an article that « traite » the subject, the Reporter
         does not find: « proche » completes the matter, it never makes it."""
@@ -656,6 +710,21 @@ class Reporter:
             return Reconstitution(found=found)
         articles = self._store.articles(workspace_id, [c.id for c in chosen])
         dates = {str(c.id): c.dated or self._now() for c in chosen}
+        if not one_subject and len(articles) > 1:
+            raw = self._ask(
+                user_id,
+                SUBJECTS_SYSTEM,
+                subjects_message(question, numbered_articles(articles, dates)),
+                SUBJECTS_SCHEMA,
+                check_subjects,
+                FACT_OUTPUT_TOKENS,
+                log,
+            )
+            subjects = () if raw is None else read_subjects(raw, articles)
+            if several_subjects(subjects, len(articles)):
+                return Reconstitution(
+                    form="panorama", subjects=subjects, found=found, read=len(articles)
+                )
         raw = self._ask(
             user_id,
             FACETS_SYSTEM,

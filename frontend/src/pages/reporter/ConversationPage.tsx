@@ -9,6 +9,7 @@ import {
   useCancelQuestion,
   useReadMore,
   useReconstitute,
+  useReconstituteSubject,
   useReadSet,
   useSetTerms,
   type ConversationView,
@@ -631,8 +632,60 @@ function Rebuild({
 }) {
   const { t } = useTranslation();
   const rebuild = useReconstitute(workspaceId, conversationId);
+  const onSubject = useReconstituteSubject(workspaceId, conversationId);
   const [facet, setFacet] = useState<number | null>(null);
   const done = turn.reconstitution;
+  if (done !== null && done.subjects.length > 0) {
+    return (
+      <section aria-label={t("reporter.rebuild.subjects")}>
+        <h3>{t("reporter.rebuild.subjects")}</h3>
+        <p className={styles.help}>{t("reporter.rebuild.subjectsHelp", { read: done.read, found: done.found })}</p>
+        <ol>
+          {done.subjects.map((subject, index) => (
+            <li key={index} style={{ margin: "0.75rem 0" }}>
+              <strong>{subject.title}</strong>
+              <br />
+              {subject.summary}
+              {subject.unsupported.length > 0 && (
+                <>
+                  <br />
+                  <span className={styles.warning}>
+                    {t("reporter.rebuild.unsupported", { words: subject.unsupported.join(", ") })}
+                  </span>
+                </>
+              )}
+              <br />
+              <span className={styles.meta}>
+                {subject.articles.map((article, position) => (
+                  <span key={article.item_id}>
+                    {position > 0 && " · "}
+                    <Link to="/veille/elements/$itemId" params={{ itemId: article.item_id }}>
+                      {article.publisher}
+                    </Link>
+                  </span>
+                ))}
+              </span>{" "}
+              <button
+                type="button"
+                className={styles.button}
+                disabled={busy || onSubject.isPending}
+                onClick={() => {
+                  onSubject.mutate({ turnId: turn.id, subject: index });
+                }}
+              >
+                {t("reporter.rebuild.oneSubject")}
+              </button>
+            </li>
+          ))}
+        </ol>
+        {onSubject.error !== null && (
+          <p role="alert" className={styles.error}>
+            {errorText(t, onSubject.error)}
+          </p>
+        )}
+      </section>
+    );
+  }
   if (done === null || (done.facets.length === 0 && done.errors.length > 0)) {
     return turn.candidates.length === 0 ? null : (
       <>

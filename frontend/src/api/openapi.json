@@ -4331,6 +4331,10 @@
             "title": "Flagged",
             "type": "array"
           },
+          "focus": {
+            "title": "Focus",
+            "type": "string"
+          },
           "form": {
             "title": "Form",
             "type": "string"
@@ -4367,11 +4371,20 @@
             },
             "title": "Sentences",
             "type": "array"
+          },
+          "subjects": {
+            "items": {
+              "$ref": "#/components/schemas/SubjectView"
+            },
+            "title": "Subjects",
+            "type": "array"
           }
         },
         "required": [
           "requested",
+          "focus",
           "form",
+          "subjects",
           "facets",
           "lines",
           "flagged",
@@ -5236,6 +5249,59 @@
           "encrypted"
         ],
         "title": "StateView",
+        "type": "object"
+      },
+      "SubjectArticleView": {
+        "properties": {
+          "item_id": {
+            "format": "uuid",
+            "title": "Item Id",
+            "type": "string"
+          },
+          "publisher": {
+            "title": "Publisher",
+            "type": "string"
+          }
+        },
+        "required": [
+          "item_id",
+          "publisher"
+        ],
+        "title": "SubjectArticleView",
+        "type": "object"
+      },
+      "SubjectView": {
+        "properties": {
+          "articles": {
+            "items": {
+              "$ref": "#/components/schemas/SubjectArticleView"
+            },
+            "title": "Articles",
+            "type": "array"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "unsupported": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Unsupported",
+            "type": "array"
+          }
+        },
+        "required": [
+          "title",
+          "summary",
+          "articles",
+          "unsupported"
+        ],
+        "title": "SubjectView",
         "type": "object"
       },
       "TagsBody": {
@@ -11898,6 +11964,76 @@
           }
         },
         "summary": "Reconstitute"
+      }
+    },
+    "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/turns/{turn_id}/subjects/{subject}/reconstitute": {
+      "post": {
+        "description": "« Reconstituer ce sujet »: a new question on the articles of one subject.",
+        "operationId": "reconstitute_subject_api_workspaces__workspace_id__reporter_conversations__conversation_id__turns__turn_id__subjects__subject__reconstitute_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conversation Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "turn_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Turn Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "subject",
+            "required": true,
+            "schema": {
+              "title": "Subject",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TurnView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reconstitute Subject"
       }
     },
     "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/turns/{turn_id}/terms": {

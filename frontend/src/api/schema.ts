@@ -1843,6 +1843,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/turns/{turn_id}/subjects/{subject}/reconstitute": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reconstitute Subject
+         * @description « Reconstituer ce sujet »: a new question on the articles of one subject.
+         */
+        post: operations["reconstitute_subject_api_workspaces__workspace_id__reporter_conversations__conversation_id__turns__turn_id__subjects__subject__reconstitute_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/turns/{turn_id}/terms": {
         parameters: {
             query?: never;
@@ -3647,6 +3667,8 @@ export interface components {
             facets: components["schemas"]["FacetView"][];
             /** Flagged */
             flagged: components["schemas"]["RebuiltLineView"][];
+            /** Focus */
+            focus: string;
             /** Form */
             form: string;
             /** Found */
@@ -3661,6 +3683,8 @@ export interface components {
             requested: boolean;
             /** Sentences */
             sentences: components["schemas"]["SentenceView"][];
+            /** Subjects */
+            subjects: components["schemas"]["SubjectView"][];
         };
         /** RefreshView */
         RefreshView: {
@@ -3946,6 +3970,27 @@ export interface components {
             total_bytes: number | null;
             /** Writable */
             writable: boolean;
+        };
+        /** SubjectArticleView */
+        SubjectArticleView: {
+            /**
+             * Item Id
+             * Format: uuid
+             */
+            item_id: string;
+            /** Publisher */
+            publisher: string;
+        };
+        /** SubjectView */
+        SubjectView: {
+            /** Articles */
+            articles: components["schemas"]["SubjectArticleView"][];
+            /** Summary */
+            summary: string;
+            /** Title */
+            title: string;
+            /** Unsupported */
+            unsupported: string[];
         };
         /** TagsBody */
         TagsBody: {
@@ -7881,6 +7926,40 @@ export interface operations {
             path: {
                 conversation_id: string;
                 turn_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TurnView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reconstitute_subject_api_workspaces__workspace_id__reporter_conversations__conversation_id__turns__turn_id__subjects__subject__reconstitute_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+                turn_id: string;
+                subject: number;
                 workspace_id: string;
             };
             cookie?: never;

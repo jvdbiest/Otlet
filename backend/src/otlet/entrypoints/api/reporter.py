@@ -128,11 +128,25 @@ class SentenceView(BaseModel):
     unsupported: list[str]
 
 
+class SubjectArticleView(BaseModel):
+    item_id: UUID
+    publisher: str
+
+
+class SubjectView(BaseModel):
+    title: str
+    summary: str
+    articles: list[SubjectArticleView]
+    unsupported: list[str]
+
+
 class ReconstitutionView(BaseModel):
     """« Reconstituer » (ADR-0044 §7): the lines by date, the facets as filters, the analysis."""
 
     requested: bool
+    focus: str
     form: str
+    subjects: list[SubjectView]
     facets: list[FacetView]
     lines: list[RebuiltLineView]
     flagged: list[RebuiltLineView]
@@ -170,7 +184,20 @@ class ReconstitutionView(BaseModel):
 
         return cls(
             requested=rebuilt.requested,
+            focus=rebuilt.focus,
             form=rebuilt.form,
+            subjects=[
+                SubjectView(
+                    title=s.title,
+                    summary=s.summary,
+                    articles=[
+                        SubjectArticleView(item_id=UUID(a.item_id), publisher=a.publisher)
+                        for a in s.articles
+                    ],
+                    unsupported=list(s.unsupported),
+                )
+                for s in rebuilt.subjects
+            ],
             facets=[FacetView(name=f.name, question=f.question) for f in rebuilt.facets],
             lines=[line(one) for one in rebuilt.lines],
             flagged=[line(one) for one in rebuilt.flagged],
@@ -458,6 +485,21 @@ def build_router(
         """« Reconstituer »: the worker extracts the lines by facet, then the analysis."""
         try:
             return TurnView.of(reporter.reconstitute(context, conversation_id, turn_id))
+        except ReporterError as error:
+            raise _refused(error) from error
+
+    @router.post(
+        "/conversations/{conversation_id}/turns/{turn_id}/subjects/{subject}/reconstitute",
+        status_code=status.HTTP_202_ACCEPTED,
+    )
+    def reconstitute_subject(
+        conversation_id: UUID, turn_id: UUID, subject: int, context: Context
+    ) -> TurnView:
+        """« Reconstituer ce sujet »: a new question on the articles of one subject."""
+        try:
+            return TurnView.of(
+                reporter.reconstitute_subject(context, conversation_id, turn_id, subject)
+            )
         except ReporterError as error:
             raise _refused(error) from error
 

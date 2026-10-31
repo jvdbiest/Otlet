@@ -493,7 +493,7 @@ def _sentences(
         )
         cited = [lines[n - 1] for n in numbers]
         support = " ".join(
-            f"{texts.get(line.item_id, '')} {line.publisher} "
+            f"{texts.get(line.item_id, '')} {line.publisher} {line.dated} "
             + dated_days(datetime.fromisoformat(line.dated), texts.get(line.item_id, ""))
             for line in cited
         )

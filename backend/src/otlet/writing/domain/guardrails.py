@@ -98,7 +98,8 @@ def fold(text: str) -> str:
 
 
 def _digits(text: str) -> str:
-    return re.sub(r"[\s  ]", "", text)
+    # « 47.000 euros » of a source is the « 47 000 € » of a draft (bench of 2026-10-31).
+    return re.sub(r"[\s  ]|(?<=\d)[.,](?=\d{3}(?!\d))", "", text)
 
 
 def start_of(paragraph: str) -> str:

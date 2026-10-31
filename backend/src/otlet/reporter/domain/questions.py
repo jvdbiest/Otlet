@@ -1104,6 +1104,13 @@ def guarded(
     return kept
 
 
+def _replaces_place(new: Concept, held: Concept) -> bool:
+    if not is_place(new) or not is_place(held):
+        return False
+    parts = {p for place in _place_words(held.name) for p in COUNTRY_PARTS.get(place, ())}
+    return not _place_words(new.name) <= parts
+
+
 def next_state(state: State, translated: Translated) -> State:
     """The concepts and language after the operation; the set follows them, without a model."""
     proposed = translated.concepts
@@ -1139,10 +1146,15 @@ def next_state(state: State, translated: Translated) -> State:
             added = [
                 c for c in proposed[:1] if not any(_same_concept(c, s) for s in state.concepts)
             ]
-            concepts = (*state.concepts, *added)[:CONCEPTS_MAX]
+            # Another place takes the place of the one held: « en Belgique », then « plutôt en
+            # France », asked for articles on both (bench of 2026-10-31). A part of it narrows.
+            gone = [added and _replaces_place(added[0], s) for s in state.concepts]
+            held = tuple(s for s, out in zip(state.concepts, gone, strict=True) if not out)
+            concepts = (*held, *added)[:CONCEPTS_MAX]
             return replace(
                 state,
                 concepts=concepts,
+                subject=state.subject - sum(1 for out in gone[: state.subject] if out),
                 language=translated.language or state.language,
                 days=translated.days or state.days,
                 # The period named last counts: dates, or a number of days.

@@ -616,3 +616,14 @@ def test_an_acronym_of_the_question_is_a_concept_of_its_own() -> None:
     question = "L'IA et l'intelligence artificielle"
     kept = guarded(question, Translated(Operation.CHERCHER, (ai,), None))
     assert [c.name for c in kept.concepts] == ["intelligence artificielle"]
+
+
+def test_another_place_takes_the_place_of_the_one_held() -> None:
+    youth = Concept("jeunes", ("jeunes",))
+    belgium = Concept("Belgique", ("Belgique",))
+    state = State((youth, belgium))
+    france = Translated(Operation.RESTREINDRE, (Concept("France", ("France",)),), None)
+    assert [c.name for c in next_state(state, france).concepts] == ["jeunes", "France"]
+    # A part of it narrows.
+    liege = Translated(Operation.RESTREINDRE, (Concept("Liège", ("Liège",)),), None)
+    assert [c.name for c in next_state(state, liege).concepts] == ["jeunes", "Belgique", "Liège"]

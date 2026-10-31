@@ -28,6 +28,11 @@ def test_a_name_or_a_date_no_source_writes_is_found() -> None:
     assert found[0].paragraph.startswith("La Colline a des yeux, adapté")
 
 
+def test_a_number_written_otherwise_is_no_finding() -> None:
+    assert unsupported(["Une perte de 47 000 euros."], ["une diminution de 47.000 euros"], "") == []
+    assert unsupported(["Une hausse de 2,5 %."], ["une hausse de 3,5 %"], "") != []
+
+
 def test_what_the_sources_or_the_author_write_is_no_finding() -> None:
     draft = [
         "Les Carter partent en Californie en 2024 ; selon l'auteur, une sélection Disney+.",

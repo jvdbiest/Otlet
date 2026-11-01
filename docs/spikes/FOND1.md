@@ -63,13 +63,13 @@ Mesure du 2026-11-01, sur la VM de travail, `qwen3:14b` sur le PC de Joël : 38 
 
 **Échec sur la détection, réussite sur le bruit.** Le modèle a repéré 3 déformations sur 6, sans aucune fausse alerte : tous ses verdicts `deforme` portaient sur une vraie déformation. Il ne suffit pas tel quel, et un article qui passe ce contrôle ne peut pas être présenté comme fidèle.
 
-Les réponses suggèrent une cause, non démontrée : le modèle juge le paragraphe d'un bloc, à partir de ce qui est juste, sans vérifier chaque affirmation.
+En relisant ses raisons, la taille du paragraphe explique mal les manques : sur D2, D5 et D7, le modèle a lu l'élément en cause et l'a validé ; seul D1 laisse penser qu'il ne l'a pas regardé. Limite du protocole : il donnait son verdict avant toute raison, réflexion désactivée, ce qui n'a pas été remesuré.
 
 ## 6. Conséquences
 
 | Document ou choix | Conséquence | ADR |
 |---|---|---|
-| Contrôle du fond | Rien n'entre dans le produit. Suite soumise à Joël | — |
+| Contrôle du fond | **Décision de Joël (2026-11-01)** : piste arrêtée pour l'instant, résultats conservés, pas de second test. Conclusion provisoire : qwen3:14b peut aider à repérer certaines incohérences ou omissions, mais n'est pas aujourd'hui un garde-fou fiable contre les glissements de sens ou de nuance. Le sujet reste ouvert | — |
 | U05, P02 | Inchangés | — |
 
 Le code reste dans `spikes/fond1` (ADR-0018).

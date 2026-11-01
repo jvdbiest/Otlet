@@ -2,10 +2,10 @@
 
 | | |
 |---|---|
-| Statut | Ouverte |
+| Statut | Conclue : partiel |
 | Durée maximale | 1 h de mesure |
-| Temps passé | à remplir |
-| Ouverte le / conclue le | 2026-11-01 / à remplir |
+| Temps passé | 2 h de préparation et d'analyse (journal de temps, TEXTE1c) ; mesure en quelques minutes |
+| Ouverte le / conclue le | 2026-11-01 / 2026-11-01 |
 | Choix concernés | Collecte U01 (`readability-lxml`), rédaction U04, recherche (S1) |
 | Commande de rejeu | `spikes/texte1/run-texte1c.sh`, puis `run-texte1c.sh --summary` |
 
@@ -51,15 +51,39 @@ Aucun réglage d'E3 après la fusion de ce protocole.
 
 ## 4. Mesures
 
-À remplir après la mesure.
+| Critère | Seuil | E0, actuelle | E2, trafilatura | E3, avec repli |
+|---|---|---|---|---|
+| Couverture médiane | ≥ 90 % | ✅ 93,7 % | ✅ 99,0 % | ✅ 99,0 % |
+| Pages sous 50 % de la référence | ≤ 5 % | ✅ 2,1 % | ✅ 2,1 % | ✅ 0 % |
+| Pollution médiane | ≤ 15 % | ✅ 5,8 % | ✅ 7,0 % | ✅ 7,0 % |
+| Pages qui perdent plus de 20 points sur E0 | ≤ 5 % | ✅ 0 % | ✅ 2,1 % | ✅ 0 % |
+| Pire des 4 sites, pages sous la moitié | ≤ 5 % | ❌ 22 % | ❌ 32 % | ❌ 15 % |
+| Temps, p95 | ≤ 300 ms | ✅ 93 ms | ✅ 42 ms | ✅ 46 ms |
+
+Les 4 sites surveillés, pages sous la moitié du texte le plus long :
+
+| Site | E0 | E2 | E3 |
+|---|---|---|---|
+| Les Numériques | 5 % | 15 % | 15 % |
+| Futura Sciences | 22 % | 0 % | 0 % |
+| Audiofanzine | 18 % | 2 % | 0 % |
+| RTBF Info | 2 % | 32 % | 0 % |
+
+Le repère pondéré par site donne 11,3 % pour E0, 4,1 % pour E2 et 1,6 % pour E3.
+
+Fichiers : `spikes/texte1/results/summary1c.txt`. Les pages restent sur la VM.
 
 ## 5. Conclusion
 
-À remplir.
+**Partiel.** E3 tient 5 critères sur 6 et fait nettement mieux qu'E0 sur des pages nouvelles : couverture médiane de 93,7 % à 99,0 %, plus aucune page sous la moitié de la référence, aucune page en recul. Elle rate le critère des 4 sites à cause de Les Numériques (15 %).
 
 ## 6. Conséquences
 
-À remplir.
+| Document ou choix | Conséquence | ADR |
+|---|---|---|
+| Extraction du produit | À soumettre à Joël : passer à E3, malgré le critère raté (§8) | À proposer s'il accepte |
+
+Le code de `spikes/texte1/` reste un banc ; rien n'est repris dans `backend/` à cette étape.
 
 ## 7. Ce que la preuve n'a pas couvert
 
@@ -67,3 +91,11 @@ Aucun réglage d'E3 après la fusion de ce protocole.
 - Le même auteur a conçu E3 et écrit cette référence, sans voir d'extraction de ces pages.
 - Les masques de lecture et la coupe à 60 blocs ont pu cacher des blocs d'article ; 10 pages dépassent 60 blocs.
 - L'effet sur la recherche, le tri et la rédaction n'est pas mesuré ici.
+
+## 8. Après la conclusion : relecture, hors protocole
+
+Le seuil reste raté et la conclusion reste « partiel ». Cette relecture sert à la décision de Joël (`spikes/texte1/texte1c_after.py`, `results/exploration1c.txt`).
+
+- **Les Numériques.** Les 6 pages en cause ont toutes la même forme : E0 est plus long parce qu'il garde les tableaux de prix (de 22 à 123 prix par page), et E3 s'en tient à l'article. Le repère prend ce texte plus long pour l'article : ici, il signale le défaut d'E0, pas celui d'E3. Sur les 4 pages de référence du site, E3 est à 95 % de couverture ou plus.
+- **Reste d'E3.** Next.ink : plus de texte en trop sur les pages à mur payant (jusqu'à 65 % sur une page, contre 10 % pour E0). Une page de Les Numériques garde 75 % de texte en trop, contre 85 % pour E0.
+- **La proportion, sur les 100 pages de référence de TEXTE1b et TEXTE1c.** Avec E0, 5 pages sur 100 gardent moins de la moitié de l'article, et 17 sur 100 moins de 70 %. C'est moins que les 8 à 13 % estimés avant : les repères fondés sur la longueur comptaient de faux cas. L'échantillon reste petit.

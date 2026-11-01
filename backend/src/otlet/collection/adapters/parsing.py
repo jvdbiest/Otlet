@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Reading feeds and article pages (TECH_CHOICES §14): feedparser for RSS, Atom and JSON Feed,
-readability-lxml for the main content of a page, nh3 to sanitise.
+trafilatura for the main content of a page (ADR-0047), readability-lxml for its title, nh3 to
+sanitise.
 
 Everything that comes in is untrusted (ARCHITECTURE P3): the texts are reduced to plain text,
 without markup, invisible elements or invisible Unicode characters, which are the usual
@@ -23,6 +24,7 @@ import feedparser
 import lxml.etree
 import lxml.html
 import nh3
+import trafilatura
 from readability import Document
 
 from otlet.collection.domain.model import (
@@ -200,6 +202,10 @@ class FeedparserReader:
 
 
 INVISIBLE_TAGS = frozenset({"script", "style", "noscript", "template"})
+ARTICLE_BODY = re.compile(r'"articleBody"\s*:\s*"((?:[^"\\]|\\.)*)"')
+MARKED_BODY_MIN = 200
+MARKED_PARAGRAPH_MIN = 80
+MARKED_SHARE = 0.5
 
 
 def _hidden(element: Any) -> bool:
@@ -221,16 +227,53 @@ def _drop_invisible(page: str) -> str:
     return str(lxml.html.tostring(tree, encoding="unicode"))
 
 
-class ReadabilityReader:
+def _marked_as_article(page: str, visible: str) -> str:
+    """What a page itself marks as its article: articleBody, in the data of the page, else the
+    long paragraphs of its largest <article>."""
+    bodies = []
+    for found in ARTICLE_BODY.findall(page):
+        try:
+            bodies.append(clean_text(json.loads(f'"{found}"')))
+        except ValueError:
+            continue
+    body = max(bodies, key=len, default="")
+    if len(body) >= MARKED_BODY_MIN:
+        return body
+    try:
+        tree = lxml.html.fromstring(visible)
+    except (lxml.etree.ParserError, ValueError):
+        return ""
+    articles = []
+    for article in tree.iter("article"):
+        kept = (" ".join(p.text_content().split()) for p in article.iter("p"))
+        articles.append("\n\n".join(p for p in kept if len(p) > MARKED_PARAGRAPH_MIN))
+    return clean_text(max(articles, key=len, default=""))
+
+
+def _title(visible: str, url: str) -> str | None:
+    try:
+        title = Document(visible, url=url).short_title()
+    except (lxml.etree.ParserError, ValueError, TypeError):
+        return None
+    return clean_text(title or "")[:TITLE_MAX_LENGTH] or None
+
+
+class ArticleReader:
+    """The article of a page (ADR-0047). readability kept a wrong block or a part of it on one
+    text in twenty, as far as a block of advertising or of comments; trafilatura finds 99 % of the
+    article on new pages (TEXTE1c), but little on some sites, such as RTBF: what the page marks
+    takes over when it is more than twice as long."""
+
     def extract(self, page: str, url: str) -> Page | None:
         visible = _drop_invisible(page)
-        try:
-            document = Document(visible, url=url)
-            content = document.summary(html_partial=True)
-            title = clean_text(document.short_title() or "")[:TITLE_MAX_LENGTH] or None
-        except (lxml.etree.ParserError, ValueError, TypeError):
-            return None
-        text = clean_text(content)
+        found_text = trafilatura.extract(
+            visible, url=url, include_comments=False, include_tables=False
+        )
+        text = clean_text(found_text or "")
+        marked = _marked_as_article(page, visible)
+        if len(text) < MARKED_SHARE * len(marked):
+            text = marked
+        title = _title(visible, url)
         found = HTML_LANG.search(page)
         language = clean_language(found.group(1)) if found else None
         return Page(title=title, text=text, language=language) if text else None

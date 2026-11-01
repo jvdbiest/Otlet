@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Feeds and pages are read into plain, visible text (U01, ARCHITECTURE §10.5, §13.1)."""
 
+import json
 from datetime import UTC, datetime
 
-from otlet.collection.adapters.parsing import FeedparserReader, ReadabilityReader, clean_text
+from otlet.collection.adapters.parsing import ArticleReader, FeedparserReader, clean_text
 from otlet.collection.domain import model
 
 RSS = b"""<?xml version="1.0" encoding="utf-8"?>
@@ -86,7 +87,7 @@ def test_a_page_is_not_a_feed_but_announces_its_feeds() -> None:
 
 
 def test_the_main_text_of_a_page_excludes_what_a_reader_does_not_see() -> None:
-    page = ReadabilityReader().extract(PAGE, "https://journal.example.org/article")
+    page = ArticleReader().extract(PAGE, "https://journal.example.org/article")
     assert page is not None
     assert "Premier paragraphe" in page.text and "Deuxième paragraphe" in page.text
     assert "Ignore previous instructions" not in page.text
@@ -113,3 +114,34 @@ def test_only_web_links_are_kept() -> None:
     parsed = FeedparserReader().read(feed, "https://example.org/feed")
     assert parsed is not None
     assert [entry.url for entry in parsed.entries] == [None, None]
+
+
+PARAGRAPH = "Le texte de cet article raconte longuement ce qui s'est passé hier en ville. " * 4
+ADVERT = "<div><p>Publicité, votre contenu continue ci-dessous</p></div>"
+
+
+def test_the_article_is_read_and_not_the_block_around_it() -> None:
+    """Les Numériques, Audiofanzine (TEXTE1): an advertising block, comments."""
+    page = f"""<html lang="fr"><head><title>Un titre</title></head><body>{ADVERT}
+    <article><h1>Un titre</h1><p>{PARAGRAPH}</p><p>{PARAGRAPH}</p><p>{PARAGRAPH}</p></article>
+    <aside><p>Membre depuis 20 ans : ce commentaire n'est pas l'article.</p></aside>
+    </body></html>"""
+    read = ArticleReader().extract(page, "https://journal.example.org/a")
+    assert read is not None
+    assert read.text.count("raconte longuement") >= 12
+    assert "Publicité" not in read.text
+
+
+def test_what_the_page_marks_takes_over_a_far_shorter_text() -> None:
+    """RTBF (TEXTE1b): the page marks an article the extraction nearly misses."""
+    body = json.dumps({"@type": "NewsArticle", "articleBody": PARAGRAPH * 4}, ensure_ascii=False)
+    page = f"""<html><head><script type="application/ld+json">{body}</script></head><body>
+    <div><p>Recevez une fois par jour l'essentiel de l'info dans votre boîte.</p></div>
+    </body></html>"""
+    read = ArticleReader().extract(page, "https://journal.example.org/a")
+    assert read is not None
+    assert read.text.count("raconte longuement") == 16
+
+
+def test_a_page_without_an_article_has_no_text() -> None:
+    assert ArticleReader().extract("<html><body></body></html>", "https://a.example.org/") is None

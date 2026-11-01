@@ -1,11 +1,14 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """TEXTE1b: the frozen pages. Up to 40 texts per site with 70 texts or more, among the items whose
 text the rules allowed (`full_text`), read again as the worker reads them, one every 3 s. Writes
-nothing in the Veille. One JSON line per page on stdout, the page gzipped: it stays on the VM."""
+nothing in the Veille. One JSON line per page on stdout, the page gzipped: it stays on the VM.
+TEXTE1c: pages already frozen, their ids one per line on stdin, are left out (usage: python -c).
+"""
 
 import base64
 import gzip
 import json
+import sys
 import time
 from uuid import UUID
 
@@ -21,16 +24,17 @@ PER_SITE = 40
 SITE_MIN = 70
 engine = database.create_engine(Settings.from_env().require_database_url())
 with workspace_transaction(engine, WS) as c:
-    c.execute(sa.text("SELECT setseed(0.1101)"))
+    c.execute(sa.text("SELECT setseed(0.1102)"))
     rows = c.execute(sa.text(
         "WITH texts AS (SELECT i.id, i.title, i.summary, i.url, i.text, s.name AS source,"
         " count(*) OVER (PARTITION BY s.name) AS site,"
         " row_number() OVER (PARTITION BY s.name ORDER BY random()) AS pick"
         " FROM source_items i JOIN sources s ON s.id = i.source_id WHERE i.duplicate_of IS NULL"
         " AND i.text_status = 'full_text' AND i.text IS NOT NULL AND i.url IS NOT NULL"
-        " AND i.collected_at > now() - interval '30 days')"
+        " AND i.collected_at > now() - interval '30 days'"
+        " AND NOT (CAST(i.id AS text) = ANY(:seen)))"
         " SELECT * FROM texts WHERE site >= :least AND pick <= :per ORDER BY random()"),
-        {"least": SITE_MIN, "per": PER_SITE}).all()
+        {"least": SITE_MIN, "per": PER_SITE, "seen": sys.stdin.read().split()}).all()
 with SafeClient() as client:
     for row in rows:
         out = {

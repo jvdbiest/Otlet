@@ -649,7 +649,11 @@ class Reporter:
             fact = self._fact(workspace_id, user_id, history, done, (attempts, models, errors))
             done = replace(done, fact=fact)
         elif translated.operation is Operation.TRIER and done.candidates:
-            subject = " ".join(c.concept.name for c in done.concepts) or conversation.title
+            # The question, not the names of its concepts: « Ukraine » alone let in what merely
+            # mentions it (TRI1: precision 65.9 % to 73.5 %, recall 86.5 % to 89.6 %).
+            subject = _subject_question(conversation, done)
+            if not asks_sort(turn.question):
+                subject = f"{subject} — {turn.question}"
             verdicts = self._sort(user_id, subject, done.candidates, (attempts, models, errors))
             done = replace(done, verdicts=verdicts)
         if turn.reading is not None and turn.reading.requested:

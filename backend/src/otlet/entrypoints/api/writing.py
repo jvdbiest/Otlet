@@ -701,7 +701,9 @@ def build_router(
         responses={200: {"content": {"application/zip": {}}}},
     )
     def export_selection(body: ExportSelectionBody, context: Context) -> Response:
-        """The articles chosen in one ZIP, a file each: the validated version, else the latest."""
+        """The articles chosen in one ZIP, a file each: the validated version, else the latest.
+        Those that cannot go out (U05) are named in NON-EXPORTES.txt and counted in the header
+        X-Otlet-Refused; 409 when none can."""
         picks = [
             (article_id, number)
             for article_id in dict.fromkeys(body.article_ids)
@@ -720,6 +722,7 @@ def build_router(
                 "Content-Disposition": f'attachment; filename="{exported.filename}"',
                 "X-Content-Type-Options": "nosniff",
                 "Cache-Control": "no-store",
+                "X-Otlet-Refused": str(exported.refused),
             },
         )
 

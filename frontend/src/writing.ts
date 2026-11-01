@@ -467,7 +467,11 @@ export function useLibraryAction(workspaceId: string) {
 }
 
 /** The articles chosen in one ZIP, a file each: the validated version, else the latest. */
-export async function exportSelection(workspaceId: string, articleIds: string[], kind: ExportKind): Promise<Blob> {
+export async function exportSelection(
+  workspaceId: string,
+  articleIds: string[],
+  kind: ExportKind,
+): Promise<{ blob: Blob; refused: number }> {
   const { data, error, response } = await api.POST("/api/workspaces/{workspace_id}/library/export", {
     params: { path: { workspace_id: workspaceId } },
     body: { article_ids: articleIds, kind },
@@ -476,7 +480,7 @@ export async function exportSelection(workspaceId: string, articleIds: string[],
   if (data === undefined) {
     throw apiError(response, error);
   }
-  return data;
+  return { blob: data, refused: Number(response.headers.get("X-Otlet-Refused") ?? "0") };
 }
 
 export function useSetTags(workspaceId: string) {

@@ -16,10 +16,16 @@ from otlet.writing.application.library import GateOf
 from otlet.writing.domain.article import Version
 from otlet.writing.domain.document import media_of
 from otlet.writing.domain.export import filename, html_page, markdown, text
-from otlet.writing.domain.proximity import TooClose
+from otlet.writing.domain.proximity import Gate, TooClose
 
 FORMATS = ("pdf", "docx", "html", "md", "txt", "json")
 EXTENSIONS = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp"}
+REFUSALS: dict[Gate, str] = {
+    "blocked": "trop proche d'une source. Ouvrez l'article pour voir les passages, reformulez ou "
+    "justifiez.",
+    "pending": "contrôle de proximité en cours. Réessayez dans quelques minutes.",
+    "open": "",
+}
 
 # An image of the workspace by its id: bytes, type, width and height; None when it is gone.
 MediaRead = Callable[[WorkspaceContext, str], tuple[bytes, str, int, int] | None]
@@ -36,6 +42,7 @@ class Exported:
     data: bytes
     mime: str
     filename: str
+    refused: int = 0  # the versions of a selection left out (U05)
 
 
 class Exports:
@@ -57,13 +64,21 @@ class Exports:
         self, context: WorkspaceContext, picks: list[tuple[UUID, int]], kind: str
     ) -> Exported | None:
         """Several versions in one ZIP (Joël, 2026-10-20): a file each, in `kind`; a Markdown
-        with images keeps its folder. None when none of them exists."""
+        with images keeps its folder. None when none of them exists. A version that cannot go out
+        (U05) does not stop the others: NON-EXPORTES.txt names it, and `refused` counts them.
+        TooClose when none can go out."""
         buffer = io.BytesIO()
         names: set[str] = set()
         written = 0
+        refused: list[tuple[str, Gate]] = []
         with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
             for article_id, number in picks:
-                exported = self.export(context, article_id, number, kind)
+                try:
+                    exported = self.export(context, article_id, number, kind)
+                except TooClose as error:
+                    version = self._versions.version(context.workspace_id, article_id, number)
+                    refused.append((version.title if version else str(article_id), error.gate))
+                    continue
                 if exported is None:
                     continue
                 stem, _, extension = exported.filename.rpartition(".")
@@ -80,9 +95,18 @@ class Exports:
                 else:
                     archive.writestr(name, exported.data)
                 written += 1
+            if written > 0 and refused:
+                archive.writestr(
+                    "NON-EXPORTES.txt",
+                    "\n".join(f"{title} : {REFUSALS[gate]}" for title, gate in refused) + "\n",
+                )
         if written == 0:
+            if refused:
+                raise TooClose("blocked" if any(g == "blocked" for _, g in refused) else "pending")
             return None
-        return Exported(buffer.getvalue(), "application/zip", f"articles-{kind}.zip")
+        return Exported(
+            buffer.getvalue(), "application/zip", f"articles-{kind}.zip", refused=len(refused)
+        )
 
     def export(
         self, context: WorkspaceContext, article_id: UUID, number: int, kind: str

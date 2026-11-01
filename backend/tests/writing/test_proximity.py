@@ -1,4 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
+import io
+import zipfile
 from collections.abc import Sequence
 from types import SimpleNamespace
 from typing import Any, cast
@@ -219,3 +221,29 @@ def test_nothing_is_validated_nor_exported_past_the_gate(gate: Gate) -> None:
         exports.export(CONTEXT, uuid4(), 1, "txt")
     with pytest.raises(TooClose):
         exports.export_many(CONTEXT, [(uuid4(), 1)], "txt")
+
+
+def test_a_selection_leaves_out_and_names_what_cannot_go_out() -> None:
+    open_id, closed_id = uuid4(), uuid4()
+    titles = {open_id: "Libre", closed_id: "Trop proche"}
+
+    def version(_: UUID, article_id: UUID, __: int) -> Any:
+        return SimpleNamespace(
+            title=titles[article_id], document={"attrs": {"sources": []}, "content": []}
+        )
+
+    def writer(*_: Any) -> bytes:
+        return b""
+
+    def gate(_: UUID, article_id: UUID, __: int) -> Gate:
+        return "open" if article_id == open_id else "blocked"
+
+    versions = cast(Any, SimpleNamespace(version=version))
+    exports = Exports(versions, lambda *_: None, writer, writer, gate)
+    exported = exports.export_many(CONTEXT, [(open_id, 1), (closed_id, 1)], "txt")
+    assert exported is not None
+    assert exported.refused == 1
+    with zipfile.ZipFile(io.BytesIO(exported.data)) as archive:
+        note = archive.read("NON-EXPORTES.txt").decode()
+        assert "Trop proche" in note
+        assert len(archive.namelist()) == 2

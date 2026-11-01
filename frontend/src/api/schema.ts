@@ -1426,6 +1426,8 @@ export interface paths {
         /**
          * Export Selection
          * @description The articles chosen in one ZIP, a file each: the validated version, else the latest.
+         *     Those that cannot go out (U05) are named in NON-EXPORTES.txt and counted in the header
+         *     X-Otlet-Refused; 409 when none can.
          */
         post: operations["export_selection_api_workspaces__workspace_id__library_export_post"];
         delete?: never;

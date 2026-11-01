@@ -10728,7 +10728,7 @@
     },
     "/api/workspaces/{workspace_id}/library/export": {
       "post": {
-        "description": "The articles chosen in one ZIP, a file each: the validated version, else the latest.",
+        "description": "The articles chosen in one ZIP, a file each: the validated version, else the latest.\nThose that cannot go out (U05) are named in NON-EXPORTES.txt and counted in the header\nX-Otlet-Refused; 409 when none can.",
         "operationId": "export_selection_api_workspaces__workspace_id__library_export_post",
         "parameters": [
           {

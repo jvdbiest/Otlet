@@ -2,6 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
+import { ApiError } from "../../api/client.ts";
 import { useTranslation } from "react-i18next";
 import { workspacesQuery } from "../../session.ts";
 import {
@@ -179,7 +180,10 @@ function SelectionBar({
               setExporting(true);
               setFailed(false);
               exportSelection(workspaceId, ids, kind)
-                .then((blob) => {
+                .then(({ blob, refused }) => {
+                  if (refused > 0) {
+                    setDone(t("library.selection.refused", { count: refused }));
+                  }
                   const link = document.createElement("a");
                   link.href = URL.createObjectURL(blob);
                   link.download = `articles-${kind}.zip`;
@@ -188,8 +192,13 @@ function SelectionBar({
                     URL.revokeObjectURL(link.href);
                   }, 60_000);
                 })
-                .catch(() => {
-                  setFailed(true);
+                .catch((error: unknown) => {
+                  // None of them can go out (U05): the reason says what to do.
+                  if (error instanceof ApiError && error.status === 409) {
+                    setDone(errorText(t, error));
+                  } else {
+                    setFailed(true);
+                  }
                 })
                 .finally(() => {
                   setExporting(false);

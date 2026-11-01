@@ -9,7 +9,12 @@ interface Passage {
   paragraph: string;
   sentence: string;
   source_sentence: string;
+  cosine: number;
 }
+
+// The window that blocks may hold a sentence that is not itself close: it is not shown as if it
+// were (Joël's trial, 2026-11-01). The check does not depend on this.
+const SHOWN_FROM = 0.75;
 
 interface CheckedSource {
   title: string;
@@ -28,7 +33,8 @@ interface GroupedPassage {
 function grouped(sources: CheckedSource[]): GroupedPassage[] {
   const passages = new Map<string, GroupedPassage>();
   for (const source of sources) {
-    for (const found of source.passages) {
+    const strong = source.passages.filter((p) => p.cosine >= SHOWN_FROM);
+    for (const found of strong.length > 0 ? strong : source.passages) {
       const passage = passages.get(found.sentence) ?? {
         paragraph: found.paragraph,
         sentence: found.sentence,

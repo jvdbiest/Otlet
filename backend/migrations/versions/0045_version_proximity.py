@@ -20,8 +20,12 @@ def upgrade() -> None:
     op.add_column(
         "article_versions", sa.Column("proximity_override", postgresql.JSONB(), nullable=True)
     )
+    # A copy has no brief of its own: it is still compared with the sources of the one it came
+    # from. No foreign key: a brief deleted later leaves it with no source to compare with.
+    op.add_column("articles", sa.Column("origin_brief_id", sa.Uuid(), nullable=True))
 
 
 def downgrade() -> None:
+    op.drop_column("articles", "origin_brief_id")
     op.drop_column("article_versions", "proximity_override")
     op.drop_column("article_versions", "proximity")

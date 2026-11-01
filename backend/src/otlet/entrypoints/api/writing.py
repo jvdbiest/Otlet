@@ -321,6 +321,7 @@ class ArticleView(BaseModel):
     validated_version: int | None  # the one exports and publications take
     sent_at: datetime | None  # when it entered the Library; None while it is in the workshop
     tags: list[str]
+    origin_brief_id: UUID | None  # a copy: the brief whose sources it is compared with (U05)
 
     @classmethod
     def of(cls, article: Article) -> "ArticleView":
@@ -333,6 +334,7 @@ class ArticleView(BaseModel):
             validated_version=article.validated_version,
             sent_at=article.sent_at,
             tags=list(article.tags),
+            origin_brief_id=article.origin_brief_id,
         )
 
 

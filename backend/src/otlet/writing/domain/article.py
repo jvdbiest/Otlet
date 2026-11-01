@@ -43,6 +43,7 @@ class Article:
     validated_version: int | None = None
     sent_at: datetime | None = None
     tags: tuple[str, ...] = ()
+    origin_brief_id: UUID | None = None  # a copy: the brief whose sources it is compared with
 
 
 @dataclass(frozen=True, slots=True)

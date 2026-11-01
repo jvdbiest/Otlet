@@ -36,13 +36,14 @@ export function Proximity({
   const [reason, setReason] = useState("");
   const { mutate: askCheck } = useCheckProximity(workspaceId);
   // A version written before U05, or whose check was lost, is checked when it is read.
-  const unchecked = article.brief_id !== null && version.proximity === null;
+  const compared = (article.brief_id ?? article.origin_brief_id) !== null;
+  const unchecked = compared && version.proximity === null;
   useEffect(() => {
     if (unchecked) {
       askCheck({ articleId: article.id, number: version.number });
     }
   }, [unchecked, askCheck, article.id, version.number]);
-  if (article.brief_id === null) {
+  if (!compared) {
     return null;
   }
   const report = version.proximity as { status?: string; sources?: CheckedSource[] } | null;

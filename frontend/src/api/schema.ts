@@ -2205,6 +2205,8 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /** Origin Brief Id */
+            origin_brief_id: string | null;
             /** Sent At */
             sent_at: string | null;
             /**

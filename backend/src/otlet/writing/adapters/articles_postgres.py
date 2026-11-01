@@ -291,7 +291,7 @@ class PostgresArticleStore:
             row = connection.execute(
                 sa.text(
                     "SELECT id, brief_id, title, created_at, updated_at, status,"
-                    " validated_version, sent_at, tags FROM articles"
+                    " validated_version, sent_at, tags, origin_brief_id FROM articles"
                     f" WHERE {where} AND {here()}"
                 ),
                 {"key": key},
@@ -316,6 +316,7 @@ class PostgresArticleStore:
             validated_version=row.validated_version,
             sent_at=row.sent_at,
             tags=tuple(row.tags),
+            origin_brief_id=row.origin_brief_id,
         )
 
     def validated_version(self, workspace_id: UUID, article_id: UUID) -> int | None:
@@ -537,16 +538,18 @@ class PostgresArticleStore:
         title: str,
         document: dict[str, Any],
         tags: Sequence[str] = (),
+        origin_brief_id: UUID | None = None,
     ) -> UUID:
         """An article without a brief, in the Library at once (Joël, 2026-10-20): written by a
-        person, or a copy of another; its first version is theirs."""
+        person, or a copy of another; its first version is theirs. A copy stays compared with
+        the sources of `origin_brief_id` (U05)."""
         article_id = uuid4()
         with workspace_transaction(self._engine, workspace_id) as connection:
             connection.execute(
                 sa.text(
                     "INSERT INTO articles (id, workspace_id, brief_id, created_by, title, status,"
-                    " sent_at, tags) VALUES (:id, :workspace, NULL, :user, :title, 'brouillon',"
-                    " now(), :tags)"
+                    " sent_at, tags, origin_brief_id) VALUES (:id, :workspace, NULL, :user, :title,"
+                    " 'brouillon', now(), :tags, :origin)"
                 ),
                 {
                     "id": article_id,
@@ -554,6 +557,7 @@ class PostgresArticleStore:
                     "user": user_id,
                     "title": title,
                     "tags": list(tags),
+                    "origin": origin_brief_id,
                 },
             )
             connection.execute(
@@ -572,6 +576,8 @@ class PostgresArticleStore:
                     "body": body_text(document),
                 },
             )
+            if origin_brief_id is not None:
+                self._enqueue_check(connection, workspace_id, article_id, 1)
         return article_id
 
     # Where the images are shown (médiathèque, ADR-0040): read in the blocks of the versions,
@@ -664,9 +670,10 @@ class PostgresArticleStore:
         with workspace_transaction(self._engine, workspace_id) as connection:
             row = connection.execute(
                 sa.text(
-                    "SELECT a.brief_id, v.proximity, v.proximity_override"
-                    " FROM article_versions AS v JOIN articles AS a ON a.id = v.article_id"
-                    f" AND a.workspace_id = v.workspace_id WHERE v.article_id = :article"
+                    "SELECT coalesce(a.brief_id, a.origin_brief_id) AS brief_id, v.proximity,"
+                    " v.proximity_override FROM article_versions AS v"
+                    " JOIN articles AS a ON a.id = v.article_id"
+                    " AND a.workspace_id = v.workspace_id WHERE v.article_id = :article"
                     f" AND v.number = :number AND {here('v')}"
                 ),
                 {"article": article_id, "number": number},
@@ -684,7 +691,9 @@ class PostgresArticleStore:
         with workspace_transaction(self._engine, workspace_id) as connection:
             version = connection.execute(
                 sa.text(
-                    "SELECT v.title, v.document, a.brief_id FROM article_versions AS v"
+                    "SELECT v.title, v.document,"
+                    " coalesce(a.brief_id, a.origin_brief_id) AS brief_id"
+                    " FROM article_versions AS v"
                     " JOIN articles AS a ON a.id = v.article_id"
                     " AND a.workspace_id = v.workspace_id WHERE v.article_id = :article"
                     f" AND v.number = :number AND v.proximity IS NULL AND {here('v')}"

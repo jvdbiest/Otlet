@@ -662,6 +662,16 @@ def test_a_version_too_close_goes_out_only_with_a_justification(world: World) ->
     assert saved is not None
     assert saved.proximity is None and saved.proximity_override is None
 
+    # A copy stays compared with the sources of the brief it came from, and is checked anew.
+    copy = library.duplicate(context, article.id, 1)
+    assert copy is not None and copy.brief_id is None and copy.origin_brief_id == brief.id
+    assert copy.versions[0].proximity is None
+    assert store.gate(context.workspace_id, copy.id, 1) == "pending"
+    found = store.to_check(context.workspace_id, copy.id, 1)
+    assert found is not None and len(found[2]) == 2
+    again = library.duplicate(context, copy.id, 1)
+    assert again is not None and again.origin_brief_id == brief.id
+
     # An article without a brief has no source to compare with.
     made_by_hand = library.create(context, "Écrit à la main")
     assert store.gate(context.workspace_id, made_by_hand.id, 1) == "open"

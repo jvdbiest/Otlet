@@ -151,6 +151,18 @@
             "title": "Id",
             "type": "string"
           },
+          "origin_brief_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Origin Brief Id"
+          },
           "sent_at": {
             "anyOf": [
               {
@@ -210,7 +222,8 @@
           "status",
           "validated_version",
           "sent_at",
-          "tags"
+          "tags",
+          "origin_brief_id"
         ],
         "title": "ArticleView",
         "type": "object"

@@ -372,7 +372,7 @@ export function useSendArticle(workspaceId: string) {
 
 /** Whether a version can go out (U05): as the server decides at validation and at export. */
 export function gateOf(article: ArticleView, version: VersionView): "open" | "pending" | "blocked" {
-  if (article.brief_id === null || version.proximity_override !== null) {
+  if ((article.brief_id ?? article.origin_brief_id) === null || version.proximity_override !== null) {
     return "open";
   }
   if (version.proximity === null) {

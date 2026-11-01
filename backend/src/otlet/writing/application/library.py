@@ -33,7 +33,10 @@ class LibraryStore(Protocol):
         title: str,
         document: dict[str, Any],
         tags: Sequence[str] = (),
-    ) -> UUID: ...
+        origin_brief_id: UUID | None = None,
+    ) -> UUID:
+        """`origin_brief_id`: for a copy, the brief whose sources it stays compared with."""
+        ...
 
     def delete_archived(self, workspace_id: UUID, article_id: UUID) -> bool: ...
 
@@ -174,8 +177,9 @@ class Library:
 
     def duplicate(self, context: WorkspaceContext, article_id: UUID, number: int) -> Article | None:
         """« Dupliquer » (Joël, 2026-10-20): a new article, without a brief, whose first version
-        is a copy of the version given, with its sources and images; its tags follow. None when
-        the article or the version does not exist."""
+        is a copy of the version given, with its sources and images; its tags follow, and so does
+        the proximity check (Joël, 2026-11-01): a copy must not be a way round it. None when the
+        article or the version does not exist."""
         source = self._store.article(context.workspace_id, article_id)
         version = (
             None
@@ -186,7 +190,12 @@ class Library:
             return None
         title = f"Copie de {version.title}"[:TITLE_MAX]
         made = self._store.create_article(
-            context.workspace_id, context.user_id, title, version.document, source.tags
+            context.workspace_id,
+            context.user_id,
+            title,
+            version.document,
+            source.tags,
+            source.brief_id or source.origin_brief_id,
         )
         return self._store.article(context.workspace_id, made)
 

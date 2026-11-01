@@ -65,5 +65,5 @@ Aucun réglage d'E3 après la fusion de ce protocole.
 
 - Un seul auteur de la référence, sur 4 pages par site : les résultats par site viennent du repère automatique, qui signale aussi de faux cas (TEXTE1b §4).
 - Le même auteur a conçu E3 et écrit cette référence, sans voir d'extraction de ces pages.
-- Les masques de lecture et la coupe à 60 blocs ont pu cacher des blocs d'article ; 7 pages dépassent 60 blocs.
+- Les masques de lecture et la coupe à 60 blocs ont pu cacher des blocs d'article ; 10 pages dépassent 60 blocs.
 - L'effet sur la recherche, le tri et la rédaction n'est pas mesuré ici.

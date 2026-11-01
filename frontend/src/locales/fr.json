@@ -719,6 +719,7 @@
     "blocked": "{count, plural, one {Cette version est trop proche d'une source.} other {Cette version est trop proche de # sources.}} Elle ne peut être ni validée ni exportée telle quelle : reformulez-la, ou dites pourquoi elle peut sortir.",
     "overridden": "Trop proche d'une source, laissée passer le {date} : {reason}",
     "source": "Dans la source : {sentence}",
+    "in": "{count, plural, one {Article : {titles}} other {# articles : {titles}}}",
     "notFidelity": "Ce contrôle mesure la proximité avec les sources, pas la fidélité : une version qui le passe n'est pas vérifiée sur le fond.",
     "justification": "Pourquoi cette version peut-elle sortir ?",
     "hint": "Par exemple : source sous licence, votre propre texte, faits bruts difficiles à dire autrement. Gardé avec votre nom et la date.",

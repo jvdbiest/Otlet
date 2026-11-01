@@ -17,6 +17,35 @@ interface CheckedSource {
   passages: Passage[];
 }
 
+interface GroupedPassage {
+  paragraph: string;
+  sentence: string;
+  written: { sentence: string; titles: string[] }[];
+}
+
+/** Each passage of the version once, however many sources it is close to: articles that repeat
+ * the same news would otherwise list it again for each (Joël, 2026-11-01). */
+function grouped(sources: CheckedSource[]): GroupedPassage[] {
+  const passages = new Map<string, GroupedPassage>();
+  for (const source of sources) {
+    for (const found of source.passages) {
+      const passage = passages.get(found.sentence) ?? {
+        paragraph: found.paragraph,
+        sentence: found.sentence,
+        written: [],
+      };
+      passages.set(found.sentence, passage);
+      const same = passage.written.find((w) => w.sentence === found.source_sentence);
+      if (same === undefined) {
+        passage.written.push({ sentence: found.source_sentence, titles: [source.title] });
+      } else if (!same.titles.includes(source.title)) {
+        same.titles.push(source.title);
+      }
+    }
+  }
+  return [...passages.values()];
+}
+
 /** How close a version is to its sources (U05, ADR-0046). A version too close does not go out
  * unless its author says why (Joël, 2026-11-01): a false alarm must not force a rewrite. This says
  * nothing of its fidelity to the sources. */
@@ -68,23 +97,23 @@ export function Proximity({
       ) : (
         <p>{t("proximity.blocked", { count: close.length })}</p>
       )}
-      {close.map((source) => (
-        <details key={source.title}>
-          <summary>{source.title}</summary>
-          <ul>
-            {source.passages.map((passage, index) => {
-              const link = anchor(passage.paragraph);
-              return (
-                <li key={index}>
-                  {link === undefined ? passage.sentence : <a href={`#${link}`}>{passage.sentence}</a>}
+      <ul>
+        {grouped(close).map((passage) => {
+          const link = anchor(passage.paragraph);
+          return (
+            <li key={passage.sentence}>
+              {link === undefined ? passage.sentence : <a href={`#${link}`}>{passage.sentence}</a>}
+              {passage.written.map((found) => (
+                <p key={found.sentence} className={styles.meta}>
+                  {t("proximity.source", { sentence: found.sentence })}
                   <br />
-                  <span className={styles.meta}>{t("proximity.source", { sentence: passage.source_sentence })}</span>
-                </li>
-              );
-            })}
-          </ul>
-        </details>
-      ))}
+                  {t("proximity.in", { count: found.titles.length, titles: found.titles.join(" · ") })}
+                </p>
+              ))}
+            </li>
+          );
+        })}
+      </ul>
       <p className={styles.meta}>{t("proximity.notFidelity")}</p>
       {kept === null && (
         <form

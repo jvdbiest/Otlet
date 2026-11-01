@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # P02 on the work VM, detached (nohup). Each step resumes or is skipped once done:
 #   check  S5's CC0 corpus gives S5b's thresholds again, or nothing else runs
-#   extract, select  read the instance, no model
-#   generate  one call at a time; needs OLLAMA_URL and OLLAMA_MODEL
+#   extract, preview, select  read the instance, no model
+#   generate  one call at a time; needs ~/p02-corpus/go.ok, OLLAMA_URL and OLLAMA_MODEL
 #   score  needs ~/p02-corpus/review.ok, written once the outputs are read (P02 §3.1)
 # Needs WORKSPACE, the id of Joël's main space. Texts stay in ~/p02-corpus, never versioned.
 set -eu
@@ -31,6 +31,15 @@ if [ ! -s "$CORPUS/candidates.jsonl" ]; then
     sudo docker cp "$DB:/tmp/p02/drafts.jsonl" "$CORPUS/"
     sudo docker exec "$DB" rm -rf /tmp/p02
     sudo chown "$(id -u):$(id -g)" "$CORPUS"/*.jsonl
+fi
+if [ ! -e "$CORPUS/preview.done" ]; then
+    step preview
+    bench preview /corpus
+    touch "$CORPUS/preview.done"
+fi
+if [ ! -e "$CORPUS/go.ok" ]; then
+    step "preview done: the generation waits for Joël ($CORPUS/go.ok)"
+    exit 0
 fi
 if [ ! -s "$CORPUS/selected.json" ]; then
     step select

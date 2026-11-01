@@ -2,6 +2,7 @@
 """P02: the measure of docs/spikes/P02.md §3.
 
     python p02.py check <S5 corpus folder>   S5's CC0 corpus must give S5b's thresholds again
+    python p02.py preview <corpus folder>    §3.0: the real drafts at S5's thresholds (no model)
     python p02.py select <corpus folder>     the 50 sources, from the extract (no model)
     python p02.py score <corpus folder>      the groups, the scores, the verdict inputs
     python p02.py resources <one draft.json> <model>   C8, one pass: seconds and peak memory
@@ -432,16 +433,58 @@ def build_drafts(corpus: Path) -> list[dict[str, Any]]:
 # --- score ---------------------------------------------------------------------------------
 
 
-def deformations(corpus: Path, scorer: Scorer) -> list[dict[str, Any]]:
-    """§3.6, information only: each sentence against the source sentence it distorts."""
-    path = corpus / "deformations.jsonl"
-    if not path.exists():
-        return []
-    found = []
-    for row in read_jsonl(path):
-        vectors = scorer.vectors(row["distorted"]) @ scorer.vectors(row["source"]).T
-        found.append({"name": row["name"], "cosine": round(float(vectors.max()), 4)})
-    return found
+def preview(corpus: Path, out: Path) -> None:
+    """§3.0: the real drafts at S5's thresholds, without a call to a model. Not in the verdict."""
+    drafts = build_drafts(corpus)
+    for draft in drafts:
+        for pair in draft["pairs"]:
+            pair["lexical"] = lexical(pair["source"], draft["text"])
+    s5 = {"potion": {"same": 0.640, "cross": 0.549}, "minilm": {"same": 0.763, "cross": 0.808}}
+    result: dict[str, Any] = {"started": datetime.now(UTC).isoformat(timespec="seconds"), "models": {}}
+    several = [d for d in drafts if d["sources"] >= 2]
+    alone = [d for d in drafts if d["sources"] == 1]
+    lexically = [d for d in drafts if any(s["languages"] == "same" and s["lexical"] >= LEXICAL_THRESHOLD for s in d["pairs"])]
+    result["versions"] = {"several_sources": len(several), "one_source": len(alone)}
+    result["lexical_alone"] = {
+        "several_sources": sum(d in lexically for d in several),
+        "one_source": sum(d in lexically for d in alone),
+    }
+    for name, encoder in ENCODERS.items():
+        scorer = Scorer(encoder())
+        for draft in drafts:
+            for pair in draft["pairs"]:
+                pair["mean"], pair["window"] = scorer.scores(pair["source"], draft["text"])
+        found: dict[str, Any] = {}
+        for key in ("mean", "window"):
+            blocked = [d for d in drafts if any(decided(s, key, s5[name]) for s in d["pairs"])]
+            found[key] = {
+                "several_sources": sum(d in blocked for d in several),
+                "several_rate": round(sum(d in blocked for d in several) / len(several), 4) if several else None,
+                "articles": len({d["article"] for d in several if d in blocked}),
+                "articles_total": len({d["article"] for d in several}),
+                "one_source": sum(d in blocked for d in alone),
+                "blocked_versions": [d["id"] for d in blocked],
+            }
+        result["models"][name] = {
+            "thresholds": s5[name],
+            **found,
+            "drafts": [
+                {
+                    "id": d["id"],
+                    "sources": d["sources"],
+                    "pairs": [
+                        {k: (round(s[k], 4) if isinstance(s[k], float) else s[k]) for k in ("item", "languages", "lexical", "mean", "window")}
+                        for s in d["pairs"]
+                    ],
+                }
+                for d in drafts
+            ],
+        }
+        del scorer
+    out.mkdir(parents=True, exist_ok=True)
+    path = out / f"p02-preview-{datetime.now(UTC).strftime('%Y%m%dT%H%M%SZ')}.json"
+    path.write_text(json.dumps(result, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    print(f"Result: {path}")
 
 
 def score(corpus: Path, out: Path) -> None:
@@ -486,7 +529,6 @@ def score(corpus: Path, out: Path) -> None:
             "seconds": round(time.perf_counter() - started, 1),
             "mean": evaluate(pairs, drafts, "mean"),
             "window": evaluate(pairs, drafts, "window"),
-            "deformations": deformations(corpus, scorer),
             "pairs": [
                 {
                     k: (round(p[k], 4) if isinstance(p[k], float) else p[k])
@@ -539,6 +581,8 @@ if __name__ == "__main__":
     command, *arguments = sys.argv[1:]
     if command == "check":
         check(arguments[0])
+    elif command == "preview":
+        preview(Path(arguments[0]), HERE / "results")
     elif command == "select":
         select(Path(arguments[0]))
     elif command == "score":

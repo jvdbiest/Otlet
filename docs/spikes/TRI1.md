@@ -77,9 +77,9 @@ Fichiers : `spikes/tri1/results/summary.txt`, `spikes/tri1/results/erreurs-B.txt
 
 Relecture des erreurs de B :
 - **Sur 31 retenus qui ne sont pas R, 7 sont H et 24 sont T.** Plusieurs T se discutent : les 4 « Top 5 » de motos, tirés d'essais, ou « Poutine compte intensifier… ». Compter ces 5 articles comme R donnerait 77,8 % sur les 7 questions, et le critère sans l'Ukraine resterait sous 75 % (72 % avec les 4 « Top 5 »). Les seuils et les étiquettes ne changent pas pour autant.
-- **Un effet de lot.** Dans le lot de l'Ukraine qui va du rang 75 au rang 99, 9 articles sont retenus avec la même formule, « Le sujet mentionne directement… », dont TotalEnergies, un empire immobilier et les midterms. Ce lot contient peu d'articles sur le sujet.
+- **Un effet de lot.** Entre les rangs 87 et 98 de l'Ukraine, dans le même lot, 9 articles sont retenus avec la même formule, « Le sujet mentionne directement… », dont TotalEnergies, un empire immobilier et les midterms. Ce lot contient peu d'articles sur le sujet.
 - **Un lien inventé** : Novaïa Gazeta, « journal opposé à la Russie en Ukraine ».
-- **B lit la question au mot près.** Sur l'énergie, trois articles sur des hausses sont en « proche » parce qu'ils parlent de 2027 et « non cet hiver ». Sur l'Ukraine, 6 articles R sont en « proche », dont 4 sur Starlink.
+- **B lit la question au mot près.** Sur l'énergie, trois articles sur des hausses sont en « proche » avec pour raison « non cet hiver ». Sur l'Ukraine, 6 articles R sont en « proche », dont 3 sur Starlink.
 - **Rien de perdu en « hors_sujet »** : avec B, tous les articles R restent « traite » ou « proche ».
 
 ## 5. Conclusion

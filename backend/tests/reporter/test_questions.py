@@ -627,3 +627,41 @@ def test_another_place_takes_the_place_of_the_one_held() -> None:
     # A part of it narrows.
     liege = Translated(Operation.RESTREINDRE, (Concept("Liège", ("Liège",)),), None)
     assert [c.name for c in next_state(state, liege).concepts] == ["jeunes", "Belgique", "Liège"]
+
+
+COLD = Concept("cold weather", ("froid", "vague de froid", "kou", "cold"))
+WHY = Concept("risque", ("risque", "raison", "cause", "reden", "oorzaak", "reason"))
+
+
+def test_the_words_that_ask_are_not_required() -> None:
+    """Joël, 2026-11-01: five articles that answer were lost, none of them holding one of the
+    words of « risque »."""
+    question = "Pourquoi risque t'il de faire très froid dans les jours qui viennent ?"
+    kept = guarded(question, Translated(Operation.CHERCHER, (COLD, WHY), None))
+    assert [c.name for c in kept.concepts] == ["cold weather"]
+    assert unsearched(question, list(kept.concepts)) == []
+    # Whatever the model calls it.
+    why = Concept("raison", ("raison", "pourquoi", "cause"))
+    kept = guarded(question, Translated(Operation.CHERCHER, (COLD, why), None))
+    assert [c.name for c in kept.concepts] == ["cold weather"]
+    # The verb written with its hyphens.
+    kept = guarded(
+        "Le gel risque-t-il ?",
+        Translated(Operation.CHERCHER, (Concept("gel", ("gel",)), WHY), None),
+    )
+    assert [c.name for c in kept.concepts] == ["gel"]
+
+
+def test_what_is_coming_names_no_subject() -> None:
+    assert unsearched("Le gel attendu la semaine prochaine", [Concept("gel", ("gel",))]) == [
+        "attendu"
+    ]
+
+
+def test_a_risk_the_question_is_about_stays_a_concept() -> None:
+    """A noun of the question, not the verb that asks."""
+    nuclear = Concept("nucléaire", ("nucléaire", "kernenergie"))
+    risks = Concept("risques", ("risques", "risico's"))
+    question = "Les risques du nucléaire"
+    kept = guarded(question, Translated(Operation.CHERCHER, (nuclear, risks), None))
+    assert {c.name for c in kept.concepts} == {"nucléaire", "risques"}

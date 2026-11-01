@@ -171,6 +171,31 @@ MONTH_PERIOD = re.compile(
 )
 
 
+# What is coming names no subject: the articles that announce it are of today. « Pourquoi risque
+# t'il de faire très froid dans les jours qui viennent ? » (Joël, 2026-11-01). The longest first.
+COMING_WORDS = (
+    "dans les jours qui viennent",
+    "dans les semaines qui viennent",
+    "dans les prochains jours",
+    "dans les prochaines semaines",
+    "in the coming days",
+    "les prochains jours",
+    "les prochaines semaines",
+    "la semaine prochaine",
+    "de komende dagen",
+    "prochains jours",
+    "prochaines semaines",
+    "semaine prochaine",
+    "komende dagen",
+    "volgende week",
+    "coming days",
+    "next week",
+    "prochainement",
+    "bientot",
+    "a venir",
+)
+
+
 def _asked(question: str) -> str:
     """A question as its folded words between spaces, its marks and quotes aside."""
     text = folded(question).replace("’", "'")
@@ -377,7 +402,7 @@ QUESTION_WORDS = set(
     lesquels lesquelles seulement aussi encore toutes tous sortis sorti sortent annonce
     annonces disent parlant parler uniquement elements element trouves trouvees concernes
     concernees moins avait avaient etait etaient aurait auraient sera seront aura auront
-    peut peuvent doit doivent""".split()
+    peut peuvent doit doivent faire avoir aller venir""".split()
 )
 
 # Places of the Veille (Belgian press): a place the question does not name is no term of its
@@ -462,19 +487,31 @@ PRONOUN_SUFFIX = re.compile(r"(-t)?-(il|elle|ils|elles|on)$")
 ASKING_VERB = re.compile(r"^ *(?:(?:que|qu'en|wat) (\w+)|(?:quels?|quelles?) \w+ (\w+ent)\b)")
 
 
-def _asking_verb(question: str) -> str | None:
-    found = ASKING_VERB.match(_asked(question))
-    return None if found is None else found.group(1) or found.group(2)
+# So is a verb before its pronoun: « risque t'il de faire très froid » required « risque », and the
+# articles that announce the cold do not write it (Joël, 2026-11-01).
+INVERTED_VERB = re.compile(r"(?<![\w'-])([\w-]+?)(?:-t-| t'|-t'| t |-)(?:il|elle|ils|elles|on)\b")
+
+
+def _asking_verbs(question: str) -> set[str]:
+    asked = _asked(question)
+    found = ASKING_VERB.match(asked)
+    first = {found.group(1) or found.group(2)} if found else set()
+    return first | set(INVERTED_VERB.findall(asked))
+
+
+def _periods_aside(question: str) -> str:
+    """A question (as _asked) without the words of a period or of what is coming."""
+    asked = PERIOD_COUNT.sub(" ", _without_dates_named(_asked(question)))
+    for words in (*(w for w, _ in PERIOD_WORDS), *COMING_WORDS):
+        asked = asked.replace(f" {words} ", " ")
+    return MONTH_PERIOD.sub(" ", asked)
 
 
 def _named(question: str) -> list[str]:
     """The words of a question that name something: neither a question word, a period nor a
     language, nor a word shorter than five letters; folded."""
-    asked = PERIOD_COUNT.sub(" ", _without_dates_named(_asked(question)))
-    for words_of_period, _ in PERIOD_WORDS:
-        asked = asked.replace(f" {words_of_period} ", " ")
-    asked = MONTH_PERIOD.sub(" ", asked)
-    language = {w for names in LANGUAGE_WORDS.values() for w in names} | {_asking_verb(question)}
+    asked = _periods_aside(question)
+    language = {w for names in LANGUAGE_WORDS.values() for w in names} | _asking_verbs(question)
     # Short names written in capitals name something too: « MR », « F1 », « GSK ».
     acronyms = {folded(w) for w in re.findall(r"[\w-]+", question) if len(w) >= 2 and w.isupper()}
     out = []
@@ -991,14 +1028,19 @@ def guarded(
             for c in translated.concepts
         ),
     )
-    asked = PERIOD_COUNT.sub(" ", _without_dates_named(_asked(question)))
-    for words_of_period, _ in PERIOD_WORDS:
-        asked = asked.replace(f" {words_of_period} ", " ")
-    asked = MONTH_PERIOD.sub(" ", asked)
+    asked = _periods_aside(question)
     words = set(asked.split())
+    # A concept is not named by the words that ask: « risque, raison, cause » of « Pourquoi risque
+    # t'il… » made the articles on the cold hold one of them too (Joël, 2026-11-01).
+    verbs = _asking_verbs(question)
+    named = asked
+    for verb in verbs:
+        named = named.replace(f" {verb} ", " ")
 
     def said(w: str) -> bool:
-        return len(w) > 2 and _said(w, asked)
+        key = folded(w)
+        asking = key in QUESTION_WORDS or (key[-1:] in ("s", "x") and key[:-1] in QUESTION_WORDS)
+        return len(w) > 2 and not asking and _said(w, named)
 
     def anchored(concept: Concept) -> Concept | None:
         if not any(said(w) for w in (concept.name, *concept.terms)):
@@ -1022,7 +1064,7 @@ def guarded(
         # A concept named by a word of the question that names nothing (« parlant »), also
         # once split (« nouveautés » of « nouveautés Apple »).
         if folded(placed_part.name) not in QUESTION_WORDS
-        and folded(placed_part.name) != _asking_verb(question)
+        and folded(placed_part.name) not in _asking_verbs(question)
     )
     # The same concept twice (« GTA » and « GTA »): once.
     proposed = tuple({folded(c.name): c for c in reversed(proposed)}.values())[::-1]

@@ -67,3 +67,9 @@ Lots :
 - Le worker charge un modèle de plus, à mesurer contre le profil de 4 Go (ADR-0025 : la qualité l'emporte, mais la mémoire de la pile complète décide).
 - Une migration ajoute la colonne de vecteurs et son index, et une tâche encode les éléments déjà collectés.
 - Les règles sans modèle d'ADR-0044 restent utiles : elles décident de l'opération et des filtres (langue, période, lieu).
+
+## Révision acceptée comme hypothèse (Joël, 2026-11-01)
+
+Hypothèse validée sur les questions existantes, pas un résultat définitivement prouvé : à revoir si d'autres questions la contredisent.
+
+Pour le Reporter seul, le seuil fixe de 0,6 devient un seuil relatif au meilleur élément : parmi les 30 plus proches, ceux qui atteignent le meilleur moins 0,25, sans descendre sous 0,4, si ce meilleur atteint 0,55 et si les mots ont trouvé quelque chose. Les dossiers de l'Assistant gardent 0,6. Mesure et limites : `spikes/a2-sens/RAPPORT.md`, « Le Reporter lit plus loin ».

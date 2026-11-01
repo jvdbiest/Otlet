@@ -262,9 +262,21 @@ class PostgresAssistantStore:
         floor: float,
         until: datetime | None = None,
     ) -> list[Candidate]:
-        """The items closest in meaning (ADR-0045). The index is read on, past the items of the
-        other workspaces that row-level security hides, until `limit` are found (iterative scan
-        of pgvector); only vectors of the model of the question compare."""
+        """The items closest in meaning (ADR-0045), at least `floor` close."""
+        found = self.closest(workspace_id, meaning, since, limit, until)
+        return [candidate for candidate, closeness in found if closeness >= floor]
+
+    def closest(
+        self,
+        workspace_id: UUID,
+        meaning: tuple[float, ...],
+        since: datetime | None,
+        limit: int,
+        until: datetime | None = None,
+    ) -> list[tuple[Candidate, float]]:
+        """The items closest in meaning, with their closeness. The index is read on, past the
+        items of the other workspaces that row-level security hides, until `limit` are found
+        (iterative scan of pgvector); only vectors of the model of the question compare."""
         with workspace_transaction(self._engine, workspace_id) as connection:
             connection.execute(sa.text("SET LOCAL hnsw.iterative_scan = strict_order"))
             connection.execute(sa.text("SET LOCAL hnsw.ef_search = 100"))
@@ -293,17 +305,19 @@ class PostgresAssistantStore:
                 },
             ).all()
         return [
-            Candidate(
-                id=row.id,
-                title=row.title,
-                summary=row.summary,
-                url=row.url,
-                language=row.language,
-                publisher=row.publisher,
-                dated=row.dated,
+            (
+                Candidate(
+                    id=row.id,
+                    title=row.title,
+                    summary=row.summary,
+                    url=row.url,
+                    language=row.language,
+                    publisher=row.publisher,
+                    dated=row.dated,
+                ),
+                float(row.closeness),
             )
             for row in rows
-            if row.closeness >= floor
         ]
 
     def term_counts(

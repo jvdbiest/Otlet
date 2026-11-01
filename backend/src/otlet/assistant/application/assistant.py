@@ -86,6 +86,17 @@ class AssistantStore(Protocol):
         """The items closest in meaning (ADR-0045), at least `floor` close, the closest first."""
         ...
 
+    def closest(
+        self,
+        workspace_id: UUID,
+        meaning: tuple[float, ...],
+        since: datetime | None,
+        limit: int,
+        until: datetime | None = None,
+    ) -> list[tuple[Candidate, float]]:
+        """The items closest in meaning, each with its closeness, the closest first."""
+        ...
+
     def term_counts(
         self, workspace_id: UUID, terms: list[str], since: datetime | None
     ) -> dict[str, int]:

@@ -18,7 +18,7 @@ from uuid import UUID
 
 from otlet.assistant.application.assistant import AssistantStore, Candidate
 from otlet.assistant.application.dossiers import Model
-from otlet.assistant.domain.fusion import NEAR_FLOOR, NEAR_MAX, fused
+from otlet.assistant.domain.fusion import NEAR_FLOOR, NEAR_MAX, fused, widely_near
 from otlet.assistant.domain.qualify import (
     BATCH,
     NO_SUMMARY,
@@ -913,8 +913,10 @@ class Reporter:
     ) -> list[Candidate]:
         """The items of the words and the items closest to the question, ranked together by
         reciprocal rank (ADR-0045). An item found by the meaning must hold the concepts that
-        restricted the search since (« uniquement en Belgique »)."""
-        near = self._search.near(workspace_id, state.meaning, since, NEAR_MAX, NEAR_FLOOR, until)
+        restricted the search since (« uniquement en Belgique »). When the words found nothing,
+        the Veille may have nothing on it (the lamas of Mars): only the items truly close."""
+        scored = self._search.closest(workspace_id, state.meaning, since, NEAR_MAX, until)
+        near = widely_near(scored) if found else [c for c, close in scored if close >= NEAR_FLOOR]
         # A place too, even in the subject: the meaning of « le budget de Bruxelles » is near the
         # budget of Seneffe (Joël, 2026-10-30).
         restrictions = [

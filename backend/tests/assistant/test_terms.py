@@ -3,6 +3,7 @@
 
 import pytest
 
+from otlet.assistant.domain.fusion import widely_near
 from otlet.assistant.domain.terms import (
     Concept,
     GlossaryEntry,
@@ -98,3 +99,19 @@ def test_next_to_one_word_a_term_needs_a_real_share_to_be_too_general() -> None:
     assert too_general([binance], counts, 2360)[0].general == ("cyberattaque",)
     strike = Widened(Concept("grève", ("grève", "transport")), ())
     assert too_general([strike], {"grève": 27, "transport": 169}, 2360)[0].general == ("transport",)
+
+
+def test_the_reporter_reads_under_the_floor_below_a_best_item() -> None:
+    """The cold of Joël (2026-11-01): the best at 0.63, the answers down to 0.43."""
+    scored = [("a", 0.63), ("b", 0.53), ("c", 0.43), ("d", 0.37)]
+    assert widely_near(scored) == ["a", "b", "c"]
+    # A best item under 0.55: the Veille has nothing on it.
+    assert widely_near([("a", 0.54), ("b", 0.5)]) == []
+    assert widely_near([]) == []
+    # A precise question: the floor follows the best item.
+    assert widely_near([("a", 0.77), ("b", 0.55), ("c", 0.43)]) == ["a", "b"]
+    # Above the floor of ADR-0045, past the first 30 too; under it, not.
+    high = [(n, 0.7) for n in range(40)]
+    assert len(widely_near(high)) == 40
+    low = [("a", 0.7), *((n, 0.5) for n in range(40))]
+    assert len(widely_near(low)) == 30

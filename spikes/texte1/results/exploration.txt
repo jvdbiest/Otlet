@@ -1,0 +1,27 @@
+marker against the reference, E0: under half by reference / by marker / both
+4 8 3
+E3: coverage median 98.8%, under half 1.9%, pollution median 8.1%, worse than E0 3.8%
+E3 weighted under half 2.0%; by site: {'Audiofanzine': '2%', 'Auto-Moto': '0%', 'Bruzz': '2%', 'Futura Scien': '0%', "L'Avenir (Ac": '0%', 'La DH': '0%', 'La Libre Bel': '2%', 'Le repaire d': '0%', 'LeMonde.fr (': '0%', 'Les Numériqu': '15%', 'Motor Tribu': '2%', 'Next.ink': '0%', 'RTBF Info': '0%'}
+
+lowest or worse pages
+Audiofanzine ref  1122 E0 0.00/1.00 (  124) E2 0.91/0.39 ( 1523) E3 0.91/0.39 marked   394 | Martin & Co ajoute trois modèles à s
+Futura Scien ref  4062 E0 0.00/0.99 (  450) E2 0.92/0.19 ( 4432) E3 0.92/0.19 marked   367 | Un randonneur fait une découverte ch
+Audiofanzine ref  2167 E0 0.02/0.98 ( 2312) E2 0.98/0.08 ( 2259) E3 0.98/0.08 marked   942 | M-Vave dévoile le MATRX au Music Chi
+RTBF Info    ref  5169 E0 0.87/0.03 ( 4603) E2 0.29/0.06 ( 1626) E3 0.87/0.03 marked  4594 | Budget fédéral : fallait-il vraiment
+L'Avenir (Ac ref   781 E0 0.44/0.00 (  350) E2 0.98/0.16 (  939) E3 0.98/0.16 marked   652 | Une personne blessée dans un acciden
+RTBF Info    ref  1718 E0 0.80/0.00 ( 1401) E2 0.49/0.00 (  830) E3 0.49/0.00 marked  1398 | Le premier recensement officiel des 
+L'Avenir (Ac ref  1374 E0 0.50/0.32 ( 1106) E2 0.98/0.25 ( 1791) E3 0.98/0.25 marked  1470 | 4.200 ailerons de requin saisis en C
+La Libre Bel ref  1672 E0 0.53/0.21 ( 1137) E2 0.99/0.12 ( 1902) E3 0.99/0.12 marked  2746 | Pourquoi Donald Trump change-t-il br
+La DH        ref  2205 E0 0.55/0.15 ( 1442) E2 1.00/0.07 ( 2409) E3 1.00/0.07 marked  2059 | ”Gerard Depardieu ? Un homme merveil
+La DH        ref  2275 E0 0.60/0.17 ( 1639) E2 0.92/0.07 ( 2271) E3 0.92/0.07 marked  3123 | "Emmener les supporters avec nous av
+La Libre Bel ref  1812 E0 0.63/0.26 ( 1573) E2 0.99/0.09 ( 1975) E3 0.99/0.09 marked  2596 | "Il y a un climat de peur": le goule
+Les Numériqu ref   397 E0 0.70/0.96 (12609) E2 0.66/0.92 ( 4082) E3 0.66/0.92 marked  2566 | Actualité : Black Friday 2026 – Le s
+L'Avenir (Ac ref  2867 E0 0.68/0.00 ( 1959) E2 0.99/0.04 ( 2991) E3 0.99/0.04 marked  2569 | France: mobilisation à "haut risque"
+L'Avenir (Ac ref  1823 E0 0.69/0.00 ( 1128) E2 0.99/0.07 ( 1990) E3 0.99/0.07 marked  1702 | Un adolescent de 15 ans blessé par b
+La DH        ref  2958 E0 0.70/0.15 ( 2434) E2 1.00/0.04 ( 3061) E3 1.00/0.04 marked  2745 | Un Brésilien plaque tout pour partir
+Next.ink     ref  2413 E0 0.85/0.10 ( 2313) E2 0.99/0.72 ( 8840) E3 0.99/0.72 marked  2930 | VPS à moins de 5 € par mois : notre 
+Next.ink     ref  2090 E0 0.85/0.12 ( 2065) E2 0.99/0.73 ( 8110) E3 0.99/0.73 marked  2521 | [Tuto] Installer facilement son prop
+Les Numériqu ref  1046 E0 0.88/0.85 (12328) E2 0.99/0.75 ( 7226) E3 0.99/0.75 marked  2186 | Actualité : Top produit – Le smartph
+Next.ink     ref  5723 E0 0.95/0.00 ( 5432) E2 1.00/0.40 ( 9962) E3 1.00/0.40 marked  6054 | OpenAI patauge encore en annonçant d
+Motor Tribu  ref    51 E0 1.00/0.00 (   51) E2 1.00/0.84 (  301) E3 1.00/0.84 marked     0 | MotoGP – Malaisie, Sepang, le guide 
+Motor Tribu  ref    59 E0 1.00/0.10 (   66) E2 1.00/0.85 (  365) E3 1.00/0.85 marked     0 | MOTOCROSS des NATIONS – France, Erné

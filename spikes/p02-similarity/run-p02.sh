@@ -5,7 +5,7 @@
 #   extract, preview, select  read the instance, no model
 #   generate  one call at a time; needs ~/p02-corpus/go.ok, OLLAMA_URL and OLLAMA_MODEL
 #   score  needs ~/p02-corpus/review.ok, written once the outputs are read (P02 §3.1)
-# Needs WORKSPACE, the id of Joël's main space. Texts stay in ~/p02-corpus, never versioned.
+# Reads the whole instance (P02 §3.1). Texts stay in ~/p02-corpus, never versioned.
 set -eu
 cd "$(dirname "$0")"
 CORPUS="$HOME/p02-corpus"
@@ -26,7 +26,7 @@ if [ ! -s "$CORPUS/candidates.jsonl" ]; then
     sudo docker exec "$DB" mkdir -p /tmp/p02
     sudo docker cp extract.sql "$DB:/tmp/p02/extract.sql"
     sudo docker exec "$DB" sh -c \
-        "psql -U \$POSTGRES_USER -d \${POSTGRES_DB:-otlet} -v workspace=$WORKSPACE -v out=/tmp/p02 -f /tmp/p02/extract.sql"
+        "psql -U \$POSTGRES_USER -d \${POSTGRES_DB:-otlet} -v out=/tmp/p02 -f /tmp/p02/extract.sql"
     sudo docker cp "$DB:/tmp/p02/candidates.jsonl" "$CORPUS/"
     sudo docker cp "$DB:/tmp/p02/drafts.jsonl" "$CORPUS/"
     sudo docker exec "$DB" rm -rf /tmp/p02

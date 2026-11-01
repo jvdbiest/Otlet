@@ -34,5 +34,5 @@ Décision de Joël du 2026-11-01. Le texte vient de `trafilatura` 2.x, sans comm
 - Les nouveaux articles sont lus ainsi. **Les anciens gardent leur texte** : leur relecture fera l'objet d'une demande à part, aux mêmes règles (robots, réserve TDM), après des essais réels.
 - `articleBody` se lit dans les données de la page, qu'un lecteur ne voit pas. Il passe par le même nettoyage que tout texte venu du Web, et le filtre d'éléments cachés ne s'y applique pas.
 - Limite connue : sur les pages à mur payant de Next.ink, le texte peut garder des éléments hors article (jusqu'à 65 % sur une page).
-- Nouvelles dépendances, de licences compatibles : `trafilatura` (Apache-2.0) et les bibliothèques qu'elle tire, vérifiées par `tools/check_licenses.py`.
+- Nouvelles dépendances, vérifiées par `tools/check_licenses.py` : `trafilatura` (Apache-2.0) et les bibliothèques qu'elle tire. `dateparser`, demandée par `htmldate`, est écartée : elle amènerait `regex` (Apache-2.0 AND CNRI-Python), hors du filtre de `TECH_CHOICES.md` §1.1. `htmldate` ne l'importe que si elle est présente, et Otlet ne lit pas de date avec `trafilatura`.
 - Le filtre des éléments invisibles reste appliqué avant `trafilatura` : le banc lisait la page brute, d'où une revérification du code du produit sur les pages figées.

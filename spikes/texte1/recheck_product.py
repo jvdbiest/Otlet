@@ -36,7 +36,8 @@ for line in (folder / "pages.jsonl").open(encoding="utf-8"):
     seconds.append(time.perf_counter() - began)
     text = read.text if read else ""
     empty += not text
-    before = results[page["id"]]["sizes"]["E3"]
+    sizes = results[page["id"]]["sizes"]
+    before = sizes.get("E3", sizes["E2"])
     moved += abs(len(text) - before) > 0.2 * max(before, 1)
     if page["id"] in gold:
         found = blocks(html)

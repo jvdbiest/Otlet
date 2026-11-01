@@ -35,6 +35,11 @@ meaning = ["numpy>=2.2", "onnxruntime>=1.22", "tokenizers>=0.21"]
 [project.scripts]
 otlet = "otlet.entrypoints.cli:main"
 
+[tool.uv]
+# htmldate asks for dateparser, which brings regex (Apache-2.0 AND CNRI-Python, outside the filter of
+# TECH_CHOICES.md §1.1). It imports it only if present, and ArticleReader reads no date (ADR-0047).
+override-dependencies = ["dateparser; python_version < '3'"]
+
 [dependency-groups]
 dev = [
     "httpx2>=2.16.0",

@@ -104,3 +104,12 @@ Le code de `spikes/tri1/` reste un banc ; rien n'est repris dans `backend/` à c
 - La rédaction du brief à partir des articles retenus n'est pas mesurée.
 - L'effet de lot n'a pas été isolé : des lots plus petits ou un autre ordre n'ont pas été essayés.
 - Le prompt C donne un seul exemple, et il n'est qu'une rédaction possible parmi d'autres.
+
+## 8. Après la conclusion : B dans le produit (2026-11-01)
+
+Joël a choisi B (#127). Essai réel sur .252, avec qwen3:14b, depuis les conversations « [Banc recherche] » : tri puis briefs « [Banc TRI1] », comme le bouton (les 20 premiers retenus).
+
+- **Froid** : 8 retenus sur 39, dont 5 des 6 articles R. Le brouillon explique enfin le pourquoi (anticyclone, vent du nord). Il déforme pourtant : « conditions inhabituelles » alors que la source parle d'une situation normale, gelées placées dans des régions que la source cite pour le brouillard. Il remplit aussi avec le mouron du jardin et la raclette, deux articles retenus qui ne répondent pas.
+- **Ukraine** : 65 retenus sur 123. Aucune section sur la Bulgarie, mais parce que l'article bulgare retenu est le 23e et que le bouton s'arrête à 20. Il n'est pas écarté. Le brouillon inverse un fait : l'attaque de drones ukrainiens sur Saint-Pétersbourg devient une attaque russe. Le contrôle signale aussi le nombre 235, qu'il ne retrouve pas dans les sources.
+- **Stabilité** : au banc, l'article bulgare retenu était celui du rang 93 ; à l'essai, celui du rang 28. Même question, mêmes lots : le verdict varie d'un passage à l'autre.
+- **Texte collecté** : pour « Hiver 2026-2027 » et « Du jamais-vu si tôt ? Le vortex polaire… », le texte en base parle d'autre chose (les JO d'hiver, El Niño). Le titre et le résumé sont justes, le texte non. Cela peut expliquer leur absence dans les brouillons et, en partie, dans la recherche par mots.

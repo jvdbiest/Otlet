@@ -47,10 +47,12 @@ from otlet.writing.application.charter import Charter, CharterError, Charters
 from otlet.writing.application.drafts import GENERATE_DRAFT, Drafts, MatterError
 from otlet.writing.application.editing import Editing
 from otlet.writing.application.library import Library, TagError, TitleError, clean_tags
+from otlet.writing.application.proximity import CHECK_PROXIMITY, override
 from otlet.writing.domain.article import Version
 from otlet.writing.domain.brief import BriefFields, Length
 from otlet.writing.domain.charter import DEFAULT_CHARTER
 from otlet.writing.domain.document import check
+from otlet.writing.domain.proximity import TooClose
 
 pytestmark = requires_database
 
@@ -601,3 +603,75 @@ def test_the_sources_of_a_brief_are_its_reference(world: World) -> None:
     assert [t.title for t in texts] == ["Article de journal", "Article de agence"]
     assert texts[0].text.startswith("Résumé de journal")
     assert world.drafts.sources(context, uuid.uuid4()) is None
+
+
+def test_a_version_too_close_goes_out_only_with_a_justification(world: World) -> None:
+    """U05, ADR-0046: checked by the worker; blocked at validation until its author says why; a
+    new text is checked again."""
+    context = world.context
+    agence, journal = items(world)
+    brief = world.briefs.create(context, BriefFields(title="Proche", item_ids=(journal, agence)))
+    generation = world.drafts.start(context, brief.id, force=True)
+    assert generation is not None
+    world.drafts.run(context.workspace_id, context.user_id, generation.id)
+    article = world.drafts.article(context, brief.id)
+    assert article is not None
+    assert CHECK_PROXIMITY in [name for name, _ in world.jobs]
+    store = world.articles
+    library = Library(store, store.gate)
+    with pytest.raises(TooClose) as pending:
+        library.send(context, article.id, 1)
+    assert pending.value.gate == "pending"
+
+    found = store.to_check(context.workspace_id, article.id, 1)
+    assert found is not None and len(found[2]) == 2
+    close = {"status": "checked", "blocked": True, "sources": []}
+    store.save_proximity(context.workspace_id, article.id, 1, close)
+    assert store.to_check(context.workspace_id, article.id, 1) is None
+    with pytest.raises(TooClose) as blocked:
+        library.send(context, article.id, 1)
+    assert blocked.value.gate == "blocked"
+
+    assert override(store, context, article.id, 1, "Ma source, sous licence.")
+    sent = library.send(context, article.id, 1)
+    assert sent is not None and sent.validated_version == 1
+    kept = sent.versions[0].proximity_override
+    assert kept is not None
+    assert kept["reason"] == "Ma source, sous licence."
+    assert kept["user_id"] == str(context.user_id)
+    assert not override(store, context, article.id, 9, "Cette version n'existe pas.")
+
+    # A person's version starts unchecked, and saving it again forgets its justification.
+    version = sent.versions[0]
+    made = store.add_person_version(
+        context.workspace_id, context.user_id, article.id, 1, version.title, version.document
+    )
+    assert made.proximity is None
+    store.save_proximity(context.workspace_id, article.id, made.number, close)
+    override(store, context, article.id, made.number, "Une justification de plus.")
+    current = store.version(context.workspace_id, article.id, made.number)
+    assert current is not None and current.updated_at is not None
+    saved = store.update_version(
+        context.workspace_id,
+        article.id,
+        made.number,
+        version.title,
+        version.document,
+        current.updated_at,
+    )
+    assert saved is not None
+    assert saved.proximity is None and saved.proximity_override is None
+
+    # A copy stays compared with the sources of the brief it came from, and is checked anew.
+    copy = library.duplicate(context, article.id, 1)
+    assert copy is not None and copy.brief_id is None and copy.origin_brief_id == brief.id
+    assert copy.versions[0].proximity is None
+    assert store.gate(context.workspace_id, copy.id, 1) == "pending"
+    found = store.to_check(context.workspace_id, copy.id, 1)
+    assert found is not None and len(found[2]) == 2
+    again = library.duplicate(context, copy.id, 1)
+    assert again is not None and again.origin_brief_id == brief.id
+
+    # An article without a brief has no source to compare with.
+    made_by_hand = library.create(context, "Écrit à la main")
+    assert store.gate(context.workspace_id, made_by_hand.id, 1) == "open"

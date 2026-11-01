@@ -251,6 +251,9 @@
     "invalid_query": "Saisissez entre 1 et 200 caractères.",
     "generic": "L'opération a échoué. Réessayez dans un instant.",
     "version_changed": "Cette version a été enregistrée ailleurs entre-temps.",
+    "too_close": "Cette version est trop proche d'une source : reformulez-la, ou justifiez son passage. Si plusieurs articles sont choisis, aucun ne peut sortir : ouvrez-les un par un.",
+    "proximity_pending": "Le contrôle de proximité est en cours. Réessayez dans un instant.",
+    "invalid_justification": "Une justification compte de 10 à 1 000 caractères.",
     "version_not_found": "Cette version n'existe plus.",
     "invalid_document": "Otlet n'a pas pu enregistrer ce texte : une mise en forme n'est pas reconnue.",
     "too_large": "Cette image dépasse 15 Mo.",
@@ -710,6 +713,18 @@
       "conversation": "Voir la conversation du Reporter"
     }
   },
+  "proximity": {
+    "pending": "Contrôle de proximité avec les sources en cours : la validation et l'export seront possibles à sa fin.",
+    "failed": "Le contrôle de proximité n'a pas pu se faire sur cette version. Elle reste utilisable : comparez-la vous-même à ses sources.",
+    "blocked": "{count, plural, one {Cette version est trop proche d'une source.} other {Cette version est trop proche de # sources.}} Elle ne peut être ni validée ni exportée telle quelle : reformulez-la, ou dites pourquoi elle peut sortir.",
+    "overridden": "Trop proche d'une source, laissée passer le {date} : {reason}",
+    "source": "Dans la source : {sentence}",
+    "in": "{count, plural, one {Article : {titles}} other {# articles : {titles}}}",
+    "notFidelity": "Ce contrôle mesure la proximité avec les sources, pas la fidélité : une version qui le passe n'est pas vérifiée sur le fond.",
+    "justification": "Pourquoi cette version peut-elle sortir ?",
+    "hint": "Par exemple : source sous licence, votre propre texte, faits bruts difficiles à dire autrement. Gardé avec votre nom et la date.",
+    "submit": "Laisser passer avec cette justification"
+  },
   "draft": {
     "title": "Brouillon",
     "help": "Le modèle du brief (ou votre profil) écrit un brouillon à partir de vos consignes et du texte des éléments, en citant ses sources. Chaque génération crée une nouvelle version ; les précédentes sont gardées.",
@@ -897,6 +912,7 @@
       "editOne": "Un seul article à la fois",
       "duplicate": "Dupliquer",
       "export": "Exporter (ZIP)",
+      "refused": "{count, plural, one {Un article n'a pas été exporté : le fichier NON-EXPORTES.txt du ZIP dit lequel et pourquoi.} other {# articles n'ont pas été exportés : le fichier NON-EXPORTES.txt du ZIP dit lesquels et pourquoi.}}",
       "archive": "Archiver",
       "unarchive": "Désarchiver",
       "delete": "Supprimer",

@@ -52,4 +52,4 @@ La numérotation continue celle de l'architecture.
 | [0042](0042-sauvegarde-et-restauration.md) | Sauvegarde et restauration : un dossier choisi, des copies complètes, restaurer sans écraser | Accepté (F08) |
 | [0043](0043-assistant-de-veille.md) | Assistant de veille : le glossaire trouve, le modèle ordonne | Accepté (A1b-1) |
 | [0044](0044-reporter.md) | Reporter : un assistant documentaire progressif | Accepté (A2) |
-| [0046](0046-garde-fou-de-similarite-apres-p02.md) | Garde-fou de similarité après P02 : MiniLM en fenêtre, complément sur échantillon neuf | Accepté, sous réserve de P02b (U05) |
+| [0046](0046-garde-fou-de-similarite-apres-p02.md) | Garde-fou de similarité après P02 : MiniLM en fenêtre, complément sur échantillon neuf | Accepté, confirmé par P02b (U05) |

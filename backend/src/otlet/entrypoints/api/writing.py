@@ -17,6 +17,8 @@ from otlet.writing.application.drafts import Drafts, MatterError
 from otlet.writing.application.editing import Editing
 from otlet.writing.application.exports import Exports
 from otlet.writing.application.library import Library, Outcome, TagError, TitleError
+from otlet.writing.application.proximity import JustificationError, ProximityStore
+from otlet.writing.application.proximity import override as proximity_override
 from otlet.writing.domain.article import Article, Generation, LibraryEntry, Version
 from otlet.writing.domain.brief import (
     FACTS_MAX,
@@ -40,6 +42,7 @@ from otlet.writing.domain.draft import (
     matter_level,
 )
 from otlet.writing.domain.matter import Evaluation
+from otlet.writing.domain.proximity import TooClose
 from otlet.writing.domain.vocabulary import TONE_DEFAULT, VOCABULARY
 
 LengthKey = Literal["short", "medium", "long"]
@@ -282,6 +285,9 @@ class VersionView(BaseModel):
     updated_at: datetime  # sent back by « Enregistrer »: a version changed since is not saved over
     based_on: int | None  # the version a person's version was made from
     words: int  # of its text (Joël, 2026-10-19: shown beside its number)
+    # U05: how close it is to its sources, null until checked; why its author lets it go.
+    proximity: dict[str, Any] | None
+    proximity_override: dict[str, Any] | None
 
     @classmethod
     def of(cls, version: Version) -> "VersionView":
@@ -301,6 +307,8 @@ class VersionView(BaseModel):
             updated_at=version.updated_at or version.created_at,
             based_on=version.based_on,
             words=len(body_text(version.document).split()),
+            proximity=version.proximity,
+            proximity_override=version.proximity_override,
         )
 
 
@@ -313,6 +321,7 @@ class ArticleView(BaseModel):
     validated_version: int | None  # the one exports and publications take
     sent_at: datetime | None  # when it entered the Library; None while it is in the workshop
     tags: list[str]
+    origin_brief_id: UUID | None  # a copy: the brief whose sources it is compared with (U05)
 
     @classmethod
     def of(cls, article: Article) -> "ArticleView":
@@ -325,6 +334,7 @@ class ArticleView(BaseModel):
             validated_version=article.validated_version,
             sent_at=article.sent_at,
             tags=list(article.tags),
+            origin_brief_id=article.origin_brief_id,
         )
 
 
@@ -402,6 +412,18 @@ class NewArticleBody(BaseModel):
 
 class SendBody(BaseModel):
     number: int  # the version validated
+
+
+class OverrideBody(BaseModel):
+    reason: str = Field(max_length=2000)
+
+
+GATE_DETAILS = {"blocked": "too_close", "pending": "proximity_pending"}
+
+
+def refused(error: TooClose) -> HTTPException:
+    """409: too close to a source, or not checked yet (a check has just been asked for)."""
+    return HTTPException(status.HTTP_409_CONFLICT, GATE_DETAILS[error.gate])
 
 
 class ArchiveBody(BaseModel):
@@ -484,6 +506,7 @@ def build_router(
     editing: Editing,
     exports: Exports,
     library: Library,
+    article_store: ProximityStore,
     workspace_context: Callable[..., WorkspaceContext],
 ) -> APIRouter:
     Context = Annotated[WorkspaceContext, Depends(workspace_context)]
@@ -626,8 +649,12 @@ def build_router(
         article_id: UUID, number: int, kind: ExportKind, context: Context
     ) -> Response:
         """A version as a file (X03c): pdf, docx, html, md (a ZIP when it has images), txt or json,
-        with its Sources block and AI mention. Made on demand, never stored."""
-        exported = exports.export(context, article_id, number, kind)
+        with its Sources block and AI mention. Made on demand, never stored. 409 when it is too
+        close to a source (U05)."""
+        try:
+            exported = exports.export(context, article_id, number, kind)
+        except TooClose as error:
+            raise refused(error) from error
         if exported is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "version_not_found")
         return Response(
@@ -674,13 +701,18 @@ def build_router(
         responses={200: {"content": {"application/zip": {}}}},
     )
     def export_selection(body: ExportSelectionBody, context: Context) -> Response:
-        """The articles chosen in one ZIP, a file each: the validated version, else the latest."""
+        """The articles chosen in one ZIP, a file each: the validated version, else the latest.
+        Those that cannot go out (U05) are named in NON-EXPORTES.txt and counted in the header
+        X-Otlet-Refused; 409 when none can."""
         picks = [
             (article_id, number)
             for article_id in dict.fromkeys(body.article_ids)
             if (number := library.shown_version(context, article_id)) is not None
         ]
-        exported = exports.export_many(context, picks, body.kind)
+        try:
+            exported = exports.export_many(context, picks, body.kind)
+        except TooClose as error:
+            raise refused(error) from error
         if exported is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "article_not_found")
         return Response(
@@ -690,6 +722,7 @@ def build_router(
                 "Content-Disposition": f'attachment; filename="{exported.filename}"',
                 "X-Content-Type-Options": "nosniff",
                 "Cache-Control": "no-store",
+                "X-Otlet-Refused": str(exported.refused),
             },
         )
 
@@ -728,9 +761,37 @@ def build_router(
     @router.post("/articles/{article_id}/send")
     def send_article(article_id: UUID, body: SendBody, context: Context) -> ArticleView:
         """« Envoyer en Bibliothèque », then « Valider » a later version: the version given is the
-        one exports and publications take."""
-        article = library.send(context, article_id, body.number)
+        one exports and publications take. 409 when it is too close to a source (U05)."""
+        try:
+            article = library.send(context, article_id, body.number)
+        except TooClose as error:
+            raise refused(error) from error
         if article is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "version_not_found")
+        return ArticleView.of(article)
+
+    @router.post(
+        "/articles/{article_id}/versions/{number}/proximity/check",
+        status_code=status.HTTP_204_NO_CONTENT,
+    )
+    def check_proximity(article_id: UUID, number: int, context: Context) -> None:
+        """Asks for the check of a version that has none: written before U05, or its check lost."""
+        article_store.gate(context.workspace_id, article_id, number)
+
+    @router.post("/articles/{article_id}/versions/{number}/proximity/override")
+    def override_proximity(
+        article_id: UUID, number: int, body: OverrideBody, context: Context
+    ) -> ArticleView:
+        """The author lets a version too close to a source go out, and says why (Joël,
+        2026-11-01): kept with who and when, until the text changes."""
+        try:
+            found = proximity_override(article_store, context, article_id, number, body.reason)
+        except JustificationError as error:
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_CONTENT, "invalid_justification"
+            ) from error
+        article = library.article(context, article_id)
+        if not found or article is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "version_not_found")
         return ArticleView.of(article)
 

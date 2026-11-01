@@ -3,13 +3,14 @@
 « Envoyer en Bibliothèque » validates a version and sends its article here. One brief, one
 article, several versions."""
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from typing import Any, Protocol
 from uuid import UUID
 
 from otlet.workspaces.domain.model import WorkspaceContext
 from otlet.writing.domain.article import Article, LibraryEntry
+from otlet.writing.domain.proximity import Gate, TooClose
 
 STATUSES = ("brouillon", "valide", "archive")
 TAGS_MAX = 20
@@ -32,7 +33,10 @@ class LibraryStore(Protocol):
         title: str,
         document: dict[str, Any],
         tags: Sequence[str] = (),
-    ) -> UUID: ...
+        origin_brief_id: UUID | None = None,
+    ) -> UUID:
+        """`origin_brief_id`: for a copy, the brief whose sources it stays compared with."""
+        ...
 
     def delete_archived(self, workspace_id: UUID, article_id: UUID) -> bool: ...
 
@@ -69,6 +73,8 @@ class Outcome:
 
 
 TITLE_MAX = 200
+# Whether a version can go out (U05): workspace, article, number.
+GateOf = Callable[[UUID, UUID, int], Gate]
 
 
 def clean_tags(tags: Sequence[str]) -> list[str]:
@@ -88,15 +94,21 @@ def clean_tags(tags: Sequence[str]) -> list[str]:
 
 
 class Library:
-    def __init__(self, store: LibraryStore) -> None:
+    def __init__(self, store: LibraryStore, gate: GateOf | None = None) -> None:
         self._store = store
+        self._gate = gate
 
     def article(self, context: WorkspaceContext, article_id: UUID) -> Article | None:
         return self._store.article(context.workspace_id, article_id)
 
     def send(self, context: WorkspaceContext, article_id: UUID, number: int) -> Article | None:
         """« Envoyer en Bibliothèque », and later « Valider » another version: the version given
-        becomes the one exports and publications take."""
+        becomes the one exports and publications take. A version too close to a source is refused
+        unless its author said why (U05, ADR-0046): TooClose."""
+        if self._gate is not None:
+            gate = self._gate(context.workspace_id, article_id, number)
+            if gate != "open":
+                raise TooClose(gate)
         if not self._store.send(context.workspace_id, article_id, number):
             return None
         return self._store.article(context.workspace_id, article_id)
@@ -165,8 +177,9 @@ class Library:
 
     def duplicate(self, context: WorkspaceContext, article_id: UUID, number: int) -> Article | None:
         """« Dupliquer » (Joël, 2026-10-20): a new article, without a brief, whose first version
-        is a copy of the version given, with its sources and images; its tags follow. None when
-        the article or the version does not exist."""
+        is a copy of the version given, with its sources and images; its tags follow, and so does
+        the proximity check (Joël, 2026-11-01): a copy must not be a way round it. None when the
+        article or the version does not exist."""
         source = self._store.article(context.workspace_id, article_id)
         version = (
             None
@@ -177,7 +190,12 @@ class Library:
             return None
         title = f"Copie de {version.title}"[:TITLE_MAX]
         made = self._store.create_article(
-            context.workspace_id, context.user_id, title, version.document, source.tags
+            context.workspace_id,
+            context.user_id,
+            title,
+            version.document,
+            source.tags,
+            source.brief_id or source.origin_brief_id,
         )
         return self._store.article(context.workspace_id, made)
 

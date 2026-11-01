@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Statut | Accepté (2026-11-01), sous réserve de P02b pour le modèle et les seuils |
+| Statut | Accepté (2026-11-01) ; réserve levée par P02b (succès, 2026-11-01) |
 | Date | 2026-11-01 |
 | Décideur | Joël |
 | Documents touchés | ADR-0024 (points 1, 5, 6) ; ADR-0045 ; U05 et P02 du backlog d'É1 ; `RISKS.md` §4.8 |

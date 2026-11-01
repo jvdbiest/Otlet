@@ -14,16 +14,19 @@ from otlet.jobs.application.registry import Enqueue
 from otlet.platform.database import workspace_transaction
 from otlet.platform.rls import here
 from otlet.writing.application.drafts import GENERATE_DRAFT, RunningDraft, Written
+from otlet.writing.application.proximity import CHECK_PROXIMITY
 from otlet.writing.domain.article import Article, Generation, LibraryEntry, Version
 from otlet.writing.domain.document import body_text
 from otlet.writing.domain.draft import PROMPT_VERSION, SourceText
+from otlet.writing.domain.proximity import Gate, Source, gate_of
 
 GENERATION_COLUMNS = (
     "id, brief_id, status, error, article_id, version, attempts, created_at, finished_at, details"
 )
 VERSION_COLUMNS = (
     "number, title, document, origin, provider_kind, model, prompt_version, cut_sources,"
-    " unused_sources, context_overflow, created_at, updated_at, based_on"
+    " unused_sources, context_overflow, created_at, updated_at, based_on, proximity,"
+    " proximity_override"
 )
 
 
@@ -58,6 +61,8 @@ def _version(row: sa.Row[Any]) -> Version:
         details=row.details,
         updated_at=row.updated_at,
         based_on=row.based_on,
+        proximity=row.proximity,
+        proximity_override=row.proximity_override,
     )
 
 
@@ -206,6 +211,7 @@ class PostgresArticleStore:
                     "body": body_text(document),
                 },
             ).scalar_one()
+            self._enqueue_check(connection, workspace_id, article_id, number)
         return article_id, number
 
     def finish(
@@ -285,7 +291,7 @@ class PostgresArticleStore:
             row = connection.execute(
                 sa.text(
                     "SELECT id, brief_id, title, created_at, updated_at, status,"
-                    " validated_version, sent_at, tags FROM articles"
+                    " validated_version, sent_at, tags, origin_brief_id FROM articles"
                     f" WHERE {where} AND {here()}"
                 ),
                 {"key": key},
@@ -310,6 +316,7 @@ class PostgresArticleStore:
             validated_version=row.validated_version,
             sent_at=row.sent_at,
             tags=tuple(row.tags),
+            origin_brief_id=row.origin_brief_id,
         )
 
     def validated_version(self, workspace_id: UUID, article_id: UUID) -> int | None:
@@ -470,7 +477,9 @@ class PostgresArticleStore:
             row = connection.execute(
                 sa.text(
                     "UPDATE article_versions SET title = :title,"
-                    " document = CAST(:document AS jsonb), body_text = :body, updated_at = now()"
+                    " document = CAST(:document AS jsonb), body_text = :body, updated_at = now(),"
+                    # Another text: its check and its author's justification no longer hold.
+                    " proximity = NULL, proximity_override = NULL"
                     " WHERE article_id = :article AND number = :number AND origin = 'humain'"
                     f" AND updated_at = :updated_at AND {here()}"
                     f" RETURNING {VERSION_COLUMNS}, {DETAILS}"
@@ -486,6 +495,7 @@ class PostgresArticleStore:
             ).one_or_none()
             if row is not None:
                 _touch(connection, article_id, title)
+                self._enqueue_check(connection, workspace_id, article_id, number)
         return None if row is None else _version(row)
 
     def add_person_version(
@@ -518,6 +528,7 @@ class PostgresArticleStore:
                 },
             ).one()
             _touch(connection, article_id, title)
+            self._enqueue_check(connection, workspace_id, article_id, row.number)
         return _version(row)
 
     def create_article(
@@ -527,16 +538,18 @@ class PostgresArticleStore:
         title: str,
         document: dict[str, Any],
         tags: Sequence[str] = (),
+        origin_brief_id: UUID | None = None,
     ) -> UUID:
         """An article without a brief, in the Library at once (Joël, 2026-10-20): written by a
-        person, or a copy of another; its first version is theirs."""
+        person, or a copy of another; its first version is theirs. A copy stays compared with
+        the sources of `origin_brief_id` (U05)."""
         article_id = uuid4()
         with workspace_transaction(self._engine, workspace_id) as connection:
             connection.execute(
                 sa.text(
                     "INSERT INTO articles (id, workspace_id, brief_id, created_by, title, status,"
-                    " sent_at, tags) VALUES (:id, :workspace, NULL, :user, :title, 'brouillon',"
-                    " now(), :tags)"
+                    " sent_at, tags, origin_brief_id) VALUES (:id, :workspace, NULL, :user, :title,"
+                    " 'brouillon', now(), :tags, :origin)"
                 ),
                 {
                     "id": article_id,
@@ -544,6 +557,7 @@ class PostgresArticleStore:
                     "user": user_id,
                     "title": title,
                     "tags": list(tags),
+                    "origin": origin_brief_id,
                 },
             )
             connection.execute(
@@ -562,6 +576,8 @@ class PostgresArticleStore:
                     "body": body_text(document),
                 },
             )
+            if origin_brief_id is not None:
+                self._enqueue_check(connection, workspace_id, article_id, 1)
         return article_id
 
     # Where the images are shown (médiathèque, ADR-0040): read in the blocks of the versions,
@@ -636,6 +652,98 @@ class PostgresArticleStore:
                 {"article": article_id, "number": number},
             ).rowcount
         return removed == 1
+
+    def _enqueue_check(
+        self, connection: sa.Connection, workspace_id: UUID, article_id: UUID, number: int
+    ) -> None:
+        self._enqueue(
+            connection,
+            CHECK_PROXIMITY,
+            workspace_id=str(workspace_id),
+            article_id=str(article_id),
+            number=number,
+        )
+
+    def gate(self, workspace_id: UUID, article_id: UUID, number: int) -> Gate:
+        """Whether the version can go out. A version never checked (written before U05, or its
+        check lost) is checked now, and answers « pending » until then."""
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            row = connection.execute(
+                sa.text(
+                    "SELECT coalesce(a.brief_id, a.origin_brief_id) AS brief_id, v.proximity,"
+                    " v.proximity_override FROM article_versions AS v"
+                    " JOIN articles AS a ON a.id = v.article_id"
+                    " AND a.workspace_id = v.workspace_id WHERE v.article_id = :article"
+                    f" AND v.number = :number AND {here('v')}"
+                ),
+                {"article": article_id, "number": number},
+            ).one_or_none()
+            if row is None:
+                return "open"  # the caller answers that it does not exist
+            gate = gate_of(row.brief_id is not None, row.proximity, row.proximity_override)
+            if gate == "pending":
+                self._enqueue_check(connection, workspace_id, article_id, number)
+        return gate
+
+    def to_check(
+        self, workspace_id: UUID, article_id: UUID, number: int
+    ) -> tuple[str, dict[str, Any], list[Source]] | None:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            version = connection.execute(
+                sa.text(
+                    "SELECT v.title, v.document,"
+                    " coalesce(a.brief_id, a.origin_brief_id) AS brief_id"
+                    " FROM article_versions AS v"
+                    " JOIN articles AS a ON a.id = v.article_id"
+                    " AND a.workspace_id = v.workspace_id WHERE v.article_id = :article"
+                    f" AND v.number = :number AND v.proximity IS NULL AND {here('v')}"
+                ),
+                {"article": article_id, "number": number},
+            ).one_or_none()
+            if version is None or version.brief_id is None:
+                return None
+            # The same text a draft receives (see `sources`), and the language of the item.
+            items = connection.execute(
+                sa.text(
+                    "SELECT i.title, i.url, i.language,"
+                    " coalesce(nullif(i.text, ''), i.summary, i.title) AS body"
+                    " FROM brief_items AS bi JOIN source_items AS i ON i.id = bi.item_id"
+                    " AND i.workspace_id = bi.workspace_id"
+                    f" WHERE bi.brief_id = :brief AND {here('bi')} ORDER BY bi.position"
+                ),
+                {"brief": version.brief_id},
+            ).all()
+        return (
+            version.title,
+            version.document,
+            [Source(r.title, r.url, r.language, r.body) for r in items],
+        )
+
+    def save_proximity(
+        self, workspace_id: UUID, article_id: UUID, number: int, report: dict[str, Any]
+    ) -> None:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            connection.execute(
+                sa.text(
+                    "UPDATE article_versions SET proximity = CAST(:report AS jsonb)"
+                    f" WHERE article_id = :article AND number = :number AND {here()}"
+                ),
+                {"article": article_id, "number": number, "report": json.dumps(report)},
+            )
+
+    def override_proximity(
+        self, workspace_id: UUID, user_id: UUID, article_id: UUID, number: int, reason: str
+    ) -> bool:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            changed = connection.execute(
+                sa.text(
+                    "UPDATE article_versions SET proximity_override = jsonb_build_object("
+                    "'reason', CAST(:reason AS text), 'user_id', CAST(:user AS text), 'at', now())"
+                    f" WHERE article_id = :article AND number = :number AND {here()}"
+                ),
+                {"article": article_id, "number": number, "reason": reason, "user": str(user_id)},
+            ).rowcount
+        return changed == 1
 
 
 def _touch(connection: sa.Connection, article_id: UUID, title: str) -> None:

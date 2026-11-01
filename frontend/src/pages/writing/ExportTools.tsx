@@ -6,7 +6,17 @@ import { styles } from "../watch/styles.ts";
 const FORMATS = ["pdf", "docx", "html", "md", "txt"] as const;
 
 /** Print and export a version (X03c): files made by the server from the saved version. */
-export function ExportTools({ workspaceId, articleId, number }: { workspaceId: string; articleId: string; number: number }) {
+export function ExportTools({
+  workspaceId,
+  articleId,
+  number,
+  gated = false,
+}: {
+  workspaceId: string;
+  articleId: string;
+  number: number;
+  gated?: boolean; // too close to a source, or not checked yet (U05): nothing goes out
+}) {
   const { t } = useTranslation();
   const [failed, setFailed] = useState(false);
   const url = (kind: string) =>
@@ -16,6 +26,7 @@ export function ExportTools({ workspaceId, articleId, number }: { workspaceId: s
       <button
         type="button"
         className={styles.button}
+        disabled={gated}
         onClick={() => {
           setFailed(false);
           fetch(url("html"), { credentials: "same-origin" })
@@ -48,6 +59,7 @@ export function ExportTools({ workspaceId, articleId, number }: { workspaceId: s
       <select
         aria-label={t("draft.export")}
         className={styles.button}
+        disabled={gated}
         value=""
         onChange={(event) => {
           const kind = event.target.value;

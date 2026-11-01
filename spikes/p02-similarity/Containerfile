@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# P02 bench image: potion by model2vec (S5b), MiniLM by ONNX Runtime (ADR-0045), rapidfuzz.
+FROM python:3.13-slim
+RUN pip install --no-cache-dir "model2vec==0.9.0" "rapidfuzz==3.14.6" "onnxruntime>=1.22,<2" "tokenizers>=0.21,<1"
+WORKDIR /work
+ENTRYPOINT ["python"]

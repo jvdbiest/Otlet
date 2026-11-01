@@ -1,0 +1,21 @@
+[
+ {"id": "D1", "deformed": true, "article": "725cf52b", "start": "Le déficit public projeté à 38 milliards", "sources": [3, 5, 6], "defect": ["confiance"]},
+ {"id": "D2", "deformed": true, "article": "725cf52b", "start": "La dynamique de « Premier ministre de l", "sources": [1], "defect": ["absence", "absent", "extérieur", "suédoise", "passé"]},
+ {"id": "D3", "deformed": true, "article": "ebb23952", "start": "Le ministre japonais Gōshi Hosono", "sources": [10], "defect": ["php", "chronologique", "cyberattaque"]},
+ {"id": "D4", "deformed": true, "article": "ebb23952", "start": "Kumagai a dénoncé une", "sources": [4], "defect": ["artex", "filiale", "critiqu", "lent"]},
+ {"id": "D5", "deformed": true, "article": "ebb23952", "start": "Sony a offert une récompense", "sources": [12], "defect": ["45 000", "45000", "50 000", "50000", "montant", "même somme"]},
+ {"id": "D6", "deformed": true, "article": "5f41ec65", "text": "Un accident de train s'est produit le 28 octobre 2026 près d'Urda, en Espagne, entraînant 68 morts et 108 blessés, causé par une panne informatique du système de signalisation LZB. Les articles lus ne précise pas les noms des trains impliqués ni les circonstances exactes de la collision, hormis la panne informatique.", "sources": [2, 3, 4], "defect": ["panne", "noms", "iryo", "ave", "centre de contrôle", "décision"]},
+ {"id": "D7", "deformed": true, "outside": true, "article": "726df3ee", "start": "À noter que GTA V quitte", "sources": [1], "defect": ["2 novembre", "3 au 30", "octobre"]},
+ {"id": "F1", "deformed": false, "article": "ebb23952", "start": "La Compagnie des transports strasbourgeois", "sources": [6]},
+ {"id": "F2", "deformed": false, "article": "ebb23952", "start": "L'attaque remonte à la nuit", "sources": [6]},
+ {"id": "F3", "deformed": false, "article": "ebb23952", "start": "La plateforme de cryptomonnaies Binance", "sources": [9]},
+ {"id": "F4", "deformed": false, "article": "ebb23952", "start": "La cyberattaque sur Binance intervient", "sources": [9]},
+ {"id": "F5", "deformed": false, "article": "ebb23952", "start": "Une cyberattaque attribuée à des pirates chinois", "sources": [2]},
+ {"id": "F6", "deformed": false, "article": "ebb23952", "start": "L'intelligence artificielle a été massivement", "sources": [2]},
+ {"id": "F7", "deformed": false, "article": "ebb23952", "start": "Anthropic, l'un des géants", "sources": [7]},
+ {"id": "F8", "deformed": false, "article": "ebb23952", "start": "En Belgique, des centaines de milliers", "sources": [3, 5]},
+ {"id": "F9", "deformed": false, "article": "5f41ec65", "start": "La collision s'est produite peu avant 9 heures", "sources": [1, 2, 3, 4, 6]},
+ {"id": "F10", "deformed": false, "article": "5f41ec65", "start": "Le bilan initial faisait état", "sources": [2, 4, 5, 6, 7, 8]},
+ {"id": "F11", "deformed": false, "article": "726df3ee", "start": "Le PlayStation Plus propose en novembre", "sources": [1]},
+ {"id": "F12", "deformed": false, "article": "726df3ee", "start": "Amazon propose un écran PC", "sources": [2, 3, 4]}
+]

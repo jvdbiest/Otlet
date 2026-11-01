@@ -1,0 +1,378 @@
+{
+ "passes": {
+  "1": {
+   "C1_found": [
+    "D3",
+    "D4",
+    "D6"
+   ],
+   "C1": 3,
+   "deforme_other_reason": [],
+   "C2_false_alerts": [],
+   "invalid": [
+    "F7"
+   ],
+   "D7": "fidele",
+   "quotes_found": 10,
+   "calls": 19
+  },
+  "2": {
+   "C1_found": [
+    "D3",
+    "D4",
+    "D6"
+   ],
+   "C1": 3,
+   "deforme_other_reason": [],
+   "C2_false_alerts": [],
+   "invalid": [],
+   "D7": "fidele",
+   "quotes_found": 12,
+   "calls": 19
+  }
+ },
+ "rows": [
+  {
+   "id": "D1",
+   "pass": 1,
+   "seconds": 33.2,
+   "prompt_tokens": 3484,
+   "verdict": "fidele",
+   "on_the_defect": false,
+   "quote_found": true
+  },
+  {
+   "id": "D2",
+   "pass": 1,
+   "seconds": 8.3,
+   "prompt_tokens": 1257,
+   "verdict": "fidele",
+   "on_the_defect": false,
+   "quote_found": true
+  },
+  {
+   "id": "D3",
+   "pass": 1,
+   "seconds": 13.0,
+   "prompt_tokens": 2294,
+   "verdict": "deforme",
+   "on_the_defect": true,
+   "quote_found": true
+  },
+  {
+   "id": "D4",
+   "pass": 1,
+   "seconds": 9.0,
+   "prompt_tokens": 1492,
+   "verdict": "deforme",
+   "on_the_defect": true,
+   "quote_found": true
+  },
+  {
+   "id": "D5",
+   "pass": 1,
+   "seconds": 7.7,
+   "prompt_tokens": 1679,
+   "verdict": "fidele",
+   "on_the_defect": true,
+   "quote_found": true
+  },
+  {
+   "id": "D6",
+   "pass": 1,
+   "seconds": 12.7,
+   "prompt_tokens": 2806,
+   "verdict": "deforme",
+   "on_the_defect": true,
+   "quote_found": false
+  },
+  {
+   "id": "D7",
+   "pass": 1,
+   "seconds": 8.1,
+   "prompt_tokens": 1189,
+   "verdict": "fidele",
+   "on_the_defect": true,
+   "quote_found": true
+  },
+  {
+   "id": "F1",
+   "pass": 1,
+   "seconds": 8.4,
+   "prompt_tokens": 1284,
+   "verdict": "fidele",
+   "on_the_defect": false,
+   "quote_found": false
+  },
+  {
+   "id": "F2",
+   "pass": 1,
+   "seconds": 9.4,
+   "prompt_tokens": 1264,
+   "verdict": "fidele",
+   "on_the_defect": false,
+   "quote_found": false
+  },
+  {
+   "id": "F3",
+   "pass": 1,
+   "seconds": 7.5,
+   "prompt_tokens": 1558,
+   "verdict": "fidele",
+   "on_the_defect": false,
+   "quote_found": true
+  },
+  {
+   "id": "F4",
+   "pass": 1,
+   "seconds": 10.2,
+   "prompt_tokens": 1537,
+   "verdict": "fidele",
+   "on_the_defect": false,
+   "quote_found": true
+  },
+  {
+   "id": "F5",
+   "pass": 1,
+   "seconds": 10.4,
+   "prompt_tokens": 1598,
+   "verdict": "fidele",
+   "on_the_defect": false,
+   "quote_found": false
+  },
+  {
+   "id": "F6",
+   "pass": 1,
+   "seconds": 11.5,
+   "prompt_tokens": 1554,
+   "verdict": "fidele",
+   "on_the_defect": false,
+   "quote_found": false
+  },
+  {
+   "id": "F7",
+   "pass": 1,
+   "seconds": 25.7,
+   "prompt_tokens": 1872,
+   "verdict": "invalid",
+   "on_the_defect": false,
+   "quote_found": false
+  },
+  {
+   "id": "F8",
+   "pass": 1,
+   "seconds": 3.0,
+   "prompt_tokens": 655,
+   "verdict": "fidele",
+   "on_the_defect": false,
+   "quote_found": false
+  },
+  {
+   "id": "F9",
+   "pass": 1,
+   "seconds": 18.1,
+   "prompt_tokens": 5381,
+   "verdict": "fidele",
+   "on_the_defect": false,
+   "quote_found": true
+  },
+  {
+   "id": "F10",
+   "pass": 1,
+   "seconds": 6.9,
+   "prompt_tokens": 3240,
+   "verdict": "fidele",
+   "on_the_defect": false,
+   "quote_found": false
+  },
+  {
+   "id": "F11",
+   "pass": 1,
+   "seconds": 8.0,
+   "prompt_tokens": 1215,
+   "verdict": "fidele",
+   "on_the_defect": false,
+   "quote_found": false
+  },
+  {
+   "id": "F12",
+   "pass": 1,
+   "seconds": 11.8,
+   "prompt_tokens": 4457,
+   "verdict": "fidele",
+   "on_the_defect": false,
+   "quote_found": true
+  },
+  {
+   "id": "D1",
+   "pass": 2,
+   "seconds": 5.3,
+   "prompt_tokens": 3484,
+   "verdict": "fidele",
+   "on_the_defect": false,
+   "quote_found": true
+  },
+  {
+   "id": "D2",
+   "pass": 2,
+   "seconds": 6.6,
+   "prompt_tokens": 1257,
+   "verdict": "fidele",
+   "on_the_defect": false,
+   "quote_found": true
+  },
+  {
+   "id": "D3",
+   "pass": 2,
+   "seconds": 9.8,
+   "prompt_tokens": 2294,
+   "verdict": "deforme",
+   "on_the_defect": true,
+   "quote_found": true
+  },
+  {
+   "id": "D4",
+   "pass": 2,
+   "seconds": 7.0,
+   "prompt_tokens": 1492,
+   "verdict": "deforme",
+   "on_the_defect": true,
+   "quote_found": true
+  },
+  {
+   "id": "D5",
+   "pass": 2,
+   "seconds": 5.0,
+   "prompt_tokens": 1679,
+   "verdict": "fidele",
+   "on_the_defect": true,
+   "quote_found": true
+  },
+  {
+   "id": "D6",
+   "pass": 2,
+   "seconds": 8.8,
+   "prompt_tokens": 2806,
+   "verdict": "deforme",
+   "on_the_defect": true,
+   "quote_found": false
+  },
+  {
+   "id": "D7",
+   "pass": 2,
+   "seconds": 6.6,
+   "prompt_tokens": 1189,
+   "verdict": "fidele",
+   "on_the_defect": false,
+   "quote_found": true
+  },
+  {
+   "id": "F1",
+   "pass": 2,
+   "seconds": 6.8,
+   "prompt_tokens": 1284,
+   "verdict": "fidele",
+   "on_the_defect": false,
+   "quote_found": true
+  },
+  {
+   "id": "F2",
+   "pass": 2,
+   "seconds": 9.2,
+   "prompt_tokens": 1264,
+   "verdict": "fidele",
+   "on_the_defect": false,
+   "quote_found": false
+  },
+  {
+   "id": "F3",
+   "pass": 2,
+   "seconds": 5.9,
+   "prompt_tokens": 1558,
+   "verdict": "fidele",
+   "on_the_defect": false,
+   "quote_found": true
+  },
+  {
+   "id": "F4",
+   "pass": 2,
+   "seconds": 10.2,
+   "prompt_tokens": 1537,
+   "verdict": "fidele",
+   "on_the_defect": false,
+   "quote_found": true
+  },
+  {
+   "id": "F5",
+   "pass": 2,
+   "seconds": 10.2,
+   "prompt_tokens": 1598,
+   "verdict": "fidele",
+   "on_the_defect": false,
+   "quote_found": false
+  },
+  {
+   "id": "F6",
+   "pass": 2,
+   "seconds": 11.4,
+   "prompt_tokens": 1554,
+   "verdict": "fidele",
+   "on_the_defect": false,
+   "quote_found": false
+  },
+  {
+   "id": "F7",
+   "pass": 2,
+   "seconds": 20.3,
+   "prompt_tokens": 1872,
+   "verdict": "fidele",
+   "on_the_defect": false,
+   "quote_found": true
+  },
+  {
+   "id": "F8",
+   "pass": 2,
+   "seconds": 2.4,
+   "prompt_tokens": 655,
+   "verdict": "fidele",
+   "on_the_defect": false,
+   "quote_found": false
+  },
+  {
+   "id": "F9",
+   "pass": 2,
+   "seconds": 9.9,
+   "prompt_tokens": 5381,
+   "verdict": "fidele",
+   "on_the_defect": false,
+   "quote_found": true
+  },
+  {
+   "id": "F10",
+   "pass": 2,
+   "seconds": 2.5,
+   "prompt_tokens": 3240,
+   "verdict": "fidele",
+   "on_the_defect": false,
+   "quote_found": false
+  },
+  {
+   "id": "F11",
+   "pass": 2,
+   "seconds": 8.3,
+   "prompt_tokens": 1215,
+   "verdict": "fidele",
+   "on_the_defect": false,
+   "quote_found": false
+  },
+  {
+   "id": "F12",
+   "pass": 2,
+   "seconds": 5.5,
+   "prompt_tokens": 4457,
+   "verdict": "fidele",
+   "on_the_defect": false,
+   "quote_found": true
+  }
+ ]
+}

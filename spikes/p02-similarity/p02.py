@@ -275,9 +275,19 @@ def usable(item: dict[str, Any]) -> bool:
     return bool(item["sample"] and item["lang"] in PER_LANGUAGE and item["text"] and item["meaning"])
 
 
+def distinct(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """The usable articles, once each: the same address can be collected in two spaces."""
+    seen: set[str] = set()
+    kept = []
+    for item in sorted((i for i in items if usable(i)), key=lambda i: i["id"]):
+        if item["url"] not in seen:
+            seen.add(item["url"])
+            kept.append(item)
+    return kept
+
+
 def select(corpus: Path) -> None:
-    items = [i for i in read_jsonl(corpus / "candidates.jsonl") if usable(i)]
-    items.sort(key=lambda i: i["id"])
+    items = distinct(read_jsonl(corpus / "candidates.jsonl"))
     rng = random.Random(SEED)
     rng.shuffle(items)
     taken: Counter[str] = Counter()
@@ -351,7 +361,7 @@ def build_pairs(corpus: Path) -> tuple[list[dict[str, Any]], dict[str, int]]:
     selected = json.loads((corpus / "selected.json").read_text(encoding="utf-8"))
     generated = {(g["id"], g["kind"]): g["text"] for g in read_jsonl(corpus / "generated.jsonl") if g["accepted"]}
     items = read_jsonl(corpus / "candidates.jsonl")
-    items = [i for i in items if usable(i)]
+    items = distinct(items)
     vectors = {i["id"]: np.asarray(json.loads(i["meaning"]), dtype=np.float32) for i in items}
     by_id = {i["id"]: i for i in items}
     rng = random.Random(SEED)

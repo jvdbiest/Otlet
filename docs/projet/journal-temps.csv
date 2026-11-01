@@ -108,3 +108,5 @@ date,heures,domaine,etape,tache,note
 2026-10-25,6,fonction,E1,A1b-1,assistant de veille : banc (deux passages), ADR-0043, glossaire, recherche par concepts, dossiers et tri, écran ; estimation grossière (Claude)
 2026-10-25,5,fonction,E1,A2,Reporter : bancs (opérations, faits, concordance, reconstituer en six passages), conception validée, ADR-0044 ; estimation grossière (Claude)
 2026-10-25,6,fonction,E1,A2-1,Reporter : domaine (traduction gardée, faits, concordance), service, migration 0039, tâche, API, écran, rejeu du banc dans le produit ; estimation grossière (Claude)
+2026-11-01,2,fonction,E1,P02,rapport P02 et étape préalable sur les brouillons réels ; estimation grossière (Claude)
+2026-11-01,1.5,fonction,E1,FOND1,test du fond : jeu d'essai vérifié et 38 appels ; estimation grossière (Claude)

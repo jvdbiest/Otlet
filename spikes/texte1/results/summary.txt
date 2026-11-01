@@ -1,0 +1,23 @@
+519 pages, 52 with the reference
+E0: coverage median 91.5%, under half 7.7%, pollution median 8.4%, worse than E0 0.0%, p95 82 ms, gold criteria met: False
+E1: coverage median 92.8%, under half 5.8%, pollution median 7.8%, worse than E0 0.0%, p95 87 ms, gold criteria met: False
+E2: coverage median 98.8%, under half 3.8%, pollution median 8.1%, worse than E0 5.8%, p95 43 ms, gold criteria met: False
+
+site, texts, sampled; under half of the longest, by extraction
+  Audiofanzine               136  40  E0 15% E1 8% E2 2%
+  Auto-Moto                  433  40  E0 10% E1 0% E2 10%
+  Bruzz                      269  40  E0 0% E1 0% E2 2%
+  Futura Sciences            168  40  E0 28% E1 28% E2 0%
+  L'Avenir (Actu)             77  40  E0 18% E1 18% E2 0%
+  La DH                     1552  40  E0 15% E1 10% E2 0%
+  La Libre Belgique          428  40  E0 22% E1 15% E2 2%
+  Le repaire des motards     150  40  E0 0% E1 0% E2 0%
+  LeMonde.fr (en continu)    433  40  E0 0% E1 0% E2 0%
+  Les Numériques             439  40  E0 12% E1 0% E2 15%
+  Motor Tribu                167  40  E0 25% E1 25% E2 2%
+  Next.ink                   174  40  E0 28% E1 28% E2 0%
+  RTBF Info                  221  39  E0 3% E1 0% E2 21%
+weighted by site: E0 13.0% E1 8.2% E2 3.9%
+E0: worst of the 4 sites 28%, met: False
+E1: worst of the 4 sites 28%, met: False
+E2: worst of the 4 sites 21%, met: False

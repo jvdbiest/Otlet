@@ -2,10 +2,10 @@
 
 | | |
 |---|---|
-| Statut | Ouverte |
+| Statut | Conclue : partiel |
 | Durée maximale | 2 h de mesure |
-| Temps passé | à remplir |
-| Ouverte le / conclue le | 2026-11-01 / à remplir |
+| Temps passé | 3 h de préparation et d'analyse (journal de temps, TEXTE1b) ; mesure en quelques minutes |
+| Ouverte le / conclue le | 2026-11-01 / 2026-11-01 |
 | Choix concernés | Collecte U01 (`readability-lxml`), rédaction U04, recherche (S1) |
 | Commande de rejeu | `spikes/texte1/run-texte1b.sh`, puis `run-texte1b.sh --summary` |
 
@@ -53,15 +53,51 @@ Une variante réussit si elle tient tous les critères, sur la référence écri
 
 ## 4. Mesures
 
-À remplir après la mesure.
+| Critère | Seuil | E0, actuelle | E1, repli sur la page | E2, trafilatura |
+|---|---|---|---|---|
+| Couverture médiane | ≥ 90 % | ✅ 91,5 % | ✅ 92,8 % | ✅ 98,8 % |
+| Pages sous 50 % de la référence | ≤ 5 % | ❌ 7,7 % | ❌ 5,8 % | ✅ 3,8 % |
+| Pollution médiane | ≤ 15 % | ✅ 8,4 % | ✅ 7,8 % | ✅ 8,1 % |
+| Pages qui perdent plus de 20 points sur E0 | ≤ 5 % | ✅ 0 % | ✅ 0 % | ❌ 5,8 % |
+| Pire des 4 sites, pages sous la moitié | ≤ 5 % | ❌ 28 % | ❌ 28 % | ❌ 21 % |
+| Temps, p95 | ≤ 300 ms | ✅ 82 ms | ✅ 87 ms | ✅ 43 ms |
+
+**Proportion réelle.** Sur la référence (52 pages, 4 par site, sans pondération) : 7,7 % des pages gardent moins de la moitié de l'article avec E0 (4 pages), et 23 % moins de 70 % (12 pages). Le repère automatique, pondéré par site, donne 13,0 %, mais il est imprécis : sur les 52 pages, il en signale 8 quand la référence en compte 4, et 3 seulement en commun. Il compte comme article le texte en trop de `trafilatura`, surtout sur Next.ink (72 % de pollution sur deux pages à mur payant). La proportion utile est donc une fourchette : **environ 8 à 13 % sous la moitié, et près d'un quart des textes amputés d'au moins 30 %**, sur peu de pages de référence.
+
+**Sites**, part des pages sous la moitié du texte le plus long (repère automatique) :
+
+| Site | E0 | E1 | E2 |
+|---|---|---|---|
+| Futura Sciences | 28 % | 28 % | 0 % |
+| Next.ink (repère trompeur, voir plus haut) | 28 % | 28 % | 0 % |
+| Motor Tribu | 25 % | 25 % | 2 % |
+| La Libre Belgique | 22 % | 15 % | 2 % |
+| L'Avenir | 18 % | 18 % | 0 % |
+| La DH | 15 % | 10 % | 0 % |
+| Audiofanzine | 15 % | 8 % | 2 % |
+| Les Numériques | 12 % | 0 % | 15 % |
+| Auto-Moto | 10 % | 0 % | 10 % |
+| RTBF Info | 3 % | 0 % | 21 % |
+| Bruzz | 0 % | 0 % | 2 % |
+| Le repaire des motards | 0 % | 0 % | 0 % |
+| LeMonde.fr | 0 % | 0 % | 0 % |
+
+**Pertes d'E2.** 3 pages sur 52 reculent de plus de 20 points : 2 de RTBF (de 87 % à 29 %, de 80 % à 49 %) et 1 d'Auto-Moto (de 99 % à 79 %).
+
+Fichiers : `spikes/texte1/results/summary.txt`. Les pages restent sur la VM.
 
 ## 5. Conclusion
 
-À remplir.
+**Partiel.** Aucune variante ne tient les 6 critères. E2 améliore nettement la couverture (de 91,5 % à 98,8 %) et divise par deux les pages sous la moitié, sans plus de pollution en médiane et en moins de temps ; elle rate deux critères, à cause de RTBF surtout. E1 apporte peu seule, mais elle corrige exactement les sites où E2 perd.
 
 ## 6. Conséquences
 
-À remplir.
+| Document ou choix | Conséquence | ADR |
+|---|---|---|
+| Extraction du produit (`readability-lxml`) | Inchangée à cette étape. Remplacement à soumettre à Joël, une fois E3 validée (§8) | À proposer si validée |
+| `trafilatura` | Licence compatible (Apache-2.0), mais pas de dépendance ajoutée sans décision | |
+
+Le code de `spikes/texte1/` reste un banc ; rien n'est repris dans `backend/` à cette étape.
 
 ## 7. Ce que la preuve n'a pas couvert
 
@@ -69,3 +105,9 @@ Une variante réussit si elle tient tous les critères, sur la référence écri
 - Une page de 2026-11-01 peut différer de celle de la collecte : pas d'effet sur la comparaison des variantes.
 - Une page qui garde plus de 70 blocs n'a été lue que sur ses 70 premiers (3 pages de Les Numériques, 3 de Futura, 1 du Repaire) : leur référence peut être incomplète.
 - L'effet sur la recherche, le tri et la rédaction n'est pas mesuré ici.
+
+## 8. Après la conclusion : une piste, hors protocole
+
+E3 : E2, sauf si son texte fait moins de la moitié de ce que la page marque comme article ; alors ce texte marqué. Idée venue **après** avoir vu les résultats, sur les mêmes pages : c'est une hypothèse, pas un résultat (`spikes/texte1/texte1b_after.py`, `results/exploration.txt`).
+
+Sur les mêmes pages : couverture médiane 98,8 %, 1,9 % de pages sous la moitié, pollution médiane 8,1 %, 3,8 % de pages qui reculent, RTBF de 21 % à 0 %. Restent Les Numériques à 15 %, une page de RTBF à 49 %, et la pollution de Next.ink. Elle devrait être jugée sur d'autres pages, avec les mêmes seuils et une nouvelle référence.

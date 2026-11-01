@@ -1,0 +1,67 @@
+Auto-Moto      cover E0 0.97 E3 0.96 dirty E0 0.11 E3 0.13 ref  3926 sizes {'E0': 4258, 'E2': 4414, 'E3': 4414}
+La Libre Belgi cover E0 0.52 E3 0.94 dirty E0 0.05 E3 0.04 ref  2687 sizes {'E0': 1491, 'E2': 2577, 'E3': 2577}
+Motor Tribu    cover E0 1.00 E3 1.00 dirty E0 0.12 E3 0.25 ref   105 sizes {'E0': 119, 'E2': 285, 'E3': 285}
+Auto-Moto      cover E0 0.98 E3 0.98 dirty E0 0.09 E3 0.13 ref  2403 sizes {'E0': 2598, 'E2': 2988, 'E3': 2988}
+Next.ink       cover E0 0.71 E3 1.00 dirty E0 0.29 E3 0.09 ref   989 sizes {'E0': 1005, 'E2': 625, 'E3': 1357}
+La Libre Belgi cover E0 0.88 E3 1.00 dirty E0 0.06 E3 0.03 ref  7782 sizes {'E0': 7390, 'E2': 8167, 'E3': 8167}
+RTBF Info      cover E0 0.82 E3 0.82 dirty E0 0.00 E3 0.00 ref  1784 sizes {'E0': 1437, 'E2': 1435, 'E3': 1435}
+Les Numériques cover E0 0.93 E3 1.00 dirty E0 0.00 E3 0.08 ref  3592 sizes {'E0': 3352, 'E2': 3943, 'E3': 3943}
+RTBF Info      cover E0 0.84 E3 0.86 dirty E0 0.04 E3 0.03 ref  3541 sizes {'E0': 3076, 'E2': 3140, 'E3': 3140}
+Motor Tribu    cover E0 1.00 E3 1.00 dirty E0 0.00 E3 0.01 ref  4448 sizes {'E0': 4463, 'E2': 4532, 'E3': 4532}
+Les Numériques cover E0 0.92 E3 1.00 dirty E0 0.00 E3 0.09 ref  2842 sizes {'E0': 2634, 'E2': 3136, 'E3': 3136}
+Audiofanzine   cover E0 1.00 E3 1.00 dirty E0 0.02 E3 0.02 ref 16928 sizes {'E0': 16545, 'E2': 16514, 'E3': 16514}
+Futura Science cover E0 0.92 E3 0.93 dirty E0 0.19 E3 0.00 ref  2493 sizes {'E0': 2815, 'E2': 2266, 'E3': 2266}
+Auto-Moto      cover E0 0.92 E3 0.99 dirty E0 0.10 E3 0.11 ref  4549 sizes {'E0': 4618, 'E2': 5126, 'E3': 5126}
+Bruzz          cover E0 0.99 E3 0.99 dirty E0 0.03 E3 0.05 ref  5242 sizes {'E0': 5346, 'E2': 5465, 'E3': 5465}
+Audiofanzine   cover E0 0.99 E3 0.99 dirty E0 0.11 E3 0.02 ref  1408 sizes {'E0': 1527, 'E2': 1383, 'E3': 1383}
+Bruzz          cover E0 0.99 E3 0.99 dirty E0 0.03 E3 0.07 ref  3214 sizes {'E0': 3276, 'E2': 3447, 'E3': 3447}
+Audiofanzine   cover E0 0.00 E3 0.99 dirty E0 1.00 E3 0.03 ref  1096 sizes {'E0': 375, 'E2': 1074, 'E3': 1074}
+Next.ink       cover E0 0.95 E3 0.99 dirty E0 0.02 E3 0.17 ref  7917 sizes {'E0': 7574, 'E2': 10116, 'E3': 10116}
+Futura Science cover E0 0.96 E3 0.96 dirty E0 0.14 E3 0.11 ref  6976 sizes {'E0': 7805, 'E2': 7561, 'E3': 7561}
+LeMonde.fr (en cover E0 1.00 E3 1.00 dirty E0 0.00 E3 0.00 ref  7617 sizes {'E0': 7641, 'E2': 7617, 'E3': 7617}
+LeMonde.fr (en cover E0 0.82 E3 0.82 dirty E0 0.06 E3 0.06 ref  2008 sizes {'E0': 1702, 'E2': 1699, 'E3': 1699}
+Motor Tribu    cover E0 1.00 E3 1.00 dirty E0 0.01 E3 0.02 ref  8346 sizes {'E0': 8474, 'E2': 8531, 'E3': 8531}
+Audiofanzine   cover E0 0.95 E3 0.95 dirty E0 0.17 E3 0.12 ref  1351 sizes {'E0': 1549, 'E2': 1437, 'E3': 1437}
+Le repaire des cover E0 0.97 E3 0.98 dirty E0 0.17 E3 0.14 ref  2633 sizes {'E0': 3117, 'E2': 3040, 'E3': 3040}
+Next.ink       cover E0 0.95 E3 1.00 dirty E0 0.00 E3 0.41 ref  4972 sizes {'E0': 4726, 'E2': 8748, 'E3': 8748}
+La DH          cover E0 0.64 E3 0.99 dirty E0 0.05 E3 0.05 ref  2317 sizes {'E0': 1567, 'E2': 2466, 'E3': 2466}
+Bruzz          cover E0 0.88 E3 1.00 dirty E0 0.01 E3 0.06 ref  2749 sizes {'E0': 2478, 'E2': 2963, 'E3': 2963}
+Le repaire des cover E0 0.99 E3 0.99 dirty E0 0.06 E3 0.02 ref 22407 sizes {'E0': 23759, 'E2': 22713, 'E3': 22713}
+La Libre Belgi cover E0 0.77 E3 1.00 dirty E0 0.03 E3 0.03 ref  4242 sizes {'E0': 3365, 'E2': 4373, 'E3': 4373}
+Bruzz          cover E0 0.99 E3 0.99 dirty E0 0.07 E3 0.05 ref  6155 sizes {'E0': 7245, 'E2': 6499, 'E3': 6499}
+LeMonde.fr (en cover E0 0.84 E3 0.84 dirty E0 0.06 E3 0.06 ref  1862 sizes {'E0': 1617, 'E2': 1614, 'E3': 1614}
+La DH          cover E0 0.72 E3 0.99 dirty E0 0.00 E3 0.10 ref  1432 sizes {'E0': 970, 'E2': 1576, 'E3': 1576}
+RTBF Info      cover E0 0.82 E3 0.82 dirty E0 0.13 E3 0.13 ref  1696 sizes {'E0': 1621, 'E2': 1617, 'E3': 1617}
+Next.ink       cover E0 0.89 E3 0.99 dirty E0 0.10 E3 0.65 ref  2482 sizes {'E0': 2491, 'E2': 7000, 'E3': 7000}
+Les Numériques cover E0 0.88 E3 0.99 dirty E0 0.85 E3 0.75 ref  1046 sizes {'E0': 12328, 'E2': 7226, 'E3': 7226}
+Les Numériques cover E0 0.95 E3 0.95 dirty E0 0.09 E3 0.11 ref  5155 sizes {'E0': 5577, 'E2': 5765, 'E3': 5765}
+Futura Science cover E0 0.93 E3 0.93 dirty E0 0.26 E3 0.22 ref  4825 sizes {'E0': 6055, 'E2': 5744, 'E3': 5744}
+Le repaire des cover E0 1.00 E3 1.00 dirty E0 0.03 E3 0.01 ref  2555 sizes {'E0': 2645, 'E2': 2598, 'E3': 2598}
+La Libre Belgi cover E0 0.59 E3 0.99 dirty E0 0.13 E3 0.08 ref  2075 sizes {'E0': 1383, 'E2': 2243, 'E3': 2243}
+Futura Science cover E0 0.94 E3 0.94 dirty E0 0.14 E3 0.12 ref  4171 sizes {'E0': 4692, 'E2': 4607, 'E3': 4607}
+Auto-Moto      cover E0 0.94 E3 1.00 dirty E0 0.08 E3 0.12 ref  4010 sizes {'E0': 4132, 'E2': 4660, 'E3': 4660}
+La DH          cover E0 0.78 E3 0.99 dirty E0 0.03 E3 0.07 ref  2848 sizes {'E0': 2245, 'E2': 3086, 'E3': 3086}
+RTBF Info      cover E0 0.79 E3 0.79 dirty E0 0.01 E3 0.01 ref  2647 sizes {'E0': 2172, 'E2': 2166, 'E3': 2166}
+Motor Tribu    cover E0 1.00 E3 1.00 dirty E0 0.00 E3 0.01 ref  2090 sizes {'E0': 2101, 'E2': 2148, 'E3': 2148}
+LeMonde.fr (en cover E0 1.00 E3 1.00 dirty E0 0.00 E3 0.00 ref  2170 sizes {'E0': 2175, 'E2': 2170, 'E3': 2170}
+Le repaire des cover E0 0.98 E3 0.98 dirty E0 0.14 E3 0.11 ref  1748 sizes {'E0': 2117, 'E2': 2051, 'E3': 2051}
+La DH          cover E0 0.55 E3 0.99 dirty E0 0.01 E3 0.08 ref  1695 sizes {'E0': 908, 'E2': 1825, 'E3': 1825}
+
+Actualité : Ce boîtier photo présente le meilleur rapport qu | E0 5974 (47 prix) E3 2723 marked 2547
+   E3: 'Ce boîtier photo présente le meilleur rapport qualité / prix de notre comparatif\nLe boîtier photo Nikon D7500 '
+   E0 milieu: 'hausse (sensibilité et ombres).\n\nRafale à 7,5 i/s.\n\nÉcran orientable et tactile.\n\nWi-Fi et'
+Actualité : Le test de la montre connectée Apple Watch Ultra | E0 12426 (123 prix) E3 4247 marked 1682
+   E3: "Notre comparatif de 133 montres connectées accueille le test de l'Apple Watch Ultra 4, disponible à partir de "
+   E0 milieu: 'ier de 49 mm en Titane Naturel ...\n\n922,39 € Neuf\n\nApple Watch Ultra 4 (GPS + Cellular) Bo'
+Actualité : Duux Bora : un déshumidificateur peut aussi racc | E0 3856 (22 prix) E3 1648 marked 1744
+   E3: "Duux Bora : un déshumidificateur peut aussi raccourcir la corvée du linge\nL'étendoir prend l'airAvec SwiftDry,"
+   E0 milieu: " pour atténuer les odeurs.\n\nLa gamme comprend trois capacités d'extraction : 12, 20 et 30 "
+Actualité : Bon plan – Le casque Bluetooth Sony WH-1000XM6 " | E0 5890 (35 prix) E3 2668 marked 2426
+   E3: 'Bon plan – Le casque Bluetooth Sony WH-1000XM6 "5 étoiles" à 349,99 €\nLe casque Bluetooth Sony WH-1000XM6 pass'
+   E0 milieu: "ses un peu trop généreuses.\n\nFinition légère pour du haut de gamme.\n\nAbsence d'audio via U"
+Actualité : Le test de l'enceinte sans fil & connectée JBL C | E0 3140 (27 prix) E3 1421 marked 1404
+   E3: "Le test de l'enceinte sans fil & connectée JBL Cove M1 a rejoint notre comparatif\nNotre comparatif de 38 encei"
+   E0 milieu: '\n249,99 € Neuf\n\nPixmania\n\n254,99 € Neuf\n\nAudio Pro C5 MKII Noir Sans fil\n\n254,99 € Neuf\n\nA'
+Actualité : Bon plan – La montre connectée Garmin Fenix 8 "5 | E0 7455 (57 prix) E3 2626 marked 2348
+   E3: 'Black Friday 2026 – La montre connectée Garmin Fenix 8 "5 étoiles" à 559,00 €\nLa montre connectée Garmin Fenix'
+   E0 milieu: 'Fonctionnement du tableau de prix\n\nDésactivez votre bloqueur de publicités pour accéder à '

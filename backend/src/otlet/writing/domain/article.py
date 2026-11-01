@@ -24,6 +24,9 @@ class Version:
     details: dict[str, Any] = field(default_factory=dict)  # of the generation that made it
     updated_at: datetime | None = None  # last « Enregistrer » of a person's version (ADR-0036)
     based_on: int | None = None  # the version a person's version was made from
+    # How close it is to its sources, once checked (U05, ADR-0046), and why its author lets it go.
+    proximity: dict[str, Any] | None = None
+    proximity_override: dict[str, Any] | None = None
 
 
 @dataclass(frozen=True, slots=True)

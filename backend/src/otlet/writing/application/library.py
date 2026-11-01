@@ -3,13 +3,14 @@
 « Envoyer en Bibliothèque » validates a version and sends its article here. One brief, one
 article, several versions."""
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from typing import Any, Protocol
 from uuid import UUID
 
 from otlet.workspaces.domain.model import WorkspaceContext
 from otlet.writing.domain.article import Article, LibraryEntry
+from otlet.writing.domain.proximity import Gate, TooClose
 
 STATUSES = ("brouillon", "valide", "archive")
 TAGS_MAX = 20
@@ -69,6 +70,8 @@ class Outcome:
 
 
 TITLE_MAX = 200
+# Whether a version can go out (U05): workspace, article, number.
+GateOf = Callable[[UUID, UUID, int], Gate]
 
 
 def clean_tags(tags: Sequence[str]) -> list[str]:
@@ -88,15 +91,21 @@ def clean_tags(tags: Sequence[str]) -> list[str]:
 
 
 class Library:
-    def __init__(self, store: LibraryStore) -> None:
+    def __init__(self, store: LibraryStore, gate: GateOf | None = None) -> None:
         self._store = store
+        self._gate = gate
 
     def article(self, context: WorkspaceContext, article_id: UUID) -> Article | None:
         return self._store.article(context.workspace_id, article_id)
 
     def send(self, context: WorkspaceContext, article_id: UUID, number: int) -> Article | None:
         """« Envoyer en Bibliothèque », and later « Valider » another version: the version given
-        becomes the one exports and publications take."""
+        becomes the one exports and publications take. A version too close to a source is refused
+        unless its author said why (U05, ADR-0046): TooClose."""
+        if self._gate is not None:
+            gate = self._gate(context.workspace_id, article_id, number)
+            if gate != "open":
+                raise TooClose(gate)
         if not self._store.send(context.workspace_id, article_id, number):
             return None
         return self._store.article(context.workspace_id, article_id)

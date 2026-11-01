@@ -370,6 +370,51 @@ export function useSendArticle(workspaceId: string) {
   });
 }
 
+/** Whether a version can go out (U05): as the server decides at validation and at export. */
+export function gateOf(article: ArticleView, version: VersionView): "open" | "pending" | "blocked" {
+  if (article.brief_id === null || version.proximity_override !== null) {
+    return "open";
+  }
+  if (version.proximity === null) {
+    return "pending";
+  }
+  return version.proximity.blocked === true ? "blocked" : "open";
+}
+
+export function useCheckProximity(workspaceId: string) {
+  return useMutation({
+    mutationFn: async ({ articleId, number }: { articleId: string; number: number }) => {
+      const { error, response } = await api.POST(
+        "/api/workspaces/{workspace_id}/articles/{article_id}/versions/{number}/proximity/check",
+        { params: { path: { workspace_id: workspaceId, article_id: articleId, number } } },
+      );
+      if (!response.ok) {
+        throw apiError(response, error);
+      }
+    },
+  });
+}
+
+export function useOverrideProximity(workspaceId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ articleId, number, reason }: { articleId: string; number: number; reason: string }) => {
+      const { data, error, response } = await api.POST(
+        "/api/workspaces/{workspace_id}/articles/{article_id}/versions/{number}/proximity/override",
+        {
+          params: { path: { workspace_id: workspaceId, article_id: articleId, number } },
+          body: { reason },
+        },
+      );
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId] }),
+  });
+}
+
 export function useArchiveArticle(workspaceId: string) {
   const queryClient = useQueryClient();
   return useMutation({

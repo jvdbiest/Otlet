@@ -12,9 +12,11 @@ from typing import Any, Protocol
 from uuid import UUID
 
 from otlet.workspaces.domain.model import WorkspaceContext
+from otlet.writing.application.library import GateOf
 from otlet.writing.domain.article import Version
 from otlet.writing.domain.document import media_of
 from otlet.writing.domain.export import filename, html_page, markdown, text
+from otlet.writing.domain.proximity import TooClose
 
 FORMATS = ("pdf", "docx", "html", "md", "txt", "json")
 EXTENSIONS = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp"}
@@ -38,12 +40,18 @@ class Exported:
 
 class Exports:
     def __init__(
-        self, versions: Versions, media: MediaRead, docx: DocxWriter, pdf: PdfWriter
+        self,
+        versions: Versions,
+        media: MediaRead,
+        docx: DocxWriter,
+        pdf: PdfWriter,
+        gate: GateOf | None = None,
     ) -> None:
         self._versions = versions
         self._media = media
         self._docx = docx
         self._pdf = pdf
+        self._gate = gate
 
     def export_many(
         self, context: WorkspaceContext, picks: list[tuple[UUID, int]], kind: str
@@ -79,10 +87,15 @@ class Exports:
     def export(
         self, context: WorkspaceContext, article_id: UUID, number: int, kind: str
     ) -> Exported | None:
-        """The version in `kind` (one of FORMATS); None when the version does not exist."""
+        """The version in `kind` (one of FORMATS); None when the version does not exist. A version
+        too close to a source does not go out unless its author said why: TooClose (U05)."""
         version = self._versions.version(context.workspace_id, article_id, number)
         if version is None or kind not in FORMATS:
             return None
+        if self._gate is not None:
+            gate = self._gate(context.workspace_id, article_id, number)
+            if gate != "open":
+                raise TooClose(gate)
         title, document = version.title, version.document
         images = {m: self._media(context, m) for m in media_of(document)}
 

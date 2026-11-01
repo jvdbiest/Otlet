@@ -190,8 +190,9 @@ def create_app(settings: Settings) -> FastAPI:
             # The API only records a generation: the worker alone calls the models (DR6).
             Drafts(brief_store, article_store),
             Editing(article_store, media_check),
-            Exports(article_store, read_image, docx, pdf),
-            Library(article_store),
+            Exports(article_store, read_image, docx, pdf, article_store.gate),
+            Library(article_store, article_store.gate),
+            article_store,
             workspace_context,
         )
         media_router = media.build_router(library, workspace_context)

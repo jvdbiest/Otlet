@@ -618,7 +618,7 @@ export interface paths {
         /**
          * Send Article
          * @description « Envoyer en Bibliothèque », then « Valider » a later version: the version given is the
-         *     one exports and publications take.
+         *     one exports and publications take. 409 when it is too close to a source (U05).
          */
         post: operations["send_article_api_workspaces__workspace_id__articles__article_id__send_post"];
         delete?: never;
@@ -682,11 +682,53 @@ export interface paths {
         /**
          * Export Version
          * @description A version as a file (X03c): pdf, docx, html, md (a ZIP when it has images), txt or json,
-         *     with its Sources block and AI mention. Made on demand, never stored.
+         *     with its Sources block and AI mention. Made on demand, never stored. 409 when it is too
+         *     close to a source (U05).
          */
         get: operations["export_version_api_workspaces__workspace_id__articles__article_id__versions__number__export__kind__get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/articles/{article_id}/versions/{number}/proximity/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check Proximity
+         * @description Asks for the check of a version that has none: written before U05, or its check lost.
+         */
+        post: operations["check_proximity_api_workspaces__workspace_id__articles__article_id__versions__number__proximity_check_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/articles/{article_id}/versions/{number}/proximity/override": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Override Proximity
+         * @description The author lets a version too close to a source go out, and says why (Joël,
+         *     2026-11-01): kept with who and when, until the text changes.
+         */
+        post: operations["override_proximity_api_workspaces__workspace_id__articles__article_id__versions__number__proximity_override_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3429,6 +3471,11 @@ export interface components {
             /** Failed */
             failed: components["schemas"]["FailedView"][];
         };
+        /** OverrideBody */
+        OverrideBody: {
+            /** Reason */
+            reason: string;
+        };
         /** Password */
         Password: {
             /** Password */
@@ -4249,6 +4296,14 @@ export interface components {
             prompt_version: string | null;
             /** Provider Kind */
             provider_kind: string | null;
+            /** Proximity */
+            proximity: {
+                [key: string]: unknown;
+            } | null;
+            /** Proximity Override */
+            proximity_override: {
+                [key: string]: unknown;
+            } | null;
             /** Title */
             title: string;
             /** Unused Sources */
@@ -5611,6 +5666,74 @@ export interface operations {
                 };
                 content: {
                     "application/octet-stream": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    check_proximity_api_workspaces__workspace_id__articles__article_id__versions__number__proximity_check_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: string;
+                number: number;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    override_proximity_api_workspaces__workspace_id__articles__article_id__versions__number__proximity_override_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: string;
+                number: number;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OverrideBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleView"];
                 };
             };
             /** @description Validation Error */

@@ -3709,6 +3709,20 @@
         "title": "OutcomeView",
         "type": "object"
       },
+      "OverrideBody": {
+        "properties": {
+          "reason": {
+            "maxLength": 2000,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason"
+        ],
+        "title": "OverrideBody",
+        "type": "object"
+      },
       "Password": {
         "properties": {
           "password": {
@@ -6138,6 +6152,30 @@
             ],
             "title": "Provider Kind"
           },
+          "proximity": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proximity"
+          },
+          "proximity_override": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proximity Override"
+          },
           "title": {
             "title": "Title",
             "type": "string"
@@ -6174,7 +6212,9 @@
           "created_at",
           "updated_at",
           "based_on",
-          "words"
+          "words",
+          "proximity",
+          "proximity_override"
         ],
         "title": "VersionView",
         "type": "object"
@@ -7635,7 +7675,7 @@
     },
     "/api/workspaces/{workspace_id}/articles/{article_id}/send": {
       "post": {
-        "description": "« Envoyer en Bibliothèque », then « Valider » a later version: the version given is the\none exports and publications take.",
+        "description": "« Envoyer en Bibliothèque », then « Valider » a later version: the version given is the\none exports and publications take. 409 when it is too close to a source (U05).",
         "operationId": "send_article_api_workspaces__workspace_id__articles__article_id__send_post",
         "parameters": [
           {
@@ -7877,7 +7917,7 @@
     },
     "/api/workspaces/{workspace_id}/articles/{article_id}/versions/{number}/export/{kind}": {
       "get": {
-        "description": "A version as a file (X03c): pdf, docx, html, md (a ZIP when it has images), txt or json,\nwith its Sources block and AI mention. Made on demand, never stored.",
+        "description": "A version as a file (X03c): pdf, docx, html, md (a ZIP when it has images), txt or json,\nwith its Sources block and AI mention. Made on demand, never stored. 409 when it is too\nclose to a source (U05).",
         "operationId": "export_version_api_workspaces__workspace_id__articles__article_id__versions__number__export__kind__get",
         "parameters": [
           {
@@ -7946,6 +7986,129 @@
           }
         },
         "summary": "Export Version"
+      }
+    },
+    "/api/workspaces/{workspace_id}/articles/{article_id}/versions/{number}/proximity/check": {
+      "post": {
+        "description": "Asks for the check of a version that has none: written before U05, or its check lost.",
+        "operationId": "check_proximity_api_workspaces__workspace_id__articles__article_id__versions__number__proximity_check_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Article Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "number",
+            "required": true,
+            "schema": {
+              "title": "Number",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Check Proximity"
+      }
+    },
+    "/api/workspaces/{workspace_id}/articles/{article_id}/versions/{number}/proximity/override": {
+      "post": {
+        "description": "The author lets a version too close to a source go out, and says why (Joël,\n2026-11-01): kept with who and when, until the text changes.",
+        "operationId": "override_proximity_api_workspaces__workspace_id__articles__article_id__versions__number__proximity_override_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Article Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "number",
+            "required": true,
+            "schema": {
+              "title": "Number",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OverrideBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Override Proximity"
       }
     },
     "/api/workspaces/{workspace_id}/assistant/dossiers": {

@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { workspacesQuery } from "../../session.ts";
 import {
   articleQuery,
+  gateOf,
   useArchiveArticle,
   useDuplicateArticle,
   useSendArticle,
@@ -100,13 +101,18 @@ export function ArticlePage({ articleId }: { articleId: string }) {
             <button
               type="button"
               className={styles.primary}
-              disabled={send.isPending}
+              disabled={send.isPending || gateOf(data, current) !== "open"}
               onClick={() => {
                 send.mutate({ articleId: data.id, number: current.number });
               }}
             >
               {t("library.validateThis", { number: current.number })}
             </button>
+            {send.error !== null && (
+              <span role="alert" className={styles.error}>
+                {errorText(t, send.error)}
+              </span>
+            )}
           </p>
         </div>
       )}
@@ -142,7 +148,7 @@ export function ArticlePage({ articleId }: { articleId: string }) {
                 <button
                   type="button"
                   className={styles.button}
-                  disabled={send.isPending}
+                  disabled={send.isPending || gateOf(data, shown) !== "open"}
                   onClick={() => {
                     send.mutate({ articleId: data.id, number: shown.number });
                   }}

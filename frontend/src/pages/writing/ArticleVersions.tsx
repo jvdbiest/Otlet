@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { useRef, useState, type ReactNode } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { toDocument } from "../../editor/document.ts";
 import { mediaUrl } from "../../media.ts";
-import { useSaveVersion, useSendArticle, type ArticleView, type VersionView } from "../../writing.ts";
+import { gateOf, useSaveVersion, useSendArticle, type ArticleView, type VersionView } from "../../writing.ts";
 import { errorText, formatDate } from "../watch/labels.ts";
 import { styles } from "../watch/styles.ts";
 import { blockAnchor, findBlock } from "./blocks.ts";
@@ -11,6 +12,7 @@ import { CompareLayout, ReferencePanel } from "./Compare.tsx";
 import { DocumentView, type PlatformDocument } from "./DocumentView.tsx";
 import { ExportTools } from "./ExportTools.tsx";
 import { GenerationDetails } from "./GenerationDetails.tsx";
+import { Proximity } from "./Proximity.tsx";
 import { TextSearch } from "./TextSearch.tsx";
 import { VersionEditor } from "./VersionEditor.tsx";
 import { Warning } from "./Warning.tsx";
@@ -101,6 +103,20 @@ export function ArticleVersions({
   const searched = useRef<HTMLDivElement>(null);
   const versions = article.versions;
   const shown = versions.find((v) => v.number === chosen) ?? versions.at(-1);
+  // The worker checks a new text within seconds (U05): its result is read as soon as it is there.
+  const queryClient = useQueryClient();
+  const pending = shown !== undefined && gateOf(article, shown) === "pending";
+  useEffect(() => {
+    if (!pending) {
+      return;
+    }
+    const timer = window.setInterval(() => {
+      void queryClient.invalidateQueries({ queryKey: ["workspaces", workspaceId] });
+    }, 5000);
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [pending, queryClient, workspaceId]);
   if (shown === undefined) {
     return null;
   }
@@ -167,6 +183,12 @@ export function ArticleVersions({
                 })}
         </span>
       </div>
+      <Proximity
+        workspaceId={workspaceId}
+        article={article}
+        version={shown}
+        anchor={(start) => anchor("paragraph", start)}
+      />
       {shown.context_overflow && <Warning text={t("draft.overflow")} />}
       {shown.unused_sources.length > 0 && (
         <Warning
@@ -240,6 +262,11 @@ export function ArticleVersions({
             >
               {t("library.validateThis", { number: forked.to })}
             </button>
+            {send.error !== null && (
+              <span role="alert" className={styles.error}>
+                {errorText(t, send.error)}
+              </span>
+            )}
             <button
               type="button"
               className={styles.button}
@@ -326,7 +353,12 @@ export function ArticleVersions({
             >
               {t("draft.edit")}
             </button>
-            <ExportTools workspaceId={workspaceId} articleId={article.id} number={shown.number} />
+            <ExportTools
+              workspaceId={workspaceId}
+              articleId={article.id}
+              number={shown.number}
+              gated={gateOf(article, shown) !== "open"}
+            />
             {actions?.(shown)}
           </p>
           {copy.error !== null && (

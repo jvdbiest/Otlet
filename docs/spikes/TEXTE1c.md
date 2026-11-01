@@ -99,3 +99,25 @@ Le seuil reste raté et la conclusion reste « partiel ». Cette relecture sert 
 - **Les Numériques.** Les 6 pages en cause ont toutes la même forme : E0 est plus long parce qu'il garde les tableaux de prix (de 22 à 123 prix par page), et E3 s'en tient à l'article. Le repère prend ce texte plus long pour l'article : ici, il signale le défaut d'E0, pas celui d'E3. Sur les 4 pages de référence du site, E3 est à 95 % de couverture ou plus.
 - **Reste d'E3.** Next.ink : plus de texte en trop sur les pages à mur payant (jusqu'à 65 % sur une page, contre 10 % pour E0). Une page de Les Numériques garde 75 % de texte en trop, contre 85 % pour E0.
 - **La proportion, sur les 100 pages de référence de TEXTE1b et TEXTE1c.** Avec E0, 5 pages sur 100 gardent moins de la moitié de l'article, et 17 sur 100 moins de 70 %. C'est moins que les 8 à 13 % estimés avant : les repères fondés sur la longueur comptaient de faux cas. L'échantillon reste petit.
+
+## 9. Dans le produit : revérification et essai réel (2026-11-01)
+
+Décision de Joël : passer à E3 (ADR-0047). Le code du produit diffère du banc : filtre des éléments cachés avant l'extraction, `trafilatura` 2.3.1 et non 2.0.0.
+
+**Revérification sur les pages figées, sans modèle.**
+
+| | TEXTE1c (480 pages) | TEXTE1b (519 pages) |
+|---|---|---|
+| Couverture médiane | 99,1 % | 98,9 % |
+| Pages sous la moitié de la référence | 0 % | 0 % |
+| Pollution médiane | 6,3 % | 7,5 % |
+| Pages qui reculent de plus de 20 points | 0 % | 1,9 % |
+| Temps, p95 | 123 ms | 120 ms |
+
+Une page de texte vide : aucune. Pic de mémoire d'un processus qui lit toutes ces pages : 107 Mo.
+
+**Essai réel sur .252.** Les 28 sources des deux briefs « [Banc TRI1] » relues aux règles du produit, puis une nouvelle version de chaque brouillon avec qwen3:14b.
+
+- **Froid : version 2.** Le vortex polaire, dont le texte était faux, entre dans le brouillon, avec la nuance qui manquait : un temps frais, sans vague de froid massive annoncée. Le mouron disparaît. Restent la raclette, article retenu qui ne répond pas, et une phrase sans appui attribuée à l'IRM (« son intensité actuelle pourrait accentuer les risques »).
+- **Ukraine : pas de nouvelle version.** Deux essais, quatre appels, tous arrêtés au délai de 600 s. Le modèle était tombé de 20 à 2,6 jetons par seconde sur le brouillon du froid, à prompt comparable, sans cause établie. Cet échec ne dit rien de l'extraction.
+- **Pages « en direct ».** 10 sources de l'Ukraine ont reçu le direct du jour au lieu du leur : elles ont été remises à leur ancien texte. Les 18 autres sources gardent le nouveau.

@@ -12,7 +12,7 @@ import pytest
 import sqlalchemy as sa
 
 from integration_support import TestDatabase, requires_database
-from otlet.collection.adapters.parsing import FeedparserReader, ReadabilityReader
+from otlet.collection.adapters.parsing import ArticleReader, FeedparserReader
 from otlet.collection.adapters.postgres import PostgresCollectionStore
 from otlet.collection.application.collection import (
     COLLECT_SOURCE,
@@ -130,9 +130,7 @@ def world(migrated: TestDatabase) -> World:
     engine = db.create_engine(migrated.app_url)
     web, queue, clock = Web(), Queue(), [NOW]
     store = PostgresCollectionStore(engine, queue)
-    collection = Collection(
-        store, web, FeedparserReader(), ReadabilityReader(), clock=lambda: clock[0]
-    )
+    collection = Collection(store, web, FeedparserReader(), ArticleReader(), clock=lambda: clock[0])
     return World(engine, web, queue, collection, make_context(engine, "alice@example.org"), clock)
 
 
@@ -524,7 +522,7 @@ def test_a_declaration_never_passes_robots_nor_a_disabled_instance(world: World)
         PostgresCollectionStore(world.engine, world.queue),
         world.web,
         FeedparserReader(),
-        ReadabilityReader(),
+        ArticleReader(),
         declarations=False,
     )
     with pytest.raises(RightsError) as refused:

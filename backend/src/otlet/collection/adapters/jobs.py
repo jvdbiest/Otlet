@@ -7,7 +7,7 @@
 
 from uuid import UUID
 
-from otlet.collection.adapters.parsing import FeedparserReader, ReadabilityReader
+from otlet.collection.adapters.parsing import ArticleReader, FeedparserReader
 from otlet.collection.adapters.postgres import PostgresCollectionStore
 from otlet.collection.application.collection import (
     COLLECT_SOURCE,
@@ -21,7 +21,7 @@ from otlet.platform.http import SafeClient
 
 def collection(environment: JobEnvironment, client: SafeClient) -> Collection:
     store = PostgresCollectionStore(environment.engine, environment.enqueue)
-    return Collection(store, client, FeedparserReader(), ReadabilityReader())
+    return Collection(store, client, FeedparserReader(), ArticleReader())
 
 
 # A failed run is not retried at once: the next interval retries it, with a growing delay.

@@ -31,7 +31,7 @@ from otlet.assistant.adapters.postgres import PostgresAssistantStore
 from otlet.assistant.application.assistant import Assistant
 from otlet.assistant.application.dossiers import Dossiers
 from otlet.backup.adapters.control import PostgresControl
-from otlet.collection.adapters.parsing import FeedparserReader, ReadabilityReader
+from otlet.collection.adapters.parsing import ArticleReader, FeedparserReader
 from otlet.collection.adapters.postgres import PostgresCollectionStore
 from otlet.collection.application.collection import Collection
 from otlet.entrypoints.api import (
@@ -138,7 +138,7 @@ def create_app(settings: Settings) -> FastAPI:
                 store,
                 SafeClient(),
                 FeedparserReader(),
-                ReadabilityReader(),
+                ArticleReader(),
                 declarations=settings.rights_declarations,
             ),
             workspace_context,

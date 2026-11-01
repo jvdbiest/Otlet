@@ -2,10 +2,10 @@
 
 | | |
 |---|---|
-| Statut | Ouverte |
+| Statut | Conclue : partiel |
 | Durée maximale | 3 h de mesure (une heure de modèle attendue) |
-| Temps passé | à remplir |
-| Ouverte le / conclue le | 2026-11-01 / à remplir |
+| Temps passé | 2 h 30 de préparation et d'analyse (journal de temps, TRI1) ; 60 min de modèle |
+| Ouverte le / conclue le | 2026-11-01 / 2026-11-01 |
 | Choix concernés | ADR-0043 §5 (tri sans exclusion), ADR-0044 (Reporter) |
 | Commande de rejeu | `spikes/tri1/run-tri1.sh` puis `python3 spikes/tri1/tri1.py <dossier> --summary` |
 
@@ -58,15 +58,43 @@ Mesurés sur l'ensemble des 7 questions, sans les articles sans résumé (la rè
 
 ## 4. Mesures
 
-À remplir après la mesure.
+54 appels, aucun en erreur, aucun article sans verdict ; 25 min pour A, 19 pour B, 17 pour C ; un appel a pris 359 s. Seul écart au montage prévu : `run-tri1.sh` corrigé après la fusion, sans toucher au protocole, car `/tmp` du worker est un tmpfs que `docker cp` ne voit pas (un appel par exécution de `tri1.py`, résultat sorti du conteneur à chaque fois).
+
+| Critère | Seuil | A, tri actuel | B, la question | C, prompt strict |
+|---|---|---|---|---|
+| R jugés « traite » | ≥ 85 % | ✅ 86,5 % | ✅ 89,6 % | ❌ 83,3 % |
+| Idem, sans l'Ukraine | ≥ 85 % | ✅ 89,7 % | ✅ 89,7 % | ✅ 87,2 % |
+| R jugés « hors_sujet » | ≤ 3 % | ✅ 1,0 % | ✅ 0 % | ❌ 5,2 % |
+| Idem, sans l'Ukraine | ≤ 3 % | ✅ 0 % | ✅ 0 % | ❌ 7,7 % |
+| R parmi les « traite » | ≥ 75 % | ❌ 65,9 % | ❌ 73,5 % | ❌ 71,4 % |
+| Idem, sans l'Ukraine | ≥ 75 % | ❌ 54,7 % | ❌ 64,8 % | ❌ 61,8 % |
+| H jugés « traite » | ≤ 5 % | ✅ 4,7 % | ✅ 4,1 % | ✅ 3,6 % |
+| Idem, sans l'Ukraine | ≤ 5 % | ✅ 3,8 % | ✅ 3,0 % | ✅ 3,0 % |
+| Froid : R jugés « traite » | ≥ 5 sur 6 | ❌ 3 | ✅ 5 | ✅ 5 |
+| Présidentielle bulgare jugée « traite » | 0 sur 4 | ❌ 2 | ❌ 1 | ❌ 2 |
+
+Fichiers : `spikes/tri1/results/summary.txt`, `spikes/tri1/results/erreurs-B.txt`. Les raisons du modèle restent sur la VM (`~/s-tri1/calls.jsonl`).
+
+Relecture des erreurs de B :
+- **Sur 31 retenus qui ne sont pas R, 7 sont H et 24 sont T.** Plusieurs T se discutent : les 4 « Top 5 » de motos, tirés d'essais, ou « Poutine compte intensifier… ». Compter ces 5 articles comme R donnerait 77,8 % sur les 7 questions, et le critère sans l'Ukraine resterait sous 75 % (72 % avec les 4 « Top 5 »). Les seuils et les étiquettes ne changent pas pour autant.
+- **Un effet de lot.** Dans le lot de l'Ukraine qui va du rang 75 au rang 99, 9 articles sont retenus avec la même formule, « Le sujet mentionne directement… », dont TotalEnergies, un empire immobilier et les midterms. Ce lot contient peu d'articles sur le sujet.
+- **Un lien inventé** : Novaïa Gazeta, « journal opposé à la Russie en Ukraine ».
+- **B lit la question au mot près.** Sur l'énergie, trois articles sur des hausses sont en « proche » parce qu'ils parlent de 2027 et « non cet hiver ». Sur l'Ukraine, 6 articles R sont en « proche », dont 4 sur Starlink.
+- **Rien de perdu en « hors_sujet »** : avec B, tous les articles R restent « traite » ou « proche ».
 
 ## 5. Conclusion
 
-À remplir.
+**Partiel.** Aucune variante ne tient les 6 critères. B améliore nettement la précision (65,9 % → 73,5 %) sans perdre de rappel (86,5 % → 89,6 %), et passe le froid de 3 à 5 articles sur 6. C ne fait pas mieux que B et écarte plus de bons articles : préciser le prompt ne remplace pas la question. Le verdict « traite » reste trop généreux pour décider seul de la matière d'un brief.
 
 ## 6. Conséquences
 
-À remplir.
+| Document ou choix | Conséquence | ADR |
+|---|---|---|
+| Tri du Reporter (`reporter.py`, `subject`) | À soumettre à Joël : envoyer la question de l'auteur et non les noms des concepts | ADR-0044, à compléter si accepté |
+| Prompt `veille-2`, variante C | Inchangé ; C n'est pas reprise | |
+| Brief depuis les « retenus » | Le brief ne doit pas se fier au seul verdict : l'auteur garde la relecture | ADR-0043 §5 confirmé (rien n'est exclu) |
+
+Le code de `spikes/tri1/` reste un banc ; rien n'est repris dans `backend/` à cette étape.
 
 ## 7. Ce que la preuve n'a pas couvert
 
@@ -74,3 +102,5 @@ Mesurés sur l'ensemble des 7 questions, sans les articles sans résumé (la rè
 - Les titres et 300 caractères de résumé seulement, comme le tri du produit : un article peut répondre plus loin dans son texte.
 - 7 questions, un passage par variante : ni la stabilité du modèle, ni d'autres modèles ne sont mesurés.
 - La rédaction du brief à partir des articles retenus n'est pas mesurée.
+- L'effet de lot n'a pas été isolé : des lots plus petits ou un autre ordre n'ont pas été essayés.
+- Le prompt C donne un seul exemple, et il n'est qu'une rédaction possible parmi d'autres.

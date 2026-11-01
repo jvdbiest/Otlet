@@ -135,6 +135,7 @@ def run(folder: Path, pilot: bool) -> None:
                 if pilot:
                     return
                 time.sleep(5)
+    print("complete", flush=True)
 
 
 def summary(folder: Path) -> None:

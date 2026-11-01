@@ -1,0 +1,43 @@
+calls with error 0 max s 358.7 sum by variant {'A': 25, 'B': 19, 'C': 17}
+not judged 0
+TRAITE-NON-R T Pourquoi r 36 Face à la baisse des températures, ce chauffage connecté puiss 
+TRAITE-NON-R T Quelles so 59 "On aurait affaire à une grande première": mais que fait la Ru 
+TRAITE-NON-R T Quelles so 60 Un aveu de faiblesse de Poutine et une bromance avec Elon Musk 
+TRAITE-NON-R T Quelles so 70 Conforté par ses affaires avec Donald Trump, Vladimir Poutine  
+TRAITE-NON-R H Quelles so 87 TotalEnergies : bénéfice inédit au troisième trimestre, à 8,3  
+TRAITE-NON-R T Quelles so 88 Sous la pression des autorités russes, un journal indépendant  
+TRAITE-NON-R T Quelles so 89 L’inflation explose en Belgique et dépasse les 5 %, les salair 
+TRAITE-NON-R T Quelles so 90 La Russie annoncée comme le pays hôte des Mondiaux 2030 d’halt 
+TRAITE-NON-R H Quelles so 92 Gérald Hibert, de l'enveloppe de sa grand-mère à un empire imm 
+TRAITE-NON-R T Quelles so 93 En Bulgarie, sur les bords de la mer Noire, les attaques de dr 
+TRAITE-NON-R H Quelles so 95 Midterms américaines: pourquoi l’Europe doit se préparer à un  
+TRAITE-NON-R T Quelles so 96 Iryna en Roman vluchtten uit Marioepol naar België: “Met wat h 
+TRAITE-NON-R T Quelles so 98 Le journal indépendant russe Novaïa Gazeta ferme ses portes, s 
+TRAITE-NON-R T Les pertes 0 2 500 pertes d’emploi supplémentaires chez Volvo en raison de  
+TRAITE-NON-R T Les pertes 4 Plus de 130 000 chômeurs exclus depuis janvier : le patronat s 
+TRAITE-NON-R H Les pertes 29 Saga du casino de Bruxelles : Viage prolongé de six mois, mais 
+TRAITE-NON-R H Les pertes 33 Casino de Bruxelles: une prolongation actée, mais 3 millions p 
+TRAITE-NON-R T Les pertes 43 Les organisations patronales réclament une nouvelle approche e 
+TRAITE-NON-R H Les pertes 44 Bruxelles davantage touchée par la pénurie d'enseignants dans  
+TRAITE-NON-R T Les pertes 45 Moins de faillites qu’en septembre 2025, mais trois secteurs b 
+TRAITE-NON-R T Les essais 0 PRESSE – Enduro Magazine, novembre, décembre 2026, janvier 202 
+TRAITE-NON-R T Les essais 5 Top 5 : les meilleures motos A2 2026 
+TRAITE-NON-R T Les essais 6 Top 5 : Les meilleures sportives 2026 
+TRAITE-NON-R T Les essais 7 Top 5 : Les meilleurs trails polyvalents 2026 
+TRAITE-NON-R T Les essais 9 Top 5 : Les meilleurs Sports tourings et trails routiers 2026 
+TRAITE-NON-R T Les prix 0 Plus de 600 euros de réduction sur le gaz, 450 sur l’électrici 
+TRAITE-NON-R T Les prix 1 Chauffage : le gouvernement va débloquer 15 millions d’euros d 
+TRAITE-NON-R H Les prix 10 Édito 
+TRAITE-NON-R T Les prix 27 Gas is al twaalf keer duurder in Europa dan in de VS 
+TRAITE-NON-R T Les prix 28 TotalEnergies : bénéfice inédit au troisième trimestre, à 8,3  
+TRAITE-NON-R T Les prix 31 L'inflation en Belgique a atteint 5,26% en octobre, toujours t 
+R-MANQUE proche Pourquoi r 35 Hiver 2026-2027 : deux phénomènes climatiques convergent vers  
+R-MANQUE proche Quelles so 16 Guerre en Ukraine : un acteur de “Game of Thrones” contraint d 
+R-MANQUE proche Quelles so 38 [MàJ] L’Ukraine accuse Starlink d’avoir restreint l’accès à In 
+R-MANQUE proche Quelles so 39 Star Wars n’est plus de la science-fiction, le conflit en Ukra 
+R-MANQUE proche Quelles so 40 Guerre en Ukraine : Musk affirme que Kiev a violé les conditio 
+R-MANQUE proche Quelles so 42 L'ambassadeur Bill White nie que les USA retiennent des rensei 
+R-MANQUE proche Quelles so 48 EN DIRECT, guerre en Ukraine : Elon Musk accuse Kiev de violer 
+R-MANQUE proche Les prix 7 Pourquoi votre facture d'énergie augmentera (encore) en 2027 
+R-MANQUE proche Les prix 8 Hoe bespaar ik op energie nu de prijzen pieken? 
+R-MANQUE proche Les prix 9 Gaz et électricité... vous payez aussi leur distribution, et l 

@@ -513,6 +513,9 @@ def test_dates_chosen_or_named_bound_the_set_and_trie_les_sorts_without_translat
     found = api.get(context, conversation.id)
     assert found is not None and found.turns[2].operation is Operation.TRIER
     assert model.asked and not any("Dernière question : " in asked for asked in model.asked)
+    # The sort reads the question and what narrowed it, not the names of the concepts (TRI1).
+    subject = f"Les articles sur la tempête Austen — Uniquement les articles du {named}"
+    assert f"Sujet : {subject}\n" in model.asked[0]
 
 
 def test_conversations_are_deleted_by_their_author_only(

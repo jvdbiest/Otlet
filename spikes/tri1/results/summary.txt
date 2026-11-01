@@ -1,0 +1,40 @@
+54 calls, 60 min of model
+
+A: question / R in traite, R rejected, traite, R of traite, H in traite
+  Pourquoi risque  3/6, 0, 3, 3/3, 0/19
+  Quelles sont     48/57, 1, 62, 48/62, 3/36
+  La situation     3/3, 0, 3, 3/3, 0/13
+  Les pertes       8/9, 0, 15, 8/15, 3/31
+  Les essais       10/10, 0, 17, 10/17, 0/38
+  Que rachète      2/2, 0, 6, 2/6, 0/24
+  Les prix         9/9, 0, 20, 9/20, 2/8
+  TOTAL            83/96, 1, 126, 83/126, 8/169
+  R_in_traite 86.5% ; R_rejected 1.0% ; precision 65.9% ; H_in_traite 4.7%
+  sans Ukraine : R_in_traite 89.7% ; R_rejected 0.0% ; precision 54.7% ; H_in_traite 3.8%
+  froid 3/6 ; Bulgarie 2/4 ; seuils tenus : False
+
+B: question / R in traite, R rejected, traite, R of traite, H in traite
+  Pourquoi risque  5/6, 0, 6, 5/6, 0/19
+  Quelles sont     51/57, 0, 63, 51/63, 3/36
+  La situation     3/3, 0, 3, 3/3, 0/13
+  Les pertes       9/9, 0, 16, 9/16, 3/31
+  Les essais       10/10, 0, 15, 10/15, 0/38
+  Que rachète      2/2, 0, 2, 2/2, 0/24
+  Les prix         6/9, 0, 12, 6/12, 1/8
+  TOTAL            86/96, 0, 117, 86/117, 7/169
+  R_in_traite 89.6% ; R_rejected 0.0% ; precision 73.5% ; H_in_traite 4.1%
+  sans Ukraine : R_in_traite 89.7% ; R_rejected 0.0% ; precision 64.8% ; H_in_traite 3.0%
+  froid 5/6 ; Bulgarie 1/4 ; seuils tenus : False
+
+C: question / R in traite, R rejected, traite, R of traite, H in traite
+  Pourquoi risque  5/6, 1, 5, 5/5, 0/19
+  Quelles sont     46/57, 2, 57, 46/57, 2/36
+  La situation     3/3, 0, 3, 3/3, 0/13
+  Les pertes       9/9, 0, 16, 9/16, 3/31
+  Les essais       10/10, 0, 17, 10/17, 1/38
+  Que rachète      2/2, 0, 2, 2/2, 0/24
+  Les prix         5/9, 2, 12, 5/12, 0/8
+  TOTAL            80/96, 5, 112, 80/112, 6/169
+  R_in_traite 83.3% ; R_rejected 5.2% ; precision 71.4% ; H_in_traite 3.6%
+  sans Ukraine : R_in_traite 87.2% ; R_rejected 7.7% ; precision 61.8% ; H_in_traite 3.0%
+  froid 5/6 ; Bulgarie 2/4 ; seuils tenus : False

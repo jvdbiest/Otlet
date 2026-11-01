@@ -2,10 +2,10 @@
 
 | | |
 |---|---|
-| Statut | Ouverte |
+| Statut | Conclue : échec (3 déformations sur 6, aucune fausse alerte) |
 | Durée maximale | 1 h de calcul, 38 appels au modèle |
 | Temps passé | journal de temps, tâche FOND1 |
-| Ouverte le / conclue le | 2026-11-01 / — |
+| Ouverte le / conclue le | 2026-11-01 / 2026-11-01 |
 | Choix concernés | Contrôle du fond, chantier distinct d'U05 (Joël, 2026-11-01) ; audit qualité du moteur de génération (ADR-0038) |
 | Commande de rejeu | sur la VM de travail, depuis une copie de `spikes/fond1` : `OLLAMA_URL=… sh run-fond1.sh` |
 
@@ -43,3 +43,39 @@ Seuils proposés et acceptés par Joël le 2026-11-01. Chacun doit être tenu **
 **Exécution** : `qwen3:14b` sur le PC de Joël, un appel à la fois, détaché, température 0,2, graine 1 puis 2, fenêtre de 8 192 jetons. Rien n'est écrit dans Otlet. Aucune autre étape lourde pendant le test. À 1 h de calcul, le test s'arrête et conclut avec ce qu'il a.
 
 **Si échec** : une consigne ou un modèle plus adaptés, ou l'abandon de cette voie, sur décision de Joël.
+
+## 4. Mesures
+
+Mesure du 2026-11-01, sur la VM de travail, `qwen3:14b` sur le PC de Joël : 38 appels en un peu plus de 6 min de calcul, bien moins que l'heure prévue. Fenêtre jamais dépassée (5 381 jetons au plus). Résultats sans textes : `spikes/fond1/results/summary.json`.
+
+| Critère | Seuil | Passe 1 | Passe 2 | Verdict |
+|---|---|---|---|---|
+| C1 déformations repérées | ≥ 5 sur 6 | 3 (D3, D4, D6) | 3 (D3, D4, D6) | ❌ |
+| C2 fausses alertes | ≤ 2 sur 12 | 0 | 0 | ✅ |
+| D7, hors seuil | — | manquée | manquée | — |
+
+- **Manquées aux deux passes** : D1, D2, D5 et D7, toutes en verdict `fidele`. Sur D1, la raison ne parle que de la phrase sur S&P et jamais de la confiance des marchés.
+- **D6 à moitié** : le modèle relève les noms des trains, pas la cause attribuée à la seule panne.
+- **Réponse invalide** : à la passe 1, F7 a été coupée par la limite de sortie, en recopiant une longue phrase de source. Le début de la réponse dit `fidele`. Elle ne compte pas comme fausse alerte, ce que dit le §2 : une première version du résumé la comptait à tort, corrigée après la mesure sans toucher aux seuils.
+- **Phrases de source retrouvées telles quelles** : 10 et 12 sur 19.
+
+## 5. Conclusion
+
+**Échec sur la détection, réussite sur le bruit.** Le modèle a repéré 3 déformations sur 6, sans aucune fausse alerte : tous ses verdicts `deforme` portaient sur une vraie déformation. Il ne suffit pas tel quel, et un article qui passe ce contrôle ne peut pas être présenté comme fidèle.
+
+Les réponses suggèrent une cause, non démontrée : le modèle juge le paragraphe d'un bloc, à partir de ce qui est juste, sans vérifier chaque affirmation.
+
+## 6. Conséquences
+
+| Document ou choix | Conséquence | ADR |
+|---|---|---|
+| Contrôle du fond | Rien n'entre dans le produit. Suite soumise à Joël | — |
+| U05, P02 | Inchangés | — |
+
+Le code reste dans `spikes/fond1` (ADR-0018).
+
+## 7. Ce que le test n'a pas couvert
+
+- Une consigne affirmation par affirmation, un autre modèle.
+- Le taux réel : 19 paragraphes, 4 articles, des défauts connus d'avance.
+- Les paragraphes fidèles du budget fédéral (voir le jeu d'essai).

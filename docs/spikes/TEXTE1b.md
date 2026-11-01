@@ -32,7 +32,7 @@ Une variante réussit si elle tient tous les critères, sur la référence écri
 
 ## 3. Protocole
 
-**Environnement.** VM .252. Aucun modèle, aucun accès réseau pour les extractions, rien d'écrit dans la Veille. Conteneur jetable de l'image du worker ; `trafilatura` 2.0.0 (Apache-2.0) n'y est installé que pour le banc, et n'entre pas dans le produit.
+**Environnement.** VM .252. Aucun modèle, aucun accès réseau pour les extractions, rien d'écrit dans la Veille. Conteneur jetable de l'image du worker, sans réseau ; `trafilatura` 2.0.0 (Apache-2.0) est posé à côté pour le banc seul et n'entre pas dans le produit.
 
 **Jeu figé.** 520 textes tirés au hasard, 40 par site, pour les 13 sites de plus de 70 textes en 30 jours, parmi ceux que les règles autorisaient (`full_text`). Pages relues le 2026-11-01, une toutes les 3 s, comme le worker les lit ; 519 obtenues, 1 délai dépassé. Les pages restent sur la VM (`~/s-texte1/pages.jsonl`) et ne sont pas versionnées ; elles seront effacées après la conclusion.
 

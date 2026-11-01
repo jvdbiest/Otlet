@@ -10,6 +10,7 @@ the Veille. Run by run-texte1b.sh, in the image of the worker with trafilatura b
 import base64
 import gzip
 import json
+import os
 import re
 import sys
 import time
@@ -174,6 +175,8 @@ def summary(folder: Path) -> None:
 
 
 if __name__ == "__main__":
+    # After the libraries of the image, so that E0 runs on the versions of the product.
+    sys.path.append(os.environ.get("TEXTE1B_EXTRA", ""))
     where = Path(sys.argv[1])
     if "--summary" in sys.argv:
         summary(where)

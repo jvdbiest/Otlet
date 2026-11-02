@@ -7,10 +7,10 @@ license = "AGPL-3.0-or-later"
 authors = [{ name = "Joël" }]
 dependencies = [
     "alembic>=1.20.1",
-    "anthropic>=2.1.0",
+    "anthropic>=2.3.0",
     "argon2-cffi>=25.1.0",
     "cryptography>=50.0.2",
-    "fastapi>=0.161.1",
+    "fastapi>=0.162.0",
     "feedparser>=6.0.14",
     "httpx2>=2.16.0",
     "nh3>=0.3.7",
@@ -43,7 +43,7 @@ override-dependencies = ["dateparser; python_version < '3'"]
 [dependency-groups]
 dev = [
     "httpx2>=2.16.0",
-    "hypothesis>=6.170.8",
+    "hypothesis>=6.170.11",
     "import-linter>=2.15",
     "mypy>=2.4",
     "pre-commit>=4.7.0",

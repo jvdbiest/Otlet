@@ -17,19 +17,19 @@
   },
   "dependencies": {
     "@tanstack/react-query": "5.104.5",
-    "@tanstack/react-router": "1.170.45",
+    "@tanstack/react-router": "1.170.46",
     "@tiptap/core": "3.32.0",
     "@tiptap/extensions": "3.32.0",
     "@tiptap/pm": "3.32.0",
     "@tiptap/react": "3.32.0",
-    "i18next": "26.5.5",
+    "i18next": "26.5.11",
     "i18next-icu": "2.6.1",
     "intl-messageformat": "12.1.4",
     "openapi-fetch": "0.17.0",
     "react": "19.3.1",
     "react-aria-components": "1.22.1",
     "react-dom": "19.3.1",
-    "react-i18next": "17.1.2"
+    "react-i18next": "17.1.9"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

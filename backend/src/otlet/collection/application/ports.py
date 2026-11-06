@@ -155,8 +155,11 @@ class CollectionStore(Protocol):
     ) -> list[Item]: ...
 
     def get_item(self, workspace_id: UUID, item_id: UUID) -> Item | None: ...
-    def read_items(self, workspace_id: UUID, limit: int) -> list[ReadItem]:
-        """The items whose text was read from their page, the most recent first."""
+    def read_items(
+        self, workspace_id: UUID, limit: int, before: datetime | None = None
+    ) -> list[ReadItem]:
+        """The items whose text was read from their page (before `before`), the most recent
+        first."""
         ...
 
     def pending_item_url(self, workspace_id: UUID, item_id: UUID) -> str | None: ...

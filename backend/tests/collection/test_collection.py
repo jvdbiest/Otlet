@@ -625,6 +625,8 @@ def test_texts_already_read_can_be_read_again_without_writing(world: World) -> N
     assert reads["Article a"].kept < 0.8 and reads["Article a"].text is not None
     assert reads["Article b"].kept == 1.0
     assert (reads["Article live/c"].reason, reads["Article live/c"].text) == ("live", None)
+    # Only the texts read before a moment: none here, all were read at NOW.
+    assert list(world.collection.reread(world.context.workspace_id, 10, NOW)) == []
     for title, item in before.items():
         assert item is not None
         after = world.collection.get_item(world.context, item.id)

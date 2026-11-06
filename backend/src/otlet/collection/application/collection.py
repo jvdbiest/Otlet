@@ -610,11 +610,13 @@ class Collection:
             at=self._clock(),
         )
 
-    def reread(self, workspace_id: UUID, limit: int) -> Iterator[Reread]:
+    def reread(
+        self, workspace_id: UUID, limit: int, before: datetime | None = None
+    ) -> Iterator[Reread]:
         """The texts read from their pages, read again by the same rules and the reader of today
         (ADR-0047): what would change. Writes nothing. A live page is never read again: its
         address gives the live of the day."""
-        for item in self._store.read_items(workspace_id, limit):
+        for item in self._store.read_items(workspace_id, limit, before):
             if model.is_live(item.url, item.title):
                 yield Reread(item, None, "live", None, 1.0)
                 continue

@@ -116,6 +116,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--limit", type=int, default=10_000, help="textes au plus, les plus récents"
     )
     reread.add_argument("--pause", type=float, default=3.0, help="secondes entre deux pages")
+    reread.add_argument(
+        "--read-before",
+        help="seulement les textes lus avant cet instant ISO 8601 (par exemple, avant ADR-0047)",
+    )
 
     health = commands.add_parser("healthcheck", help="contrôle de santé d'un rôle (conteneurs)")
     health.add_argument("role", choices=("api", *LOOP_ROLES))
@@ -192,6 +196,7 @@ def reread_command(args: argparse.Namespace, settings: Settings) -> int:
     import json
     import time
     from collections import Counter
+    from datetime import datetime
     from uuid import UUID
 
     from otlet.collection.adapters.parsing import ArticleReader, FeedparserReader
@@ -206,7 +211,8 @@ def reread_command(args: argparse.Namespace, settings: Settings) -> int:
     counts: Counter[tuple[str, str]] = Counter()
     with SafeClient() as client, open(args.report, "w", encoding="utf-8") as report:
         collection = Collection(store, client, FeedparserReader(), ArticleReader())
-        for n, read in enumerate(collection.reread(UUID(args.workspace), args.limit)):
+        before = datetime.fromisoformat(args.read_before) if args.read_before else None
+        for n, read in enumerate(collection.reread(UUID(args.workspace), args.limit, before)):
             if read.reason == "live":
                 outcome = "en direct, pas relu"
             elif read.text is None:

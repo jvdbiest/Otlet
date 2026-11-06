@@ -6,7 +6,7 @@ fetches, then writes the outcome in one transaction.
 """
 
 import logging
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from urllib.parse import urlsplit
@@ -19,6 +19,7 @@ from otlet.collection.application.ports import (
     NewItem,
     Outcome,
     PageReader,
+    ReadItem,
     SitePolicy,
 )
 from otlet.collection.domain import compliance, model
@@ -83,6 +84,18 @@ class PageReading:
     text: str | None = None
     title: str | None = None
     language: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class Reread:
+    """An item read again: its new text, or why it has none; `kept` is the share of runs of
+    three words that the old and the new text share."""
+
+    item: ReadItem
+    status: TextStatus | None
+    reason: str
+    text: str | None
+    kept: float
 
 
 class SitePolicies:
@@ -596,6 +609,19 @@ class Collection:
             language=reading.language,
             at=self._clock(),
         )
+
+    def reread(self, workspace_id: UUID, limit: int) -> Iterator[Reread]:
+        """The texts read from their pages, read again by the same rules and the reader of today
+        (ADR-0047): what would change. Writes nothing. A live page is never read again: its
+        address gives the live of the day."""
+        for item in self._store.read_items(workspace_id, limit):
+            if model.is_live(item.url, item.title):
+                yield Reread(item, None, "live", None, 1.0)
+                continue
+            reading = self._read_page(workspace_id, item.url)
+            after = reading.text if reading.status is TextStatus.FULL_TEXT else None
+            kept = model.kept_share(item.text, after) if after else 0.0
+            yield Reread(item, reading.status, reading.reason, after, kept)
 
     def _read_page(self, workspace_id: UUID, url: str, *, declared: bool = False) -> PageReading:
         policy = self._policies.for_url(workspace_id, url)

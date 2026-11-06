@@ -395,3 +395,24 @@ def clean_language(language: object) -> str | None:
         return None
     tag = language.strip().replace("_", "-")[:35]
     return tag if tag and all(part.isalnum() for part in tag.split("-")) else None
+
+
+# A live page gives at its address the live of the day, not the one collected (ADR-0047): read
+# again, ten articles of Le Monde got the same text. Never read again.
+LIVE_TITLE = re.compile(r"^\s*(?:EN DIRECT|DIRECT|LIVE)\b", re.IGNORECASE)
+
+
+def is_live(url: str, title: str) -> bool:
+    return "/live/" in url.lower() or LIVE_TITLE.match(title) is not None
+
+
+def _shingles(text: str) -> set[tuple[str, ...]]:
+    words = _WORD.findall(text.casefold())
+    return {tuple(words[n : n + 3]) for n in range(max(0, len(words) - 2))}
+
+
+def kept_share(before: str, after: str) -> float:
+    """How much of two texts is common, by runs of three words: 1 for the same text."""
+    first, second = _shingles(before), _shingles(after)
+    union = first | second
+    return len(first & second) / len(union) if union else 1.0

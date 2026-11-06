@@ -101,6 +101,22 @@ def build_parser() -> argparse.ArgumentParser:
         "--secrets-to", help="dossier où écrire les secrets de l'instance de la sauvegarde"
     )
 
+    collection = commands.add_parser("collection", help="collecte des sources (U01)")
+    collection_actions = collection.add_subparsers(dest="action", required=True)
+    reread = collection_actions.add_parser(
+        "reread",
+        help="relire les textes déjà lus avec le lecteur actuel, sans rien écrire (ADR-0047) :"
+        " un rapport de ce qui changerait",
+    )
+    reread.add_argument("--workspace", required=True, help="identifiant de l'espace")
+    reread.add_argument(
+        "--report", required=True, help="fichier du rapport (une ligne JSON par texte)"
+    )
+    reread.add_argument(
+        "--limit", type=int, default=10_000, help="textes au plus, les plus récents"
+    )
+    reread.add_argument("--pause", type=float, default=3.0, help="secondes entre deux pages")
+
     health = commands.add_parser("healthcheck", help="contrôle de santé d'un rôle (conteneurs)")
     health.add_argument("role", choices=("api", *LOOP_ROLES))
     health.add_argument("--port", type=int, default=port)
@@ -159,6 +175,63 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(openapi_document())
     elif args.command == "backup":
         return backup_command(args)
+    elif args.command == "collection":
+        return reread_command(args, settings)
+    return 0
+
+
+# Under this share of runs of three words in common, a text counts as changed.
+CHANGED_BELOW = 0.8
+REPORT_HEAD = 300
+
+
+def reread_command(args: argparse.Namespace, settings: Settings) -> int:
+    """`otlet collection reread`: what the reader of today would make of the texts already read
+    (ADR-0047), by the rules of the collection, one page every `--pause` seconds. Nothing is
+    written but the report; the summary by site goes to the standard output."""
+    import json
+    import time
+    from collections import Counter
+    from uuid import UUID
+
+    from otlet.collection.adapters.parsing import ArticleReader, FeedparserReader
+    from otlet.collection.adapters.postgres import PostgresCollectionStore
+    from otlet.collection.application.collection import Collection
+    from otlet.jobs.application.registry import no_queue
+    from otlet.platform import database
+    from otlet.platform.http import SafeClient
+
+    engine = database.create_engine(settings.require_database_url())
+    store = PostgresCollectionStore(engine, no_queue)
+    counts: Counter[tuple[str, str]] = Counter()
+    with SafeClient() as client, open(args.report, "w", encoding="utf-8") as report:
+        collection = Collection(store, client, FeedparserReader(), ArticleReader())
+        for n, read in enumerate(collection.reread(UUID(args.workspace), args.limit)):
+            if read.reason == "live":
+                outcome = "en direct, pas relu"
+            elif read.text is None:
+                outcome = f"plus de texte ({read.reason})"
+            elif read.kept < CHANGED_BELOW:
+                outcome = "changerait"
+            else:
+                outcome = "inchangé"
+            counts[(read.item.source, outcome)] += 1
+            counts[("", outcome)] += 1
+            line = {
+                "id": str(read.item.id), "source": read.item.source, "url": read.item.url,
+                "title": read.item.title, "outcome": outcome, "reason": read.reason,
+                "kept": round(read.kept, 3), "before": len(read.item.text),
+                "after": len(read.text or ""), "before_head": read.item.text[:REPORT_HEAD],
+                "after_head": (read.text or "")[:REPORT_HEAD],
+            }  # fmt: skip
+            report.write(json.dumps(line, ensure_ascii=False) + "\n")
+            report.flush()
+            if read.reason != "live":
+                time.sleep(args.pause)
+            if n % 100 == 99:
+                print(f"{n + 1} textes relus", file=sys.stderr, flush=True)
+    for (source, outcome), count in sorted(counts.items()):
+        print(f"{source or 'TOTAL'}\t{outcome}\t{count}")
     return 0
 
 

@@ -608,3 +608,24 @@ def test_an_agreement_covers_the_new_articles_of_a_source(world: World) -> None:
         None,
     )
     assert world.collection.source_rights(world.context, source.id) is None
+
+
+def test_texts_already_read_can_be_read_again_without_writing(world: World) -> None:
+    """ADR-0047: what the reader of today would make of the texts already read; a live page is
+    never read again, its address giving the live of the day."""
+    open_site(world.web, "a", "b", "live/c")
+    world.collection.add_source(world.context, FEED)
+    world.run_jobs()
+    before = {
+        i.title: world.collection.get_item(world.context, i.id)
+        for i in world.collection.list_items(world.context)
+    }
+    world.web.pages[f"{SITE}/a"] = (200, HTML, article("autre chose"))
+    reads = {r.item.title: r for r in world.collection.reread(world.context.workspace_id, 10)}
+    assert reads["Article a"].kept < 0.8 and reads["Article a"].text is not None
+    assert reads["Article b"].kept == 1.0
+    assert (reads["Article live/c"].reason, reads["Article live/c"].text) == ("live", None)
+    for title, item in before.items():
+        assert item is not None
+        after = world.collection.get_item(world.context, item.id)
+        assert after is not None and after.text == item.text, title

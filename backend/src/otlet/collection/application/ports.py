@@ -76,6 +76,17 @@ class Outcome:
 
 
 @dataclass(frozen=True, slots=True)
+class ReadItem:
+    """An item whose text was read from its page, as it is kept."""
+
+    id: UUID
+    url: str
+    title: str
+    source: str
+    text: str
+
+
+@dataclass(frozen=True, slots=True)
 class NewItem:
     entry: FeedEntry
     text_status: TextStatus
@@ -144,6 +155,10 @@ class CollectionStore(Protocol):
     ) -> list[Item]: ...
 
     def get_item(self, workspace_id: UUID, item_id: UUID) -> Item | None: ...
+    def read_items(self, workspace_id: UUID, limit: int) -> list[ReadItem]:
+        """The items whose text was read from their page, the most recent first."""
+        ...
+
     def pending_item_url(self, workspace_id: UUID, item_id: UUID) -> str | None: ...
 
     def set_item_text(

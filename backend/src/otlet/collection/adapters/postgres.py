@@ -20,6 +20,7 @@ from otlet.collection.application.ports import (
     CollectionState,
     NewItem,
     Outcome,
+    ReadItem,
     SitePolicy,
 )
 from otlet.collection.domain import model
@@ -459,6 +460,21 @@ class PostgresCollectionStore:
                 {"id": item_id},
             ).one_or_none()
         return None if row is None else item_from_row(row)
+
+    def read_items(self, workspace_id: UUID, limit: int) -> list[ReadItem]:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            rows = connection.execute(
+                sa.text(
+                    "SELECT i.id, i.url, i.title, i.text,"
+                    " coalesce(s.name, i.declared_origin, '') AS source"
+                    " FROM source_items AS i LEFT JOIN sources AS s ON s.id = i.source_id"
+                    " WHERE i.text_status = 'full_text' AND i.url IS NOT NULL"
+                    f" AND i.text IS NOT NULL AND i.duplicate_of IS NULL AND {here('i')}"
+                    " ORDER BY i.collected_at DESC LIMIT :limit"
+                ),
+                {"limit": limit},
+            ).all()
+        return [ReadItem(r.id, r.url, r.title, r.source, r.text) for r in rows]
 
     def pending_item_url(self, workspace_id: UUID, item_id: UUID) -> str | None:
         with workspace_transaction(self._engine, workspace_id) as connection:

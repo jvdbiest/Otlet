@@ -662,6 +662,11 @@ function ConfirmList({
   const [roles, setRoles] = useState<Record<string, Role>>(() =>
     Object.fromEntries(kept.slice(0, BRIEF_MAX).map((c) => [c.id, "matter"])),
   );
+  // Beyond what a brief takes, the rest is folded (Joël, 2026-11-08): the first kept come
+  // checked, the other kept and the close ones one click away.
+  const many = kept.length > BRIEF_MAX;
+  const [showMore, setShowMore] = useState(false);
+  const [showClose, setShowClose] = useState(!many);
   const chosen = [...kept, ...close].filter((c) => roles[c.id] !== undefined);
   const context = chosen.filter((c) => roles[c.id] === "context").map((c) => c.id);
   const matter = chosen.length - context.length;
@@ -724,11 +729,44 @@ function ConfirmList({
         {t("reporter.confirm.help")}
       </p>
       <h4>{t("reporter.confirm.kept", { count: kept.length })}</h4>
-      <ul style={{ listStyle: "none", padding: 0 }}>{kept.map((c) => row(c, "matter"))}</ul>
+      <ul style={{ listStyle: "none", padding: 0 }}>{kept.slice(0, BRIEF_MAX).map((c) => row(c, "matter"))}</ul>
+      {many && (
+        <p className={styles.row}>
+          <button
+            type="button"
+            className={styles.chip}
+            aria-expanded={showMore}
+            onClick={() => {
+              setShowMore(!showMore);
+            }}
+          >
+            {showMore
+              ? t("reporter.confirm.hideMore")
+              : t("reporter.confirm.showMore", { count: kept.length - BRIEF_MAX })}
+          </button>
+        </p>
+      )}
+      {many && showMore && (
+        <ul style={{ listStyle: "none", padding: 0 }}>{kept.slice(BRIEF_MAX).map((c) => row(c, "matter"))}</ul>
+      )}
       {close.length > 0 && (
         <>
           <h4>{t("reporter.confirm.closeOnes", { count: close.length })}</h4>
-          <ul style={{ listStyle: "none", padding: 0 }}>{close.map((c) => row(c, "context"))}</ul>
+          {many && (
+            <p className={styles.row}>
+              <button
+                type="button"
+                className={styles.chip}
+                aria-expanded={showClose}
+                onClick={() => {
+                  setShowClose(!showClose);
+                }}
+              >
+                {showClose ? t("reporter.confirm.hideClose") : t("reporter.confirm.showClose", { count: close.length })}
+              </button>
+            </p>
+          )}
+          {showClose && <ul style={{ listStyle: "none", padding: 0 }}>{close.map((c) => row(c, "context"))}</ul>}
         </>
       )}
       <p className={styles.row} style={{ flexWrap: "wrap" }}>

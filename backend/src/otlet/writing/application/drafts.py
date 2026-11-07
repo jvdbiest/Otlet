@@ -18,12 +18,14 @@ from otlet.workspaces.domain.model import WorkspaceContext
 from otlet.writing.domain.article import Article, Generation
 from otlet.writing.domain.brief import Brief, BriefFields, Length, Mode, ModelChoice
 from otlet.writing.domain.draft import (
+    ANSWERS,
     CHARS_PER_TOKEN,
     PROMPT_VERSION,
     WORDS,
     SourceText,
     asks_dates,
     asks_order,
+    asks_question,
     check_answer,
     cited_keys,
     dated_headings,
@@ -260,6 +262,7 @@ class Drafts:
         copied_from = copied_sequences([f"{text.title}\n{text.text}" for text in texts])
         checks = 0
         dated = asks_dates(fields)
+        question = asks_question(fields)
         refusals: list[list[str]] = []
 
         def validate(raw: str) -> list[str]:
@@ -283,7 +286,10 @@ class Drafts:
                 copied_from=copied_from if first else frozenset(),
                 source_letters=" ".join(t.text for t in texts) if first else None,
                 length_goal=WORDS[fields.length] if first else None,
-                context=context,
+                # Sent back once, like the other rules: a context still misused after the repair
+                # is kept, never a failed draft (essais [TEST], 2026-11-07: 3 drafts of 10 lost).
+                context=context if first else frozenset(),
+                question=question and first,
             )
             refusals.append(found)
             return found
@@ -291,7 +297,7 @@ class Drafts:
         written = writer.write(
             user_id,
             messages(fields, sources, charter),
-            output_schema(keys),
+            output_schema(keys, question),
             validate,
             fields.model,
             max(output, LOCAL_OUTPUT_TOKENS if local else 0),
@@ -391,6 +397,11 @@ class Drafts:
             # the version says which (a warning, not a failure).
             details["lone_sections"] = lone_sections(answer)
         details["repeated_paragraphs"] = repeated_paragraphs(written.text)
+        if question:
+            # Whether the sources answer the question of the title, as the model says it: shown
+            # with the version, the author checks it.
+            said = json.loads(written.text).get("answer")
+            details["answer"] = said if said in ANSWERS else None
         details["copies_removed"] = removed
         details.update(checked(answer, texts, brief.fields))
         self._articles.finish(workspace_id, generation_id, None, written.attempts, made, details)

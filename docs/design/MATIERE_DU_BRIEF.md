@@ -112,3 +112,32 @@ Remarques :
 ## 9. Premier essai (2026-11-07)
 
 Sur .252, la liste à vérifier s'ouvre pour le froid (8 retenus, 14 proches) et l'Ukraine (65 retenus, 19 proches). Dans les deux brouillons « [Essai P2] », le contexte n'est pas utilisé et la Bulgarie n'a plus de section. Joël : P3 est plus convaincante que prévu ; on voit tout de suite ce qui est matière (vortex polaire, froid attendu, gelées, blocage) et ce qui ne l'est pas (raclette, chauffage, jardinage). Le seuil de 3 proches est gardé ; le parcours est observé en usage réel avant TRI3.
+
+## 10. Dix essais [TEST] (2026-11-07 et 08)
+
+À la demande de Joël, 10 questions nouvelles sur .252 avec qwen3:14b. Chacune a donné une conversation « [TEST] … » du Reporter (question, puis « Trie-les »), puis un brief « [TEST] … » et son brouillon. Claude a joué l'auteur dans la liste à vérifier, selon la définition du §2. Ce choix d'auteur est une simulation, pas celui de Joël. Scripts et sorties : `~/s-p2/` sur .252 (`test_p3_ask.py`, `test_p3_draft.py`, `choices.json`).
+
+| Question | Forme | Ensemble | Retenus / proches | Liste à vérifier | Brouillon |
+|---|---|---|---|---|---|
+| Pourquoi y a-t-il une mobilisation sociale en Belgique ? | cause | 197 | 73 / 25 | oui | répond (austérité, enseignement, minerval) ; contexte dans un paragraphe |
+| Dernières nouvelles du GP du Brésil de F1 | actualité | 48 | 25 / 2 | oui (> 20) | répond ; contexte dans un paragraphe |
+| Les essais de smartphones récents | genre | 63 | 7 / 20 | oui | ne parle que de l'iPhone Duo : 2 essais sur 5 non utilisés |
+| Qui est Pierre Louvrier ? | fait | 28 | 1 / 5 | oui | répond, mince (une source) |
+| Les prix de l'immobilier vont-ils baisser ? | prévision | 33 | 9 / 8 | oui | ne répond pas (aucune prévision dans les sources, sans le dire) ; contexte dans 5 paragraphes et une section |
+| Pourquoi Musk accuse-t-il l'Ukraine (Starlink) ? | cause | 18 | 3 / 4 | oui | répond ; contexte dans 5 paragraphes et une section |
+| La suppression des provinces en Wallonie | thème | 20 | 7 / 0 | non | répond ; contexte non utilisé |
+| Nouveautés motos du salon de Milan | genre | 60 | 26 / 7 | oui (> 20) | répond ; une erreur : DesertX attribuée à CF Moto (Ducati) |
+| Que reprochent les CPAS à la circulaire Van Bossuyt ? | fait | 7 | 6 / 0 | non | répond |
+| Dernières décisions de Donald Trump | actualité | 104 | 29 / 19 | oui | répond ; contexte dans un paragraphe |
+
+Constats :
+- **Le tri retient encore beaucoup de « même thème »**, comme TRI2 l'avait montré. Pour la mobilisation : les marches Adeps, les rassemblements de voitures, Skeyes. Pour la F1 : Haas, Cadillac, Hamilton contre Leclerc. La liste à vérifier est le seul endroit où ils sortent.
+- **La liste s'ouvre 8 fois sur 10.** Elle est courte et utile quand le tri retient peu (Louvrier, Starlink, immobilier). Elle est lourde quand plus de 20 articles sont retenus : 98 lignes pour la mobilisation, 48 pour Trump.
+- **Défaut de P2, corrigé le 2026-11-08 (e4bed7d).** La règle du contexte s'appliquait aussi à la réponse corrigée : 3 brouillons sur 10 avaient échoué. Elle n'est plus renvoyée qu'une fois, comme les autres règles, et les 3 brouillons ont été refaits.
+- **Le contexte reste mal tenu quand la matière est mince.** Sur l'immobilier et sur Starlink, après la correction, le contexte porte encore une section et plusieurs paragraphes. Le prompt seul ne suffit pas.
+- **Hors P2 :** une erreur de fait (DesertX), deux caractères parasites (« Lepo味 », relevé par le contrôle) et une question de prévision à laquelle le brouillon ne répond pas, sans dire que les sources ne répondent pas.
+
+Pistes, sans modèle :
+1. Envoyer le contexte en court (titre et début du résumé) au lieu de son texte entier : la rédaction ne peut plus en tirer une section.
+2. Dans la liste à vérifier, quand plus de 20 articles sont retenus, ne cocher que les 20 premiers et replier les proches.
+3. Pour une question de prévision ou de cause, dire dans le brouillon quand aucune source n'y répond.

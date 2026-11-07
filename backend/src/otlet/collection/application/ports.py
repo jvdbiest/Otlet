@@ -45,6 +45,10 @@ class PageReader(Protocol):
         """The main content of an article page, or None when none is found."""
         ...
 
+    def previous(self, html: str, url: str) -> str:
+        """What the reader before ADR-0047 found on the page; empty when nothing."""
+        ...
+
 
 @dataclass(frozen=True, slots=True)
 class SitePolicy:
@@ -73,6 +77,17 @@ class Outcome:
     etag: str | None = None
     last_modified: str | None = None
     site_url: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class ReadItem:
+    """An item whose text was read from its page, as it is kept."""
+
+    id: UUID
+    url: str
+    title: str
+    source: str
+    text: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -144,7 +159,20 @@ class CollectionStore(Protocol):
     ) -> list[Item]: ...
 
     def get_item(self, workspace_id: UUID, item_id: UUID) -> Item | None: ...
+    def read_items(
+        self, workspace_id: UUID, limit: int, before: datetime | None = None
+    ) -> list[ReadItem]:
+        """The items whose text was read from their page (before `before`), the most recent
+        first."""
+        ...
+
     def pending_item_url(self, workspace_id: UUID, item_id: UUID) -> str | None: ...
+
+    def replace_text(
+        self, workspace_id: UUID, item_id: UUID, old: str, new: str, at: datetime
+    ) -> bool:
+        """Replaces the text of an item read from its page, only if it is still `old`."""
+        ...
 
     def set_item_text(
         self,

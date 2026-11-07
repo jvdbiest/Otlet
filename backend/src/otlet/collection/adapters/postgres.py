@@ -20,6 +20,7 @@ from otlet.collection.application.ports import (
     CollectionState,
     NewItem,
     Outcome,
+    ReadItem,
     SitePolicy,
 )
 from otlet.collection.domain import model
@@ -459,6 +460,38 @@ class PostgresCollectionStore:
                 {"id": item_id},
             ).one_or_none()
         return None if row is None else item_from_row(row)
+
+    def replace_text(
+        self, workspace_id: UUID, item_id: UUID, old: str, new: str, at: datetime
+    ) -> bool:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            replaced = connection.execute(
+                sa.text(
+                    "UPDATE source_items SET text = :new, extracted_at = :at"
+                    " WHERE id = :id AND text = :old AND text_status = 'full_text'"
+                    f" AND {here()}"
+                ),
+                {"id": item_id, "old": old, "new": new, "at": at},
+            ).rowcount
+        return replaced == 1
+
+    def read_items(
+        self, workspace_id: UUID, limit: int, before: datetime | None = None
+    ) -> list[ReadItem]:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            rows = connection.execute(
+                sa.text(
+                    "SELECT i.id, i.url, i.title, i.text,"
+                    " coalesce(s.name, i.declared_origin, '') AS source"
+                    " FROM source_items AS i LEFT JOIN sources AS s ON s.id = i.source_id"
+                    " WHERE i.text_status = 'full_text' AND i.url IS NOT NULL"
+                    f" AND i.text IS NOT NULL AND i.duplicate_of IS NULL AND {here('i')}"
+                    " AND (CAST(:before AS timestamptz) IS NULL OR i.extracted_at < :before)"
+                    " ORDER BY i.collected_at DESC LIMIT :limit"
+                ),
+                {"limit": limit, "before": before},
+            ).all()
+        return [ReadItem(r.id, r.url, r.title, r.source, r.text) for r in rows]
 
     def pending_item_url(self, workspace_id: UUID, item_id: UUID) -> str | None:
         with workspace_transaction(self._engine, workspace_id) as connection:

@@ -608,3 +608,73 @@ def test_an_agreement_covers_the_new_articles_of_a_source(world: World) -> None:
         None,
     )
     assert world.collection.source_rights(world.context, source.id) is None
+
+
+def test_texts_already_read_can_be_read_again_without_writing(world: World) -> None:
+    """ADR-0047: what the reader of today would make of the texts already read; a live page is
+    never read again, its address giving the live of the day."""
+    open_site(world.web, "a", "b", "live/c")
+    world.collection.add_source(world.context, FEED)
+    world.run_jobs()
+    before = {
+        i.title: world.collection.get_item(world.context, i.id)
+        for i in world.collection.list_items(world.context)
+    }
+    world.web.pages[f"{SITE}/a"] = (200, HTML, article("autre chose"))
+    reads = {r.item.title: r for r in world.collection.reread(world.context.workspace_id, 10)}
+    assert reads["Article a"].kept < 0.8 and reads["Article a"].text is not None
+    assert reads["Article b"].kept == 1.0
+    assert (reads["Article live/c"].reason, reads["Article live/c"].text) == ("live", None)
+    # Only the texts read before a moment: none here, all were read at NOW.
+    assert list(world.collection.reread(world.context.workspace_id, 10, NOW)) == []
+    for title, item in before.items():
+        assert item is not None
+        after = world.collection.get_item(world.context, item.id)
+        assert after is not None and after.text == item.text, title
+
+
+def test_a_text_read_again_is_kept_only_if_unchanged_meanwhile(world: World) -> None:
+    """ADR-0047: the new text replaces the old one, which can be put back."""
+    open_site(world.web, "a")
+    world.collection.add_source(world.context, FEED)
+    world.run_jobs()
+    item = world.collection.list_items(world.context)[0]
+    old = world.collection.get_item(world.context, item.id)
+    assert old is not None and old.text is not None
+    stored = old.text
+
+    class SameArticle(ArticleReader):
+        """The old reader still finds the stored text: only the extraction changed."""
+
+        def previous(self, page: str, url: str) -> str:
+            return stored
+
+    world.web.pages[f"{SITE}/a"] = (200, HTML, article("autre chose"))
+    rereading = Collection(
+        PostgresCollectionStore(world.engine, world.queue), world.web, FeedparserReader(),
+        SameArticle(), clock=lambda: world.clock[0],
+    )  # fmt: skip
+    read = next(rereading.reread(world.context.workspace_id, 10))
+    assert rereading.replace_text(world.context.workspace_id, read)
+    new = world.collection.get_item(world.context, item.id)
+    assert new is not None and new.text == read.text != old.text
+    # Already replaced: the stored text is no longer the one read, nothing changes.
+    assert not rereading.replace_text(world.context.workspace_id, read)
+    assert read.text is not None
+    assert world.collection.restore_text(world.context.workspace_id, item.id, read.text, old.text)
+    back = world.collection.get_item(world.context, item.id)
+    assert back is not None and back.text == old.text
+
+
+def test_an_article_changed_since_its_collection_keeps_its_text(world: World) -> None:
+    """Joël, 2026-11-07: a page corrected since keeps the version collected that day."""
+    open_site(world.web, "a")
+    world.collection.add_source(world.context, FEED)
+    world.run_jobs()
+    item = world.collection.list_items(world.context)[0]
+    world.web.pages[f"{SITE}/a"] = (200, HTML, article("corrigé depuis"))
+    read = next(world.collection.reread(world.context.workspace_id, 10))
+    assert read.same_article < 0.8
+    assert not world.collection.replace_text(world.context.workspace_id, read)
+    kept = world.collection.get_item(world.context, item.id)
+    assert kept is not None and kept.text is not None and "article a," in kept.text

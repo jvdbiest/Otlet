@@ -6,7 +6,7 @@ fetches, then writes the outcome in one transaction.
 """
 
 import logging
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from urllib.parse import urlsplit
@@ -19,6 +19,7 @@ from otlet.collection.application.ports import (
     NewItem,
     Outcome,
     PageReader,
+    ReadItem,
     SitePolicy,
 )
 from otlet.collection.domain import compliance, model
@@ -83,6 +84,22 @@ class PageReading:
     text: str | None = None
     title: str | None = None
     language: str | None = None
+    previous: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class Reread:
+    """An item read again: its new text, or why it has none; `kept` is the share of runs of
+    three words that the old and the new text share; `same_article`, the share between the old
+    text and what the old reader finds on the page today (below CHANGED_BELOW: the article itself
+    has changed since it was collected)."""
+
+    item: ReadItem
+    status: TextStatus | None
+    reason: str
+    text: str | None
+    kept: float
+    same_article: float = 1.0
 
 
 class SitePolicies:
@@ -597,7 +614,41 @@ class Collection:
             at=self._clock(),
         )
 
-    def _read_page(self, workspace_id: UUID, url: str, *, declared: bool = False) -> PageReading:
+    def reread(
+        self, workspace_id: UUID, limit: int, before: datetime | None = None
+    ) -> Iterator[Reread]:
+        """The texts read from their pages, read again by the same rules and the reader of today
+        (ADR-0047): what would change. Writes nothing. A live page is never read again: its
+        address gives the live of the day."""
+        for item in self._store.read_items(workspace_id, limit, before):
+            if model.is_live(item.url, item.title):
+                yield Reread(item, None, "live", None, 1.0)
+                continue
+            reading = self._read_page(workspace_id, item.url, previous=True)
+            after = reading.text if reading.status is TextStatus.FULL_TEXT else None
+            kept = model.kept_share(item.text, after) if after else 0.0
+            same = model.kept_share(item.text, reading.previous) if reading.previous else 0.0
+            yield Reread(item, reading.status, reading.reason, after, kept, same)
+
+    def replace_text(self, workspace_id: UUID, read: Reread) -> bool:
+        """Keeps the new text of an item read again (ADR-0047), when the page still gave a full
+        text and the stored one has not changed meanwhile; an item without one keeps its own."""
+        if read.text is None or read.status is not TextStatus.FULL_TEXT:
+            return False
+        if read.same_article < model.SAME_ARTICLE:
+            # Changed since it was collected: the version of that day is kept (Joël, 2026-11-07).
+            return False
+        return self._store.replace_text(
+            workspace_id, read.item.id, read.item.text, read.text, self._clock()
+        )
+
+    def restore_text(self, workspace_id: UUID, item_id: UUID, current: str, text: str) -> bool:
+        """Puts back a text kept by a backup of a re-read, if the item still has `current`."""
+        return self._store.replace_text(workspace_id, item_id, current, text, self._clock())
+
+    def _read_page(
+        self, workspace_id: UUID, url: str, *, declared: bool = False, previous: bool = False
+    ) -> PageReading:
         policy = self._policies.for_url(workspace_id, url)
         robots = policy.robots.decide(url)
         if not robots.allowed:
@@ -625,4 +676,5 @@ class Collection:
         if declared:
             # A text read under a declaration of rights: the person's, as a pasted one is.
             return PageReading(TextStatus.MANUAL, model.DECLARED_RIGHTS, page.text, title, language)
-        return PageReading(TextStatus.FULL_TEXT, mining.reason, page.text, title, language)
+        before = self._pages.previous(html, result.url) if previous else None
+        return PageReading(TextStatus.FULL_TEXT, mining.reason, page.text, title, language, before)

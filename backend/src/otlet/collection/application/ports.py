@@ -45,6 +45,10 @@ class PageReader(Protocol):
         """The main content of an article page, or None when none is found."""
         ...
 
+    def previous(self, html: str, url: str) -> str:
+        """What the reader before ADR-0047 found on the page; empty when nothing."""
+        ...
+
 
 @dataclass(frozen=True, slots=True)
 class SitePolicy:

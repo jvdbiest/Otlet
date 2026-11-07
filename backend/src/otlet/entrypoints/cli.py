@@ -217,6 +217,7 @@ def reread_command(args: argparse.Namespace, settings: Settings) -> int:
     from otlet.collection.adapters.parsing import ArticleReader, FeedparserReader
     from otlet.collection.adapters.postgres import PostgresCollectionStore
     from otlet.collection.application.collection import Collection
+    from otlet.collection.domain.model import SAME_ARTICLE
     from otlet.jobs.application.registry import no_queue
     from otlet.platform import database
     from otlet.platform.http import SafeClient
@@ -236,6 +237,8 @@ def reread_command(args: argparse.Namespace, settings: Settings) -> int:
                 outcome = "en direct, pas relu"
             elif read.text is None:
                 outcome = f"plus de texte ({read.reason})"
+            elif read.same_article < SAME_ARTICLE:
+                outcome = "article modifié depuis, gardé"
             elif read.kept < CHANGED_BELOW:
                 outcome = "changerait"
                 if backup is not None:

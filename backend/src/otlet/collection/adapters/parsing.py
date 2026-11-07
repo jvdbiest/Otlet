@@ -250,6 +250,14 @@ def _marked_as_article(page: str, visible: str) -> str:
     return clean_text(max(articles, key=len, default=""))
 
 
+def _readability(visible: str, url: str) -> str:
+    try:
+        content = Document(visible, url=url).summary(html_partial=True)
+    except (lxml.etree.ParserError, ValueError, TypeError):
+        return ""
+    return clean_text(content)
+
+
 def _title(visible: str, url: str) -> str | None:
     try:
         title = Document(visible, url=url).short_title()
@@ -277,3 +285,8 @@ class ArticleReader:
         found = HTML_LANG.search(page)
         language = clean_language(found.group(1)) if found else None
         return Page(title=title, text=text, language=language) if text else None
+
+    def previous(self, page: str, url: str) -> str:
+        """What readability, the reader before ADR-0047, finds on the page: if it no longer gives
+        the stored text, the article itself has changed since it was collected."""
+        return _readability(_drop_invisible(page), url)

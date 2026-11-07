@@ -416,3 +416,8 @@ def kept_share(before: str, after: str) -> float:
     first, second = _shingles(before), _shingles(after)
     union = first | second
     return len(first & second) / len(union) if union else 1.0
+
+
+# Under this share in common with what the old reader finds today, the article has changed since
+# it was collected (corrected, updated): read again, it keeps the version of that day.
+SAME_ARTICLE = 0.8

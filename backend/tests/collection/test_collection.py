@@ -641,14 +641,40 @@ def test_a_text_read_again_is_kept_only_if_unchanged_meanwhile(world: World) -> 
     item = world.collection.list_items(world.context)[0]
     old = world.collection.get_item(world.context, item.id)
     assert old is not None and old.text is not None
+    stored = old.text
+
+    class SameArticle(ArticleReader):
+        """The old reader still finds the stored text: only the extraction changed."""
+
+        def previous(self, page: str, url: str) -> str:
+            return stored
+
     world.web.pages[f"{SITE}/a"] = (200, HTML, article("autre chose"))
-    read = next(world.collection.reread(world.context.workspace_id, 10))
-    assert world.collection.replace_text(world.context.workspace_id, read)
+    rereading = Collection(
+        PostgresCollectionStore(world.engine, world.queue), world.web, FeedparserReader(),
+        SameArticle(), clock=lambda: world.clock[0],
+    )  # fmt: skip
+    read = next(rereading.reread(world.context.workspace_id, 10))
+    assert rereading.replace_text(world.context.workspace_id, read)
     new = world.collection.get_item(world.context, item.id)
     assert new is not None and new.text == read.text != old.text
     # Already replaced: the stored text is no longer the one read, nothing changes.
-    assert not world.collection.replace_text(world.context.workspace_id, read)
+    assert not rereading.replace_text(world.context.workspace_id, read)
     assert read.text is not None
     assert world.collection.restore_text(world.context.workspace_id, item.id, read.text, old.text)
     back = world.collection.get_item(world.context, item.id)
     assert back is not None and back.text == old.text
+
+
+def test_an_article_changed_since_its_collection_keeps_its_text(world: World) -> None:
+    """Joël, 2026-11-07: a page corrected since keeps the version collected that day."""
+    open_site(world.web, "a")
+    world.collection.add_source(world.context, FEED)
+    world.run_jobs()
+    item = world.collection.list_items(world.context)[0]
+    world.web.pages[f"{SITE}/a"] = (200, HTML, article("corrigé depuis"))
+    read = next(world.collection.reread(world.context.workspace_id, 10))
+    assert read.same_article < 0.8
+    assert not world.collection.replace_text(world.context.workspace_id, read)
+    kept = world.collection.get_item(world.context, item.id)
+    assert kept is not None and kept.text is not None and "article a," in kept.text

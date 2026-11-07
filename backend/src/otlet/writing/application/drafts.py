@@ -283,7 +283,9 @@ class Drafts:
                 copied_from=copied_from if first else frozenset(),
                 source_letters=" ".join(t.text for t in texts) if first else None,
                 length_goal=WORDS[fields.length] if first else None,
-                context=context,
+                # Sent back once, like the other rules: a context still misused after the repair
+                # is kept, never a failed draft (essais [TEST], 2026-11-07: 3 drafts of 10 lost).
+                context=context if first else frozenset(),
             )
             refusals.append(found)
             return found

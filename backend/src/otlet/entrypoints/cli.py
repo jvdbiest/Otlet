@@ -251,7 +251,7 @@ def reread_command(args: argparse.Namespace, settings: Settings) -> int:
             else:
                 outcome = "inchangé"
             counts[(read.item.source, outcome)] += 1
-            counts[("", outcome)] += 1
+            counts[(" TOTAL", outcome)] += 1
             line = {
                 "id": str(read.item.id), "source": read.item.source, "url": read.item.url,
                 "title": read.item.title, "outcome": outcome, "reason": read.reason,
@@ -268,7 +268,7 @@ def reread_command(args: argparse.Namespace, settings: Settings) -> int:
     if backup is not None:
         backup.close()
     for (source, outcome), count in sorted(counts.items()):
-        print(f"{source or 'TOTAL'}\t{outcome}\t{count}")
+        print(f"{source.lstrip(chr(0)) or '(sans source)'}\t{outcome}\t{count}")
     return 0
 
 

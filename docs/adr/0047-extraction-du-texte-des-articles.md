@@ -31,7 +31,8 @@ Décision de Joël du 2026-11-01. Le texte vient de `trafilatura` 2.x, sans comm
 
 ## Conséquences
 
-- Les nouveaux articles sont lus ainsi. **Les anciens gardent leur texte** : leur relecture fera l'objet d'une demande à part, aux mêmes règles (robots, réserve TDM), après des essais réels.
+- Les nouveaux articles sont lus ainsi. **Relecture des anciens, décidée par Joël le 2026-11-07** (`otlet collection reread`) : essai à blanc d'abord (4 740 textes, 2 680 changeraient), analyse de 400 textes (62 % plus complets, 18 % presque identiques, 10 % d'articles modifiés depuis la collecte), puis relecture réelle aux mêmes règles. Garde-fous : pages « en direct » écartées ; une page sans texte laisse l'ancien ; un article modifié depuis sa collecte garde sa version (l'ancien lecteur ne retrouve plus le texte stocké sur la page du jour) ; ancien texte sauvegardé avant chaque remplacement, remis par `otlet collection restore`. Résultat sur .252 : 2 397 remplacés, 1 973 inchangés, 303 gardés car modifiés depuis, 63 en direct, 4 sans texte.
+- Reste : le texte retenu répète souvent le titre et une mention « Publié le / Mis à jour le », et garde un bloc newsletter sur Auto-Moto et RTBF ; à nettoyer à part.
 - `articleBody` se lit dans les données de la page, qu'un lecteur ne voit pas. Il passe par le même nettoyage que tout texte venu du Web, et le filtre d'éléments cachés ne s'y applique pas.
 - Limite connue : sur les pages à mur payant de Next.ink, le texte peut garder des éléments hors article (jusqu'à 65 % sur une page).
 - **Une page « en direct » ne se relit pas.** Son adresse donne le direct du jour, pas celui qui a été collecté : à l'essai, 10 articles du Monde ont reçu le même texte, puis ont été remis à leur ancien texte. Toute relecture des anciens articles doit les écarter.

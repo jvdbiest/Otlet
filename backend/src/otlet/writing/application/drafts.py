@@ -240,9 +240,11 @@ class Drafts:
             return
         # The length the sources can carry (Joël, 2026-10-19, after the audit): never more than
         # asked, never more than their words hold; thin sources get a short draft and a warning.
-        matter = sum(len(text.text.split()) for text in texts)
+        # Its matter: context (P2) neither lengthens the draft nor makes the matter richer.
+        answering = [text for text in texts if not text.context] or texts
+        matter = sum(len(text.text.split()) for text in answering)
         longest = longest_for(matter)
-        level = matter_level(matter, any(item.full_text for item in brief.items))
+        level = matter_level(matter, brief.full_text)
         asked = brief.fields.length
         used = Length.SHORT if longest is None else min(asked, longest, key=WORDS.__getitem__)
         fields = replace(brief.fields, length=used)
@@ -254,6 +256,7 @@ class Drafts:
         budget = max(source_budget(window, output) - len(charter), 0)
         sources = prompt_sources(texts, budget, f"{fields.title} {fields.angle}")
         keys = [source.key for source in sources]
+        context = frozenset(source.key for source in sources if source.source.context)
         copied_from = copied_sequences([f"{text.title}\n{text.text}" for text in texts])
         checks = 0
         dated = asks_dates(fields)
@@ -280,6 +283,7 @@ class Drafts:
                 copied_from=copied_from if first else frozenset(),
                 source_letters=" ".join(t.text for t in texts) if first else None,
                 length_goal=WORDS[fields.length] if first else None,
+                context=context,
             )
             refusals.append(found)
             return found
@@ -329,6 +333,7 @@ class Drafts:
                     "words": len(s.source.text.split()),
                     "sent": len(s.text),
                     "cut": s.cut,
+                    "context": s.source.context,
                 }
                 for s in sources
             ],
@@ -356,7 +361,12 @@ class Drafts:
         title, document = to_document(answer, sources, fields.language)
         cut = [source.source.title for source in sources if source.cut]
         cited = cited_keys(answer)
-        unused = [source.source.title for source in sources if source.key not in cited]
+        # Context left out is no warning (P2): it is used only where it helps.
+        unused = [
+            source.source.title
+            for source in sources
+            if source.key not in cited and not source.source.context
+        ]
         # More tokens than the window: a local engine may have dropped the start of the
         # conversation, where the rules are (Ollama does so without a word).
         last = written.attempts[-1] if written.attempts else {}

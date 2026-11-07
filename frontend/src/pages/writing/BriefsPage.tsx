@@ -43,6 +43,7 @@ const BRIEF_ERRORS = [
   "invalid_channel",
   "invalid_language",
   "invalid_items",
+  "invalid_context",
   "invalid_model",
   "unknown_item",
   "unknown_provider",
@@ -97,12 +98,15 @@ export function BriefsPage() {
  * `angle` when it comes from a dossier of the Assistant de veille. */
 export function NewBriefPage({
   items,
+  context,
   title,
   angle,
   conversation,
   turn,
 }: {
   items: string;
+  // Items that are only context (P2), chosen in the Reporter.
+  context?: string | undefined;
   title?: string | undefined;
   angle?: string | undefined;
   conversation?: string | undefined;
@@ -124,7 +128,17 @@ export function NewBriefPage({
       />
     );
   }
-  return <BriefForm workspaceId={workspaceId} brief={null} initialItems={ids} initialTitle={title} initialAngle={angle} />;
+  const contextIds = (context ?? "").split(",").filter((id) => ids.includes(id));
+  return (
+    <BriefForm
+      workspaceId={workspaceId}
+      brief={null}
+      initialItems={ids}
+      initialContext={contextIds}
+      initialTitle={title}
+      initialAngle={angle}
+    />
+  );
 }
 
 /** A new brief from a fact of the Reporter (ADR-0044 §10): its lines become the verified facts. */
@@ -198,6 +212,7 @@ function BriefForm({
   workspaceId,
   brief,
   initialItems,
+  initialContext,
   initialTitle,
   initialAngle,
   initialFacts,
@@ -206,6 +221,7 @@ function BriefForm({
   workspaceId: string;
   brief: BriefView | null;
   initialItems: string[];
+  initialContext?: string[] | undefined;
   initialTitle?: string | undefined;
   initialAngle?: string | undefined;
   initialFacts?: BriefFactView[] | undefined;
@@ -229,6 +245,12 @@ function BriefForm({
   const [model, setModel] = useState(brief?.provider_id ? `${brief.provider_id}|${brief.model ?? ""}` : "");
   const [itemIds, setItemIds] = useState<string[]>(brief?.items.map((item) => item.id) ?? initialItems);
   const [facts, setFacts] = useState<BriefFactView[]>(brief?.facts ?? initialFacts ?? []);
+  // Context (P2): one sentence at most in the draft, never a section; the rest is the matter.
+  const [contextIds, setContextIds] = useState<string[]>(
+    brief?.items.filter((item) => item.context).map((item) => item.id) ?? initialContext ?? [],
+  );
+  const shownContext = contextIds.filter((id) => itemIds.includes(id));
+  const matterIds = itemIds.filter((id) => !shownContext.includes(id));
   const conversation = brief?.conversation_id ?? conversationId ?? null;
   // A fact goes with its source: an item taken out of the brief takes its facts with it.
   const keptFacts = facts.filter((fact) => itemIds.includes(fact.item_id));
@@ -237,7 +259,7 @@ function BriefForm({
   const channels = vocabulary.data?.channel ?? [];
   const channelMax = channels.find((choice) => choice.key === channel)?.length_max ?? "long";
   const known = useBriefItems(workspaceId, brief, itemIds);
-  const matter = itemIds.reduce((sum, id) => sum + (known.get(id)?.words ?? 0), 0);
+  const matter = matterIds.reduce((sum, id) => sum + (known.get(id)?.words ?? 0), 0);
   // The length the sources can carry (Joël, 2026-10-19): the drafts hold to it as well.
   const matterMax = longestFor(matter, vocabulary.data);
   // A new brief opened from the Veille with its items: its working title is the first one's.
@@ -270,6 +292,7 @@ function BriefForm({
                 language,
                 channel,
                 item_ids: itemIds,
+                context_ids: shownContext,
                 provider_id: providerId ?? null,
                 model: modelName ?? null,
                 facts: keptFacts,
@@ -292,6 +315,8 @@ function BriefForm({
           workspaceId={workspaceId}
           brief={brief}
           itemIds={itemIds}
+          contextIds={shownContext}
+          onContext={setContextIds}
           onChange={(ids, first) => {
             setItemIds(ids);
             // The working title follows the first item until the author writes their own.
@@ -304,7 +329,7 @@ function BriefForm({
         />
         {/* Under the items, the matter they hold (ADR-0041), judged with the length, the mode
             and the nature chosen below. */}
-        <MatterPanel workspaceId={workspaceId} itemIds={itemIds} length={length} mode={mode} nature={nature} />
+        <MatterPanel workspaceId={workspaceId} itemIds={matterIds} length={length} mode={mode} nature={nature} />
         <div className={styles.field}>
           <label htmlFor="brief-title">{t("brief.title")}</label>
           <input
@@ -589,6 +614,7 @@ function useBriefItems(workspaceId: string, brief: BriefView | null, itemIds: st
         words: text.trim() === "" ? 0 : text.trim().split(/\s+/).length,
         full_text: item.text !== null,
         declared: item.text_reason === "declared_rights",
+        context: false, // its role is the form's (contextIds)
       });
     }
   }
@@ -611,11 +637,15 @@ function BriefItems({
   workspaceId,
   brief,
   itemIds,
+  contextIds,
+  onContext,
   onChange,
 }: {
   workspaceId: string;
   brief: BriefView | null;
   itemIds: string[];
+  contextIds: string[];
+  onContext: (ids: string[]) => void;
   // `firstTitle`: the title of the first item, when it changed (the working title follows it).
   onChange: (ids: string[], firstTitle?: string) => void;
 }) {
@@ -657,6 +687,9 @@ function BriefItems({
     // A fieldset grows to its widest content by default: a long title would widen the page.
     <fieldset className={styles.choices} style={{ minWidth: 0 }}>
       <legend>{t("brief.items", { count: itemIds.length })}</legend>
+      <p className={styles.help} style={{ width: "100%" }}>
+        {t("brief.roleHelp")}
+      </p>
       {rows.map((id, index) => {
         const item = id === "" ? undefined : known.get(id);
         // Its own item, then the kept items no other line holds.
@@ -682,6 +715,19 @@ function BriefItems({
                 </option>
               ))}
             </select>
+            {id !== "" && (
+              <select
+                aria-label={t("brief.role", { title: item?.title ?? "" })}
+                value={contextIds.includes(id) ? "context" : "matter"}
+                onChange={(event) => {
+                  const others = contextIds.filter((other) => other !== id);
+                  onContext(event.target.value === "context" ? [...others, id] : others);
+                }}
+              >
+                <option value="matter">{t("brief.roles.matter")}</option>
+                <option value="context">{t("brief.roles.context")}</option>
+              </select>
+            )}
             {item !== undefined && (
               <Link
                 to="/veille/elements/$itemId"

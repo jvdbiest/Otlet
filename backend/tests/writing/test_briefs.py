@@ -162,6 +162,8 @@ def test_the_fields_of_a_brief_are_checked(setup: Setup) -> None:
         "invalid_tone": BriefFields(title="T", item_ids=item, tone="Professionnel"),
         "invalid_channel": BriefFields(title="T", item_ids=item, channel="TikTok"),
         "unknown_item": BriefFields(title="T", item_ids=(uuid.uuid4(),)),
+        # Context is an item of the brief, and a brief keeps some matter (P2).
+        "invalid_context": BriefFields(title="T", item_ids=item, context_ids=item),
         "model_blocked": BriefFields(
             title="T", item_ids=item, model=ModelChoice(uuid.uuid4(), "blocked")
         ),
@@ -174,8 +176,38 @@ def test_the_fields_of_a_brief_are_checked(setup: Setup) -> None:
         with pytest.raises(BriefError) as caught:
             briefs.create(context, fields)
         assert caught.value.code == code
+    with pytest.raises(BriefError) as caught:
+        briefs.create(
+            context, BriefFields(title="T", item_ids=item, context_ids=(ids["Dépêche C"],))
+        )
+    assert caught.value.code == "invalid_context"
     assert briefs.list(context) == []
     assert titles(setup.feed, context, View.WRITING) == []
+
+
+def test_an_item_of_a_brief_may_be_only_context(setup: Setup) -> None:
+    """P2: context is kept with the brief, and its matter is counted without it."""
+    briefs, context, ids = setup.briefs, setup.context, setup.ids
+    brief = briefs.create(
+        context,
+        BriefFields(
+            title="T",
+            item_ids=(ids["Article A"], ids["Dépêche C"]),
+            context_ids=(ids["Dépêche C"],),
+        ),
+    )
+    assert [item.context for item in brief.items] == [False, True]
+    assert brief.fields.context_ids == (ids["Dépêche C"],)
+    assert (brief.sources, brief.single_source) == (1, True)
+    assert brief.matter_words == brief.items[0].words
+    again = briefs.get(context, brief.id)
+    assert again is not None and again.fields.context_ids == (ids["Dépêche C"],)
+    # Back to matter.
+    updated = briefs.update(
+        context, brief.id, BriefFields(title="T", item_ids=(ids["Article A"], ids["Dépêche C"]))
+    )
+    assert updated is not None and [item.context for item in updated.items] == [False, False]
+    assert updated.sources == 2
 
 
 def test_a_brief_belongs_to_its_workspace(setup: Setup) -> None:

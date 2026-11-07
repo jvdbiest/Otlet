@@ -383,6 +383,15 @@
             "title": "Channel",
             "type": "string"
           },
+          "context_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Context Ids",
+            "type": "array"
+          },
           "conversation_id": {
             "anyOf": [
               {
@@ -537,6 +546,10 @@
       },
       "BriefItemView": {
         "properties": {
+          "context": {
+            "title": "Context",
+            "type": "boolean"
+          },
           "declared": {
             "title": "Declared",
             "type": "boolean"
@@ -614,7 +627,8 @@
           "published_at",
           "words",
           "full_text",
-          "declared"
+          "declared",
+          "context"
         ],
         "title": "BriefItemView",
         "type": "object"

@@ -60,6 +60,7 @@ class BriefItemView(BaseModel):
     words: int  # the words a draft may use of it
     full_text: bool  # False: only its summary may be used
     declared: bool  # read under the author's declaration of rights (their responsibility)
+    context: bool  # only context: one sentence at most in a draft, never a section (P2)
 
     @classmethod
     def of(cls, item: BriefItem) -> "BriefItemView":
@@ -73,6 +74,7 @@ class BriefItemView(BaseModel):
             words=item.words,
             full_text=item.full_text,
             declared=item.declared,
+            context=item.context,
         )
 
 
@@ -221,6 +223,8 @@ class BriefBody(BaseModel):
     # From a conversation of the Reporter (ADR-0044 §10).
     facts: list[FactBody] = Field(default_factory=list, max_length=FACTS_MAX)
     conversation_id: UUID | None = None
+    # Items of `item_ids` that are only context (P2); the others are the matter.
+    context_ids: list[UUID] = Field(default_factory=list, max_length=ITEMS_MAX)
 
     def fields(self) -> BriefFields:
         return BriefFields(
@@ -240,6 +244,7 @@ class BriefBody(BaseModel):
             else ModelChoice(self.provider_id, self.model or ""),
             facts=tuple(VerifiedFact(**fact.model_dump()) for fact in self.facts),
             conversation_id=self.conversation_id,
+            context_ids=tuple(self.context_ids),
         )
 
 

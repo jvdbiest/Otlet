@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Statut | Proposition, à discuter avec Joël |
+| Statut | Définition validée par Joël le 2026-11-07 ; P2 et P3 construites, à essayer en usage réel |
 | Date | 2026-11-07 |
 | Origine | TRI1 et TRI2 (`docs/spikes/TRI1.md`, `docs/spikes/TRI2.md`) ; demande de Joël du 2026-11-07 |
 | Choix concernés | ADR-0043 §5 et §10, ADR-0044 (Reporter), ADR-0041 (évaluateur de matière) |
@@ -95,3 +95,16 @@ Remarques :
 - La définition du §2 te convient-elle, en particulier la classe « Contexte » distincte de « Même thème » ?
 - Pour P3 : confirmer la liste doit-il être obligatoire avant chaque rédaction, ou seulement proposé quand le tri est incertain ?
 - Pour les motos : les « Top 5 », tirés d'essais, sont-ils pour toi de la matière ou du même thème ? TRI1 les a étiquetés « même thème », mais c'est ta définition qui compte.
+
+## 7. Décisions de Joël (2026-11-07)
+
+- La définition en quatre classes convient.
+- Les « Top 5 » de motos sont du **même thème** : ils utilisent des essais sans en être.
+- La confirmation de la liste n'est pas obligatoire : elle intervient quand le tri est incertain ou que plusieurs articles sont « proches » plutôt que clairement répondants.
+- Ordre : P2 et P3, puis TRI3.
+
+## 8. Ce qui est construit (P2 et P3)
+
+- **P2.** Chaque élément d'un brief est « Matière » ou « Contexte » (migration 0046, `brief_items.context`). Un brief garde au moins un élément de matière. Le nombre de sources, les mots de la matière et la longueur possible ne comptent que la matière ; l'évaluateur de matière ne reçoit qu'elle. Le prompt `redaction-19` marque le contexte (« context only ») : une phrase au plus, dans un paragraphe qui cite aussi la matière, jamais une section. Une réponse qui fait une section sur le seul contexte, ou qui cite un contexte dans plusieurs paragraphes, est renvoyée une fois au modèle. Un contexte non utilisé n'est pas un avertissement.
+- **P3.** Dans le Reporter, après un tri, « Préparer un brief avec les articles retenus » ouvre une liste à vérifier quand au moins 3 articles sont « proches » (ou sans verdict), ou quand le tri en retient plus de 20. Les retenus y sont cochés en « Matière », les proches décochés ; un proche coché arrive en « Contexte ». Sinon, le bouton part comme avant.
+- Le seuil de 3 proches est un choix de départ, à revoir après l'essai réel.

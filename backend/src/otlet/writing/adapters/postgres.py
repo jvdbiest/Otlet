@@ -38,7 +38,7 @@ BRIEF_ITEMS = (
     # else the summary (articles_postgres.sources).
     " 'full_text', i.text_status IN ('full_text', 'manual'),"
     # Read under a declaration of rights (Joël, 2026-10-20): marked wherever it is used.
-    " 'declared', i.text_reason = 'declared_rights',"
+    " 'declared', i.text_reason = 'declared_rights', 'context', bi.context,"
     " 'words', coalesce(cardinality(regexp_split_to_array(nullif(btrim(coalesce("
     "CASE WHEN i.text_status IN ('full_text', 'manual') THEN coalesce(i.text, i.feed_content) END,"
     " i.summary, i.title)), ''), '\\s+')), 0))"
@@ -65,6 +65,7 @@ def _brief(row: sa.Row[Any]) -> Brief:
             words=item.get("words", 0),
             full_text=item.get("full_text", True),
             declared=item.get("declared") is True,
+            context=item.get("context") is True,
         )
         for item in row.items
     )
@@ -76,6 +77,7 @@ def _brief(row: sa.Row[Any]) -> Brief:
             BriefFields(
                 title=row.title,
                 item_ids=tuple(item.id for item in items),
+                context_ids=tuple(item.id for item in items if item.context),
                 angle=row.angle,
                 instructions=row.instructions,
                 audience=row.audience,
@@ -281,11 +283,17 @@ class PostgresBriefStore:
         )
         connection.execute(
             sa.text(
-                "INSERT INTO brief_items (workspace_id, brief_id, item_id, position)"
-                " VALUES (:workspace, :brief, :item, :position)"
+                "INSERT INTO brief_items (workspace_id, brief_id, item_id, position, context)"
+                " VALUES (:workspace, :brief, :item, :position, :context)"
             ),
             [
-                {"workspace": workspace_id, "brief": brief_id, "item": item_id, "position": n}
+                {
+                    "workspace": workspace_id,
+                    "brief": brief_id,
+                    "item": item_id,
+                    "position": n,
+                    "context": item_id in fields.context_ids,
+                }
                 for n, item_id in enumerate(fields.item_ids)
             ],
         )

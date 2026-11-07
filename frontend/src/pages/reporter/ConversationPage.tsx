@@ -26,6 +26,9 @@ import { styles } from "../watch/styles.ts";
 import { ReadFirst } from "./ReporterPage.tsx";
 
 const BRIEF_MAX = 20;
+// From this many articles « proches », the sort is uncertain: the author confirms the list
+// before the brief (P3, Joël, 2026-11-07), as when more articles are kept than a brief takes.
+const CLOSE_TO_CONFIRM = 3;
 const SHOWN_AT_ONCE = 8;
 // The largest set the Reporter keeps (reporter.SET_MAX): reached, the question is too broad.
 const SET_MAX = 200;
@@ -447,6 +450,7 @@ function ItemSet({
   const [showThemes, setShowThemes] = useState(turn.candidates.length >= THEMES_OPEN);
   const [theme, setTheme] = useState<number | null>(null);
   const [showAside, setShowAside] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const picked = theme === null ? null : turn.themes[theme];
   const inTheme = picked === undefined || picked === null ? turn.candidates : turn.candidates.filter((c) => picked.items.includes(c.id));
   const sorted = inTheme.some((c) => c.judged !== null);
@@ -455,10 +459,12 @@ function ItemSet({
   const aside = sorted ? inTheme.filter((c) => c.judged?.verdict === "hors_sujet") : [];
   const toCheck = sorted ? inTheme.filter((c) => !kept.includes(c) && !aside.includes(c)) : [];
   const count = (verdict: string) => inTheme.filter((c) => c.judged?.verdict === verdict).length;
-  const toBriefWith = (ids: string[]) => {
+  const toBriefWith = (ids: string[], context: string[] = []) => {
+    const items = ids.slice(0, BRIEF_MAX);
+    const roles = context.filter((id) => items.includes(id));
     void navigate({
       to: "/redaction/nouveau",
-      search: { items: ids.slice(0, BRIEF_MAX).join(","), title, angle: "" },
+      search: { items: items.join(","), ...(roles.length > 0 ? { context: roles.join(",") } : {}), title, angle: "" },
     });
   };
   const toBrief = (items: TurnCandidate[]) => {
@@ -469,6 +475,9 @@ function ItemSet({
   };
   // After a sort, the kept ones or the whole set, when it fits in a brief: the author chooses.
   const someKept = sorted && kept.length > 0 && kept.length < inTheme.length;
+  // An uncertain sort: the kept ones are confirmed by the author before the brief (P3).
+  const close = toCheck.length;
+  const uncertain = sorted && (kept.length > BRIEF_MAX || close >= CLOSE_TO_CONFIRM);
   return (
     <>
       <p className={styles.row}>
@@ -579,17 +588,33 @@ function ItemSet({
           {selected.length > BRIEF_MAX && <span className={styles.notice}>{t("reporter.tooMany", { max: BRIEF_MAX })}</span>}
         </p>
       )}
-      {selected.length === 0 && inTheme.length > 0 && (
+      {confirming && (
+        <ConfirmList
+          kept={kept}
+          close={toCheck}
+          onCancel={() => {
+            setConfirming(false);
+          }}
+          onConfirm={toBriefWith}
+        />
+      )}
+      {selected.length === 0 && inTheme.length > 0 && !confirming && (
         <p className={styles.row} style={{ flexWrap: "wrap" }}>
           {someKept && (
             <button
               type="button"
               className={styles.button}
               onClick={() => {
+                if (uncertain) {
+                  setConfirming(true);
+                  return;
+                }
                 toBrief(kept);
               }}
             >
-              {kept.length > BRIEF_MAX
+              {uncertain
+                ? t("reporter.confirm.open", { count: kept.length })
+                : kept.length > BRIEF_MAX
                 ? t("reporter.toBriefKeptFirst", { count: BRIEF_MAX })
                 : t("reporter.toBriefKept", { count: kept.length })}
             </button>
@@ -614,6 +639,119 @@ function ItemSet({
         </p>
       )}
     </>
+  );
+}
+
+type Role = "matter" | "context";
+
+/** The kept articles to confirm before the brief (P3, docs/design/MATIERE_DU_BRIEF.md): when the
+ * sort is uncertain, the author checks what answers. The kept ones come checked as matter, the
+ * close ones unchecked; a close one checked comes as context, which the author may change. */
+function ConfirmList({
+  kept,
+  close,
+  onCancel,
+  onConfirm,
+}: {
+  kept: TurnCandidate[];
+  close: TurnCandidate[];
+  onCancel: () => void;
+  onConfirm: (ids: string[], context: string[]) => void;
+}) {
+  const { t } = useTranslation();
+  const [roles, setRoles] = useState<Record<string, Role>>(() =>
+    Object.fromEntries(kept.slice(0, BRIEF_MAX).map((c) => [c.id, "matter"])),
+  );
+  const chosen = [...kept, ...close].filter((c) => roles[c.id] !== undefined);
+  const context = chosen.filter((c) => roles[c.id] === "context").map((c) => c.id);
+  const matter = chosen.length - context.length;
+  const row = (candidate: TurnCandidate, role: Role) => {
+    const on = roles[candidate.id] !== undefined;
+    const set = (next: Role | undefined) => {
+      const others = Object.fromEntries(Object.entries(roles).filter(([id]) => id !== candidate.id));
+      setRoles(next === undefined ? others : { ...others, [candidate.id]: next });
+    };
+    return (
+      <li key={candidate.id} style={{ margin: "0.5rem 0" }}>
+        <input
+          type="checkbox"
+          aria-label={t("reporter.selectArticle", { title: candidate.title })}
+          checked={on}
+          onChange={(event) => {
+            set(event.target.checked ? role : undefined);
+          }}
+        />{" "}
+        {on && (
+          <select
+            aria-label={t("brief.role", { title: candidate.title })}
+            value={roles[candidate.id]}
+            onChange={(event) => {
+              set(event.target.value === "context" ? "context" : "matter");
+            }}
+          >
+            <option value="matter">{t("brief.roles.matter")}</option>
+            <option value="context">{t("brief.roles.context")}</option>
+          </select>
+        )}{" "}
+        <Link to="/veille/elements/$itemId" params={{ itemId: candidate.id }}>
+          {candidate.title}
+        </Link>
+        <br />
+        <span className={styles.meta}>
+          {[candidate.publisher, formatDate(candidate.dated)].filter(Boolean).join(" · ")}
+        </span>
+        {candidate.judged !== null && (
+          <>
+            <br />
+            <span className={styles.help}>
+              {t(`assistant.groups.${candidate.judged.verdict}`, { count: 1 })} ·{" "}
+              {candidate.judged.by_model
+                ? t("assistant.reason", { reason: candidate.judged.reason })
+                : candidate.judged.reason}
+            </span>
+          </>
+        )}
+      </li>
+    );
+  };
+  return (
+    <section aria-label={t("reporter.confirm.title")}>
+      <h3>{t("reporter.confirm.title")}</h3>
+      <p className={styles.help}>
+        {kept.length > BRIEF_MAX
+          ? t("reporter.confirm.tooMany", { count: kept.length, max: BRIEF_MAX })
+          : t("reporter.confirm.close", { count: close.length })}{" "}
+        {t("reporter.confirm.help")}
+      </p>
+      <h4>{t("reporter.confirm.kept", { count: kept.length })}</h4>
+      <ul style={{ listStyle: "none", padding: 0 }}>{kept.map((c) => row(c, "matter"))}</ul>
+      {close.length > 0 && (
+        <>
+          <h4>{t("reporter.confirm.closeOnes", { count: close.length })}</h4>
+          <ul style={{ listStyle: "none", padding: 0 }}>{close.map((c) => row(c, "context"))}</ul>
+        </>
+      )}
+      <p className={styles.row} style={{ flexWrap: "wrap" }}>
+        <button
+          type="button"
+          className={styles.button}
+          disabled={matter === 0 || chosen.length > BRIEF_MAX}
+          onClick={() => {
+            onConfirm(
+              chosen.map((c) => c.id),
+              context,
+            );
+          }}
+        >
+          {t("reporter.confirm.go", { count: chosen.length, contextual: context.length })}
+        </button>
+        <button type="button" className={styles.button} onClick={onCancel}>
+          {t("reporter.confirm.cancel")}
+        </button>
+        {chosen.length > BRIEF_MAX && <span className={styles.notice}>{t("reporter.tooMany", { max: BRIEF_MAX })}</span>}
+        {chosen.length > 0 && matter === 0 && <span className={styles.notice}>{t("reporter.confirm.noMatter")}</span>}
+      </p>
+    </section>
   );
 }
 

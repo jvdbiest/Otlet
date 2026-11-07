@@ -2288,6 +2288,8 @@ export interface components {
              * @default
              */
             channel: string;
+            /** Context Ids */
+            context_ids?: string[];
             /** Conversation Id */
             conversation_id?: string | null;
             /** Facts */
@@ -2356,6 +2358,8 @@ export interface components {
         };
         /** BriefItemView */
         BriefItemView: {
+            /** Context */
+            context: boolean;
             /** Declared */
             declared: boolean;
             /** Full Text */

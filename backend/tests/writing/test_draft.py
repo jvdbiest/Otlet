@@ -465,3 +465,37 @@ def test_an_article_far_from_its_length_and_a_letter_of_another_script_are_sent_
     tainted = answer(lead="Un roi à l'hôpital de Tolè身 de Tolède, un texte assez long.")
     assert "another script" in check_answer(tainted, keys, source_letters="")[0]
     assert not check_answer(tainted, keys, source_letters="身")
+
+
+def test_a_context_source_helps_without_carrying_the_article() -> None:
+    """P2 (docs/design/MATIERE_DU_BRIEF.md): context is marked, need not be used, never carries a
+    section, and is cited in one paragraph at most."""
+    texts = [source("A", "a"), source("B", "b"), replace(source("C", "c"), context=True)]
+    sources = prompt_sources(texts, 9000)
+    (_, system), (_, user) = messages(BriefFields(title="T", item_ids=()), sources)
+    assert "« context only » helps the reader understand" in system
+    assert "[S3] (context only) C" in user and "[S1] A" in user
+    # The plan of the mode names the matter only.
+    assert "Cite each of the sources (S1, S2) that speaks" in user
+    keys, context = ["S1", "S2", "S3"], frozenset({"S3"})
+    assert check_answer(answer(), keys, context=context) == []
+    on_context = json.loads(answer())
+    on_context["sections"][1]["paragraphs"][0]["source_ids"] = ["S3"]
+    on_context["sections"][0]["paragraphs"].append(
+        {"text": "Le froid de saison revient chaque année.", "source_ids": ["S3", "S1"]}
+    )
+    errors = check_answer(json.dumps(on_context), keys, every_source=False, context=context)
+    assert errors == [
+        "sections drawing on context only: sections[1]; a source marked « context only » never"
+        " carries a section: build it on the other sources, or take the section out",
+        "context sources cited in several paragraphs: S3; use each of them in one sentence of one"
+        " paragraph at most",
+    ]
+    # A section on one answering source and context is still on one source.
+    mixed = json.loads(answer())
+    mixed["sections"][1]["paragraphs"][0]["source_ids"] = ["S1", "S3"]
+    assert check_answer(json.dumps(mixed), keys, crossing=True, context=context) == [
+        "sections drawing on one source: sections[1] (S1 only); this is a synthesis, every"
+        " section must draw on two sources or more: rebuild these sections around an idea the"
+        " sources share"
+    ]

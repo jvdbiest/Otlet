@@ -91,16 +91,20 @@ const newBriefRoute = createRoute({
   // `conversation`, `turn`: from a fact of the Reporter, with its lines (ADR-0044 §10).
   validateSearch: (
     search: Record<string, unknown>,
-  ): { items: string; title?: string; angle?: string; conversation?: string; turn?: string } => ({
+  ): { items: string; context?: string; title?: string; angle?: string; conversation?: string; turn?: string } => ({
     items: typeof search.items === "string" ? search.items : "",
+    // Items that are only context (P2), from the list confirmed in the Reporter.
+    ...(typeof search.context === "string" ? { context: search.context } : {}),
     ...(typeof search.title === "string" ? { title: search.title } : {}),
     ...(typeof search.angle === "string" ? { angle: search.angle } : {}),
     ...(typeof search.conversation === "string" ? { conversation: search.conversation } : {}),
     ...(typeof search.turn === "string" ? { turn: search.turn } : {}),
   }),
   component: function NewBrief() {
-    const { items, title, angle, conversation, turn } = newBriefRoute.useSearch();
-    return <NewBriefPage items={items} title={title} angle={angle} conversation={conversation} turn={turn} />;
+    const { items, context, title, angle, conversation, turn } = newBriefRoute.useSearch();
+    return (
+      <NewBriefPage items={items} context={context} title={title} angle={angle} conversation={conversation} turn={turn} />
+    );
   },
 });
 const briefRoute = createRoute({

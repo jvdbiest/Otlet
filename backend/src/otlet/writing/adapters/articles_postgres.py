@@ -135,7 +135,7 @@ class PostgresArticleStore:
         with workspace_transaction(self._engine, workspace_id) as connection:
             rows = connection.execute(
                 sa.text(
-                    f"SELECT {ITEM_COLUMNS} FROM brief_items AS bi"
+                    f"SELECT {ITEM_COLUMNS}, bi.context AS brief_context FROM brief_items AS bi"
                     f" JOIN {ITEMS_FROM} ON i.id = bi.item_id AND i.workspace_id = bi.workspace_id"
                     f" WHERE bi.brief_id = :brief AND {here('bi')} ORDER BY bi.position"
                 ),
@@ -153,6 +153,7 @@ class PostgresArticleStore:
                     publisher=item.source_name,
                     published_at=item.published_at,
                     text=text,
+                    context=row.brief_context,
                 )
             )
         return result

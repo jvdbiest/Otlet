@@ -95,6 +95,9 @@ class BriefFields:
     facts: tuple[VerifiedFact, ...] = ()
     # The conversation of the Reporter it comes from: the way back to the question and the lines.
     conversation_id: UUID | None = None
+    # Items that are only context (docs/design/MATIERE_DU_BRIEF.md, Joël, 2026-11-07): they help
+    # to understand the answer without being one. The others are its matter.
+    context_ids: tuple[UUID, ...] = ()
 
     def checked(self) -> "BriefFields":
         """The fields trimmed, or a BriefError naming the first rule they break."""
@@ -121,6 +124,12 @@ class BriefFields:
         items = tuple(dict.fromkeys(self.item_ids))
         if not 1 <= len(items) <= ITEMS_MAX:
             raise BriefError("invalid_items", f"a brief has 1 to {ITEMS_MAX} items")
+        context = tuple(dict.fromkeys(self.context_ids))
+        if any(item_id not in items for item_id in context):
+            raise BriefError("invalid_context", "a context item is an item of the brief")
+        if len(context) == len(items):
+            # A draft is written on its matter: context alone answers nothing.
+            raise BriefError("invalid_context", "one item at least is matter, not context")
         model = self.model
         if model is not None:
             name = model.model.strip()
@@ -145,6 +154,7 @@ class BriefFields:
         return BriefFields(
             facts=tuple(facts),
             conversation_id=self.conversation_id,
+            context_ids=context,
             title=title,
             item_ids=items,
             angle=angle,
@@ -173,6 +183,7 @@ class BriefItem:
     words: int = 0  # the words a draft may use of it
     full_text: bool = True  # False: only its summary may be used
     declared: bool = False  # read under the author's declaration of rights
+    context: bool = False  # only context, not matter (P2)
 
 
 @dataclass(frozen=True, slots=True)
@@ -186,19 +197,24 @@ class Brief:
     updated_at: datetime
 
     @property
+    def matter(self) -> tuple[BriefItem, ...]:
+        """The items that answer, without those that are only context: what the brief rests on."""
+        return tuple(item for item in self.items if not item.context)
+
+    @property
     def sources(self) -> int:
         """How many sources the brief rests on: each manual entry counts as its own."""
-        return len({item.source_id or item.id for item in self.items})
+        return len({item.source_id or item.id for item in self.matter})
 
     @property
     def matter_words(self) -> int:
         """The words of the sources a draft may use: what its length rests on (draft.py)."""
-        return sum(item.words for item in self.items)
+        return sum(item.words for item in self.matter)
 
     @property
     def full_text(self) -> bool:
-        """One item at least is a complete text, not a summary."""
-        return any(item.full_text for item in self.items)
+        """One item of its matter at least is a complete text, not a summary."""
+        return any(item.full_text for item in self.matter)
 
     @property
     def single_source(self) -> bool:

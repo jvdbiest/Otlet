@@ -164,6 +164,12 @@ class CollectionStore(Protocol):
 
     def pending_item_url(self, workspace_id: UUID, item_id: UUID) -> str | None: ...
 
+    def replace_text(
+        self, workspace_id: UUID, item_id: UUID, old: str, new: str, at: datetime
+    ) -> bool:
+        """Replaces the text of an item read from its page, only if it is still `old`."""
+        ...
+
     def set_item_text(
         self,
         workspace_id: UUID,

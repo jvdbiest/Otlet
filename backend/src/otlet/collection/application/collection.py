@@ -625,6 +625,19 @@ class Collection:
             kept = model.kept_share(item.text, after) if after else 0.0
             yield Reread(item, reading.status, reading.reason, after, kept)
 
+    def replace_text(self, workspace_id: UUID, read: Reread) -> bool:
+        """Keeps the new text of an item read again (ADR-0047), when the page still gave a full
+        text and the stored one has not changed meanwhile; an item without one keeps its own."""
+        if read.text is None or read.status is not TextStatus.FULL_TEXT:
+            return False
+        return self._store.replace_text(
+            workspace_id, read.item.id, read.item.text, read.text, self._clock()
+        )
+
+    def restore_text(self, workspace_id: UUID, item_id: UUID, current: str, text: str) -> bool:
+        """Puts back a text kept by a backup of a re-read, if the item still has `current`."""
+        return self._store.replace_text(workspace_id, item_id, current, text, self._clock())
+
     def _read_page(self, workspace_id: UUID, url: str, *, declared: bool = False) -> PageReading:
         policy = self._policies.for_url(workspace_id, url)
         robots = policy.robots.decide(url)

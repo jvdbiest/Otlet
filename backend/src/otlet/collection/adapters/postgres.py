@@ -461,6 +461,20 @@ class PostgresCollectionStore:
             ).one_or_none()
         return None if row is None else item_from_row(row)
 
+    def replace_text(
+        self, workspace_id: UUID, item_id: UUID, old: str, new: str, at: datetime
+    ) -> bool:
+        with workspace_transaction(self._engine, workspace_id) as connection:
+            replaced = connection.execute(
+                sa.text(
+                    "UPDATE source_items SET text = :new, extracted_at = :at"
+                    " WHERE id = :id AND text = :old AND text_status = 'full_text'"
+                    f" AND {here()}"
+                ),
+                {"id": item_id, "old": old, "new": new, "at": at},
+            ).rowcount
+        return replaced == 1
+
     def read_items(
         self, workspace_id: UUID, limit: int, before: datetime | None = None
     ) -> list[ReadItem]:

@@ -117,6 +117,19 @@ def build_parser() -> argparse.ArgumentParser:
     )
     reread.add_argument("--pause", type=float, default=3.0, help="secondes entre deux pages")
     reread.add_argument(
+        "--write",
+        action="store_true",
+        help="garder le nouveau texte des textes qui changent ; exige --backup",
+    )
+    reread.add_argument(
+        "--backup", help="fichier où garder l'ancien texte de chaque texte remplacé (JSON lignes)"
+    )
+    restore = collection_actions.add_parser(
+        "restore", help="remettre les anciens textes gardés par une relecture (--backup)"
+    )
+    restore.add_argument("--workspace", required=True, help="identifiant de l'espace")
+    restore.add_argument("--backup", required=True, help="fichier écrit par reread --write")
+    reread.add_argument(
         "--read-before",
         help="seulement les textes lus avant cet instant ISO 8601 (par exemple, avant ADR-0047)",
     )
@@ -179,6 +192,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(openapi_document())
     elif args.command == "backup":
         return backup_command(args)
+    elif args.command == "collection" and args.action == "restore":
+        return restore_command(args, settings)
     elif args.command == "collection":
         return reread_command(args, settings)
     return 0
@@ -206,9 +221,13 @@ def reread_command(args: argparse.Namespace, settings: Settings) -> int:
     from otlet.platform import database
     from otlet.platform.http import SafeClient
 
+    if args.write and not args.backup:
+        print("otlet collection reread: --write exige --backup", file=sys.stderr)
+        return 2
     engine = database.create_engine(settings.require_database_url())
     store = PostgresCollectionStore(engine, no_queue)
     counts: Counter[tuple[str, str]] = Counter()
+    backup = open(args.backup, "a", encoding="utf-8") if args.write else None  # noqa: SIM115
     with SafeClient() as client, open(args.report, "w", encoding="utf-8") as report:
         collection = Collection(store, client, FeedparserReader(), ArticleReader())
         before = datetime.fromisoformat(args.read_before) if args.read_before else None
@@ -219,6 +238,13 @@ def reread_command(args: argparse.Namespace, settings: Settings) -> int:
                 outcome = f"plus de texte ({read.reason})"
             elif read.kept < CHANGED_BELOW:
                 outcome = "changerait"
+                if backup is not None:
+                    # The old text first, so that a stop between the two loses nothing.
+                    old = {"id": str(read.item.id), "text": read.item.text, "new": read.text}
+                    backup.write(json.dumps(old, ensure_ascii=False) + "\n")
+                    backup.flush()
+                    replaced = collection.replace_text(UUID(args.workspace), read)
+                    outcome = "remplacé" if replaced else "changé entre-temps, laissé"
             else:
                 outcome = "inchangé"
             counts[(read.item.source, outcome)] += 1
@@ -236,8 +262,41 @@ def reread_command(args: argparse.Namespace, settings: Settings) -> int:
                 time.sleep(args.pause)
             if n % 100 == 99:
                 print(f"{n + 1} textes relus", file=sys.stderr, flush=True)
+    if backup is not None:
+        backup.close()
     for (source, outcome), count in sorted(counts.items()):
         print(f"{source or 'TOTAL'}\t{outcome}\t{count}")
+    return 0
+
+
+def restore_command(args: argparse.Namespace, settings: Settings) -> int:
+    """`otlet collection restore`: the old texts of a re-read put back, where the item still holds
+    the text the re-read gave it."""
+    import json
+    from uuid import UUID
+
+    from otlet.collection.adapters.parsing import ArticleReader, FeedparserReader
+    from otlet.collection.adapters.postgres import PostgresCollectionStore
+    from otlet.collection.application.collection import Collection
+    from otlet.jobs.application.registry import no_queue
+    from otlet.platform import database
+    from otlet.platform.http import SafeClient
+
+    engine = database.create_engine(settings.require_database_url())
+    restored = left = 0
+    with SafeClient() as client, open(args.backup, encoding="utf-8") as backup:
+        collection = Collection(
+            PostgresCollectionStore(engine, no_queue), client, FeedparserReader(), ArticleReader()
+        )
+        for line in backup:
+            kept = json.loads(line)
+            if collection.restore_text(
+                UUID(args.workspace), UUID(kept["id"]), kept["new"], kept["text"]
+            ):
+                restored += 1
+            else:
+                left += 1
+    print(f"otlet collection restore: {restored} textes remis, {left} laissés (changés depuis)")
     return 0
 
 

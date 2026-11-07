@@ -631,3 +631,24 @@ def test_texts_already_read_can_be_read_again_without_writing(world: World) -> N
         assert item is not None
         after = world.collection.get_item(world.context, item.id)
         assert after is not None and after.text == item.text, title
+
+
+def test_a_text_read_again_is_kept_only_if_unchanged_meanwhile(world: World) -> None:
+    """ADR-0047: the new text replaces the old one, which can be put back."""
+    open_site(world.web, "a")
+    world.collection.add_source(world.context, FEED)
+    world.run_jobs()
+    item = world.collection.list_items(world.context)[0]
+    old = world.collection.get_item(world.context, item.id)
+    assert old is not None and old.text is not None
+    world.web.pages[f"{SITE}/a"] = (200, HTML, article("autre chose"))
+    read = next(world.collection.reread(world.context.workspace_id, 10))
+    assert world.collection.replace_text(world.context.workspace_id, read)
+    new = world.collection.get_item(world.context, item.id)
+    assert new is not None and new.text == read.text != old.text
+    # Already replaced: the stored text is no longer the one read, nothing changes.
+    assert not world.collection.replace_text(world.context.workspace_id, read)
+    assert read.text is not None
+    assert world.collection.restore_text(world.context.workspace_id, item.id, read.text, old.text)
+    back = world.collection.get_item(world.context, item.id)
+    assert back is not None and back.text == old.text

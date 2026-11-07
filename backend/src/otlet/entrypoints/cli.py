@@ -228,6 +228,7 @@ def reread_command(args: argparse.Namespace, settings: Settings) -> int:
     engine = database.create_engine(settings.require_database_url())
     store = PostgresCollectionStore(engine, no_queue)
     counts: Counter[tuple[str, str]] = Counter()
+    totals: Counter[str] = Counter()
     backup = open(args.backup, "a", encoding="utf-8") if args.write else None  # noqa: SIM115
     with SafeClient() as client, open(args.report, "w", encoding="utf-8") as report:
         collection = Collection(store, client, FeedparserReader(), ArticleReader())
@@ -251,7 +252,7 @@ def reread_command(args: argparse.Namespace, settings: Settings) -> int:
             else:
                 outcome = "inchangé"
             counts[(read.item.source, outcome)] += 1
-            counts[(" TOTAL", outcome)] += 1
+            totals[outcome] += 1
             line = {
                 "id": str(read.item.id), "source": read.item.source, "url": read.item.url,
                 "title": read.item.title, "outcome": outcome, "reason": read.reason,
@@ -268,7 +269,9 @@ def reread_command(args: argparse.Namespace, settings: Settings) -> int:
     if backup is not None:
         backup.close()
     for (source, outcome), count in sorted(counts.items()):
-        print(f"{source.lstrip(chr(0)) or '(sans source)'}\t{outcome}\t{count}")
+        print(f"{source or '(sans source)'}	{outcome}	{count}")
+    for outcome, count in sorted(totals.items()):
+        print(f"TOTAL	{outcome}	{count}")
     return 0
 
 

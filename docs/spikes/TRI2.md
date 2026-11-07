@@ -2,10 +2,10 @@
 
 | | |
 |---|---|
-| Statut | Ouverte |
+| Statut | Conclue : échec |
 | Durée maximale | 4 h de mesure (environ 1 h 30 de modèle attendue) |
-| Temps passé | |
-| Ouverte le / conclue le | 2026-11-07 / |
+| Temps passé | 2 h de préparation et d'analyse (journal de temps, TRI2) ; 93 min de modèle |
+| Ouverte le / conclue le | 2026-11-07 / 2026-11-07 |
 | Choix concernés | ADR-0043 §5 (tri sans exclusion), ADR-0044 (Reporter), TRI1 |
 | Commande de rejeu | `spikes/tri2/run-tri2.sh` puis `python3 spikes/tri2/tri2.py <dossier> --summary` |
 
@@ -68,3 +68,57 @@ La relecture des textes du 7 novembre ne touche pas ce jeu : le tri ne lit que l
 **Suivi.** Un premier chiffre dans le fil quand la mesure a vraiment démarré, puis un état court toutes les heures environ, et tout échec signalé aussitôt.
 
 **Hors du protocole.** Rien n'entre dans le produit à cette étape. Si une variante réussit, son passage dans le tri sera proposé à Joël à part, avec son coût en temps.
+
+## 4. Mesures
+
+Le 2026-11-07, de 14 h 31 à 16 h 19 : 127 appels, aucun en erreur, aucun article sans verdict, 93 min de modèle. Le pilote a pris 127 s par lot de 25, contre environ 65 s dans TRI1 ; la suite a été plus rapide. D a fait 26 appels, comme prévu. Aucun écart au montage.
+
+| Critère | Seuil | B, tri actuel (passage 1 / 2) | D, preuve citée | E, lots de 8 |
+|---|---|---|---|---|
+| R jugés « traite » | ≥ 85 % | ✅ 90,4 / 91,8 % | ❌ 82,2 / 76,7 % | ❌ 86,3 / 84,9 % |
+| R jugés « hors_sujet » | ≤ 3 % | ✅ 2,7 / 2,7 % | ✅ 2,7 / 2,7 % | ✅ 1,4 / 0 % |
+| R parmi les « traite » (précision) | ≥ 85 % | ❌ 78,6 / 82,7 % | ❌ 83,3 / 88,9 % | ❌ 75,9 / 73,8 % |
+| Précision du froid | ≥ 75 % | ✅ 80 / ❌ 71 % | ✅ 100 / 100 % | ✅ 100 / ❌ 57 % |
+| Précision de l'Ukraine | ≥ 75 % | ✅ 85 / 88 % | ✅ 87 / 94 % | ✅ 76 / 83 % |
+| Précision des motos | ≥ 75 % | ❌ 56 / 67 % | ❌ 67 / 71 % | ❌ 67 / 53 % |
+| Froid : R jugés « traite » | ≥ 5 sur 6 | ❌ 4 / ✅ 5 | ❌ 3 / 2 | ✅ 5 / ❌ 4 |
+| Présidentielle bulgare jugée « traite » | 0 sur 4 | ❌ 1 / ✅ 0 | ❌ 1 / ✅ 0 | ❌ 1 / ✅ 0 |
+| Stabilité des retenus | ≥ 80 % | ✅ 85,4 % | ❌ 75,3 % | ❌ 74,0 % |
+| Contrôle : perte de rappel | ≤ 5 points | ✅ 0 (91,3 %) | ❌ 13 (78,3 %) | ✅ 0 (91,3 %) |
+| Contrôle : précision | ≥ B (60,0 %) | ✅ 60,0 % | ✅ 75,0 % | ✅ 63,6 % |
+| Temps de modèle sur la référence | ≤ 2,5 × B | ✅ 24 min | ✅ 39 min (1,6 ×) | ✅ 33 min (1,4 ×) |
+
+Fichiers : `spikes/tri2/results/summary.txt` et `spikes/tri2/results/analyse.txt` (`spikes/tri2/analyse.py`). Les raisons du modèle restent sur la VM (`~/s-tri2/calls.jsonl`).
+
+Relecture des erreurs :
+- **Le tri actuel n'est pas stable.** Un article sur sept retenu à un passage ne l'est pas à l'autre, avec les mêmes lots, dans le même ordre. Le froid passe de 4 à 5 articles, l'article bulgare (rang 93) de 1 à 0, la raclette est retenue une fois sur deux. Le chiffre d'un seul passage, comme dans TRI1, ne suffit donc pas à juger un tri.
+- **Les erreurs de « même thème » qui reviennent sont toujours les mêmes.** Retenus aux deux passages par B sans répondre : les 4 « Top 5 » de motos et le sommaire d'Enduro Magazine ; deux articles sur la fermeture de Novaïa Gazeta, un satellite russe, le récit de deux réfugiés de Marioupol ; TotalEnergies, pourtant hors sujet ; une publicité pour un chauffage connecté sur le froid. Ce ne sont pas des erreurs de hasard : le modèle prend le thème pour la réponse sur ces articles, à chaque fois.
+- **Ce n'est pas un effet de taille de lot.** Les retenus à tort de l'Ukraine se concentrent sur les rangs 64 à 99, les moins proches de la question, en lots de 25 comme en lots de 8. E garde les mêmes erreurs et en ajoute d'autres (motos 19 retenus, froid 7 retenus au second passage).
+- **D, la preuve citée, a un vrai effet mais il coûte de bons articles.** Quand le second jugement dit « ne répond pas », il retire surtout des articles de même thème : 11 sur 25 au premier passage, 6 sur 13 au second. Mais il cite mal : il recolle des passages avec « […] » ou réécrit un mot (Olechky, Starlink en néerlandais), et la vérification mot pour mot, fixée d'avance, rejette alors la preuve. Au second passage, 10 bons articles de l'Ukraine sont perdus ainsi. Sur le froid, il écarte « Le froid est attendu… et cela n'a rien d'exceptionnel » et le vortex polaire, dont la réponse n'est pas dans les 300 caractères envoyés. D ne retire aucun « Top 5 ».
+- **Les « Top 5 » de motos pèsent sur un seul critère.** S'ils étaient comptés comme R, la précision des motos de B passerait de 56 et 67 % à 78 et 93 %. Les étiquettes ne changent pas pour autant ; TRI1 les avait déjà signalés comme discutables.
+
+## 5. Conclusion
+
+**Échec.** Aucune variante ne fait nettement mieux que le tri actuel. D gagne 5 et 6 points de précision mais perd le rappel (82 et 77 %) et devient instable ; E ne gagne rien. Le tri actuel lui-même ne tient pas la précision voulue, et un article retenu sur sept change d'un passage à l'autre.
+
+Avec qwen3:14b, le titre et 300 caractères de résumé, le verdict « traite » ne sépare pas de façon fiable « répond à la question » de « même thème ». Le brief ne peut pas se fier à ce verdict seul pour choisir sa matière.
+
+## 6. Conséquences
+
+| Document ou choix | Conséquence | ADR |
+|---|---|---|
+| Tri du Reporter | Inchangé : D et E ne sont pas reprises | ADR-0044 inchangé |
+| Brief depuis les « retenus » (les 20 premiers) | À soumettre à Joël : l'auteur confirme la liste avant la rédaction, au lieu de la prendre telle quelle | ADR-0043 §5 confirmé (rien n'est exclu sans l'auteur) |
+| Second jugement avec preuve citée | Piste à garder : la question « répond-il ? » retire la moitié des articles de même thème. À rejouer seulement avec une vérification qui accepte les morceaux séparés par « […] », et peut-être plus de texte que 300 caractères | |
+| Choix du modèle | Non mesuré : un autre modèle sur le même banc dirait si la limite vient de qwen3:14b | ADR-0027 |
+
+Le code de `spikes/tri2/` reste un banc ; rien n'est repris dans `backend/`.
+
+## 7. Ce que la preuve n'a pas couvert
+
+- Les étiquettes sont celles de TRI1, écrites par un seul auteur (Claude) ; Joël peut relire `spikes/tri1/labels.csv`.
+- Deux passages seulement : la stabilité est estimée sur 3 questions et environ 100 articles retenus.
+- Un seul modèle, qwen3:14b. Ni un modèle plus grand ni un autre fournisseur n'ont été essayés.
+- Le tri ne lit que le titre et 300 caractères de résumé ; la relecture du 7 novembre a amélioré les textes, mais le tri ne les lit pas.
+- La vérification de D a été fixée avant la mesure et n'a pas été assouplie : l'effet d'une vérification par morceaux n'est pas mesuré.
+- Le brief n'a pas été rédigé à partir des résultats du banc.

@@ -1,0 +1,68 @@
+D stage pass 1 {('H', 'kept'): 4, ('H', 'noproof'): 2, ('H', 'saysno'): 1, ('R', 'kept'): 78, ('R', 'noproof'): 4, ('R', 'saysno'): 5, ('T', 'kept'): 14, ('T', 'saysno'): 11}
+D stage pass 2 {('H', 'saysno'): 1, ('R', 'kept'): 56, ('R', 'noproof'): 10, ('R', 'saysno'): 1, ('T', 'kept'): 7, ('T', 'saysno'): 6}
+
+D removed R items (reference):
+  1 Pourquoi 11 Le froid est attendu en Belgique début novembre… et cela n’a rien d’ex | ne répond pas
+  1 Quelles  41 Melania Trump dit avoir obtenu un cessez-le-feu dans une ville d'Ukrai | preuve absente du texte : Melania Trump dit avoir obtenu un cessez-le-feu dans la ville ukrainienne d'Olechky,
+  1 Quelles  49 EN DIRECT, guerre en Ukraine : le site pétrolier de Kstovo, grande raf | ne répond pas
+  1 Quelles  51 EN DIRECT, guerre en Ukraine : le site pétrolier de Kstovo, l’une des  | ne répond pas
+  1 Quelles  58 Starlink en Ukraine : Londres insiste auprès de Trump sur un "accès co | ne répond pas
+  1 Quelles  63 Elon Musk over Starlink-storing: 'Oekraïne overtrad gebruiksvoorwaarde | preuve absente du texte : Oekraïne overtrad gebruiksvoorwaarden
+  2 Pourquoi 11 Le froid est attendu en Belgique début novembre… et cela n’a rien d’ex | preuve absente du texte : baisse significative des températures
+  2 Pourquoi 25 Du jamais-vu si tôt ? Le vortex polaire menace de décrocher : voici ce | preuve absente du texte : décrochage du vortex polaire
+  2 Pourquoi 35 Hiver 2026-2027 : deux phénomènes climatiques convergent vers le même  | ne répond pas
+  2 Quelles  49 EN DIRECT, guerre en Ukraine : le site pétrolier de Kstovo, grande raf | preuve absente du texte : une attaque massive de drones [...] une entreprise industrielle dans le district de 
+  2 Quelles  50 EN DIRECT, guerre en Ukraine : le site pétrolier de Kstovo, grande raf | preuve absente du texte : une attaque massive de drones [...] une entreprise industrielle dans le district de 
+  2 Quelles  51 EN DIRECT, guerre en Ukraine : le site pétrolier de Kstovo, l’une des  | preuve absente du texte : une attaque massive de drones [...] une entreprise industrielle dans le district de 
+  2 Quelles  52 Guerre en Ukraine : un drone russe fait 14 morts à la gare de Dnipro | preuve absente du texte : un drone à réaction s’est abattu sur un quai [...] de nombreuses personnes y sont re
+  2 Quelles  53 Guerre en Ukraine : le gouvernement états-unien autorise la vente de m | preuve absente du texte : le gouvernement états-unien autorise la vente de missiles à l'Ukraine [...] 500 miss
+  2 Quelles  55 L'Ukraine dit avoir de nouveau une "connexion stable" au système Starl | preuve absente du texte : L'Ukraine a indiqué samedi avoir de nouveau une "connexion stable" au système Starli
+  2 Quelles  56 "Certains mangeaient des chiens" : après leur évacuation d'Olechky, da | preuve absente du texte : Certains mangeaient des chiens [...] la vie "brutale", la famine et les routes semée
+  2 Quelles  61 Le gouvernement américain approuve la vente de 500 missiles Patriot à  | preuve absente du texte : le gouvernement américain a approuvé la vente de 500 missiles intercepteurs Patriot 
+
+Non-R kept in B, by number of B passes (reference):
+  Pourquoi T 2 36 Face à la baisse des températures, ce chauffage connecté puissant s'affiche sous
+  Pourquoi T 1 38 Raclette, soupes, plats mijotés : comment la baisse des températures transforme 
+  Quelles  T 2 43 « Pare-chocs contre pare-chocs » : après des semaines de manœuvres, un satellite
+  Quelles  T 1 70 Conforté par ses affaires avec Donald Trump, Vladimir Poutine compte intensifier
+  Quelles  H 2 87 TotalEnergies : bénéfice inédit au troisième trimestre, à 8,3 milliards de dolla
+  Quelles  T 2 88 Sous la pression des autorités russes, un journal indépendant annonce sa fermetu
+  Quelles  T 1 89 L’inflation explose en Belgique et dépasse les 5 %, les salaires vont grimper
+  Quelles  T 1 90 La Russie annoncée comme le pays hôte des Mondiaux 2030 d’haltérophilie
+  Quelles  H 1 92 Gérald Hibert, de l'enveloppe de sa grand-mère à un empire immobilier qui vacill
+  Quelles  T 1 93 En Bulgarie, sur les bords de la mer Noire, les attaques de drones s’invitent da
+  Quelles  H 1 95 Midterms américaines: pourquoi l’Europe doit se préparer à un Trump plus agressi
+  Quelles  T 2 96 Iryna en Roman vluchtten uit Marioepol naar België: “Met wat hulp van God komt h
+  Quelles  T 2 98 Le journal indépendant russe Novaïa Gazeta ferme ses portes, sous la pression de
+  Les essa T 2 0 PRESSE – Enduro Magazine, novembre, décembre 2026, janvier 2027
+  Les essa T 2 5 Top 5 : les meilleures motos A2 2026
+  Les essa T 2 6 Top 5 : Les meilleures sportives 2026
+  Les essa T 2 7 Top 5 : Les meilleurs trails polyvalents 2026
+  Les essa T 2 9 Top 5 : Les meilleurs Sports tourings et trails routiers 2026
+  Les essa T 1 50 Trail Kawasaki KLE500 SE Smartride
+  Les essa T 1 60 Nouvelle Ducati V4 Panigale 2027, elle vous fera gagner du temps...
+  Les essa T 1 62 Sport touring Zontes 703 T
+
+R not kept in B:
+  Pourquoi ('proche', 'proche') 3 La météo va se bloquer sur la France pendant 10 à 15 jours : voici pourquoi c'es
+  Pourquoi ('hors_sujet', 'traite') 35 Hiver 2026-2027 : deux phénomènes climatiques convergent vers le même scénario e
+  Quelles  ('hors_sujet', 'hors_sujet') 16 Guerre en Ukraine : un acteur de “Game of Thrones” contraint de se réfugier dans
+  Quelles  ('traite', 'proche') 22 Guerre en Ukraine : l’OTAN va déployer des moyens supplémentaires en mer Noire
+  Quelles  ('proche', 'traite') 45 EN DIRECT, guerre en Ukraine : un drone à l’origine inconnue retrouvé en Lettoni
+  Quelles  ('proche', 'proche') 54 Guerre en Ukraine : comment le pape Léon XIV a contribué à obtenir une trêve
+  Quelles  ('proche', 'proche') 57 Melania Trump affirme avoir obtenu un cessez-le-feu dans une ville d'Ukraine "au
+  Quelles  ('proche', 'hors_sujet') 99 Plus de 600 drones envoyés sur Moscou au deuxième jour du sommet Russie-Afrique
+
+E: batches with many kept non-R (pass, key, start, nonR kept):
+  B 1 Quelles  75 8
+  B 1 Les essa 0 5
+  B 1 Les essa 50 3
+  E 1 Quelles  64 5
+  E 1 Quelles  80 6
+  E 1 Les essa 0 4
+  B 2 Quelles  75 5
+  B 2 Les essa 0 5
+  E 2 Quelles  80 3
+  E 2 Quelles  88 3
+  E 2 Les essa 0 4
+  E 2 Les essa 56 3

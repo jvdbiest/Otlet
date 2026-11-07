@@ -1,0 +1,37 @@
+127 calls, 93 min of model, 0 with an error
+
+== B: model time on the reference 24 min (1.0 × B)
+  pass 1: recall 90.4%, rejected 2.7%, precision 78.6% (84 kept), cold 4/6, Bulgaria 1/4
+    Pourquoi risque  recall 67% precision 80% kept 5
+    Quelles sont     recall 91% precision 85% kept 61
+    Les essais       recall 100% precision 56% kept 18
+  pass 2: recall 91.8%, rejected 2.7%, precision 82.7% (81 kept), cold 5/6, Bulgaria 0/4
+    Pourquoi risque  recall 83% precision 71% kept 7
+    Quelles sont     recall 91% precision 88% kept 59
+    Les essais       recall 100% precision 67% kept 15
+  stability 85.4%; controls recall 91.3% (B 91.3%), precision 60.0%
+  criteria met: False (10/16)
+
+== D: model time on the reference 39 min (1.6 × B)
+  pass 1: recall 82.2%, rejected 2.7%, precision 83.3% (72 kept), cold 3/6, Bulgaria 1/4
+    Pourquoi risque  recall 50% precision 100% kept 3
+    Quelles sont     recall 82% precision 87% kept 54
+    Les essais       recall 100% precision 67% kept 15
+  pass 2: recall 76.7%, rejected 2.7%, precision 88.9% (63 kept), cold 2/6, Bulgaria 0/4
+    Pourquoi risque  recall 33% precision 100% kept 2
+    Quelles sont     recall 77% precision 94% kept 47
+    Les essais       recall 100% precision 71% kept 14
+  stability 75.3%; controls recall 78.3% (B 91.3%), precision 75.0%
+  criteria met: False (6/16)
+
+== E: model time on the reference 33 min (1.4 × B)
+  pass 1: recall 86.3%, rejected 1.4%, precision 75.9% (83 kept), cold 5/6, Bulgaria 1/4
+    Pourquoi risque  recall 83% precision 100% kept 5
+    Quelles sont     recall 84% precision 76% kept 63
+    Les essais       recall 100% precision 67% kept 15
+  pass 2: recall 84.9%, rejected 0.0%, precision 73.8% (84 kept), cold 4/6, Bulgaria 0/4
+    Pourquoi risque  recall 67% precision 57% kept 7
+    Quelles sont     recall 84% precision 83% kept 58
+    Les essais       recall 100% precision 53% kept 19
+  stability 74.0%; controls recall 91.3% (B 91.3%), precision 63.6%
+  criteria met: False (8/16)

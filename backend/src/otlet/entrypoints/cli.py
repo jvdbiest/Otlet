@@ -269,9 +269,9 @@ def reread_command(args: argparse.Namespace, settings: Settings) -> int:
     if backup is not None:
         backup.close()
     for (source, outcome), count in sorted(counts.items()):
-        print(f"{source or '(sans source)'}	{outcome}	{count}")
+        print(f"{source or '(sans source)'}\t{outcome}\t{count}")
     for outcome, count in sorted(totals.items()):
-        print(f"TOTAL	{outcome}	{count}")
+        print(f"TOTAL\t{outcome}\t{count}")
     return 0
 
 

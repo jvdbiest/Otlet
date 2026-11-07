@@ -141,3 +141,10 @@ Pistes, sans modèle :
 1. Envoyer le contexte en court (titre et début du résumé) au lieu de son texte entier : la rédaction ne peut plus en tirer une section.
 2. Dans la liste à vérifier, quand plus de 20 articles sont retenus, ne cocher que les 20 premiers et replier les proches.
 3. Pour une question de prévision ou de cause, dire dans le brouillon quand aucune source n'y répond.
+
+## 11. Corrections retenues par Joël (2026-11-08)
+
+Priorités de Joël : dire quand aucune source ne répond, puis replier la liste au-delà de 20. Le contexte court attend les retours d'usage, et TRI3 vient après quelques jours d'usage.
+
+- **Aucune source ne répond (redaction-20, 926ea7c).** Quand le titre du brief est une question, le modèle dit si les sources y répondent : oui, en partie ou non. Dans les deux derniers cas, le chapô le dit, et la version affiche un avertissement. Rejoué sur l'immobilier [TEST] (version 2), le chapô commence par « Les sources ne répondent pas directement à la question de la baisse future des prix… ». Le modèle a pourtant coché « en partie » plutôt que « non ». Sur Starlink, il a aussi coché « en partie ».
+- **Liste repliée.** Au-delà de 20 retenus, la liste à vérifier ne montre d'abord que les 20 premiers, cochés. Les autres retenus et les proches sont repliés.

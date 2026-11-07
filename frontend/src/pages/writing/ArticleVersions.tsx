@@ -190,6 +190,8 @@ export function ArticleVersions({
         anchor={(start) => anchor("paragraph", start)}
       />
       {shown.context_overflow && <Warning text={t("draft.overflow")} />}
+      {shown.details.answer === "no" && <Warning text={t("draft.noAnswer")} />}
+      {shown.details.answer === "partly" && <p className={styles.notice}>{t("draft.partAnswer")}</p>}
       {shown.unused_sources.length > 0 && (
         <Warning
           text={t("draft.unused", { count: shown.unused_sources.length })}

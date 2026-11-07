@@ -26,7 +26,7 @@ from otlet.writing.domain.guardrails import COPY_LONG, longest_copy, without_cop
 from otlet.writing.domain.passages import passages, vocabulary
 from otlet.writing.domain.vocabulary import choice
 
-PROMPT_VERSION = "redaction-19"
+PROMPT_VERSION = "redaction-20"
 SCHEMA_NAME = "article_draft"
 # Up to 15: a selection of ten films is ten sections (Joël, 2026-10-18; six cut his top 10).
 SECTIONS = (2, 15)
@@ -203,6 +203,8 @@ def messages(
         if found is not None:
             brief.append(f"{name}: {found.label}. {found.definition}")
     matter = [source for source in sources if not source.source.context] or sources
+    if asks_question(fields):
+        brief.append(ANSWER_RULE)
     if len(matter) > 1:
         keys = ", ".join(source.key for source in matter)
         brief.append(MODES[fields.mode].format(keys=keys, default=PLAN_DEFAULT))
@@ -284,9 +286,35 @@ PLAN_DEFAULT = (
 )
 
 
-def output_schema(keys: list[str]) -> dict[str, Any]:
-    """The answer expected, the ids of the sources enumerated (ADR-0027 §5)."""
+# A title that asks a question (from the Reporter, most often): the draft says whether its
+# sources answer it (Joël, 2026-11-08, after the essais [TEST]: « Les prix de l'immobilier
+# vont-ils baisser ? » was written on, without a forecast and without saying there was none).
+ANSWERS = ("yes", "partly", "no")
+ANSWER_RULE = (
+    "The working title is a question. In « answer », say whether the sources answer it: yes,"
+    " partly or no. When partly or no, the lead says so plainly in one sentence, what the"
+    " sources say and what they leave open, and the article never answers it from your own"
+    " knowledge."
+)
+
+
+def asks_question(fields: BriefFields) -> bool:
+    """The working title is a question."""
+    return fields.title.strip().endswith("?")
+
+
+def output_schema(keys: list[str], question: bool = False) -> dict[str, Any]:
+    """The answer expected, the ids of the sources enumerated (ADR-0027 §5); with `question`,
+    whether the sources answer the title."""
     ids = {"type": "string", "enum": keys}
+    schema = _output_schema(ids)
+    if question:
+        schema["properties"]["answer"] = {"type": "string", "enum": list(ANSWERS)}
+        schema["required"] = [*schema["required"], "answer"]
+    return schema
+
+
+def _output_schema(ids: dict[str, Any]) -> dict[str, Any]:
     return {
         "type": "object",
         "properties": {
@@ -426,6 +454,7 @@ def check_answer(
     source_letters: str | None = None,
     length_goal: int | None = None,
     context: frozenset[str] = frozenset(),
+    question: bool = False,
 ) -> list[str]:
     """The errors of an answer, in words a model can act on; empty when it is usable. With
     `every_source`, a source of the brief no paragraph cites is an error too; with `crossing`
@@ -440,7 +469,8 @@ def check_answer(
     write: « l'hôpital de Tolè身 de Tolède » (bench of 2026-10-31). With `length_goal`, so is an
     article far from it: asked for 1,200 words, every draft of the bench stayed near 550. The
     `context` sources (P2) need not be used, never carry a section alone, and are cited in one
-    paragraph at most."""
+    paragraph at most. With `question` (the title asks one), so is an answer that does not say
+    whether its sources answer it."""
     try:
         data = json.loads(raw)
     except json.JSONDecodeError as error:
@@ -452,6 +482,11 @@ def check_answer(
         errors.append("title: a string of 5 characters at least is required")
     if not _text(data.get("lead"), 20):
         errors.append("lead: a string of 20 characters at least is required")
+    if question and data.get("answer") not in ANSWERS:
+        errors.append(
+            "answer: say whether the sources answer the question of the title: yes, partly or no;"
+            " when partly or no, say so in the lead"
+        )
     sections = data.get("sections")
     if not isinstance(sections, list) or not SECTIONS[0] <= len(sections) <= SECTIONS[1]:
         errors.append(f"sections: {SECTIONS[0]} to {SECTIONS[1]} sections are required")

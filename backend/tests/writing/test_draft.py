@@ -499,3 +499,22 @@ def test_a_context_source_helps_without_carrying_the_article() -> None:
         " section must draw on two sources or more: rebuild these sections around an idea the"
         " sources share"
     ]
+
+
+def test_a_question_in_the_title_is_said_answered_or_not() -> None:
+    """When no source answers the question of the title, the draft says so (Joël, 2026-11-08)."""
+    sources = prompt_sources([source("A", "a"), source("B", "b")], 9000)
+    asked = BriefFields(title="Les prix vont-ils baisser ?", item_ids=())
+    user = messages(asked, sources)[1][1]
+    assert "The working title is a question" in user
+    plain = messages(replace(asked, title="Prix"), sources)[1][1]
+    assert "The working title is a question" not in plain
+    schema = output_schema(["S1", "S2"], question=True)
+    assert schema["properties"]["answer"]["enum"] == ["yes", "partly", "no"]
+    assert "answer" in schema["required"] and "answer" not in output_schema(["S1"])["properties"]
+    keys = ["S1", "S2"]
+    assert check_answer(answer(), keys, question=True) == [
+        "answer: say whether the sources answer the question of the title: yes, partly or no;"
+        " when partly or no, say so in the lead"
+    ]
+    assert check_answer(answer(answer="no"), keys, question=True) == []

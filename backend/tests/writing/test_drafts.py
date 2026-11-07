@@ -254,7 +254,7 @@ def test_a_draft_becomes_a_version_of_the_article_of_the_brief(world: World) -> 
     version = article.versions[0]
     assert (version.origin, version.provider_kind, version.model) == ("ia", "ollama", "llama3.1")
     assert (
-        version.prompt_version == "redaction-19"
+        version.prompt_version == "redaction-20"
         and version.cut_sources == () == version.unused_sources
         and not version.context_overflow
     )
@@ -418,6 +418,24 @@ def test_context_misused_is_sent_back_once_never_a_failed_draft(world: World) ->
     repair = world.fake.requests[-1]["body"]["messages"][-1]["content"]
     assert "sections drawing on context only" in repair
     assert "[S2] (context only)" in world.fake.requests[0]["body"]["messages"][-1]["content"]
+
+
+def test_a_draft_says_whether_its_sources_answer_the_title(world: World) -> None:
+    """A question in the title: the model says whether the sources answer it, in the details."""
+    context = world.context
+    world.charters.set(context.user_id, "")
+    agence, journal = items(world)
+    brief = world.briefs.create(
+        context, BriefFields(title="La veille libre progresse-t-elle ?", item_ids=(journal, agence))
+    )
+    world.fake.answer = json.dumps({**ANSWER, "answer": "no"})
+    generation = world.drafts.start(context, brief.id, force=True)
+    assert generation is not None
+    world.drafts.run(context.workspace_id, context.user_id, generation.id)
+    article = world.drafts.article(context, brief.id)
+    assert article is not None and article.versions[0].details["answer"] == "no"
+    first = world.fake.requests[0]["body"]
+    assert "The working title is a question" in first["messages"][-1]["content"]
 
 
 def test_a_cancelled_draft_keeps_nothing(world: World) -> None:

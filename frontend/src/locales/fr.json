@@ -757,6 +757,8 @@
       "out_of_room": "Le modèle a manqué de place : sa réponse a été coupée avant la fin. Agrandissez la fenêtre de contexte du fournisseur (Réglages > IA), ou raccourcissez le brief.",
       "cancelled": "Génération annulée : rien n'a été enregistré."
     },
+    "noAnswer": "Selon le modèle, aucune source ne répond à la question du titre : le chapô doit le dire. Vérifiez-le, et n'ajoutez pas de réponse sans source.",
+    "partAnswer": "Selon le modèle, les sources ne répondent qu'en partie à la question du titre : le chapô dit ce qu'elles laissent ouvert.",
     "unused": "{count, plural, one {Ce brouillon n'utilise pas cet élément du brief, malgré une demande de correction au modèle :} other {Ce brouillon n'utilise pas ces # éléments du brief, malgré une demande de correction au modèle :}}",
     "lone": "{count, plural, one {Synthèse : cette section ne s'appuie que sur une source. Si les sources n'ont pas de sujet commun, le mode Panorama conviendra mieux :} other {Synthèse : ces # sections ne s'appuient que sur une source. Si les sources n'ont pas de sujet commun, le mode Panorama conviendra mieux :}}",
     "repeated": "{count, plural, one {Ce paragraphe répète presque mot pour mot un paragraphe précédent, malgré une demande de correction au modèle :} other {Ces # paragraphes répètent presque mot pour mot un paragraphe précédent, malgré une demande de correction au modèle :}}",
@@ -1362,7 +1364,11 @@
       "closeOnes": "{count, plural, one {Proche (#)} other {Proches (#)}}",
       "go": "{count, plural, =0 {Préparer le brief} one {Préparer le brief avec cet article} other {Préparer le brief avec ces # articles}}{contextual, plural, =0 {} one { (dont # en contexte)} other { (dont # en contexte)}}",
       "cancel": "Annuler",
-      "noMatter": "Gardez au moins un article en « Matière »."
+      "noMatter": "Gardez au moins un article en « Matière ».",
+      "showMore": "{count, plural, one {Afficher l'autre retenu, non coché} other {Afficher les # autres retenus, non cochés}}",
+      "hideMore": "Masquer les autres retenus",
+      "showClose": "{count, plural, one {Afficher l'article proche} other {Afficher les # articles proches}}",
+      "hideClose": "Masquer les proches"
     },
     "toBriefAll": "Préparer un brief avec tous les {count} articles",
     "toBriefAllAside": "Préparer un brief avec tous les {count} articles, écartés compris",

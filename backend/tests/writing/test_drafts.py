@@ -369,6 +369,8 @@ def test_a_draft_that_leaves_a_source_out_is_sent_back_then_says_so(world: World
     # The source left out is used once, the rest left as it is (Joël, 2026-10-24): no « keep
     # the length », which made a model spread the one fact of a short source.
     assert "use it once" in repair and "do not shorten" not in repair
+    # Thin matter set the length: a short draft is kept, never sent back for more (RB1).
+    assert "too short" not in repair
     assert "do not stretch it to fit" in repair
     article = world.drafts.article(context, brief.id)
     assert article is not None

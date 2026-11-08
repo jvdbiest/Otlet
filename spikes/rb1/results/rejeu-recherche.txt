@@ -1,0 +1,4 @@
+{"q": "Quels sont les résultats du Grand Prix du Qatar de MotoGP ?", "before_c": ["Grand Prix du Qatar de MotoGP", "résultats"], "after_c": ["Grand Prix du Qatar de MotoGP"], "set_before": 23, "set_after": 27, "R_before": 21, "R_after": 22}
+{"q": "Les tests d'appareils high-tech publiés récemment", "before_c": ["tests d'appareils high-tech", "publiés"], "after_c": ["tests d'appareils high-tech"], "set_before": 51, "set_after": 109, "R_before": 1, "R_after": 7}
+{"q": "Les résultats du MotoGP en Australie", "before_c": ["MotoGP", "Australie", "résultats"], "after_c": ["MotoGP", "Australie"], "set_before": 90, "set_after": 92}
+{"questions": 134, "changed": 3}

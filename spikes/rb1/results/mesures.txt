@@ -1,0 +1,32 @@
+Q1  set   7 R found 7/7 | kept 6 (R 6, nonR 0) close 1 | R not kept 1 R aside 0 | stable 6/6 | P3 opens False needed False
+      op chercher | fact: None
+Q2  set  27 R found 10/11 | kept 9 (R 8, nonR 1) close 4 | R not kept 2 R aside 0 | stable 9/9 | P3 opens True needed True
+      kept non-R: ['La fusillade en Pologne était un acte de "ter']
+      op chercher | fact: None
+Q3  set   7 R found 4/5 | kept 4 (R 4, nonR 0) close 1 | R not kept 0 R aside 0 | stable 4/4 | P3 opens False needed False
+      op chercher | fact: None
+Q4  set   6 R found 5/6 | kept 3 (R 3, nonR 0) close 2 | R not kept 2 R aside 0 | stable 3/3 | P3 opens False needed False
+      op chercher | fact: None
+Q5  set  44 R found 1/7 | kept 2 (R 1, nonR 1) close 4 | R not kept 0 R aside 0 | stable 1/2 | P3 opens True needed True
+      kept non-R: ['Une IA a créé des virus pour détruire des bac']
+      op chercher | fact: None
+Q6  set  22 R found 20/21 | kept 11 (R 11, nonR 0) close 7 | R not kept 9 R aside 2 | stable 11/11 | P3 opens True needed False
+      op chercher | fact: None
+Q7  set  10 R found 1/1 | kept 1 (R 1, nonR 0) close 1 | R not kept 0 R aside 0 | stable 1/1 | P3 opens False needed False
+      op chercher | fact: None
+Q8  set   4 R found 2/2 | kept 2 (R 2, nonR 0) close 0 | R not kept 0 R aside 0 | stable 2/2 | P3 opens False needed False
+      op chercher | fact: None
+Q9  set   4 R found 2/3 | kept 1 (R 1, nonR 0) close 2 | R not kept 1 R aside 0 | stable 1/1 | P3 opens False needed False
+      op chercher | fact: None
+Q10 set  19 R found 6/6 | kept 4 (R 4, nonR 0) close 5 | R not kept 2 R aside 0 | stable 4/4 | P3 opens True needed False
+      op chercher | fact: None
+Q11 set  22 R found 8/11 | kept 7 (R 7, nonR 0) close 1 | R not kept 1 R aside 0 | stable 7/7 | P3 opens False needed False
+      op chercher | fact: None
+Q12 set  13 R found 4/4 | kept 4 (R 4, nonR 0) close 0 | R not kept 0 R aside 0 | stable 4/4 | P3 opens False needed False
+      op fait | fact: {"lines": [{"item_id": "01a1b50f-1119-75cc-ab05-56797816a376", "publisher": "La DH", "figure": "500", "measure": "kilomètres", "when": "non précisé", "where": "non précisé", "passage": "à un peu plus de 500 kilomètres de l'arrivée", "figure_in_passage": true}, {"item_id": "01a1b50f-1119-75cc-ab05-56
+Q13 set   1 R found 1/1 | kept 1 (R 1, nonR 0) close 0 | R not kept 0 R aside 0 | stable 1/1 | P3 opens False needed False
+      op chercher | fact: None
+Q14 set   0 R found 0/0
+      op chercher | fact: None
+{'Rc': 85, 'Rf': 71, 'kept': 55, 'keptR': 53, 'Rfound_judged': 71, 'R_aside': 2, 'either': 55, 'both': 54}
+search recall 83.5%, precision 96.4%, recall 74.6%, aside 2.8%, stability 98.2%

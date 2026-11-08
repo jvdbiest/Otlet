@@ -1377,6 +1377,11 @@
     "model": "Modèle : {model}",
     "unsearched": "Non cherché : {words}.",
     "addUnsearched": "L'ajouter aux termes",
+    "apart": {
+      "title": "Aucun article ne contient à la fois {names}.",
+      "without": "{count, plural, =0 {Sans « {name} » : aucun article} one {Chercher sans « {name} » (# article)} other {Chercher sans « {name} » (# articles)}}",
+      "help": "Rien n'est retiré sans vous : choisissez le terme qui n'est qu'un détail de la question. Vous pourrez le remettre dans les termes."
+    },
     "themes": "{count} articles. Principaux sujets, tirés des titres et des résumés :",
     "themesHelp": "Un clic sur un sujet n'affiche que ses articles, et « Préparer un brief » les reprend. Un second clic revient à tous.",
     "suggest": {

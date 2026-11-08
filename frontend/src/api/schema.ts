@@ -1827,6 +1827,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/turns/{turn_id}/apart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Apart
+         * @description When the concepts of the last set find nothing together: what each one left out
+         *     would find. No model; nothing is changed until the author chooses.
+         */
+        get: operations["apart_api_workspaces__workspace_id__reporter_conversations__conversation_id__turns__turn_id__apart_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/turns/{turn_id}/more": {
         parameters: {
             query?: never;
@@ -2185,6 +2206,16 @@ export interface components {
             title: string;
             /** Url */
             url: string | null;
+        };
+        /**
+         * ApartView
+         * @description The items the words find with all the concepts of the set, and without each one.
+         */
+        ApartView: {
+            /** Together */
+            together: number;
+            /** Without */
+            without: components["schemas"]["WithoutView"][];
         };
         /** ArchiveBody */
         ArchiveBody: {
@@ -4351,6 +4382,13 @@ export interface components {
             tone: components["schemas"]["ChoiceView"][];
             /** Tone Default */
             tone_default: string;
+        };
+        /** WithoutView */
+        WithoutView: {
+            /** Concept */
+            concept: string;
+            /** Found */
+            found: number;
         };
         /** WorkspaceView */
         WorkspaceView: {
@@ -7971,6 +8009,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TurnView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    apart_api_workspaces__workspace_id__reporter_conversations__conversation_id__turns__turn_id__apart_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+                turn_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApartView"];
                 };
             };
             /** @description Validation Error */

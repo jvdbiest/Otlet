@@ -24,7 +24,7 @@ from otlet.identity.adapters.postgres import PostgresIdentityStore
 from otlet.identity.application.authentication import Authentication
 from otlet.platform import database as db
 from otlet.reporter.adapters.postgres import PostgresReporterStore
-from otlet.reporter.application.reporter import Reporter, ReporterError
+from otlet.reporter.application.reporter import Apart, Reporter, ReporterError
 from otlet.reporter.domain.facts import Agreement
 from otlet.reporter.domain.questions import Operation
 from otlet.reporter.domain.reading import Coverage
@@ -258,6 +258,31 @@ def test_the_author_changes_the_terms_without_a_model(
     assert [c.title for c in changed.candidates] == [AUSTEN[1][0]]
     found = api.get(context, conversation.id)
     assert found is not None and [c.title for c in found.turns[0].candidates] == [AUSTEN[1][0]]
+
+
+def test_the_author_sees_the_terms_that_never_meet(
+    reporter: tuple[Reporter, Reporter, WorkspaceContext, sa.Engine],
+) -> None:
+    """RB1 §9: when the concepts find nothing together, what each one left out would find; the
+    author removes one, nothing is relaxed without them."""
+    api, worker, context, engine = reporter
+    collect(engine, context, "zoo", "fr", [("Les lamas du zoo de Bruxelles", "Des lamas.", 1)])
+    conversation = api.start(context, "Les articles sur la tempête Austen")
+    turn = conversation.turns[0]
+    answer(worker, context, conversation.id, turn.id)
+    apart = [Concept("Austen", ("Austen",)), Concept("lamas", ("lamas",))]
+    empty = api.set_terms(context, conversation.id, turn.id, apart)
+    assert empty.candidates == []
+    found = api.apart(context, conversation.id, turn.id)
+    assert found.together == 0
+    # Without « lamas », the storm; without « Austen », the lamas of the zoo.
+    assert dict(found.without) == {"lamas": len(AUSTEN), "Austen": 1}
+    # Nothing changed until the author chooses.
+    again = api.get(context, conversation.id)
+    assert again is not None and again.turns[0].candidates == []
+    # With a set found, nothing to say.
+    api.set_terms(context, conversation.id, turn.id, apart[:1])
+    assert api.apart(context, conversation.id, turn.id) == Apart(together=len(AUSTEN), without=())
 
 
 def test_a_question_the_model_cannot_translate(

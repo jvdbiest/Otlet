@@ -1,0 +1,51 @@
+## MotoGP, Martín deuxième
+SENTENCE: Jorge Martín, malgré sa 11e place sur la grille de départ, a montré une bonne performance en sprint, terminant deuxième après avoir dépassé Fabio Di Giannantonio dans le dernier tour.
+  1. [33.8] Malgré une deuxième place qui lui a échappé dans le dernier tour face à Fabio Di Giannantonio, Martín termine sur le podium et empoche sept points.
+  2. [27.5] Furieux contre Pedro Acosta, qu'il accuse de l'avoir gêné dans son dernier tour en Q2 à Lusail, Jorge Martin n'a pu faire mieux que la 11e place.
+  3. [19.5] Ai Ogura complète le top 5 avec 281 unités, tandis que Fabio Di Giannantonio grimpe à la sixième place après sa deuxième position au Qatar.
+
+## MotoGP, Zarco 281 points
+SENTENCE: Pedro Acosta et Johann Zarco, cinquième, complètent le top 5 avec respectivement 299 et 281 points.
+  1. [24.9] Derrière ce trio, Pedro Acosta reste quatrième avec 299 points.
+  2. [24.9] Pedro Acosta – 299 points
+  3. [20.3] Ai Ogura complète le top 5 avec 281 unités, tandis que Fabio Di Giannantonio grimpe à la sixième place après sa deuxième position au Qatar.
+
+## Dana White devenu « elle »
+SENTENCE: Cependant, elle a publié sur son compte Instagram une photo la représentant au pupitre de la salle de presse de la Maison Blanche, accompagnée de la légende « Vers le nouveau chapitre », ce qui suggère une possible ouverture à ce poste.
+  1. [56.7] Mais son message a été rediffusé par un compte X de la Maison Blanche et Dana White a publié sur son compte Instagram une photo le montrant au pupitre de la salle de presse de la Maison Blanche, avec pour légende « Vers le nouveau chapitre », et a relayé lui aussi le message du président républicain
+
+## Printemps devenu avril
+SENTENCE: Un mémo du renseignement étatsunien, circulant en avril 2026, évoquait une relation sentimentale entre Jensen Huang et Alice Huang, bien que cela n'ait pas été confirmé.
+  1. [36.0] Selon le Financial Times, ce document évoquait une relation d’ordre sentimental entre Jensen Huang et Alice Huang.
+  2. [26.3] Selon les informations dévoilées, Alice Huang aurait développé une relation très proche avec Jensen Huang.
+  3. [26.3] Quant à la relation de proximité entre son dirigeant et Alice Huang, Nvidia se défend : "Les interactions entre Jensen Huang et Alice Huang ne sont ni inhabituelles ni inattendues" .
+
+## Citation à moitié traduite
+SENTENCE: Selon un futur entrepreneur, « sans btw-nummer est het stilstand », et certains risquent de manquer leur première période de déclaration fiscale.
+  1. [14.9] ‘Zonder btw-nummer is het stilstand.’
+  2. [9.1] Al anderhalve week is het onmogelijk om online nieuwe btw-nummers te activeren, waardoor professionele activiteiten in de praktijk onmogelijk worden.
+
+## Paragraphs « peu soutenus »
+  [2.9] Selon les documents consultés par les médias, la réforme s'inscrit dans un cadre plus large de modernisation de la police fédérale. Elle vise à réduire les niveaux hiérarchiques pour accélérer les décisions et renforcer la présence des agents sur le 
+  [7.1] Les syndicats et certains membres de la police expriment des doutes sur les conséquences de cette réforme. Ils soulignent les risques liés à une diminution des structures de direction, sans préciser les mesures concrètes pour assurer la transition.
+  [7.6] Les services de renseignement américains ont également souligné que Nvidia produit des puces très avancées, soumises à des restrictions d'exportation vers la Chine. Ces restrictions visent à empêcher la Chine d'accéder à des technologies sensibles. C
+  [7.9] À son arrivée, Laperche a été accueilli par sa famille et ses proches, ainsi que par les spectateurs de Pointe-à-Pitre. Il a également reçu des félicitations de ses concurrents, comme Davy Beaudart, qui a salué la performance de Corentin Horeau en Im
+  [8.4] Dans des villes comme Landen, les nouveaux arrivants, souvent issus de communautés congolaises ou africaines, trouvent des logements plus accessibles et une qualité de vie améliorée. Cependant, cette migration pose des défis pour les écoles locales, 
+  [8.6] La réforme prévoit un transfert de responsabilités vers les agents de terrain, avec une diminution du nombre de postes de direction. Cette orientation vise à renforcer la présence opérationnelle de la police fédérale.
+  [9.1] Les sources mentionnent des disparités sur le bilan humain et les motivations de l'auteur de la fusillade, sans établir de consensus clair.
+  [10.2] Le ministre-président wallon, Adrien Dolimont, a insisté sur la nécessité de simplifier l'administration et d'éviter les doublons. Cependant, des doutes persistent sur la faisabilité de la réforme, notamment en raison de l'absence d'études détaillées
+  [11.0] Les syndicats et les personnels de la police fédérale ont exprimé des réserves face à cette réforme. Les sources mentionnent une certaine circonspection des syndicats, ainsi qu'une inquiétude de nombreux agents face aux changements structurels. Ces r
+  [11.4] Aucune source ne fournit des informations supplémentaires sur les motivations spécifiques de Donald Trump pour ce remplacement. Les explications données restent générales et ne permettent pas de comprendre les raisons exactes de ce changement de dire
+  [13.8] Les tendances démographiques révèlent une augmentation du nombre de Bruxellois s'installant dans des régions plus éloignées. Par exemple, Landen a connu une croissance de 55 % de la population issue de Bruxelles entre 2016 et 2025. Cette migration es
+  [13.8] Donald Trump n'a pas donné de justification précise pour ce changement. Il a simplement indiqué que « parfois dans la vie, il faut faire des changements », sans évoquer les circonstances spécifiques qui ont conduit à ce remplacement. Ce manque d'expl
+  [13.9] Les sources fournissent des informations sur plusieurs sujets d'actualité IT, notamment la cybersécurité, les avancées en intelligence artificielle, les failles de sécurité logicielle, les cyberattaques et les développements technologiques. Cependant
+  [14.3] Un sociologue souligne que les jeunes vivent dans un environnement marqué par l'absence de repères stables, rendant difficile leur projection dans l'avenir. Cette situation, aggravée par des politiques économiques et sociales perçues comme injustes, 
+  [15.5] Le PTB a exprimé son exclusion du processus de consultation, jugeant la méthode non démocratique. Les débats ont également mis en lumière les incertitudes sur la gestion des dettes provinciales et la trajectoire budgétaire des structures qui reprendr
+  [15.8] Les sources mentionnent des facteurs pouvant influencer la reprise du Bitcoin, mais ne donnent pas de réponse définitive sur la possibilité de retrouver son record historique.
+  [15.8] Les manifestations touchent particulièrement le secteur de l'enseignement, avec des revendications contre les réformes du minerval, les budgets alloués aux universités et les conditions de travail des enseignants. Ces mouvements, souvent organisés pa
+  [16.0] La situation a des répercussions directes sur les nouveaux entrepreneurs. Selon un futur entrepreneur, « sans btw-nummer est het stilstand », et certains risquent de manquer leur première période de déclaration fiscale. La cyberattaque a rendu imposs
+  [16.1] Selon une source belge, le suspect, un homme de 24 ans, était « fasciné par les idéologies d'extrême droite » et « afstandelijk en somber » (distant et sombre). Cette description, issue d'une analyse de ses comportements et de ses réseaux sociaux, aj
+  [16.8] La semaine prochaine en Belgique connaîtra des variations marquées de température et de précipitations, selon les prévisions météorologiques. Les premiers jours resteront frais, avec des risques de brouillard et de faibles précipitations, avant un ne
+  [16.8] Les données montrent que les Bruxellois qui quittent la capitale pour acheter un bien immobilier se dirigent souvent vers des zones périphériques, comme Landen, Zottegem ou les communes de la Denderstreek. Ces choix sont motivés par des facteurs tels
+  [16.9] Malgré ces perspectives, le Bitcoin reste vulnérable à des facteurs externes tels que la liquidité, les taux d'intérêt et la valeur du dollar. Les analystes restent divisés sur la probabilité de retrouver le record historique, sans consensus clair.
+  [17.0] Les sources ne répondent pas directement à la question de la baisse future des prix de l'immobilier en Belgique. Elles décrivent des tendances actuelles, notamment l'exode de Bruxelles vers d'autres régions, les disparités de prix entre les régions e

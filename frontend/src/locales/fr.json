@@ -732,6 +732,13 @@
     "hint": "Par exemple : source sous licence, votre propre texte, faits bruts difficiles à dire autrement. Gardé avec votre nom et la date.",
     "submit": "Laisser passer avec cette justification"
   },
+  "check": {
+    "hint": "Cliquez sur une phrase du brouillon pour voir ce qu'en disent les sources citées.",
+    "title": "Ce qu'en disent les sources",
+    "close": "Fermer",
+    "nothing": "Aucune phrase des sources citées ne reprend les noms, chiffres ou mots de cette phrase : à vérifier.",
+    "help": "Les noms et chiffres communs sont surlignés. Ces phrases sont trouvées sans modèle, par les mots qu'elles partagent : elles peuvent confirmer la phrase, ou la contredire."
+  },
   "draft": {
     "title": "Brouillon",
     "help": "Le modèle du brief (ou votre profil) écrit un brouillon à partir de vos consignes et du texte des éléments, en citant ses sources. Chaque génération crée une nouvelle version ; les précédentes sont gardées.",

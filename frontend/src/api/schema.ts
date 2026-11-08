@@ -1002,6 +1002,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/briefs/{brief_id}/support": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Support
+         * @description The sentences of the cited sources that share the most with a sentence of a version:
+         *     the reading aid of REL2, without a model. All the sources when none is cited (a lead).
+         */
+        post: operations["support_api_workspaces__workspace_id__briefs__brief_id__support_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/feed": {
         parameters: {
             query?: never;
@@ -2639,6 +2660,13 @@ export interface components {
             /** Length Max */
             length_max: ("short" | "medium" | "long") | null;
         };
+        /** CitedBody */
+        CitedBody: {
+            /** Key */
+            key: string;
+            /** Title */
+            title: string;
+        };
         /** ComparedView */
         ComparedView: {
             /** First */
@@ -4077,6 +4105,32 @@ export interface components {
             title: string;
             /** Unsupported */
             unsupported: string[];
+        };
+        /**
+         * SupportBody
+         * @description A sentence of a version, and the sources its paragraph cites (REL2).
+         */
+        SupportBody: {
+            /** Sources */
+            sources?: components["schemas"]["CitedBody"][];
+            /** Text */
+            text: string;
+        };
+        /**
+         * SupportView
+         * @description A sentence of a source that confirms or contradicts the sentence checked.
+         */
+        SupportView: {
+            /** Key */
+            key: string;
+            /** Publisher */
+            publisher: string | null;
+            /** Sentence */
+            sentence: string;
+            /** Shared */
+            shared: string[];
+            /** Title */
+            title: string;
         };
         /** TagsBody */
         TagsBody: {
@@ -6337,6 +6391,42 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SourceTextView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    support_api_workspaces__workspace_id__briefs__brief_id__support_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                brief_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SupportBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupportView"][];
                 };
             };
             /** @description Validation Error */

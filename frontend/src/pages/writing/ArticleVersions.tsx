@@ -15,6 +15,7 @@ import { GenerationDetails } from "./GenerationDetails.tsx";
 import { Proximity } from "./Proximity.tsx";
 import { TextSearch } from "./TextSearch.tsx";
 import { VersionEditor } from "./VersionEditor.tsx";
+import { SentenceCheck } from "./SentenceCheck.tsx";
 import { Warning } from "./Warning.tsx";
 
 /** A list of the details: the sections of a synthesis still on one source, the paragraphs
@@ -368,14 +369,21 @@ export function ArticleVersions({
               {errorText(t, copy.error)}
             </p>
           )}
-          <DocumentView
-            words={sourceWords(origin(shown, versions).details)}
+          {/* A click on a sentence shows what the sources cited say of it (REL2, Joël, 2026-11-08). */}
+          <SentenceCheck
+            workspaceId={workspaceId}
+            briefId={article.brief_id ?? article.origin_brief_id}
             document={shown.document as unknown as PlatformDocument}
-            title={shown.title}
-            prefix={prefix}
-            mediaUrl={(id) => mediaUrl(workspaceId, id)}
-            copied={comparing ? copied : []}
-          />
+          >
+            <DocumentView
+              words={sourceWords(origin(shown, versions).details)}
+              document={shown.document as unknown as PlatformDocument}
+              title={shown.title}
+              prefix={prefix}
+              mediaUrl={(id) => mediaUrl(workspaceId, id)}
+              copied={comparing ? copied : []}
+            />
+          </SentenceCheck>
         </>
       )}
       </CompareLayout>

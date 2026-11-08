@@ -1263,6 +1263,26 @@
         "title": "ChoiceView",
         "type": "object"
       },
+      "CitedBody": {
+        "properties": {
+          "key": {
+            "maxLength": 10,
+            "title": "Key",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 1000,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "title"
+        ],
+        "title": "CitedBody",
+        "type": "object"
+      },
       "ComparedView": {
         "properties": {
           "first": {
@@ -5367,6 +5387,74 @@
         "title": "SubjectView",
         "type": "object"
       },
+      "SupportBody": {
+        "description": "A sentence of a version, and the sources its paragraph cites (REL2).",
+        "properties": {
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/CitedBody"
+            },
+            "maxItems": 20,
+            "title": "Sources",
+            "type": "array"
+          },
+          "text": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "SupportBody",
+        "type": "object"
+      },
+      "SupportView": {
+        "description": "A sentence of a source that confirms or contradicts the sentence checked.",
+        "properties": {
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "publisher": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publisher"
+          },
+          "sentence": {
+            "title": "Sentence",
+            "type": "string"
+          },
+          "shared": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Shared",
+            "type": "array"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "title",
+          "publisher",
+          "sentence",
+          "shared"
+        ],
+        "title": "SupportView",
+        "type": "object"
+      },
       "TagsBody": {
         "properties": {
           "tags": {
@@ -9025,6 +9113,71 @@
           }
         },
         "summary": "Brief Sources"
+      }
+    },
+    "/api/workspaces/{workspace_id}/briefs/{brief_id}/support": {
+      "post": {
+        "description": "The sentences of the cited sources that share the most with a sentence of a version:\nthe reading aid of REL2, without a model. All the sources when none is cited (a lead).",
+        "operationId": "support_api_workspaces__workspace_id__briefs__brief_id__support_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "brief_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Brief Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupportBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SupportView"
+                  },
+                  "title": "Response Support Api Workspaces  Workspace Id  Briefs  Brief Id  Support Post",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Support"
       }
     },
     "/api/workspaces/{workspace_id}/feed": {

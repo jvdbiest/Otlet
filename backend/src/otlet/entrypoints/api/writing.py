@@ -43,6 +43,7 @@ from otlet.writing.domain.draft import (
 )
 from otlet.writing.domain.matter import Evaluation
 from otlet.writing.domain.proximity import TooClose
+from otlet.writing.domain.support import supports
 from otlet.writing.domain.vocabulary import TONE_DEFAULT, VOCABULARY
 
 LengthKey = Literal["short", "medium", "long"]
@@ -157,6 +158,28 @@ class BriefView(BaseModel):
             created_at=brief.created_at,
             updated_at=brief.updated_at,
         )
+
+
+class CitedBody(BaseModel):
+    key: str = Field(max_length=10)  # S1, S2… as the version cites it
+    title: str = Field(max_length=1000)  # its title in the version: found again by it first
+
+
+class SupportBody(BaseModel):
+    """A sentence of a version, and the sources its paragraph cites (REL2)."""
+
+    text: str = Field(min_length=1, max_length=2000)
+    sources: list[CitedBody] = Field(default_factory=list, max_length=ITEMS_MAX)
+
+
+class SupportView(BaseModel):
+    """A sentence of a source that confirms or contradicts the sentence checked."""
+
+    key: str
+    title: str
+    publisher: str | None
+    sentence: str
+    shared: list[str]  # the names and figures of the sentence checked it holds
 
 
 class SourceTextView(BaseModel):
@@ -601,6 +624,34 @@ def build_router(
                 text=text.text,
             )
             for number, text in enumerate(texts, start=1)
+        ]
+
+    @router.post("/briefs/{brief_id}/support")
+    def support(brief_id: UUID, body: SupportBody, context: Context) -> list[SupportView]:
+        """The sentences of the cited sources that share the most with a sentence of a version:
+        the reading aid of REL2, without a model. All the sources when none is cited (a lead)."""
+        texts = drafts.sources(context, brief_id)
+        if texts is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "brief_not_found")
+        by_title = {text.title: n for n, text in enumerate(texts)}
+        picked: list[int] = []
+        for cited in body.sources:
+            n = by_title.get(cited.title)
+            if n is None and cited.key[1:].isdigit():
+                n = int(cited.key[1:]) - 1  # the order of the brief, when its title changed
+            if n is not None and 0 <= n < len(texts) and n not in picked:
+                picked.append(n)
+        picked = picked or list(range(len(texts)))
+        found = supports(body.text, [f"{texts[n].title}. {texts[n].text}" for n in picked])
+        return [
+            SupportView(
+                key=f"S{picked[s.source] + 1}",
+                title=texts[picked[s.source]].title,
+                publisher=texts[picked[s.source]].publisher,
+                sentence=s.sentence,
+                shared=list(s.shared),
+            )
+            for s in found
         ]
 
     @router.get("/briefs/{brief_id}/draft")

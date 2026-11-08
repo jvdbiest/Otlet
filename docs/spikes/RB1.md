@@ -134,3 +134,15 @@ Remarque sur les étiquettes : à la question 2, « La fusillade en Pologne éta
 - La fidélité est relue sur 7 brouillons. Les autres sont lus en entier, sans contrôle paragraphe par paragraphe.
 - Un seul modèle, qwen3:14b, et un seul passage de rédaction par question.
 - Deux jours d'actualité surtout belge et française, avec des questions écrites par Claude d'après les titres du corpus.
+
+## 8. Après la conclusion : corrections 1 et 10 (2026-11-08)
+
+Ordre choisi par Joël : d'abord la recherche (les mots secondaires ne doivent être que des indices), puis la fidélité quand la matière est mince. Le champ « answer » passe après.
+
+- **Correction 1 (50d3332).** « publiés », « parus », « résultats », « récemment » et « présentés » ne nomment plus de concept exigé. Ils restent dans le sens de la question, qui classe les articles.
+  - Rejeu sans modèle des 134 premières questions du Reporter (`spikes/rb1/replay.py`, `results/rejeu-recherche.txt`) : 3 changent. Tests high-tech : 1 → 7 articles R sur 7, mais l'ensemble passe de 51 à 109 articles. MotoGP Qatar : 21 → 22.
+  - En réel, la même question a trouvé **0 article** (conversation « [RB1-bis] Les tests… »). Le modèle a découpé la question autrement : trois concepts exigés, « tests », « high-tech » et « appareils, récents… ». Aucun article ne les tient tous, et le sens n'est consulté que si les mots trouvent quelque chose. Les mots secondaires ne sont donc qu'une forme du problème. Le fond : tous les concepts proposés par le modèle sont exigés ensemble.
+- **Correction 10 (50d3332).** Un brouillon n'est plus renvoyé pour « trop court » quand la matière a fixé sa longueur. En réel, la réforme de la police (deux résumés) donne 3 paragraphes courts, en un seul appel, sans les inventions du banc. Il reste une extrapolation légère : « certains membres de la police expriment des doutes ».
+- **Vu en passant (Fidélité des faits).** Le nouveau brouillon du MotoGP place Jorge Martín deuxième du sprint, alors que le premier le plaçait troisième derrière Di Giannantonio. À vérifier contre les sources avant toute conclusion.
+
+Suite proposée à Joël : quand les concepts exigés ensemble ne trouvent rien, relâcher la recherche sans modèle, en essayant d'abord sans le concept le moins spécifique. Il ne faut jamais relâcher un nom propre ni le sujet : la question de la grippe aviaire doit continuer à ne rien trouver. Cette règle doit être mesurée avant d'entrer dans le produit : rejeu sur les 134 questions et sur RB1.

@@ -62,7 +62,7 @@ Le 2026-11-08 au soir, 32 brouillons figés, sans aucun appel au modèle. Seul �
 
 **Pourquoi le cas MotoGP passe.** Le contrôle cherche si une source associe « Martín » et « deuxième ». Une source le fait : « Jorge Martín consolide sa deuxième place », mais au championnat. Le brouillon a pris la place au championnat pour la place dans la course. L'association existe bien dans les sources ; c'est sa dimension (course ou championnat) qui change, et une règle sans modèle ne la voit pas.
 
-**La seule vraie erreur trouvée** (V3, MotoGP, premier brouillon de RB1) : « Pedro Acosta et Johann Zarco, cinquième, complètent le top 5 avec respectivement 299 et 281 points ». Les sources donnent 281 points à Ai Ogura, pas à Zarco : c'est une deuxième erreur d'association, qui n'avait pas été vue à la relecture de RB1.
+**La seule vraie erreur trouvée** (V3), dans le même brouillon [RB1-bis] du MotoGP que Martín (brief 0793d3f8) : « Pedro Acosta et Johann Zarco, cinquième, complètent le top 5 avec respectivement 299 et 281 points ». Les sources donnent 281 points à Ai Ogura, pas à Zarco : c'est une deuxième erreur d'association dans ce brouillon, que la relecture de RB1 §9 n'avait pas vue. Le premier brouillon de RB1 écrivait juste « Ai Ogura ».
 
 **Les fausses alertes** viennent surtout de la paraphrase : des pourcentages regroupés (« 43 % en Flandre et 25 % en Wallonie »), « respectivement », des chiffres de fiches techniques (cm³, ch), des mots à majuscule qui ne sont pas des noms (« Plus », « Parmi », « Practice »), des dates en chiffres (« le 6 octobre »).
 
@@ -70,7 +70,7 @@ Le 2026-11-08 au soir, 32 brouillons figés, sans aucun appel au modèle. Seul �
 
 **Échec.** Aucune variante ne signale le cas MotoGP, aucune n'attrape la moitié des permutations, et les signalements sont presque tous de fausses alertes. Contrôler sans modèle qu'un nom reste associé à la bonne valeur ne marche pas sur des brouillons réels : la paraphrase casse les associations exactes, et l'erreur de référence garde une association vraie, mais dans une autre dimension.
 
-Le banc confirme aussi que l'erreur n'est pas isolée : un deuxième brouillon du MotoGP associe 281 points au mauvais pilote.
+Le banc confirme aussi que l'erreur n'est pas isolée : le même brouillon associe aussi 281 points au mauvais pilote.
 
 ## 6. Conséquences
 

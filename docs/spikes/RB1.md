@@ -171,3 +171,24 @@ Demandé par Joël, avant toute modification du moteur de recherche. Cette secti
 | Questions où R0 trouve 3 articles ou plus | inchangées (par construction) |
 
 Une règle est retenue si elle tient les trois critères. Sinon, rien ne change dans le produit.
+
+### Mesures du rejeu (2026-11-08)
+
+`spikes/rb1/relax.py` a tourné sur les premières questions de toutes les conversations. Une règle agit sur 14 d'entre elles (`spikes/rb1/results/relax.jsonl`).
+
+| Critère | R1 (relâcher par fréquence) | R2 (sens seul) | R3 |
+|---|---|---|---|
+| Tests high-tech [RB1-bis] : tests trouvés ≥ 5 sur 7 | ❌ 0 : il retire « appareils » puis « tests », et garde « high-tech », qui ne trouve que des bons plans | ❌ 0 : le meilleur article est à 0,49 de proximité, sous 0,55 | ❌ 0 |
+| Grippe aviaire : l'ensemble reste vide | ❌ 200 articles : il ne reste que « Belgique » | ✅ vide | ❌ |
+| Élevages de lamas sur Mars : l'ensemble reste vide | ❌ 33 articles sur Mars | ❌ 14 articles sur Mars | ❌ |
+| Autres questions : au moins 3 des 5 premiers titres ajoutés répondent | ❌ grèves à la SNCB : il retire « grèves » et garde les travaux ferroviaires | ❌ même cas : il ajoute d'autres grèves | ❌ |
+
+**Conclusion : aucune règle n'est retenue.** Retirer des concepts sans modèle se trompe de concept : le plus fréquent n'est pas le moins utile, et ce qui reste n'est plus le sujet. Le sens seul ne voit pas les tests, trop loin de la question, mais il ajoute des articles à des questions sans réponse. Rien ne change dans le produit.
+
+**Piste, sans relâcher en silence.** Quand les mots ne trouvent rien, le Reporter dirait à l'auteur lesquels ne se rencontrent jamais ensemble (« aucun article ne contient à la fois tests, high-tech et appareils »), et lui proposerait de retirer un terme. L'écran des termes, modifiables sans modèle, existe déjà. Le choix reste à l'auteur, comme pour P3.
+
+### Fidélité du MotoGP (demandée par Joël)
+
+Le brouillon [RB1-bis] du MotoGP écrit que Jorge Martín termine **deuxième** du sprint « après avoir dépassé Fabio Di Giannantonio dans le dernier tour ». Les sources disent l'inverse : Di Giannantonio a pris la deuxième place à Martín dans le dernier tour, et Martín est troisième (Auto-Moto, S14 : « Il termine donc deuxième, devant Martin » ; Motor Tribu, S6). C'est une **inversion de fait**, la première du banc. Le brouillon du premier passage de RB1 était juste.
+
+Lecture : les sources disent aussi que Martín « consolide sa deuxième place » au championnat. Le modèle a mêlé la place au classement général et la place dans la course. C'est un symptôme plus large que ce cas : des faits proches et chiffrés, dans 18 sources, et une rédaction qui varie d'un passage à l'autre. Le contrôle sans modèle (U05) vérifie que les noms, dates et nombres existent dans les sources, mais pas qu'ils sont associés comme dans les sources. Il faudrait un contrôle des places et des rangs (« deuxième », « troisième » liés à un nom), à mesurer à part.

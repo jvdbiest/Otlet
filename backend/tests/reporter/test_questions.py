@@ -665,3 +665,18 @@ def test_a_risk_the_question_is_about_stays_a_concept() -> None:
     question = "Les risques du nucléaire"
     kept = guarded(question, Translated(Operation.CHERCHER, (nuclear, risks), None))
     assert {c.name for c in kept.concepts} == {"nucléaire", "risques"}
+
+
+def test_words_that_only_qualify_the_question_are_no_concept() -> None:
+    """RB1 (2026-11-08): « publiés » and « résultats » became required concepts; the tests do not
+    write « publiés », and 6 of 7 were missed. They stay in the meaning of the question."""
+    tests = Concept("tests d'appareils high-tech", ("tests", "essais", "évaluations"))
+    published = Concept("publiés", ("publiés",))
+    question = "Les tests d'appareils high-tech publiés récemment"
+    kept = guarded(question, Translated(Operation.CHERCHER, (tests, published), None))
+    assert [c.name for c in kept.concepts] == ["tests d'appareils high-tech"]
+    race = Concept("Grand Prix du Qatar", ("Grand Prix du Qatar", "MotoGP Qatar"))
+    results = Concept("résultats", ("résultats",))
+    question = "Quels sont les résultats du Grand Prix du Qatar de MotoGP ?"
+    kept = guarded(question, Translated(Operation.CHERCHER, (race, results), None))
+    assert "résultats" not in [c.name for c in kept.concepts]

@@ -455,6 +455,7 @@ def check_answer(
     length_goal: int | None = None,
     context: frozenset[str] = frozenset(),
     question: bool = False,
+    too_short: bool = True,
 ) -> list[str]:
     """The errors of an answer, in words a model can act on; empty when it is usable. With
     `every_source`, a source of the brief no paragraph cites is an error too; with `crossing`
@@ -470,7 +471,8 @@ def check_answer(
     article far from it: asked for 1,200 words, every draft of the bench stayed near 550. The
     `context` sources (P2) need not be used, never carry a section alone, and are cited in one
     paragraph at most. With `question` (the title asks one), so is an answer that does not say
-    whether its sources answer it."""
+    whether its sources answer it. Without `too_short`, a short article is no error: the
+    matter decided its length, and a model sent back for more invents it (RB1, 2026-11-08)."""
     try:
         data = json.loads(raw)
     except json.JSONDecodeError as error:
@@ -612,7 +614,7 @@ def check_answer(
             for paragraph in section.get("paragraphs") or []
             if isinstance(paragraph, dict)
         )
-        if written_words < LENGTH_FAR[0] * length_goal:
+        if too_short and written_words < LENGTH_FAR[0] * length_goal:
             errors.append(
                 f"too short: {written_words} words, about {length_goal} are asked; develop what the"
                 " sources say with more of their facts, in new paragraphs or sections; never pad,"

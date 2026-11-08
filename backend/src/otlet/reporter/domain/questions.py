@@ -402,8 +402,14 @@ QUESTION_WORDS = set(
     lesquels lesquelles seulement aussi encore toutes tous sortis sorti sortent annonce
     annonces disent parlant parler uniquement elements element trouves trouvees concernes
     concernees moins avait avaient etait etaient aurait auraient sera seront aura auront
-    peut peuvent doit doivent faire avoir aller venir""".split()
+    peut peuvent doit doivent faire avoir aller venir
+    publie publies publiee publiees paru parus parue parues recemment resultat resultats
+    presente presentes presentee presentees""".split()
 )
+# The last two lines (RB1, 2026-11-08): words that only qualify what is asked became required
+# concepts. « Les tests … publiés récemment » found 1 test of 7, the tests do not write
+# « publiés »; « Quels sont les résultats du Grand Prix… » lost 2 articles. They stay in the
+# meaning of the question, which ranks: hints, never required (Joël).
 
 # Places of the Veille (Belgian press): a place the question does not name is no term of its
 # subject, and a place it names is a concept of its own (Joël, 2026-10-29: « perte d'emploi »

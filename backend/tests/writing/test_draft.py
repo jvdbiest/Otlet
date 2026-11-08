@@ -518,3 +518,10 @@ def test_a_question_in_the_title_is_said_answered_or_not() -> None:
         " when partly or no, say so in the lead"
     ]
     assert check_answer(answer(answer="no"), keys, question=True) == []
+
+
+def test_a_short_article_is_kept_when_the_matter_set_its_length() -> None:
+    """RB1 (2026-11-08): sent back for more on thin matter, a draft invented 3 paragraphs of 4."""
+    errors = check_answer(answer(), ["S1", "S2"], length_goal=600)
+    assert errors and errors[0].startswith("too short")
+    assert check_answer(answer(), ["S1", "S2"], length_goal=600, too_short=False) == []

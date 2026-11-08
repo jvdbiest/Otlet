@@ -92,3 +92,11 @@ Trois de ces extrapolations n'avaient été vues par aucune relecture précéden
 - Les erreurs injectées sont surtout des échanges de noms et des chiffres : 2 rangs et aucun pronom.
 - Montrer la phrase qui contredit ne garantit pas que l'auteur voit l'erreur : le temps de vérification réel n'est pas mesuré.
 - Le signal « peu soutenu » a été relu par Claude seul, sur un seuil relatif (le dixième le plus bas) ; sa valeur sur d'autres brouillons reste à voir.
+
+## 8. Dans le produit (2026-11-08, validé par Joël)
+
+L'aide à la phrase est construite (ff4d352) et déployée sur .252. Dans une version d'article, un clic sur une phrase (ou la sélection d'un passage) ouvre un panneau « Ce qu'en disent les sources » : au plus 3 phrases des sources que cite son paragraphe, avec les noms et les chiffres communs surlignés. Sans modèle (`otlet.writing.domain.support`, route `POST …/briefs/{brief_id}/support`).
+
+- La rareté des mots est calculée sur les sources du brief seules, comme le produit peut le faire. Rejoué ainsi, REL2 donne 60 sur 60 erreurs injectées, et les mêmes 4 erreurs connues sur 5.
+- Vérifié sur le brief du MotoGP : pour « terminant deuxième », la première phrase affichée est « Malgré une deuxième place qui lui a échappé… Martín termine sur le podium ».
+- Le signal « peu soutenu » n'est pas dans le produit. Joël décidera après l'usage s'il mérite une seconde itération.

@@ -1,0 +1,39 @@
+[Essai P2] Les dernières actualités de l'Ukraine v1 | Canada ↔ 500 | Le Canada a annoncé une contribution initiale de 500 millions d'euros
+Que c'est-il passé en Ukraine cette semaine ? v1 | Bulgarie ↔ rang 1 | Cette victoire marque une tendance à la division au sein de la Bulgarie
+[TEST] Les essais de smartphones récents v1 | Comparé ↔ 8 | Comparé à des modèles comme le Galaxy Z Fold 8 et le Xiaomi 18 Fold
+[TEST] Les essais de smartphones récents v1 | Comparé ↔ 18 | Comparé à des modèles comme le Galaxy Z Fold 8 et le Xiaomi 18 Fold
+[TEST] Les nouveautés motos présentées au salon de Milan v1 | Milan ↔ 3 | tenu à Milan du 3 au 8 novembre 2026
+[TEST] Les nouveautés motos présentées au salon de Milan v1 | V4 ↔ 210 | une hypersportive avec un moteur V4 de 997 cm³ développant plus de 210 ch.
+[TEST] Les nouveautés motos présentées au salon de Milan v1 | Yamaha ↔ 700 | Yamaha a présenté la Ténéré 4 Concept et la WR 700
+[TEST] Les nouveautés motos présentées au salon de Milan v1 | RIDE ↔ 1131 | équipée d'un moteur de 1 131 cm³ et d'un système d'assistance à la conduite Honda SENSING RIDE.
+[TEST] Les nouveautés motos présentées au salon de Milan v1 | TFT ↔ 32 | étriers radiaux M4.32 et d'un écran TFT.
+[TEST] Les nouveautés motos présentées au salon de Milan v1 | V2 ↔ 691 | partagent le même moteur V2 de 691
+[TEST] Les nouveautés motos présentées au salon de Milan v1 | USB ↔ 66 | 66 cm³ et des équipements modernes comme des ports USB et une instrumentation TFT.
+[TEST] Les nouveautés motos présentées au salon de Milan v1 | TFT ↔ 66 | 66 cm³ et des équipements modernes comme des ports USB et une instrumentation TFT.
+[TEST] Les prix de l'immobilier vont-ils baisser en Belgique v1 | Bruxellois ↔ 6 | 6 % des Bruxellois
+[TEST] Les prix de l'immobilier vont-ils baisser en Belgique v1 | Flandre ↔ 43 | 43 % en Flandre et 25 % en Wallonie.
+[TEST] Les prix de l'immobilier vont-ils baisser en Belgique v1 | Wallonie ↔ 43 | 43 % en Flandre et 25 % en Wallonie.
+[TEST] Les prix de l'immobilier vont-ils baisser en Belgique v1 | Belgique ↔ 30 | de plus en plus de jeunes acheteurs en Belgique optent pour des crédits hypothécaires sur 30 ans plutôt
+[TEST] Les prix de l'immobilier vont-ils baisser en Belgique v1 | Landen ↔ 55 | Landen a connu une croissance de 55 % de la population issue de Bruxelles entre 2016 et 2025.
+[TEST] Les prix de l'immobilier vont-ils baisser en Belgique v1 | Bruxelles ↔ 55 | Landen a connu une croissance de 55 % de la population issue de Bruxelles entre 2016 et 2025.
+[TEST] Les prix de l'immobilier vont-ils baisser en Belgique v2 | Wallons ↔ 96 | 6 % des Wallons et 96
+[TEST] Les prix de l'immobilier vont-ils baisser en Belgique v2 | Wallons ↔ 97 | 97 % pour les Wallons et les Flamands.
+[TEST] Les prix de l'immobilier vont-ils baisser en Belgique v2 | Flamands ↔ 97 | 97 % pour les Wallons et les Flamands.
+[TEST] Les prix de l'immobilier vont-ils baisser en Belgique v2 | Bruxelles ↔ 600000 | coûtent souvent plus de 600 000 € à Bruxelles.
+[TEST] Les prix de l'immobilier vont-ils baisser en Belgique v2 | Belgique ↔ 30 | de plus en plus de jeunes acheteurs en Belgique optent pour des crédits hypothécaires sur 30 ans plutôt
+[TEST] Les prix de l'immobilier vont-ils baisser en Belgique v2 | Bruxellois ↔ 43000 | 43 000 Bruxellois ont trouvé un nouveau logement en dehors de la capitale
+Quels sont les actualités IT de la semaine ? v1 | Plus ↔ 85 | Plus de 85 % de ces fichiers proviennent de trois registrars
+Quels sont les actualités IT de la semaine ? v1 | Linux ↔ 948 | a permis de découvrir 948 tactiques d'exploitation pour les systèmes Linux
+Quels sont les actualités IT de la semaine ? v1 | RSA-2048 ↔ 22600 | a affirmé pouvoir casser une clé RSA-2048 en trois jours avec un ordinateur quantique de 22 600 qubits.
+Les tests d'appareils high-tech publiés récemment v1 | Pro ↔ 5 | La version commerciale propose même 12 mois de Google AI Pro et 5 To de stockage en ligne
+Les tests d'appareils high-tech publiés récemment v1 | To ↔ 12 | La version commerciale propose même 12 mois de Google AI Pro et 5 To de stockage en ligne
+Quels sont les résultats du Grand Prix du Qatar de MotoGP ? v1 | Losail ↔ 1 | battant le record du circuit de Losail avec un chrono de 1'50''406.
+Quels sont les résultats du Grand Prix du Qatar de MotoGP ? v1 | Losail ↔ 50 | battant le record du circuit de Losail avec un chrono de 1'50''406.
+Quels sont les résultats du Grand Prix du Qatar de MotoGP ? v1 | Losail ↔ 406 | battant le record du circuit de Losail avec un chrono de 1'50''406.
+Les mobilisations sociales en France v1 | Cour ↔ 18 | Des avocats d’au moins 18 personnes blessées lors des mobilisations ont annoncé leur intention de saisir la Cour de justice de la République
+Les mobilisations sociales en France v1 | République ↔ 18 | Des avocats d’au moins 18 personnes blessées lors des mobilisations ont annoncé leur intention de saisir la Cour de justice de la République
+Le Bitcoin va-t-il retrouver son record ? v1 | Bitcoin ↔ 6 | Le Bitcoin a atteint un record historique le 6 octobre 2025
+Le Bitcoin va-t-il retrouver son record ? v1 | Chine ↔ 10 | la Chine le 10 octobre 2025.
+Quels sont les résultats du Grand Prix du Qatar de MotoGP ? v1 | Son ↔ 47 | Son écart avec Márquez est désormais de 47 points
+Quels sont les résultats du Grand Prix du Qatar de MotoGP ? v1 | Márquez ↔ rang 8 | Martín a également exprimé sa détermination à empêcher Márquez de décrocher son huitième titre mondial.
+Quels sont les résultats du Grand Prix du Qatar de MotoGP ? v1 | Acosta ↔ 15 | Pedro Acosta au virage 15

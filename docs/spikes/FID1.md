@@ -2,10 +2,10 @@
 
 | | |
 |---|---|
-| Statut | Ouverte |
+| Statut | Conclue : échec |
 | Durée maximale | 2 h (sans modèle) |
-| Temps passé | |
-| Ouverte le / conclue le | 2026-11-08 / |
+| Temps passé | 2 h 30 de préparation, de mesure et de relecture ; aucun appel au modèle |
+| Ouverte le / conclue le | 2026-11-08 / 2026-11-08 |
 | Choix concernés | U05 (garde-fous de la rédaction), ADR-0038, ADR-0046, RB1 §9, `docs/design/CAS_DE_REFERENCE.md` |
 | Commande de rejeu | `python3 spikes/fid1/fid1.py freeze` (conteneur worker), puis `python3 spikes/fid1/fid1.py measure <dossier>` |
 
@@ -48,3 +48,40 @@ Origine : Joël, 2026-11-08. Le cas de référence est celui du MotoGP. Le broui
 3. Les signalements sur les brouillons tels qu'écrits : leur nombre par brouillon, puis une relecture de chacun contre les sources (`flags-V*.txt`), jugé vraie erreur ou fausse alerte. La relecture est faite par Claude ; Joël peut la refaire.
 
 **Hors du protocole.** Rien n'entre dans le produit à cette étape. Si une variante réussit, son passage dans U05 sera proposé à Joël à part, comme un avertissement de la version, au même titre que les noms absents des sources.
+
+## 4. Mesures
+
+Le 2026-11-08 au soir, 32 brouillons figés, sans aucun appel au modèle. Seul écart au montage : `freeze` lit la base à travers la sécurité de l'espace de travail, comme le produit (le rôle de l'application ne peut pas lever la sécurité par ligne). Fichiers : `spikes/fid1/results/flags-V1.txt`, `flags-V2.txt` et `flags-V3.txt`.
+
+| Critère | Seuil | V1, la phrase | V2, la proposition | V3, le nom qui précède |
+|---|---|---|---|---|
+| Cas MotoGP « Martín ↔ deuxième » signalé | oui | ❌ | ❌ | ❌ |
+| Permutations attrapées | ≥ 80 % | ❌ 0 sur 40 | ❌ 14 sur 40 (35 %) | ❌ 19 sur 40 (48 %) |
+| Signalements par brouillon | ≤ 2 | ❌ 3,9 | ✅ 1,2 | ❌ 2,2 |
+| Vraies erreurs parmi les signalements | ≥ 50 % | non relu (V1 échoue déjà) | ❌ aucune sur 39 à la relecture | ❌ 1 à 2 sur 72 |
+
+**Pourquoi le cas MotoGP passe.** Le contrôle cherche si une source associe « Martín » et « deuxième ». Une source le fait : « Jorge Martín consolide sa deuxième place », mais au championnat. Le brouillon a pris la place au championnat pour la place dans la course. L'association existe bien dans les sources ; c'est sa dimension (course ou championnat) qui change, et une règle sans modèle ne la voit pas.
+
+**La seule vraie erreur trouvée** (V3, MotoGP, premier brouillon de RB1) : « Pedro Acosta et Johann Zarco, cinquième, complètent le top 5 avec respectivement 299 et 281 points ». Les sources donnent 281 points à Ai Ogura, pas à Zarco : c'est une deuxième erreur d'association, qui n'avait pas été vue à la relecture de RB1.
+
+**Les fausses alertes** viennent surtout de la paraphrase : des pourcentages regroupés (« 43 % en Flandre et 25 % en Wallonie »), « respectivement », des chiffres de fiches techniques (cm³, ch), des mots à majuscule qui ne sont pas des noms (« Plus », « Parmi », « Practice »), des dates en chiffres (« le 6 octobre »).
+
+## 5. Conclusion
+
+**Échec.** Aucune variante ne signale le cas MotoGP, aucune n'attrape la moitié des permutations, et les signalements sont presque tous de fausses alertes. Contrôler sans modèle qu'un nom reste associé à la bonne valeur ne marche pas sur des brouillons réels : la paraphrase casse les associations exactes, et l'erreur de référence garde une association vraie, mais dans une autre dimension.
+
+Le banc confirme aussi que l'erreur n'est pas isolée : un deuxième brouillon du MotoGP associe 281 points au mauvais pilote.
+
+## 6. Conséquences
+
+| Document ou choix | Conséquence |
+|---|---|
+| U05 (garde-fous) | Inchangé : ni V1, ni V2, ni V3 n'y entrent |
+| Fidélité des associations | Reste à la relecture de l'auteur. Deux pistes à soumettre à Joël : (1) une aide à la relecture sans modèle, qui montre, pour chaque paragraphe, les phrases des sources citées qui contiennent ses noms et ses chiffres ; (2) un contrôle par le modèle local, à mesurer sur les deux erreurs du MotoGP et sur des permutations, avant tout usage |
+| Cas de référence | Le top 5 du MotoGP (Zarco ↔ 281 points) rejoint le cas de Martín dans `docs/design/CAS_DE_REFERENCE.md` |
+
+## 7. Ce que la preuve n'a pas couvert
+
+- 32 brouillons, dont beaucoup sur les mêmes sujets (motos, immobilier, MotoGP). Les autres domaines sont peu représentés.
+- Les signalements ont été relus par Claude seul.
+- Les permutations échangent deux valeurs d'une même phrase. Elles ne couvrent pas les erreurs de dimension comme celle de Martín.

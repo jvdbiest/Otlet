@@ -178,12 +178,15 @@ def _raw(sentence: str, value: str) -> str | None:
 def freeze() -> None:
     import sqlalchemy as sa
 
+    from uuid import UUID
+
     from otlet.platform import database
     from otlet.platform.config import Settings
+    from otlet.platform.database import workspace_transaction
 
     engine = database.create_engine(Settings.from_env().require_database_url())
-    with engine.connect() as c:
-        c.execute(sa.text("SET row_security = off"))
+    # Joël's workspace, read through its row-level security as the product reads it.
+    with workspace_transaction(engine, UUID("0150f5a4-a6bf-40db-ba7a-256b75d6d412")) as c:
         rows = c.execute(sa.text(
             "SELECT b.id::text AS brief, b.title, v.number, v.document,"
             " (SELECT json_agg(json_build_array(i.title, coalesce(i.text, i.summary, ''))"

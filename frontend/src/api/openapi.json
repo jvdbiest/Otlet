@@ -95,6 +95,28 @@
         "title": "AnswerView",
         "type": "object"
       },
+      "ApartView": {
+        "description": "The items the words find with all the concepts of the set, and without each one.",
+        "properties": {
+          "together": {
+            "title": "Together",
+            "type": "integer"
+          },
+          "without": {
+            "items": {
+              "$ref": "#/components/schemas/WithoutView"
+            },
+            "title": "Without",
+            "type": "array"
+          }
+        },
+        "required": [
+          "together",
+          "without"
+        ],
+        "title": "ApartView",
+        "type": "object"
+      },
       "ArchiveBody": {
         "properties": {
           "archived": {
@@ -6316,6 +6338,24 @@
         "title": "VocabularyView",
         "type": "object"
       },
+      "WithoutView": {
+        "properties": {
+          "concept": {
+            "title": "Concept",
+            "type": "string"
+          },
+          "found": {
+            "title": "Found",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "concept",
+          "found"
+        ],
+        "title": "WithoutView",
+        "type": "object"
+      },
       "WorkspaceView": {
         "properties": {
           "id": {
@@ -11971,6 +12011,67 @@
           }
         },
         "summary": "Ask"
+      }
+    },
+    "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/turns/{turn_id}/apart": {
+      "get": {
+        "description": "When the concepts of the last set find nothing together: what each one left out\nwould find. No model; nothing is changed until the author chooses.",
+        "operationId": "apart_api_workspaces__workspace_id__reporter_conversations__conversation_id__turns__turn_id__apart_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "conversation_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Conversation Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "turn_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Turn Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApartView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Apart"
       }
     },
     "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/turns/{turn_id}/more": {

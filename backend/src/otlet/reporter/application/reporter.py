@@ -181,6 +181,15 @@ class Turn:
 
 
 @dataclass(frozen=True, slots=True)
+class Apart:
+    """How many items the words of a set find with all its concepts together, and without
+    each of them (RB1 §9): when together they find nothing, the author chooses which to drop."""
+
+    together: int
+    without: tuple[tuple[str, int], ...]
+
+
+@dataclass(frozen=True, slots=True)
 class RunningTurn:
     conversation_id: UUID
     turn_id: UUID
@@ -463,6 +472,31 @@ class Reporter:
         turn = self._found(context.workspace_id, conversation, last, state)
         self._store.save_turn(context.workspace_id, conversation_id, turn)
         return turn
+
+    def apart(self, context: WorkspaceContext, conversation_id: UUID, turn_id: UUID) -> Apart:
+        """For the last set, what its words find with all its concepts, and without each one:
+        no model, nothing changed (RB1 §9, Joël, 2026-11-08: never relaxed in silence, the
+        author decides, as with the list to check)."""
+        conversation = self._store.conversation(context.workspace_id, conversation_id)
+        if conversation is None or not conversation.turns:
+            raise ReporterError("not_found", "no such conversation")
+        last = conversation.turns[-1]
+        if last.id != turn_id or last.status != "done":
+            raise ReporterError("not_editable", "only the terms of the last set can be changed")
+        concepts = last.state.concepts
+
+        def count(kept: tuple[Concept, ...]) -> int:
+            state = replace(last.state, concepts=kept, meaning=())
+            return len(self._search_set(context.workspace_id, conversation, state)[2])
+
+        together = count(concepts)
+        if together or len(concepts) < 2:
+            return Apart(together, ())
+        without = tuple(
+            (concept.name, count(tuple(c for c in concepts if c is not concept)))
+            for concept in concepts
+        )
+        return Apart(together, without)
 
     def running(self, context: WorkspaceContext) -> list[RunningTurn]:
         return self._store.running_turns(context.workspace_id, context.user_id)

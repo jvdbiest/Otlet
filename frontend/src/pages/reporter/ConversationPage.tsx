@@ -4,6 +4,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  apartQuery,
   conversationQuery,
   useAsk,
   useCancelQuestion,
@@ -210,6 +211,9 @@ function Turn({
             <>
               <Terms workspaceId={workspaceId} conversationId={conversation.id} turn={turn} editable={last} />
               <Unsearched workspaceId={workspaceId} conversationId={conversation.id} turn={turn} last={last} />
+              {last && turn.operation !== "fait" && turn.concepts.length > 1 && turn.candidates.length < 3 && (
+                <Apart workspaceId={workspaceId} conversationId={conversation.id} turn={turn} />
+              )}
             </>
           )}
           {turn.operation === "fait" ? (
@@ -393,6 +397,45 @@ function Unsearched({
         </button>
       )}
     </p>
+  );
+}
+
+/** Terms that never meet (RB1 §9, Joël, 2026-11-08): when the concepts of the set find nothing
+ * together, the author sees which ones and what each left out would find, and removes one.
+ * Nothing is relaxed without them: P3 applied to the building of the search. */
+function Apart({ workspaceId, conversationId, turn }: { workspaceId: string; conversationId: string; turn: TurnView }) {
+  const { t } = useTranslation();
+  const apart = useQuery(apartQuery(workspaceId, conversationId, turn.id));
+  const setTerms = useSetTerms(workspaceId, conversationId);
+  if (apart.data === undefined || apart.data.together > 0 || apart.data.without.length === 0) {
+    return null;
+  }
+  const names = turn.concepts.map((c) => `« ${c.name} »`).join(", ");
+  return (
+    <div className={styles.notice}>
+      <p>{t("reporter.apart.title", { names })}</p>
+      <p className={styles.row} style={{ flexWrap: "wrap" }}>
+        {apart.data.without.map(({ concept: name, found }) => (
+          <button
+            key={name}
+            type="button"
+            className={styles.button}
+            disabled={setTerms.isPending || found === 0}
+            onClick={() => {
+              setTerms.mutate({
+                turnId: turn.id,
+                concepts: turn.concepts
+                  .filter((c) => c.name !== name)
+                  .map((c) => ({ name: c.name, terms: [...c.terms, ...c.added] })),
+              });
+            }}
+          >
+            {t("reporter.apart.without", { name, count: found })}
+          </button>
+        ))}
+      </p>
+      <p className={styles.help}>{t("reporter.apart.help")}</p>
+    </div>
   );
 }
 

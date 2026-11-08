@@ -42,6 +42,18 @@ class QuestionBody(BaseModel):
     date_to: date | None = None
 
 
+class WithoutView(BaseModel):
+    concept: str  # the concept left out
+    found: int  # the items the words find without it
+
+
+class ApartView(BaseModel):
+    """The items the words find with all the concepts of the set, and without each one."""
+
+    together: int
+    without: list[WithoutView]
+
+
 class TermsBody(BaseModel):
     concepts: list[ConceptBody] = Field(min_length=1, max_length=4)
 
@@ -502,6 +514,19 @@ def build_router(
             )
         except ReporterError as error:
             raise _refused(error) from error
+
+    @router.get("/conversations/{conversation_id}/turns/{turn_id}/apart")
+    def apart(conversation_id: UUID, turn_id: UUID, context: Context) -> ApartView:
+        """When the concepts of the last set find nothing together: what each one left out
+        would find. No model; nothing is changed until the author chooses."""
+        try:
+            found = reporter.apart(context, conversation_id, turn_id)
+        except ReporterError as error:
+            raise _refused(error) from error
+        return ApartView(
+            together=found.together,
+            without=[WithoutView(concept=name, found=n) for name, n in found.without],
+        )
 
     @router.put("/conversations/{conversation_id}/turns/{turn_id}/terms")
     def set_terms(

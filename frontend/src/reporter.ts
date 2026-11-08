@@ -39,6 +39,23 @@ export const conversationQuery = (workspaceId: string, conversationId: string) =
     refetchInterval: (query) => (query.state.data?.turns.some((t) => t.status === "pending") === true ? 2000 : false),
   });
 
+/** When the concepts of the last set find nothing together: what each left out would find
+ * (RB1 §9). Asked only when the set is nearly empty; changes nothing. */
+export const apartQuery = (workspaceId: string, conversationId: string, turnId: string) =>
+  queryOptions({
+    queryKey: [...key(workspaceId), conversationId, "apart", turnId],
+    queryFn: async (): Promise<components["schemas"]["ApartView"]> => {
+      const { data, error, response } = await api.GET(
+        "/api/workspaces/{workspace_id}/reporter/conversations/{conversation_id}/turns/{turn_id}/apart",
+        { params: { path: { workspace_id: workspaceId, conversation_id: conversationId, turn_id: turnId } } },
+      );
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+  });
+
 export const conversationsQuery = (workspaceId: string) =>
   queryOptions({
     queryKey: [...key(workspaceId), "list"],

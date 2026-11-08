@@ -146,3 +146,27 @@ Ordre choisi par Joël : d'abord la recherche (les mots secondaires ne doivent �
 - **Vu en passant (Fidélité des faits).** Le nouveau brouillon du MotoGP place Jorge Martín deuxième du sprint, alors que le premier le plaçait troisième derrière Di Giannantonio. À vérifier contre les sources avant toute conclusion.
 
 Suite proposée à Joël : quand les concepts exigés ensemble ne trouvent rien, relâcher la recherche sans modèle, en essayant d'abord sans le concept le moins spécifique. Il ne faut jamais relâcher un nom propre ni le sujet : la question de la grippe aviaire doit continuer à ne rien trouver. Cette règle doit être mesurée avant d'entrer dans le produit : rejeu sur les 134 questions et sur RB1.
+
+## 9. Rejeu : relâcher les concepts exigés quand ils ne trouvent rien (2026-11-08)
+
+Demandé par Joël, avant toute modification du moteur de recherche. Cette section est écrite **avant** le rejeu : les règles et les critères ne changent plus ensuite.
+
+**Question.** Quand les concepts exigés tous ensemble trouvent moins de 3 articles, une règle sans modèle peut-elle retrouver la matière, comme les tests high-tech, sans rien ajouter aux questions qui n'ont pas de réponse dans la Veille ?
+
+**Règles comparées**, appliquées seulement quand les mots trouvent moins de 3 articles :
+- **R0, le produit actuel.** Tous les concepts sont exigés. Le sens n'ajoute des articles au-delà du seuil fixe de 0,6 que si les mots ont trouvé quelque chose.
+- **R1, relâcher par fréquence.** On retire le concept dont les termes sont les plus fréquents dans la Veille, puis on recommence tant qu'il y a moins de 3 articles. On ne retire jamais un nom propre de la question ni un lieu, et il reste toujours au moins un concept.
+- **R2, le sens seul.** On garde les concepts, mais le plancher relatif du sens (le meilleur doit atteindre 0,55, puis meilleur − 0,25, au moins 0,4) s'applique même quand les mots n'ont rien trouvé.
+- **R3** : R1, puis R2 si R1 ne trouve toujours rien.
+
+**Mesure.** Ce sont les concepts conservés des premières questions de toutes les conversations du Reporter (`spikes/rb1/relax.py`, lecture seule, sans modèle), plus les deux questions de RB1 et de RB1-bis. Pour chaque question où une règle agit, on note la taille de l'ensemble, les 5 premiers titres et, pour les questions de RB1, les articles R trouvés.
+
+**Critères.**
+
+| Critère | Seuil |
+|---|---|
+| « [RB1-bis] Les tests d'appareils high-tech publiés récemment » : tests trouvés | ≥ 5 sur 7 |
+| Questions sans réponse dans la Veille (grippe aviaire, élevages de lamas sur Mars, et toute autre question où R0 ne trouve rien et dont aucun des 5 premiers titres ajoutés ne répond) : articles ajoutés qui répondent | aucun article qui ne répond pas présenté en tête : les 5 premiers titres ajoutés sont lus et jugés |
+| Questions où R0 trouve 3 articles ou plus | inchangées (par construction) |
+
+Une règle est retenue si elle tient le premier critère, et si les questions sans réponse ne reçoivent que des articles jugés hors sujet sur moins de la moitié de leurs 5 premiers titres. Sinon, rien ne change dans le produit.

@@ -17,7 +17,7 @@ Sur des articles frais, que le banc n'a jamais vus, où le parcours complet cass
 
 Origine : Joël, 2026-11-08. Il veut un banc complet, sur les articles arrivés le 7 et le 8 novembre, pour optimiser le Reporter et la création du brief si nécessaire. Chaque problème du rapport est classé selon son origine principale : **Recherche, Tri, Validation P3, Brief, Rédaction, Fidélité des faits**, même si plusieurs composants y prennent part.
 
-C'est un banc de diagnostic. Il ne compare pas de variantes : il mesure le produit tel qu'il est sur `main` avec la branche P2/P3 (`claude/project-thread-4jbylm`, déployée sur .252). Ses seuils servent à dire où le produit ne tient pas.
+C'est un banc de diagnostic. Il ne compare pas de variantes : il mesure le produit tel qu'il est sur `main`, P2 et P3 compris (#140), déployé sur .252. Ses seuils servent à dire où le produit ne tient pas.
 
 ## 2. Critères
 
@@ -41,7 +41,7 @@ Chaque problème rencontré est noté avec sa question, ce qu'on voit, son origi
 
 ## 3. Protocole
 
-**Environnement.** VM .252 avec la branche P2/P3 déployée (`redaction-20`), passerelle du produit, profil de Joël (qwen3:14b sur l'Ollama de son PC). Aucun build, test ni autre appel au modèle pendant la mesure. Appels un par un. Tout ce que le banc crée est visible et titré « [RB1] » pour les conversations, et par la question pour les briefs. Joël peut le supprimer.
+**Environnement.** VM .252 avec `main` déployé (`redaction-20`), passerelle du produit, profil de Joël (qwen3:14b sur l'Ollama de son PC). Aucun build, test ni autre appel au modèle pendant la mesure. Appels un par un. Tout ce que le banc crée est visible et titré « [RB1] » pour les conversations, et par la question pour les briefs. Joël peut le supprimer.
 
 **Corpus.** Les articles collectés le 7 et le 8 novembre 2026 : 599 articles de 21 sources, dont 453 en texte complet. Chaque question est posée au Reporter avec le calendrier du 7 au 8 novembre.
 

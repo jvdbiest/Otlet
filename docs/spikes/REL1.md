@@ -2,10 +2,10 @@
 
 | | |
 |---|---|
-| Statut | Ouverte |
+| Statut | Conclue : échec selon les seuils ; à la lecture, piste utile au niveau de la phrase |
 | Durée maximale | 2 h (sans modèle) |
-| Temps passé | |
-| Ouverte le / conclue le | 2026-11-08 / |
+| Temps passé | 1 h 30 de préparation, de mesure et de lecture ; aucun appel au modèle |
+| Ouverte le / conclue le | 2026-11-08 / 2026-11-08 |
 | Choix concernés | FID1, U05, `docs/design/CAS_DE_REFERENCE.md`, `docs/design/MATIERE_DU_BRIEF.md` |
 | Commande de rejeu | `python3 spikes/rel1/rel1.py freeze` (conteneur worker), puis `python3 spikes/rel1/rel1.py measure <dossier>` |
 
@@ -50,3 +50,39 @@ Une erreur est révélée quand la phrase qui la révèle figure parmi les phras
 **Ce qui est rapporté.** Le nombre de phrases montrées par paragraphe et la part des paragraphes sans phrase, sur tous les brouillons. Pour chaque cas, le rang de la phrase révélatrice. Et pour la relecture, ce que l'aide montre sous chaque paragraphe fautif et sous les paragraphes inventés de la police (`shown.txt`).
 
 **Hors du protocole.** Rien n'entre dans le produit à cette étape. Si l'aide réussit, son affichage (sous le paragraphe, ou au survol de ses références [n]) sera proposé à Joël à part.
+
+## 4. Mesures
+
+Le 2026-11-08 au soir, 32 brouillons et 232 paragraphes, sans aucun appel au modèle. Fichier : `spikes/rel1/results/shown.txt`, avec ce que l'aide montre sous chaque paragraphe fautif.
+
+| Critère | Seuil | Mesuré | |
+|---|---|---|---|
+| Erreurs connues révélées | ≥ 4 sur 5 | 2 sur 5 (Dana White au rang 1, citation au rang 3) | ❌ |
+| Phrases montrées par paragraphe | ≤ 4 | 4,1 | ❌ |
+| Paragraphes sans phrase montrée | ≤ 20 % | 0 % | ✅ |
+
+**Lecture des cas.**
+- **Martín** : la phrase qui révèle l'erreur est bien montrée, au rang 2 : « Malgré une deuxième place qui lui a échappé dans le dernier tour face à Fabio Di Giannantonio, Martín termine sur le podium ». Mais elle ne correspond pas aux motifs fixés d'avance, qui attendaient « Il termine donc deuxième, devant Martin ». Elle compte donc comme non révélée. À la lecture, l'aide aurait montré l'erreur.
+- **Zarco et « avril »** : le paragraphe fautif est long et mêle plusieurs faits. Les phrases montrées se rapportent au début du paragraphe, et la phrase qui révèle l'erreur, sur un fait de la fin, n'y est pas.
+- **Police (paragraphes inventés)** : sous le paragraphe qui invente la « décentralisation » et la réactivité « face aux situations d'urgence », l'aide ne montre que deux titres, avec un score très bas (2,9 contre 15 à 70 ailleurs). Sous celui qui prête une « inquiétude de nombreux agents », elle montre « Les syndicats sont circonspects. » Le peu qu'elle trouve rend l'invention visible.
+
+**Après la mesure, hors protocole** (`spikes/rel1/apres_phrase.py`) : la même aide appliquée à la seule phrase fautive, et non au paragraphe. Elle montre la phrase de Martín au rang 1, toujours hors des motifs ; celle de Zarco au rang 3, de Dana White au rang 1, de la citation au rang 1. « Avril » reste non révélé. Cela fait 3 sur 5 selon les motifs, et 4 sur 5 à la lecture. Ce chiffre a été obtenu après coup, sur les mêmes cas, et n'est donc pas une preuve.
+
+## 5. Conclusion
+
+**Échec**, selon les seuils fixés d'avance : 2 erreurs révélées sur 5, et 4,1 phrases par paragraphe. À la lecture, le banc dit pourtant deux choses utiles :
+- **Au niveau du paragraphe, l'aide est trop grossière.** Un paragraphe de quatre ou cinq faits reçoit des phrases sur son premier fait. Au niveau de la phrase, elle montre beaucoup plus souvent la bonne phrase de source.
+- **Le peu qu'elle trouve est un signal.** Un paragraphe qui ne reçoit que des titres, avec un score bas, est un paragraphe à vérifier : c'est le cas de la police.
+
+## 6. Conséquences
+
+| Document ou choix | Conséquence |
+|---|---|
+| Produit | Rien ne change à cette étape |
+| Piste à soumettre à Joël | Une aide à la phrase : l'auteur désigne une phrase du brouillon (clic ou survol), et Otlet montre les phrases des sources qui partagent ses noms, ses chiffres et ses mots. Un paragraphe peu soutenu (seulement des titres, score bas) serait marqué « à vérifier ». À mesurer dans REL2, avec des motifs de révélation plus larges et des erreurs nouvelles, venues de l'usage, en plus des cinq de REL1 |
+
+## 7. Ce que la preuve n'a pas couvert
+
+- Les motifs des phrases révélatrices ont été écrits par Claude seul, avant la mesure. Ils se sont révélés trop étroits pour Martín.
+- 5 erreurs connues seulement, dont 2 dans le même brouillon.
+- Le temps réel de vérification par l'auteur n'est pas mesuré : il faudrait le faire faire à Joël sur quelques paragraphes.

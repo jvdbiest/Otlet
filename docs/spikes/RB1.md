@@ -166,7 +166,8 @@ Demandé par Joël, avant toute modification du moteur de recherche. Cette secti
 | Critère | Seuil |
 |---|---|
 | « [RB1-bis] Les tests d'appareils high-tech publiés récemment » : tests trouvés | ≥ 5 sur 7 |
-| Questions sans réponse dans la Veille (grippe aviaire, élevages de lamas sur Mars, et toute autre question où R0 ne trouve rien et dont aucun des 5 premiers titres ajoutés ne répond) : articles ajoutés qui répondent | aucun article qui ne répond pas présenté en tête : les 5 premiers titres ajoutés sont lus et jugés |
+| Questions sans réponse dans la Veille (grippe aviaire, élevages de lamas sur Mars) | l'ensemble reste vide |
+| Autres questions où une règle agit | les 5 premiers titres ajoutés sont lus : au moins 3 doivent répondre à la question |
 | Questions où R0 trouve 3 articles ou plus | inchangées (par construction) |
 
-Une règle est retenue si elle tient le premier critère, et si les questions sans réponse ne reçoivent que des articles jugés hors sujet sur moins de la moitié de leurs 5 premiers titres. Sinon, rien ne change dans le produit.
+Une règle est retenue si elle tient les trois critères. Sinon, rien ne change dans le produit.

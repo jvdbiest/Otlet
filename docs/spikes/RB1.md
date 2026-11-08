@@ -146,3 +146,49 @@ Ordre choisi par Joël : d'abord la recherche (les mots secondaires ne doivent �
 - **Vu en passant (Fidélité des faits).** Le nouveau brouillon du MotoGP place Jorge Martín deuxième du sprint, alors que le premier le plaçait troisième derrière Di Giannantonio. À vérifier contre les sources avant toute conclusion.
 
 Suite proposée à Joël : quand les concepts exigés ensemble ne trouvent rien, relâcher la recherche sans modèle, en essayant d'abord sans le concept le moins spécifique. Il ne faut jamais relâcher un nom propre ni le sujet : la question de la grippe aviaire doit continuer à ne rien trouver. Cette règle doit être mesurée avant d'entrer dans le produit : rejeu sur les 134 questions et sur RB1.
+
+## 9. Rejeu : relâcher les concepts exigés quand ils ne trouvent rien (2026-11-08)
+
+Demandé par Joël, avant toute modification du moteur de recherche. Cette section est écrite **avant** le rejeu : les règles et les critères ne changent plus ensuite.
+
+**Question.** Quand les concepts exigés tous ensemble trouvent moins de 3 articles, une règle sans modèle peut-elle retrouver la matière, comme les tests high-tech, sans rien ajouter aux questions qui n'ont pas de réponse dans la Veille ?
+
+**Règles comparées**, appliquées seulement quand les mots trouvent moins de 3 articles :
+- **R0, le produit actuel.** Tous les concepts sont exigés. Le sens n'ajoute des articles au-delà du seuil fixe de 0,6 que si les mots ont trouvé quelque chose.
+- **R1, relâcher par fréquence.** On retire le concept dont les termes sont les plus fréquents dans la Veille, puis on recommence tant qu'il y a moins de 3 articles. On ne retire jamais un nom propre de la question ni un lieu, et il reste toujours au moins un concept.
+- **R2, le sens seul.** On garde les concepts, mais le plancher relatif du sens (le meilleur doit atteindre 0,55, puis meilleur − 0,25, au moins 0,4) s'applique même quand les mots n'ont rien trouvé.
+- **R3** : R1, puis R2 si R1 ne trouve toujours rien.
+
+**Mesure.** Ce sont les concepts conservés des premières questions de toutes les conversations du Reporter (`spikes/rb1/relax.py`, lecture seule, sans modèle), plus les deux questions de RB1 et de RB1-bis. Pour chaque question où une règle agit, on note la taille de l'ensemble, les 5 premiers titres et, pour les questions de RB1, les articles R trouvés.
+
+**Critères.**
+
+| Critère | Seuil |
+|---|---|
+| « [RB1-bis] Les tests d'appareils high-tech publiés récemment » : tests trouvés | ≥ 5 sur 7 |
+| Questions sans réponse dans la Veille (grippe aviaire, élevages de lamas sur Mars) | l'ensemble reste vide |
+| Autres questions où une règle agit | les 5 premiers titres ajoutés sont lus : au moins 3 doivent répondre à la question |
+| Questions où R0 trouve 3 articles ou plus | inchangées (par construction) |
+
+Une règle est retenue si elle tient les trois critères. Sinon, rien ne change dans le produit.
+
+### Mesures du rejeu (2026-11-08)
+
+`spikes/rb1/relax.py` a tourné sur les premières questions de toutes les conversations. Une règle agit sur 14 d'entre elles (`spikes/rb1/results/relax.jsonl`).
+
+| Critère | R1 (relâcher par fréquence) | R2 (sens seul) | R3 |
+|---|---|---|---|
+| Tests high-tech [RB1-bis] : tests trouvés ≥ 5 sur 7 | ❌ 0 : il retire « appareils » puis « tests », et garde « high-tech », qui ne trouve que des bons plans | ❌ 0 : le meilleur article est à 0,49 de proximité, sous 0,55 | ❌ 0 |
+| Grippe aviaire : l'ensemble reste vide | ❌ 200 articles : il ne reste que « Belgique » | ✅ vide | ❌ |
+| Élevages de lamas sur Mars : l'ensemble reste vide | ❌ 33 articles sur Mars | ❌ 14 articles sur Mars | ❌ |
+| Autres questions : au moins 3 des 5 premiers titres ajoutés répondent | ❌ grèves à la SNCB : il retire « grèves » et garde les travaux ferroviaires | ❌ même cas : il ajoute d'autres grèves | ❌ |
+
+**Conclusion : aucune règle n'est retenue.** Retirer des concepts sans modèle se trompe de concept : le plus fréquent n'est pas le moins utile, et ce qui reste n'est plus le sujet. Le sens seul ne voit pas les tests, trop loin de la question, mais il ajoute des articles à des questions sans réponse. Rien ne change dans le produit.
+
+**Piste, sans relâcher en silence.** Quand les mots ne trouvent rien, le Reporter dirait à l'auteur lesquels ne se rencontrent jamais ensemble (« aucun article ne contient à la fois tests, high-tech et appareils »), et lui proposerait de retirer un terme. L'écran des termes, modifiables sans modèle, existe déjà. Le choix reste à l'auteur, comme pour P3.
+
+### Fidélité du MotoGP (demandée par Joël)
+
+Le brouillon [RB1-bis] du MotoGP écrit que Jorge Martín termine **deuxième** du sprint « après avoir dépassé Fabio Di Giannantonio dans le dernier tour ». Les sources disent l'inverse : Di Giannantonio a pris la deuxième place à Martín dans le dernier tour, et Martín est troisième (Auto-Moto, S14 : « Il termine donc deuxième, devant Martin » ; Motor Tribu, S6). C'est une **inversion de fait**, la première du banc. Le brouillon du premier passage de RB1 était juste.
+
+Lecture : les sources disent aussi que Martín « consolide sa deuxième place » au championnat. Le modèle a mêlé la place au classement général et la place dans la course. C'est un symptôme plus large que ce cas : des faits proches et chiffrés, dans 18 sources, et une rédaction qui varie d'un passage à l'autre. Le contrôle sans modèle (U05) vérifie que les noms, dates et nombres existent dans les sources, mais pas qu'ils sont associés comme dans les sources. Il faudrait un contrôle des places et des rangs (« deuxième », « troisième » liés à un nom), à mesurer à part.

@@ -440,6 +440,37 @@ def test_a_draft_says_whether_its_sources_answer_the_title(world: World) -> None
     assert "The working title is a question" in first["messages"][-1]["content"]
 
 
+def test_a_repair_that_cuts_the_draft_short_keeps_the_first_answer(world: World) -> None:
+    """2026-11-10: sent back to add a source, the model rewrote the article in 221 words for
+    1,200 asked. The first answer is kept; its source left out stays a warning."""
+    context = world.context
+    world.charters.set(context.user_id, "")
+    agence, journal = items(world)
+    brief = world.briefs.create(context, BriefFields(title="Deux", item_ids=(journal, agence)))
+    long = json.loads(json.dumps(ANSWER))
+    words = "veille logiciels libres collecte tri lecture auteurs outils serveurs flux".split()
+    for n, section in enumerate(long["sections"]):
+        section["paragraphs"] = [
+            {
+                # Different words in each paragraph: nothing repeated, nothing copied.
+                "text": " ".join(f"{w}{n}{m}" for w in words) + " " + " ".join(words[::-1]),
+                "source_ids": ["S1"],
+            }
+            for m in range(3)
+        ]
+    world.fake.answers.extend([json.dumps(long), json.dumps(ANSWER)])
+    generation = world.drafts.start(context, brief.id, force=True)
+    assert generation is not None
+    world.drafts.run(context.workspace_id, context.user_id, generation.id)
+    done = world.drafts.generation(context, generation.id)
+    assert done is not None and (done.status, done.version) == ("done", 1)
+    article = world.drafts.article(context, brief.id)
+    assert article is not None
+    version = article.versions[0]
+    assert version.details["kept_first_answer"] is True
+    assert version.unused_sources == ("Article de agence",)  # S2, left out by the first answer
+
+
 def test_a_cancelled_draft_keeps_nothing(world: World) -> None:
     context = world.context
     agence, journal = items(world)

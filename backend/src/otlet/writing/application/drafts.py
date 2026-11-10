@@ -264,6 +264,12 @@ class Drafts:
         dated = asks_dates(fields)
         question = asks_question(fields)
         refusals: list[list[str]] = []
+        answers: list[str] = []
+        # Longer only when the length is the author's: thin matter, or matter that set a shorter
+        # length than asked, gets a short and careful draft rather than one that invents (RB1:
+        # 3 paragraphs of 4 invented on 90 words). The longest length the matter allows, when
+        # asked, is the author's too (2026-11-10: a long draft came back with 221 words).
+        too_short = level == "enough" and used == asked
 
         def validate(raw: str) -> list[str]:
             # An answer that leaves a source out is sent back once by the gateway, with those
@@ -286,16 +292,14 @@ class Drafts:
                 copied_from=copied_from if first else frozenset(),
                 source_letters=" ".join(t.text for t in texts) if first else None,
                 length_goal=WORDS[fields.length] if first else None,
-                # Longer only when the author chose a length the matter could exceed: thin
-                # matter, or matter that set the length, gets a short and careful draft rather
-                # than one that invents (RB1: 3 paragraphs of 4 invented on 90 words, Joël).
-                too_short=longest is not None and WORDS[longest] > WORDS[fields.length],
+                too_short=too_short,
                 # Sent back once, like the other rules: a context still misused after the repair
                 # is kept, never a failed draft (essais [TEST], 2026-11-07: 3 drafts of 10 lost).
                 context=context if first else frozenset(),
                 question=question and first,
             )
             refusals.append(found)
+            answers.append(raw)
             return found
 
         written = writer.write(
@@ -307,7 +311,16 @@ class Drafts:
             max(output, LOCAL_OUTPUT_TOKENS if local else 0),
             lambda: self._cancelled(workspace_id, generation_id),
         )
+        kept_first = False
+        if written.text is not None and len(answers) > 1 and _shrunk(answers[0], written.text):
+            # Sent back only to add sources, the model rewrote the article much shorter (Joël,
+            # 2026-11-10: 221 words for 1,200 asked, the first answer was long). The first
+            # answer is kept: its sources left out stay a warning, as they always were.
+            if all(e.startswith(REPAIRABLE) for e in refusals[0]):
+                written = replace(written, text=answers[0])
+                kept_first = True
         details = {
+            "kept_first_answer": kept_first,
             "brief": {
                 "mode": fields.mode.value,
                 "length": asked.value,
@@ -409,6 +422,34 @@ class Drafts:
         details["copies_removed"] = removed
         details.update(checked(answer, texts, brief.fields))
         self._articles.finish(workspace_id, generation_id, None, written.attempts, made, details)
+
+
+# The refusals of a first answer that leave it usable as it is: sources it left out, nothing
+# wrong in what it wrote. Such an answer may be kept instead of a repair that cut it short.
+REPAIRABLE = ("sources not used:",)
+SHRUNK = 0.7  # a repair under this share of the words of the first answer cut it short
+
+
+def _shrunk(first: str, repaired: str) -> bool:
+    """The repaired answer holds far fewer words than the first one."""
+
+    def words(raw: str) -> int:
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError:
+            return 0
+        if not isinstance(data, dict):
+            return 0
+        texts = [str(data.get("lead") or "")] + [
+            str(p.get("text") or "")
+            for s in data.get("sections") or []
+            if isinstance(s, dict)
+            for p in s.get("paragraphs") or []
+            if isinstance(p, dict)
+        ]
+        return sum(len(t.split()) for t in texts)
+
+    return words(repaired) < SHRUNK * words(first)
 
 
 def checked(raw: str, texts: Sequence[SourceText], fields: BriefFields) -> dict[str, Any]:

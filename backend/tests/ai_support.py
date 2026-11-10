@@ -14,6 +14,7 @@ class Fake:
     def __init__(self) -> None:
         self.behaviours: deque[str] = deque()
         self.answer = '{"title": "T"}'  # the JSON every successful answer carries
+        self.answers: deque[str] = deque()  # when given, one answer for each request, in turn
         self.requests: list[dict[str, Any]] = []
         fake = self
 
@@ -37,6 +38,7 @@ class Fake:
                 body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
                 fake.requests.append({"path": self.path, "body": body, "auth": self.headers})
                 behaviour = fake.behaviours.popleft() if fake.behaviours else "ok"
+                answer = fake.answers.popleft() if fake.answers else fake.answer
                 if behaviour == "429":
                     self.reply(429, {"error": {"message": "slow"}}, {"Retry-After": "1.5"})
                 elif behaviour in ("500", "404", "400"):
@@ -53,7 +55,7 @@ class Fake:
                                 {
                                     "index": 0,
                                     "finish_reason": "stop",
-                                    "message": {"role": "assistant", "content": fake.answer},
+                                    "message": {"role": "assistant", "content": answer},
                                 }
                             ],
                             "usage": {

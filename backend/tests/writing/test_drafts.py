@@ -471,6 +471,37 @@ def test_a_repair_that_cuts_the_draft_short_keeps_the_first_answer(world: World)
     assert version.unused_sources == ("Article de agence",)  # S2, left out by the first answer
 
 
+def test_a_repair_in_another_language_keeps_the_first_answer(world: World) -> None:
+    """2026-11-10: a Dutch brief, sent back with rules written in English, came back in French,
+    the language of its sources. The first answer, in Dutch, is kept."""
+    context = world.context
+    world.charters.set(context.user_id, "")
+    agence, journal = items(world)
+    brief = world.briefs.create(
+        context, BriefFields(title="Twee", item_ids=(journal, agence), language="nl")
+    )
+    dutch = json.loads(json.dumps(ANSWER))
+    dutch["lead"] = "Het is een goede week voor de vrije software, en dat is niet voor het eerst."
+    for n, section in enumerate(dutch["sections"]):
+        section["paragraphs"] = [
+            {
+                "text": f"Het verzamelen {n} van de bronnen is met deze tools ook voor de auteur"
+                " eenvoudiger dan voorheen, en dat zijn er nu meer dan ooit.",
+                "source_ids": ["S1"],
+            }
+        ]
+    world.fake.answers.extend([json.dumps(dutch), json.dumps(ANSWER)])  # ANSWER is in French
+    generation = world.drafts.start(context, brief.id, force=True)
+    assert generation is not None
+    world.drafts.run(context.workspace_id, context.user_id, generation.id)
+    article = world.drafts.article(context, brief.id)
+    assert article is not None
+    details = article.versions[0].details
+    assert details["kept_first_answer"] is True and details["language_written"] == "nl"
+    repair = world.fake.requests[-1]["body"]["messages"][-1]["content"]
+    assert "keep writing the whole article in Nederlands" in repair
+
+
 def test_a_cancelled_draft_keeps_nothing(world: World) -> None:
     context = world.context
     agence, journal = items(world)

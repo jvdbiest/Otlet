@@ -764,6 +764,7 @@
       "out_of_room": "Le modèle a manqué de place : sa réponse a été coupée avant la fin. Agrandissez la fenêtre de contexte du fournisseur (Réglages > IA), ou raccourcissez le brief.",
       "cancelled": "Génération annulée : rien n'a été enregistré."
     },
+    "otherLanguage": "Ce brouillon est écrit en {written}, alors que le brief demande le {asked} : générez une nouvelle version ou traduisez-le.",
     "noAnswer": "Selon le modèle, aucune source ne répond à la question du titre : le chapô doit le dire. Vérifiez-le, et n'ajoutez pas de réponse sans source.",
     "partAnswer": "Selon le modèle, les sources ne répondent qu'en partie à la question du titre : le chapô dit ce qu'elles laissent ouvert.",
     "unused": "{count, plural, one {Ce brouillon n'utilise pas cet élément du brief, malgré une demande de correction au modèle :} other {Ce brouillon n'utilise pas ces # éléments du brief, malgré une demande de correction au modèle :}}",

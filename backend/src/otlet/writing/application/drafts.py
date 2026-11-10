@@ -14,12 +14,14 @@ from datetime import datetime
 from typing import Any, Protocol
 from uuid import UUID
 
+from otlet.collection.domain.model import guess_language
 from otlet.workspaces.domain.model import WorkspaceContext
 from otlet.writing.domain.article import Article, Generation
 from otlet.writing.domain.brief import Brief, BriefFields, Length, Mode, ModelChoice
 from otlet.writing.domain.draft import (
     ANSWERS,
     CHARS_PER_TOKEN,
+    LANGUAGE_NAMES,
     PROMPT_VERSION,
     WORDS,
     SourceText,
@@ -298,6 +300,19 @@ class Drafts:
                 context=context if first else frozenset(),
                 question=question and first,
             )
+            written_in = _language_of(raw)
+            if first and written_in is not None and written_in != fields.language:
+                # Sent back with rules written in English, a model rewrote a Dutch article in
+                # French, the language of its sources (Joël, 2026-11-10).
+                found = [
+                    *found,
+                    f"language: the article is written in {_named(written_in)}; write the whole"
+                    f" article in {_named(fields.language)}, with every fact, every source_ids"
+                    " and the same length",
+                ]
+            elif found and first:
+                # Sent back for another reason: the repair keeps the language asked.
+                found = [*found, f"keep writing the whole article in {_named(fields.language)}"]
             refusals.append(found)
             answers.append(raw)
             return found
@@ -312,15 +327,28 @@ class Drafts:
             lambda: self._cancelled(workspace_id, generation_id),
         )
         kept_first = False
-        if written.text is not None and len(answers) > 1 and _shrunk(answers[0], written.text):
+        if (
+            written.text is not None
+            and len(answers) > 1
+            and _language_of(written.text) not in (None, fields.language)
+            and _language_of(answers[0]) == fields.language
+            and not check_answer(answers[0], keys, every_source=False)
+        ):
+            # The repair switched language, the first answer was in the language asked: kept.
+            written = replace(written, text=answers[0])
+            kept_first = True
+        elif written.text is not None and len(answers) > 1 and _shrunk(answers[0], written.text):
             # Sent back only to add sources, the model rewrote the article much shorter (Joël,
             # 2026-11-10: 221 words for 1,200 asked, the first answer was long). The first
             # answer is kept: its sources left out stay a warning, as they always were.
             if all(e.startswith(REPAIRABLE) for e in refusals[0]):
                 written = replace(written, text=answers[0])
                 kept_first = True
-        details = {
+        details: dict[str, Any] = {
             "kept_first_answer": kept_first,
+            # The language the draft is written in, when its frequent words tell (none: too short
+            # or mixed): a draft in another language than asked is shown with a warning.
+            "language_written": None if written.text is None else _language_of(written.text),
             "brief": {
                 "mode": fields.mode.value,
                 "length": asked.value,
@@ -426,30 +454,41 @@ class Drafts:
 
 # The refusals of a first answer that leave it usable as it is: sources it left out, nothing
 # wrong in what it wrote. Such an answer may be kept instead of a repair that cut it short.
-REPAIRABLE = ("sources not used:",)
+REPAIRABLE = ("sources not used:", "keep writing the whole article in")
 SHRUNK = 0.7  # a repair under this share of the words of the first answer cut it short
+
+
+def _prose(raw: str) -> str:
+    """The lead and paragraphs of an answer, without its JSON."""
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        return ""
+    if not isinstance(data, dict):
+        return ""
+    texts = [str(data.get("lead") or "")] + [
+        str(p.get("text") or "")
+        for s in data.get("sections") or []
+        if isinstance(s, dict)
+        for p in s.get("paragraphs") or []
+        if isinstance(p, dict)
+    ]
+    return " ".join(texts)
+
+
+def _language_of(raw: str) -> str | None:
+    """The language an answer is written in, by its frequent words; None when it cannot tell."""
+    return guess_language(_prose(raw))
+
+
+def _named(language: str) -> str:
+    return LANGUAGE_NAMES.get(language, language)
 
 
 def _shrunk(first: str, repaired: str) -> bool:
     """The repaired answer holds far fewer words than the first one."""
 
-    def words(raw: str) -> int:
-        try:
-            data = json.loads(raw)
-        except json.JSONDecodeError:
-            return 0
-        if not isinstance(data, dict):
-            return 0
-        texts = [str(data.get("lead") or "")] + [
-            str(p.get("text") or "")
-            for s in data.get("sections") or []
-            if isinstance(s, dict)
-            for p in s.get("paragraphs") or []
-            if isinstance(p, dict)
-        ]
-        return sum(len(t.split()) for t in texts)
-
-    return words(repaired) < SHRUNK * words(first)
+    return len(_prose(repaired).split()) < SHRUNK * len(_prose(first).split())
 
 
 def checked(raw: str, texts: Sequence[SourceText], fields: BriefFields) -> dict[str, Any]:

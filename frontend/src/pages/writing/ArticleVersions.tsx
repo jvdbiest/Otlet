@@ -124,6 +124,10 @@ export function ArticleVersions({
   const prefix = `v${String(shown.number)}`;
   const lone = listed(shown.details, "lone_sections");
   const repeated = listed(shown.details, "repeated_paragraphs");
+  // The language the draft is written in, and the one its brief asked (2026-11-10).
+  const writtenIn = typeof shown.details.language_written === "string" ? shown.details.language_written : null;
+  const brief = shown.details.brief as { language?: unknown } | undefined;
+  const askedIn = typeof brief?.language === "string" ? brief.language : null;
   const guard = guardrails(shown.details);
   // The passages copied from a source, by the draft of the model this version comes from.
   const copied = guardrails(origin(shown, versions).details).passages.map((p) => p.excerpt);
@@ -192,6 +196,14 @@ export function ArticleVersions({
       />
       {shown.context_overflow && <Warning text={t("draft.overflow")} />}
       {shown.details.answer === "no" && <Warning text={t("draft.noAnswer")} />}
+      {writtenIn !== null && askedIn !== null && writtenIn !== askedIn && (
+        <Warning
+          text={t("draft.otherLanguage", {
+            written: t(`topics.languageNames.${writtenIn}`, { defaultValue: writtenIn }).toLowerCase(),
+            asked: t(`topics.languageNames.${askedIn}`, { defaultValue: askedIn }).toLowerCase(),
+          })}
+        />
+      )}
       {shown.details.answer === "partly" && <p className={styles.notice}>{t("draft.partAnswer")}</p>}
       {shown.unused_sources.length > 0 && (
         <Warning

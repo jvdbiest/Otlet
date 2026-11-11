@@ -2151,6 +2151,66 @@
         "title": "EntryView",
         "type": "object"
       },
+      "EventView": {
+        "properties": {
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "remote_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remote Status"
+          },
+          "result": {
+            "title": "Result",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "at",
+          "action",
+          "version",
+          "result",
+          "detail",
+          "remote_status"
+        ],
+        "title": "EventView",
+        "type": "object"
+      },
       "ExportSelectionBody": {
         "properties": {
           "article_ids": {
@@ -4095,6 +4155,193 @@
         "title": "ProviderView",
         "type": "object"
       },
+      "PublicationBody": {
+        "properties": {
+          "action": {
+            "default": "draft",
+            "enum": [
+              "draft",
+              "publish"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "categories": {
+            "items": {
+              "type": "integer"
+            },
+            "maxItems": 20,
+            "title": "Categories",
+            "type": "array"
+          },
+          "site_id": {
+            "format": "uuid",
+            "title": "Site Id",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "maxLength": 60,
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Tags",
+            "type": "array"
+          }
+        },
+        "required": [
+          "site_id"
+        ],
+        "title": "PublicationBody",
+        "type": "object"
+      },
+      "PublicationView": {
+        "properties": {
+          "action": {
+            "enum": [
+              "draft",
+              "publish"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "asked_version": {
+            "title": "Asked Version",
+            "type": "integer"
+          },
+          "categories": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Categories",
+            "type": "array"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "remote_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remote Id"
+          },
+          "remote_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remote Status"
+          },
+          "remote_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remote Url"
+          },
+          "sent_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sent At"
+          },
+          "site_id": {
+            "format": "uuid",
+            "title": "Site Id",
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "pending",
+              "done",
+              "failed",
+              "to_check"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          }
+        },
+        "required": [
+          "id",
+          "site_id",
+          "action",
+          "asked_version",
+          "state",
+          "error",
+          "remote_id",
+          "remote_status",
+          "remote_url",
+          "version",
+          "sent_at",
+          "categories",
+          "tags",
+          "updated_at"
+        ],
+        "title": "PublicationView",
+        "type": "object"
+      },
       "PullBody": {
         "properties": {
           "model": {
@@ -4876,6 +5123,148 @@
         "title": "SessionView",
         "type": "object"
       },
+      "SiteBody": {
+        "properties": {
+          "name": {
+            "maxLength": 80,
+            "title": "Name",
+            "type": "string"
+          },
+          "password": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Password"
+          },
+          "url": {
+            "maxLength": 300,
+            "title": "Url",
+            "type": "string"
+          },
+          "username": {
+            "maxLength": 120,
+            "title": "Username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "url",
+          "username"
+        ],
+        "title": "SiteBody",
+        "type": "object"
+      },
+      "SiteView": {
+        "properties": {
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/TermView"
+            },
+            "title": "Categories",
+            "type": "array"
+          },
+          "check_detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Check Detail"
+          },
+          "check_pending": {
+            "title": "Check Pending",
+            "type": "boolean"
+          },
+          "check_result": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Check Result"
+          },
+          "check_role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Check Role"
+          },
+          "checked_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checked At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "password_hint": {
+            "title": "Password Hint",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "$ref": "#/components/schemas/TermView"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "url",
+          "username",
+          "password_hint",
+          "check_result",
+          "check_detail",
+          "check_role",
+          "checked_at",
+          "check_pending",
+          "categories",
+          "tags"
+        ],
+        "title": "SiteView",
+        "type": "object"
+      },
       "Sort": {
         "description": "How the feed is ordered (U03); pinned items stay first in the views that pin them.",
         "enum": [
@@ -5517,6 +5906,24 @@
           "tags"
         ],
         "title": "TagsBody",
+        "type": "object"
+      },
+      "TermView": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "TermView",
         "type": "object"
       },
       "TermsBody": {
@@ -7927,6 +8334,119 @@
           }
         },
         "summary": "Duplicate Article"
+      }
+    },
+    "/api/workspaces/{workspace_id}/articles/{article_id}/publications": {
+      "get": {
+        "operationId": "list_publications_api_workspaces__workspace_id__articles__article_id__publications_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Article Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PublicationView"
+                  },
+                  "title": "Response List Publications Api Workspaces  Workspace Id  Articles  Article Id  Publications Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Publications"
+      },
+      "post": {
+        "description": "Sends the validated version: as a draft, or published (never without a click of the\nauthor). The same WordPress post is updated by every later send.",
+        "operationId": "send_api_workspaces__workspace_id__articles__article_id__publications_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Article Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicationBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicationView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Send"
       }
     },
     "/api/workspaces/{workspace_id}/articles/{article_id}/send": {
@@ -11917,6 +12437,305 @@
           }
         },
         "summary": "Progress"
+      }
+    },
+    "/api/workspaces/{workspace_id}/publications/{publication_id}/events": {
+      "get": {
+        "operationId": "list_events_api_workspaces__workspace_id__publications__publication_id__events_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "publication_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Publication Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EventView"
+                  },
+                  "title": "Response List Events Api Workspaces  Workspace Id  Publications  Publication Id  Events Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Events"
+      }
+    },
+    "/api/workspaces/{workspace_id}/publishing/sites": {
+      "get": {
+        "operationId": "list_sites_api_workspaces__workspace_id__publishing_sites_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SiteView"
+                  },
+                  "title": "Response List Sites Api Workspaces  Workspace Id  Publishing Sites Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Sites"
+      },
+      "post": {
+        "description": "Adds a WordPress site; its application password is sealed at once, and « Tester »\nstarts by itself.",
+        "operationId": "add_site_api_workspaces__workspace_id__publishing_sites_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiteBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Site"
+      }
+    },
+    "/api/workspaces/{workspace_id}/publishing/sites/{site_id}": {
+      "delete": {
+        "operationId": "delete_site_api_workspaces__workspace_id__publishing_sites__site_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "site_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Site Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Site"
+      },
+      "put": {
+        "operationId": "update_site_api_workspaces__workspace_id__publishing_sites__site_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "site_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Site Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SiteBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Site"
+      }
+    },
+    "/api/workspaces/{workspace_id}/publishing/sites/{site_id}/check": {
+      "post": {
+        "description": "« Tester »: the worker connects; the site shows the result when it is done.",
+        "operationId": "check_site_api_workspaces__workspace_id__publishing_sites__site_id__check_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "site_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Site Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Check Site"
       }
     },
     "/api/workspaces/{workspace_id}/refresh": {

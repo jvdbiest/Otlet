@@ -1,0 +1,287 @@
+{
+ "cop31": {
+  "titles": {
+   "fr": "Quels sont les enjeux de la COP31 ?",
+   "nl": "Wat staat er op het spel op de COP31?",
+   "en": "What is at stake at COP31?"
+  },
+  "items": [
+   {
+    "id": "01a1c689-6863-78d4-8cd1-d2c636cea772",
+    "language": "en",
+    "date": "11-10",
+    "title": "Cop31 as it happened: ‘Everything and everyone we love is at stake,’ Greta Thunberg warns"
+   },
+   {
+    "id": "01a1bb82-3444-7583-af94-642b3d7dedf5",
+    "language": "en",
+    "date": "11-08",
+    "title": "Cop31 must deliver climate progress that people can see is real, host says"
+   },
+   {
+    "id": "01a1badd-27bb-771b-83a9-b3c302b6103d",
+    "language": "en",
+    "date": "11-08",
+    "title": "Cop31: what is at stake at the UN climate summit and what can it achieve?"
+   },
+   {
+    "id": "01a1c98a-e82f-7aa8-866a-7faae57171ca",
+    "language": "fr",
+    "date": "11-11",
+    "title": "COP31 : la Belgique végète parmi les pays à \"faible\" performance climatique, selon des ONG"
+   },
+   {
+    "id": "01a1c9f8-cb72-72bb-a222-4ea560731864",
+    "language": "fr",
+    "date": "11-11",
+    "title": "COP31 : lors des négociations climatiques, le difficile positionnement des « bons élèves »"
+   },
+   {
+    "id": "01a1c6f7-9345-76c3-bd5d-ac71412c2c42",
+    "language": "fr",
+    "date": "11-10",
+    "title": "COP31: la Belgique confirme son engagement pour le climat, avec de nombreux bémols"
+   },
+   {
+    "id": "01a1b243-e474-7cc3-80e4-c98d59563f7e",
+    "language": "nl",
+    "date": "11-06",
+    "title": "Op de klimaattop in Antalya is het aan leiders om te kiezen: dienen ze de fossiele industr"
+   }
+  ]
+ },
+ "cracovie": {
+  "titles": {
+   "fr": "Que s'est-il passé à Cracovie ?",
+   "nl": "Wat is er gebeurd in Krakau?",
+   "en": "What happened in Kraków?"
+  },
+  "items": [
+   {
+    "id": "01a1c689-5cad-71f7-b60a-9d8bc23f1cf9",
+    "language": "en",
+    "date": "11-10",
+    "title": "Polish unity on show as thousands join silent march for Krakow shooting victims"
+   },
+   {
+    "id": "01a1bd39-bf6c-7042-8d9c-7689cc3a50ec",
+    "language": "en",
+    "date": "11-08",
+    "title": "Doctor who treated victims of Krakow shooting speaks to the BBC"
+   },
+   {
+    "id": "01a1bc5d-86c6-7e0f-b263-03e8b35724cb",
+    "language": "en",
+    "date": "11-08",
+    "title": "Surgeon having lunch near Krakow shooting undoubtedly saved officer's life, colleague says"
+   },
+   {
+    "id": "01a1c689-5aee-7978-ba39-b27b3512410a",
+    "language": "fr",
+    "date": "11-09",
+    "title": "Le tueur de Cracovie est mort, aucune certitude sur ses motivations"
+   },
+   {
+    "id": "01a1c689-5b20-7f6b-9f2a-27391f695753",
+    "language": "fr",
+    "date": "11-09",
+    "title": "Tirs mortels à Cracovie: le tueur \"fasciné\" par les idées d'extrême droite est mort à l'hô"
+   },
+   {
+    "id": "01a1bbef-a2c2-7a86-9e47-b4a42dd3fc76",
+    "language": "fr",
+    "date": "11-08",
+    "title": "”Fasciné par des idéologies d’extrême droite” : qui est Michal O., l’auteur du massacre à "
+   },
+   {
+    "id": "01a1bb82-36d5-733b-bc24-3a763202cfc2",
+    "language": "nl",
+    "date": "11-08",
+    "title": "Al 860.000 euro ingezameld voor agenten die aanslagpleger Krakau uitschakelden"
+   },
+   {
+    "id": "01a1badd-2a51-72cf-964b-5de76f7784a3",
+    "language": "nl",
+    "date": "11-08",
+    "title": "Poolse premier prijst agenten die dader schietpartij Krakau uitschakelden: ‘Velen gered zo"
+   },
+   {
+    "id": "01a1ba37-b2c1-7331-9126-6549085245fe",
+    "language": "nl",
+    "date": "11-08",
+    "title": "Wat weten we over dader van aanslag Krakau? ‘Gefascineerd door extreemrechtse ideologieën’"
+   }
+  ]
+ },
+ "nvidia": {
+  "titles": {
+   "fr": "Que reproche-t-on au patron de Nvidia ?",
+   "nl": "Wat wordt de topman van Nvidia verweten?",
+   "en": "What is the Nvidia boss accused of?"
+  },
+  "items": [
+   {
+    "id": "01a1c72e-843d-7f39-92fe-b82b524053f1",
+    "language": "en",
+    "date": "11-10",
+    "title": "Nvidia hires major New York law firm to investigate Jensen Huang affair"
+   },
+   {
+    "id": "01a1ca1b-b6e3-76f2-8bba-142602973624",
+    "language": "en",
+    "date": "11-10",
+    "title": "The US is winning the AI race. Jensen Huang could have blown it"
+   },
+   {
+    "id": "01a1c689-5c91-7001-a509-e5a1c4e8774e",
+    "language": "en",
+    "date": "11-10",
+    "title": "Trump says FBI investigating Nvidia boss's affair with alleged Chinese spy"
+   },
+   {
+    "id": "01a1c98a-e739-79fe-9b8b-897d9b6c3143",
+    "language": "fr",
+    "date": "11-11",
+    "title": "Comment Nvidia s’est retrouvé au cœur d’un scandale international, entre espionne chinoise"
+   },
+   {
+    "id": "01a1c6f7-905e-75c0-8964-3e57d7eb9b2d",
+    "language": "fr",
+    "date": "11-10",
+    "title": "Nvidia : le scandale d’espionnage fait chuter de plus de 6 % à Wall Street l’entreprise am"
+   },
+   {
+    "id": "01a1c689-5cee-77a6-94f0-09e916aabdb7",
+    "language": "fr",
+    "date": "11-10",
+    "title": "Scandale chez Nvidia : Trump défend Jensen Huang, Pékin dément et le FBI s’en mêle… les de"
+   },
+   {
+    "id": "01a1c6f7-905c-780c-9bb4-f3c228cc6906",
+    "language": "nl",
+    "date": "11-10",
+    "title": "De rol van Jensen Huang als Chinafluisteraar van de regering-Trump lijkt uitgespeeld"
+   },
+   {
+    "id": "01a1c689-561e-7d1d-815b-6b74e1913eda",
+    "language": "nl",
+    "date": "11-10",
+    "title": "Wie is Alice Huang, de Chinese spionne met een verdacht eigen bedrijf dicht bij Nvidia?"
+   },
+   {
+    "id": "01a1c689-718c-7eaa-ab1b-03d7732f0812",
+    "language": "nl",
+    "date": "11-10",
+    "title": "FBI onderzoekt spionagezaak Nvidia, topman Jensen Huang had pr-bedrijf gespecialiseerd in "
+   }
+  ]
+ },
+ "paraguay": {
+  "titles": {
+   "fr": "Pourquoi le président du Paraguay a-t-il été destitué ?",
+   "nl": "Waarom werd de president van Paraguay afgezet?",
+   "en": "Why was the president of Paraguay removed from office?"
+  },
+  "items": [
+   {
+    "id": "01a1b46a-3bd2-7f27-b7af-96c269d99e22",
+    "language": "en",
+    "date": "11-07",
+    "title": "Paraguay's President Santiago Peña impeached and arrested"
+   },
+   {
+    "id": "01a1b3c5-dcfe-7859-b098-82a7187045d2",
+    "language": "en",
+    "date": "11-07",
+    "title": "Ousted Paraguay president under house arrest after banking crisis leaves 60% of country un"
+   },
+   {
+    "id": "01a1b243-d57c-7dc3-80be-5f186c8d2873",
+    "language": "en",
+    "date": "11-06",
+    "title": "Paraguay’s president quits after millions of people’s savings frozen in bank crisis"
+   },
+   {
+    "id": "01a1c689-639c-727d-a2d7-253263883208",
+    "language": "fr",
+    "date": "11-09",
+    "title": "Le Paraguay cherche à l'étranger les fonds d'une banque en faillite"
+   },
+   {
+    "id": "01a1b50f-85f8-729a-8a79-05a33eb42fdc",
+    "language": "fr",
+    "date": "11-07",
+    "title": "Au Paraguay, la destitution du président Santiago Peña met en lumière les collusions entre"
+   },
+   {
+    "id": "01a1b4d8-1f64-756c-b574-f6c77a7921fc",
+    "language": "fr",
+    "date": "11-07",
+    "title": "Crise bancaire au Paraguay : Le président paraguayen Santiago Peña destitué et placé en dé"
+   },
+   {
+    "id": "01a1ba00-6151-7665-8546-efcfbf2f9122",
+    "language": "nl",
+    "date": "11-08",
+    "title": "Afgezette Paraguayaanse president Peña in voorlopige hechtenis na bankschandaal"
+   },
+   {
+    "id": "01a1b4d8-965c-7a54-b33e-8693f3b3be97",
+    "language": "nl",
+    "date": "11-07",
+    "title": "Afgezette president Paraguay onder huisarrest na val bank"
+   }
+  ]
+ },
+ "ukraine": {
+  "titles": {
+   "fr": "Où en sont les pourparlers de paix sur l'Ukraine à Abou Dhabi ?",
+   "nl": "Hoe staan de vredesgesprekken over Oekraïne in Abu Dhabi ervoor?",
+   "en": "Where do the Ukraine peace talks in Abu Dhabi stand?"
+  },
+  "items": [
+   {
+    "id": "01a1c9f9-4179-70e3-8d0c-e46a1152659f",
+    "language": "en",
+    "date": "11-11",
+    "title": "Ukraine’s Zelenskyy ‘happy’ with US envoys’ approach as Russia talks enter second day – Eu"
+   },
+   {
+    "id": "01a1c689-5c81-7a1d-958c-c01816526253",
+    "language": "en",
+    "date": "11-10",
+    "title": "First day of Ukraine peace talks constructive, Zelensky says"
+   },
+   {
+    "id": "01a1c689-6843-782f-bd2d-4009c8da11d3",
+    "language": "en",
+    "date": "11-10",
+    "title": "Russia-Ukraine talks ‘very productive,’ says US’s Rubio – Europe live"
+   },
+   {
+    "id": "01a1c9f8-cb70-7b24-8b38-5378f08281aa",
+    "language": "fr",
+    "date": "11-11",
+    "title": "Guerre en Ukraine: reprise des pourparlers à Abou Dhabi entre Kiev et Moscou sous médiatio"
+   },
+   {
+    "id": "01a1c8e6-86ee-7cb7-a86c-7323e38c39fa",
+    "language": "fr",
+    "date": "11-11",
+    "title": "Guerre en Ukraine : à Abu Dhabi, les pourparlers russo-ukrainiens condamnés à l’impasse"
+   },
+   {
+    "id": "01a1c689-586c-7acc-b0b3-613502acb3ce",
+    "language": "fr",
+    "date": "11-10",
+    "title": "Les pourparlers Ukraine-Russie à Abou Dhabi sont \"très productifs\", affirme Rubio"
+   },
+   {
+    "id": "01a1c689-717b-744d-9213-3f90ffb36379",
+    "language": "nl",
+    "date": "11-10",
+    "title": "Poetin stuurt met Vladimir Medinsky zijn favoriete geschiedenisherschrijver naar de onderh"
+   }
+  ]
+ }
+}

@@ -20,6 +20,7 @@ from otlet.writing.adapters.postgres import PostgresBriefStore
 from otlet.writing.application.charter import Charters
 from otlet.writing.application.drafts import GENERATE_DRAFT, Drafts
 from otlet.writing.application.proximity import CHECK_PROXIMITY, run_check
+from otlet.writing.domain.brief import ModelChoice
 from otlet.writing.domain.proximity import Encode
 
 
@@ -34,11 +35,18 @@ def generate_draft(
         gateway(environment), PostgresAiSettings(engine), PackagedCatalogue().load()
     )
     charters = Charters(PostgresCharters(engine))
+    ai_settings = PostgresAiSettings(engine)
+
+    def language_model(user: UUID, language: str) -> ModelChoice | None:
+        entry = ai_settings.language_models(user).get(language)
+        return None if entry is None else ModelChoice(entry.provider_id, entry.model)
+
     Drafts(
         PostgresBriefStore(engine),
         PostgresArticleStore(engine, environment.enqueue),
         writer,
         lambda user: charters.of(user).text,
+        language_model,
     ).run(UUID(workspace_id), UUID(user_id), UUID(generation_id))
 
 

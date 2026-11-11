@@ -13,7 +13,7 @@ of models the gateway tries.
 """
 
 import ipaddress
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime
 from urllib.parse import urlsplit
@@ -222,3 +222,22 @@ def check_profile(
             raise SettingsError("duplicate_model", "a model appears twice in the profile")
         seen.add(key)
     return Profile(tuple(ProfileEntry(e.provider_id, e.model.strip()) for e in entries))
+
+
+def check_language_models(
+    entries: Mapping[str, ProfileEntry],
+    languages: Sequence[str],
+    providers: Sequence[Provider],
+    catalogue: Catalogue,
+    policy: InstancePolicy,
+) -> dict[str, ProfileEntry]:
+    """The model chosen for each writing language (docs/design/MODELE_PAR_LANGUE.md): a
+    language Otlet writes in, and a model the profile could hold. A language left out writes
+    with the profile."""
+    checked: dict[str, ProfileEntry] = {}
+    for language, entry in entries.items():
+        if language not in languages:
+            raise SettingsError("unknown_language", f"a language is one of {tuple(languages)}")
+        profile = check_profile([entry], providers, catalogue, policy)
+        checked[language] = profile.entries[0]
+    return checked

@@ -224,6 +224,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/ai/language-models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Language Models */
+        get: operations["get_language_models_api_ai_language_models_get"];
+        /** Set Language Models */
+        put: operations["set_language_models_api_ai_language_models_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/ai/policy": {
         parameters: {
             query?: never;
@@ -3255,6 +3273,29 @@ export interface components {
             /** Name */
             name: string;
         };
+        /**
+         * LanguageModelView
+         * @description The model that writes the drafts of one language when the brief names none.
+         */
+        LanguageModelView: {
+            /** Language */
+            language: string;
+            /** Model */
+            model: string;
+            /**
+             * Provider Id
+             * Format: uuid
+             */
+            provider_id: string;
+        };
+        /**
+         * LanguageModelsView
+         * @description A language left out writes with the profile (docs/design/MODELE_PAR_LANGUE.md).
+         */
+        LanguageModelsView: {
+            /** Entries */
+            entries: components["schemas"]["LanguageModelView"][];
+        };
         /** LibraryEntryView */
         LibraryEntryView: {
             /** Brief Id */
@@ -4819,6 +4860,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProfileCheckView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_language_models_api_ai_language_models_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LanguageModelsView"];
+                };
+            };
+        };
+    };
+    set_language_models_api_ai_language_models_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LanguageModelsView"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LanguageModelsView"];
                 };
             };
             /** @description Validation Error */

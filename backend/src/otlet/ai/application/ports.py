@@ -8,7 +8,7 @@ from uuid import UUID
 
 from otlet.ai.domain.budget import BudgetState, Reservation
 from otlet.ai.domain.model import Answer, Catalogue, Completion
-from otlet.ai.domain.settings import InstancePolicy, Profile, Provider
+from otlet.ai.domain.settings import InstancePolicy, Profile, ProfileEntry, Provider
 
 
 class Adapter(Protocol):
@@ -66,6 +66,10 @@ class SettingsStore(Protocol):
     def profile(self, user_id: UUID) -> Profile: ...
 
     def save_profile(self, user_id: UUID, profile: Profile) -> None: ...
+
+    def language_models(self, user_id: UUID) -> dict[str, ProfileEntry]: ...
+
+    def save_language_models(self, user_id: UUID, models: dict[str, ProfileEntry]) -> None: ...
 
     def policy(self) -> InstancePolicy: ...
 

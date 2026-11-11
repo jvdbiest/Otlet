@@ -35,6 +35,7 @@ from otlet.identity.application.authentication import Authentication
 from otlet.identity.domain.model import Session
 from otlet.platform.secrets import SecretError
 from otlet.writing.application.charter import Charter, CharterError, Charters
+from otlet.writing.domain.brief import LANGUAGES
 
 PREFIX = "/api/ai"
 
@@ -116,6 +117,20 @@ class ProfileEntryView(BaseModel):
 
 class ProfileView(BaseModel):
     entries: list[ProfileEntryView] = Field(max_length=PROFILE_MAX)
+
+
+class LanguageModelView(BaseModel):
+    """The model that writes the drafts of one language when the brief names none."""
+
+    language: str = Field(min_length=2, max_length=5)
+    provider_id: UUID
+    model: str = Field(min_length=1, max_length=200)
+
+
+class LanguageModelsView(BaseModel):
+    """A language left out writes with the profile (docs/design/MODELE_PAR_LANGUE.md)."""
+
+    entries: list[LanguageModelView] = Field(max_length=len(LANGUAGES))
 
 
 class ContextWindowBody(BaseModel):
@@ -419,6 +434,33 @@ def build_router(
                 ProfileEntryView(provider_id=e.provider_id, model=e.model) for e in profile.entries
             ]
         )
+
+    def language_models_view(models: dict[str, ProfileEntry]) -> LanguageModelsView:
+        return LanguageModelsView(
+            entries=[
+                LanguageModelView(language=language, provider_id=e.provider_id, model=e.model)
+                for language, e in sorted(models.items())
+            ]
+        )
+
+    @router.get("/language-models")
+    def get_language_models(session: CurrentSession) -> LanguageModelsView:
+        return language_models_view(settings.language_models(session.user_id))
+
+    @router.put("/language-models")
+    def set_language_models(
+        body: LanguageModelsView, session: CurrentSession
+    ) -> LanguageModelsView:
+        chosen: dict[str, ProfileEntry] = {}
+        for entry in body.entries:
+            if entry.language in chosen:
+                raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "duplicate_language")
+            chosen[entry.language] = ProfileEntry(entry.provider_id, entry.model)
+        try:
+            models = settings.set_language_models(session.user_id, chosen, LANGUAGES)
+        except SettingsError as error:
+            raise _refused(error) from error
+        return language_models_view(models)
 
     def budget_view(user_id: UUID) -> BudgetView:
         state = budget.state(user_id)

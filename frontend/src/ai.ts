@@ -14,6 +14,7 @@ export type ProfileCheckView = components["schemas"]["ProfileCheckView"];
 export type CallView = components["schemas"]["CallView"];
 export type CharterView = components["schemas"]["CharterView"];
 export type CharterRoomView = components["schemas"]["CharterRoomView"];
+export type LanguageModelsView = components["schemas"]["LanguageModelsView"];
 
 const KEY = ["ai"] as const;
 
@@ -173,6 +174,33 @@ export function useSaveProfile() {
   return useMutation({
     mutationFn: async (body: ProfileView) => {
       const { data, error, response } = await api.PUT("/api/ai/profile", { body });
+      if (data === undefined) {
+        throw apiError(response, error);
+      }
+      return data;
+    },
+    onSuccess: refresh,
+  });
+}
+
+/** The model of each writing language, used when a brief names none
+ * (docs/design/MODELE_PAR_LANGUE.md); a language left out writes with the profile. */
+export const languageModelsQuery = queryOptions({
+  queryKey: [...KEY, "language-models"],
+  queryFn: async (): Promise<LanguageModelsView> => {
+    const { data, error, response } = await api.GET("/api/ai/language-models");
+    if (data === undefined) {
+      throw apiError(response, error);
+    }
+    return data;
+  },
+});
+
+export function useSaveLanguageModels() {
+  const refresh = useRefresh();
+  return useMutation({
+    mutationFn: async (body: LanguageModelsView) => {
+      const { data, error, response } = await api.PUT("/api/ai/language-models", { body });
       if (data === undefined) {
         throw apiError(response, error);
       }

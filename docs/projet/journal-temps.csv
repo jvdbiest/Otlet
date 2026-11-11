@@ -129,3 +129,4 @@ date,heures,domaine,etape,tache,note
 2026-11-11,4,fonction,E1,LANG1,modèle par langue : note, protocole, 45 générations, relecture à l'aveugle, rapport ; estimation grossière (Claude)
 2026-11-11,1,fonction,E1,LANG2,ligne de langue de la charte : protocole, 30 générations, rapport ; estimation grossière (Claude)
 2026-11-11,3,fonction,E1,LANG,modèle par langue de rédaction : construction, tests, CI, déploiement .252, essai ; estimation grossière (Claude)
+2026-11-11,3,fonction,E1,LANG3,banc multilingue : sources EN ajoutées, protocole, 15 générations, relecture, rapport ; estimation grossière (Claude)

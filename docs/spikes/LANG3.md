@@ -2,9 +2,9 @@
 
 | | |
 |---|---|
-| Statut | Protocole, en attente de fusion |
+| Statut | Conclue : partiel (langue et sources tenues ; faits au-dessus du seuil) |
 | Durée maximale | 1 h de génération sur la VM .252, appels un par un ; 3 h de relecture |
-| Ouverte le | 2026-11-11 |
+| Ouverte le / conclue le | 2026-11-11 / 2026-11-11 |
 | Choix concernés | `docs/design/MODELE_PAR_LANGUE.md` (réglage construit le 2026-11-11), LANG1, LANG2, aide à la phrase (REL2) |
 | Commande de rejeu | `python /data/lang3.py` dans le conteneur `api` de la VM, puis `python3 spikes/lang3/analyse.py <dossier> prepare|aide|score` |
 
@@ -44,3 +44,42 @@ Origine : Joël, 2026-11-11, après la construction du réglage. LANG1 et LANG2 
 **Relecture à l'aveugle**, comme dans LANG1 : les 15 brouillons sont mélangés et numérotés, avec l'aide à la phrase sous chaque phrase. Je relève les erreurs de faits, les fautes de langue et les passages non traduits. La langue de la source d'une erreur est notée. M2 est compté par le script, d'après les sources citées par chaque brouillon. L'aide à la phrase retrouve mal une phrase de source dans une autre langue quand elle n'a ni nom ni chiffre : je relis alors la source citée en entier.
 
 **Hors du protocole.** Rien n'entre dans le produit à cette étape. Les défauts éventuels sont rapportés, puis traités avec Joël.
+
+## 4. Mesures
+
+Le 2026-11-11, de 11 h 27 à 12 h 05, sur la VM .252 : 15 générations, une à la fois, puis la relecture à l'aveugle avec l'aide à la phrase. Le réglage par langue de Joël a été remis à vide à la fin. Les briefs « [TEST_LANG3] » restent dans son espace, comme il l'a demandé. Fichiers : `spikes/lang3/results/` (grille, notes par brouillon, `rapport.txt`). Les brouillons complets sont sur la VM, dans `~/s-lang3/`.
+
+| Critère | Seuil | Mesuré | |
+|---|---|---|---|
+| M1. Aboutis, dans la langue demandée, par le modèle de la langue | 15 sur 15 | **15 sur 15** (gemma4, `model_reason` = `language`) | ✅ |
+| M2. Sources des trois langues citées | ≥ 12 sur 15 | **15 sur 15** | ✅ |
+| M3. Erreurs de faits | ≤ 15, aucun brouillon > 3 | **25**, au plus 3 par brouillon | ❌ |
+| M4. Fautes de langue | ≤ 20 par langue | FR 6, **NL 16**, EN 2 | ✅ |
+| M5. Passages non traduits | ≤ 2 | **0** | ✅ |
+| M6. Longueur et durée | 15 sur 15, ≤ 10 min | 14 sur 15 (Ukraine EN : 405 mots pour 420 au moins), **1,7 min** | ❌ |
+
+**Par langue de rédaction**, les erreurs de faits : FR 6, NL 11, EN 8. Le néerlandais cumule le plus d'erreurs de faits et de fautes de langue, comme dans LANG1.
+
+**Erreurs qui viennent d'une source dans une autre langue** que le brouillon : 13 sur 25. Deux motifs reviennent :
+- **Un titre néerlandais mal compris, repris trois fois.** « Poetin stuurt met Vladimir Medinsky zijn favoriete geschiedenisherschrijver » (Poutine envoie celui qui réécrit l'histoire pour lui) devient « son historien favori » (FR), « his favorite historian » (EN) et « een geschiedschrijver die bekend staat om zijn favoriete geschiedschrijving » (NL). Le sens critique du titre est perdu.
+- **Un fait d'Uruguay rangé dans l'Argentine, trois fois.** Le résumé néerlandais « Paus Leo maant in Uruguay… roept jongeren op te trouwen en kinderen te krijgen » finit dans le récit de la visite en Argentine (FR, NL, EN).
+
+Les autres erreurs sont celles de LANG1 : qui a dit quoi (les Ukrainiens et Kushner, la loyauté de Trump envers Hegseth), un chiffre d'une source contredit par une autre (« vier wapens », alors que la source FR dit sept), une date de publication prise pour la date du vote (Hegseth), et quelques ajouts sans source (« la pauvreté a fortement augmenté », « 320 km »).
+
+**Ce qui marche bien.** Aucun brouillon ne recopie une phrase dans une autre langue. Les citations anglaises sont traduites (« EXONERATION of a Great American Patriot » devient « mise hors de cause d'un grand patriote américain ») ou gardées entre guillemets et attribuées. Les noms et les chiffres repris des sources anglaises sont justes : 211 contre 204, Swit Starachowice, Oksinski, 400 milliards de dollars.
+
+**Toujours là.** Le défaut des citations coupées : 2 phrases de l'Ukraine EN s'arrêtent juste avant la citation (« were », « praised the talks as »).
+
+## 5. Conclusion
+
+**Partiel**, au sens fixé d'avance : M1, M2 et M5 sont tenus, M3 et M6 non.
+
+- **Le réglage par langue fonctionne avec des sources mêlées.** Les 15 brouillons sont dans la bonne langue, écrits par gemma4 grâce au réglage, en 1 min 40 environ. Chacun s'appuie sur des sources des trois langues, sans passage non traduit.
+- **La justesse reste la limite, comme dans LANG1.** Il y a 25 erreurs de faits au lieu de 15 au plus, soit 1,7 par brouillon. La moitié vient d'une source lue dans une autre langue, surtout des **titres et résumés néerlandais**, courts et allusifs, que gemma4 interprète mal.
+- **Le néerlandais reste la langue la plus fragile**, en faits (11) comme en langue (16 fautes, juste sous le seuil).
+- **L'aide à la phrase reste indispensable**, mais elle retrouve mal une source dans une autre langue que le brouillon quand la phrase n'a ni nom ni chiffre (Medinsky, Uruguay). C'est une piste d'amélioration.
+
+Pistes à discuter avec Joël, hors de ce banc :
+1. Les résumés NL des sites payants sont la matière la plus risquée. Faut-il les marquer « résumé seulement » dans le brief, ou les mettre en contexte plutôt qu'en matière ?
+2. L'aide à la phrase pourrait chercher aussi par les noms propres d'une phrase voisine, pour mieux relier une phrase à une source dans une autre langue.
+3. Le défaut des citations coupées, toujours présent (vu dans LANG1).

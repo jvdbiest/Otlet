@@ -1,0 +1,23 @@
+Par brouillon :
+L11 cracovie  en done gemma4:latest language écrit en cite en,fr,nl 563 mots 100 s répétées 0 faits 2 langue 0 non traduits 0
+L04 cracovie  fr done gemma4:latest language écrit fr cite en,fr,nl 464 mots 100 s répétées 0 faits 1 langue 2 non traduits 0
+L08 cracovie  nl done gemma4:latest language écrit nl cite en,fr,nl 569 mots 100 s répétées 0 faits 3 langue 5 non traduits 0
+L13 hegseth   en done gemma4:latest language écrit en cite en,fr,nl 458 mots 100 s répétées 0 faits 1 langue 0 non traduits 0
+L15 hegseth   fr done gemma4:latest language écrit fr cite en,fr,nl 512 mots 100 s répétées 0 faits 0 langue 3 non traduits 0
+L06 hegseth   nl done gemma4:latest language écrit nl cite en,fr,nl 538 mots 100 s répétées 0 faits 2 langue 2 non traduits 0
+L05 nvidia    en done gemma4:latest language écrit en cite en,fr,nl 678 mots 100 s répétées 0 faits 1 langue 0 non traduits 0
+L02 nvidia    fr done gemma4:latest language écrit fr cite en,fr,nl 591 mots 100 s répétées 0 faits 1 langue 0 non traduits 0
+L09 nvidia    nl done gemma4:latest language écrit nl cite en,fr,nl 628 mots 100 s répétées 0 faits 3 langue 2 non traduits 0
+L03 pape      en done gemma4:latest language écrit en cite en,fr,nl 545 mots 100 s répétées 0 faits 2 langue 0 non traduits 0
+L07 pape      fr done gemma4:latest language écrit fr cite en,fr,nl 748 mots 120 s répétées 0 faits 3 langue 1 non traduits 0
+L12 pape      nl done gemma4:latest language écrit nl cite en,fr,nl 571 mots 120 s répétées 0 faits 2 langue 5 non traduits 0
+L14 ukraine   en done gemma4:latest language écrit en cite en,fr,nl 405 mots 80 s répétées 0 faits 2 langue 2 non traduits 0
+L10 ukraine   fr done gemma4:latest language écrit fr cite en,fr,nl 494 mots 100 s répétées 0 faits 1 langue 0 non traduits 0
+L01 ukraine   nl done gemma4:latest language écrit nl cite en,fr,nl 460 mots 80 s répétées 0 faits 1 langue 2 non traduits 0
+
+M1 aboutis, bonne langue, modèle de la langue : 15/15 (15)
+M2 sources des trois langues citées : 15/15 (≥ 12)
+M3 erreurs de faits : 25 (≤ 15), au plus 3 par brouillon (≤ 3)
+M4 fautes de langue : {'fr': 6, 'nl': 16, 'en': 2} (≤ 20 par langue)
+M5 passages non traduits : 0 (≤ 2)
+M6 longueur : 14/15 (15), durée médiane 1.7 min (≤ 10)

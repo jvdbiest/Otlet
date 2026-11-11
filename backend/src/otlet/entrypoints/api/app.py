@@ -42,6 +42,7 @@ from otlet.entrypoints.api import (
     backups,
     collection,
     media,
+    publishing,
     reporter,
     triage,
     watch,
@@ -59,6 +60,8 @@ from otlet.media.application.library import MediaLibrary
 from otlet.platform import database
 from otlet.platform.config import Settings
 from otlet.platform.http import SafeClient
+from otlet.publishing.adapters.postgres import PostgresPublishing, PostgresValidated
+from otlet.publishing.application.publishing import Publishing
 from otlet.reporter.adapters.postgres import PostgresReporterStore
 from otlet.reporter.application.reporter import Reporter
 from otlet.watch.adapters.postgres import PostgresWatchStore
@@ -196,6 +199,16 @@ def create_app(settings: Settings) -> FastAPI:
             workspace_context,
         )
         media_router = media.build_router(library, workspace_context)
+        # U07: the API seals the passwords and records the sends; the worker sends (DR6).
+        publishing_router = publishing.build_router(
+            Publishing(
+                PostgresPublishing(engine, enqueue),
+                PublicKeySealer(settings.secrets_public_key_file),
+                PostgresValidated(engine, article_store.gate),
+                lambda url: ai_store.policy().refuses(url),
+            ),
+            workspace_context,
+        )
         assistant_store = PostgresAssistantStore(engine, enqueue)
         assistant_router = assistant.build_router(
             Assistant(assistant_store),
@@ -240,6 +253,7 @@ def create_app(settings: Settings) -> FastAPI:
             ai_router,
             writing_router,
             media_router,
+            publishing_router,
             assistant_router,
             reporter_router,
             ai_tasks_router,

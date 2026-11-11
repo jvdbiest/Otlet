@@ -86,7 +86,7 @@ try:
             if (subject, language) in done:
                 continue
             body = {
-                "title": f"[LANG3] {language} — {spec['titles'][language]}",
+                "title": f"[TEST_LANG3] {language} — {spec['titles'][language]}",
                 "item_ids": [i["id"] for i in spec["items"]],
                 "angle": "", "instructions": "", "length": "medium", "mode": "synthesis",
                 "nature": "news", "language": language,

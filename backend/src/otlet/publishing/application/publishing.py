@@ -381,11 +381,11 @@ def run_send(
             title=title,
             content=f"{marker_comment(publication.marker)}\n{content}",
             status=status,
-            # The slug carries the key while the post is a draft; published, WordPress keeps the
-            # slug it made from the title, and the comment carries the key (ADR-0026 §1).
-            slug=marker_slug(publication.marker)
-            if status == "draft" and existing is None
-            else None,
+            # The slug carries the key while the post is a draft. On line, the post takes the
+            # slug WordPress makes from the title, and the comment carries the key (ADR-0026 §1):
+            # a draft that keeps its otlet-<key> slug is published with an empty one, which
+            # WordPress fills from the title (tested on WordPress 7.1.4, 2026-11-11).
+            slug=_slug(status, existing, publication.marker),
             categories=publication.categories,
             tags=tuple(client.tag_ids(publication.tags)) if publication.tags else (),
         )
@@ -422,3 +422,13 @@ def run_send(
         finish(State.FAILED, error.reason, None, error.detail or None)
         return
     finish(State.DONE, None, result, None)
+
+
+def _slug(status: str, existing: dict[str, Any] | None, marker: str) -> str | None:
+    """The slug to send: the key for a new draft, empty to drop the key on publication, none to
+    leave it as it is."""
+    if existing is None:
+        return marker_slug(marker) if status == "draft" else None
+    if status == "publish" and existing.get("slug") == marker_slug(marker):
+        return ""
+    return None

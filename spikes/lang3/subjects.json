@@ -1,55 +1,4 @@
 {
- "cop31": {
-  "titles": {
-   "fr": "Quels sont les enjeux de la COP31 ?",
-   "nl": "Wat staat er op het spel op de COP31?",
-   "en": "What is at stake at COP31?"
-  },
-  "items": [
-   {
-    "id": "01a1c689-6863-78d4-8cd1-d2c636cea772",
-    "language": "en",
-    "date": "11-10",
-    "title": "Cop31 as it happened: ‘Everything and everyone we love is at stake,’ Greta Thunberg warns"
-   },
-   {
-    "id": "01a1bb82-3444-7583-af94-642b3d7dedf5",
-    "language": "en",
-    "date": "11-08",
-    "title": "Cop31 must deliver climate progress that people can see is real, host says"
-   },
-   {
-    "id": "01a1badd-27bb-771b-83a9-b3c302b6103d",
-    "language": "en",
-    "date": "11-08",
-    "title": "Cop31: what is at stake at the UN climate summit and what can it achieve?"
-   },
-   {
-    "id": "01a1c98a-e82f-7aa8-866a-7faae57171ca",
-    "language": "fr",
-    "date": "11-11",
-    "title": "COP31 : la Belgique végète parmi les pays à \"faible\" performance climatique, selon des ONG"
-   },
-   {
-    "id": "01a1c9f8-cb72-72bb-a222-4ea560731864",
-    "language": "fr",
-    "date": "11-11",
-    "title": "COP31 : lors des négociations climatiques, le difficile positionnement des « bons élèves »"
-   },
-   {
-    "id": "01a1c6f7-9345-76c3-bd5d-ac71412c2c42",
-    "language": "fr",
-    "date": "11-10",
-    "title": "COP31: la Belgique confirme son engagement pour le climat, avec de nombreux bémols"
-   },
-   {
-    "id": "01a1b243-e474-7cc3-80e4-c98d59563f7e",
-    "language": "nl",
-    "date": "11-06",
-    "title": "Op de klimaattop in Antalya is het aan leiders om te kiezen: dienen ze de fossiele industr"
-   }
-  ]
- },
  "cracovie": {
   "titles": {
    "fr": "Que s'est-il passé à Cracovie ?",
@@ -58,22 +7,10 @@
   },
   "items": [
    {
-    "id": "01a1c689-5cad-71f7-b60a-9d8bc23f1cf9",
+    "id": "01a1ca51-3367-7b47-a956-5bce556ecefe",
     "language": "en",
     "date": "11-10",
     "title": "Polish unity on show as thousands join silent march for Krakow shooting victims"
-   },
-   {
-    "id": "01a1bd39-bf6c-7042-8d9c-7689cc3a50ec",
-    "language": "en",
-    "date": "11-08",
-    "title": "Doctor who treated victims of Krakow shooting speaks to the BBC"
-   },
-   {
-    "id": "01a1bc5d-86c6-7e0f-b263-03e8b35724cb",
-    "language": "en",
-    "date": "11-08",
-    "title": "Surgeon having lunch near Krakow shooting undoubtedly saved officer's life, colleague says"
    },
    {
     "id": "01a1c689-5aee-7978-ba39-b27b3512410a",
@@ -113,6 +50,63 @@
    }
   ]
  },
+ "hegseth": {
+  "titles": {
+   "fr": "Pourquoi Pete Hegseth est-il visé par une procédure de destitution ?",
+   "nl": "Waarom dreigt er een afzettingsprocedure tegen Pete Hegseth?",
+   "en": "Why is Pete Hegseth facing an impeachment attempt?"
+  },
+  "items": [
+   {
+    "id": "01a1ca51-3312-75ec-9e32-7dfe1e39cae9",
+    "language": "en",
+    "date": "11-11",
+    "title": "US House blocks bid to impeach Defence Secretary Pete Hegseth, for now"
+   },
+   {
+    "id": "01a1ca51-327e-7d93-9b78-fc0dbea4a866",
+    "language": "en",
+    "date": "11-11",
+    "title": "Pentagon declares ‘total victory’ after House Republicans block effort to impeach Pete Heg"
+   },
+   {
+    "id": "01a1c98b-5c46-738b-8c23-bdf14682fbde",
+    "language": "fr",
+    "date": "11-11",
+    "title": "Pete Hegseth échappe à une première procédure de destitution au Congrès américain"
+   },
+   {
+    "id": "01a1c98a-e740-730a-8c31-1cfbdc2fc767",
+    "language": "fr",
+    "date": "11-11",
+    "title": "Le ministre de la Défense américaine, Pete Hegseth, échappe procédure de destitution: vers"
+   },
+   {
+    "id": "01a1c80a-4a8b-7506-8dc8-bee7d30195cf",
+    "language": "fr",
+    "date": "11-11",
+    "title": "Etats-Unis : Pete Hegseth, défiant et offensif, échappe à une tentative de destitution au "
+   },
+   {
+    "id": "01a1c954-69b9-7429-acca-aa88d7ce4a20",
+    "language": "nl",
+    "date": "11-11",
+    "title": "Republikeinen blokkeren afzettingsprocedure Hegseth"
+   },
+   {
+    "id": "01a1c6c0-a2ee-7f23-a860-0eca5a2ece98",
+    "language": "nl",
+    "date": "11-10",
+    "title": "Trump blijft pal achter defensieminister Hegseth staan, maar voor hoe lang? ‘Zijn loyautei"
+   },
+   {
+    "id": "01a1c689-5d50-79ec-a33e-c8c83d384297",
+    "language": "nl",
+    "date": "11-10",
+    "title": "Hegseth vecht voor overleven en zet Republikeinse afzettingspoging weg als 'sabotage'"
+   }
+  ]
+ },
  "nvidia": {
   "titles": {
    "fr": "Que reproche-t-on au patron de Nvidia ?",
@@ -121,22 +115,16 @@
   },
   "items": [
    {
-    "id": "01a1c72e-843d-7f39-92fe-b82b524053f1",
-    "language": "en",
-    "date": "11-10",
-    "title": "Nvidia hires major New York law firm to investigate Jensen Huang affair"
-   },
-   {
     "id": "01a1ca1b-b6e3-76f2-8bba-142602973624",
     "language": "en",
     "date": "11-10",
     "title": "The US is winning the AI race. Jensen Huang could have blown it"
    },
    {
-    "id": "01a1c689-5c91-7001-a509-e5a1c4e8774e",
+    "id": "01a1ca51-3243-7b8d-8b6c-0792e5205f72",
     "language": "en",
-    "date": "11-10",
-    "title": "Trump says FBI investigating Nvidia boss's affair with alleged Chinese spy"
+    "date": "11-09",
+    "title": "Nvidia opens investigation after report CEO Jensen Huang was target of foreign intelligenc"
    },
    {
     "id": "01a1c98a-e739-79fe-9b8b-897d9b6c3143",
@@ -157,6 +145,12 @@
     "title": "Scandale chez Nvidia : Trump défend Jensen Huang, Pékin dément et le FBI s’en mêle… les de"
    },
    {
+    "id": "01a1ca30-d583-7f96-acc0-f1e6b49e5428",
+    "language": "nl",
+    "date": "11-11",
+    "title": "Wie is Alice Huang, de vrouw om wie het Nvidia-schandaal draait?"
+   },
+   {
     "id": "01a1c6f7-905c-780c-9bb4-f3c228cc6906",
     "language": "nl",
     "date": "11-10",
@@ -167,69 +161,63 @@
     "language": "nl",
     "date": "11-10",
     "title": "Wie is Alice Huang, de Chinese spionne met een verdacht eigen bedrijf dicht bij Nvidia?"
-   },
-   {
-    "id": "01a1c689-718c-7eaa-ab1b-03d7732f0812",
-    "language": "nl",
-    "date": "11-10",
-    "title": "FBI onderzoekt spionagezaak Nvidia, topman Jensen Huang had pr-bedrijf gespecialiseerd in "
    }
   ]
  },
- "paraguay": {
+ "pape": {
   "titles": {
-   "fr": "Pourquoi le président du Paraguay a-t-il été destitué ?",
-   "nl": "Waarom werd de president van Paraguay afgezet?",
-   "en": "Why was the president of Paraguay removed from office?"
+   "fr": "Que retenir de la visite du pape Léon XIV en Argentine ?",
+   "nl": "Wat onthouden we van het bezoek van paus Leo XIV aan Argentinië?",
+   "en": "What stood out in Pope Leo XIV's visit to Argentina?"
   },
   "items": [
    {
-    "id": "01a1b46a-3bd2-7f27-b7af-96c269d99e22",
+    "id": "01a1ca51-320a-7011-849a-5b2102fb62c9",
     "language": "en",
-    "date": "11-07",
-    "title": "Paraguay's President Santiago Peña impeached and arrested"
+    "date": "11-09",
+    "title": "Pope Leo delivers stinging rebuke of Milei’s austerity measures during Argentina visit"
    },
    {
-    "id": "01a1b3c5-dcfe-7859-b098-82a7187045d2",
+    "id": "01a1ca51-3228-783d-a5c4-de8218b381e4",
     "language": "en",
-    "date": "11-07",
-    "title": "Ousted Paraguay president under house arrest after banking crisis leaves 60% of country un"
+    "date": "11-08",
+    "title": "Pope’s visit to Argentina sets up showdown with ‘hyper-capitalist’ Milei"
    },
    {
-    "id": "01a1b243-d57c-7dc3-80be-5f186c8d2873",
-    "language": "en",
-    "date": "11-06",
-    "title": "Paraguay’s president quits after millions of people’s savings frozen in bank crisis"
+    "id": "01a1c9c2-4f44-70a7-92f5-0bb686f25823",
+    "language": "fr",
+    "date": "11-11",
+    "title": "\"Il y a une place pour vous dans l'Église\" : le message fort du pape aux jeunes Argentins"
    },
    {
-    "id": "01a1c689-639c-727d-a2d7-253263883208",
+    "id": "01a1c689-6393-7777-b948-229231554b62",
     "language": "fr",
     "date": "11-09",
-    "title": "Le Paraguay cherche à l'étranger les fonds d'une banque en faillite"
+    "title": "Violences sexuelles au sein de l'Eglise: le pape a rencontré en Argentine cinq victimes de"
    },
    {
-    "id": "01a1b50f-85f8-729a-8a79-05a33eb42fdc",
+    "id": "01a1bd02-5bf1-74c0-a44a-d56509b30cc3",
     "language": "fr",
-    "date": "11-07",
-    "title": "Au Paraguay, la destitution du président Santiago Peña met en lumière les collusions entre"
+    "date": "11-08",
+    "title": "Le pape Léon XIV arrive en Argentine, deuxième étape de sa tournée en Amérique du Sud"
    },
    {
-    "id": "01a1b4d8-1f64-756c-b574-f6c77a7921fc",
-    "language": "fr",
-    "date": "11-07",
-    "title": "Crise bancaire au Paraguay : Le président paraguayen Santiago Peña destitué et placé en dé"
-   },
-   {
-    "id": "01a1ba00-6151-7665-8546-efcfbf2f9122",
+    "id": "01a1ba00-614c-798b-8074-9a41543a2852",
     "language": "nl",
     "date": "11-08",
-    "title": "Afgezette Paraguayaanse president Peña in voorlopige hechtenis na bankschandaal"
+    "title": "Paus Leo maant in Uruguay tot Latijns-Amerikaanse eenheid en roept jongeren op te trouwen "
    },
    {
-    "id": "01a1b4d8-965c-7a54-b33e-8693f3b3be97",
+    "id": "01a1b243-ce09-77d2-9338-80f43f70f271",
     "language": "nl",
-    "date": "11-07",
-    "title": "Afgezette president Paraguay onder huisarrest na val bank"
+    "date": "11-06",
+    "title": "De paus reist naar Latijns-Amerika. Zijn missie: de jeugd terugwinnen"
+   },
+   {
+    "id": "01a1b243-e486-736a-947d-414dae7f30ed",
+    "language": "nl",
+    "date": "11-06",
+    "title": "‘Voor deze regering is het private eigendom heilig’: waarom het pausbezoek Milei onder dru"
    }
   ]
  },
@@ -241,22 +229,10 @@
   },
   "items": [
    {
-    "id": "01a1c9f9-4179-70e3-8d0c-e46a1152659f",
+    "id": "01a1ca51-3259-76ea-ab6d-00b15a672b7d",
     "language": "en",
     "date": "11-11",
     "title": "Ukraine’s Zelenskyy ‘happy’ with US envoys’ approach as Russia talks enter second day – Eu"
-   },
-   {
-    "id": "01a1c689-5c81-7a1d-958c-c01816526253",
-    "language": "en",
-    "date": "11-10",
-    "title": "First day of Ukraine peace talks constructive, Zelensky says"
-   },
-   {
-    "id": "01a1c689-6843-782f-bd2d-4009c8da11d3",
-    "language": "en",
-    "date": "11-10",
-    "title": "Russia-Ukraine talks ‘very productive,’ says US’s Rubio – Europe live"
    },
    {
     "id": "01a1c9f8-cb70-7b24-8b38-5378f08281aa",
@@ -265,16 +241,16 @@
     "title": "Guerre en Ukraine: reprise des pourparlers à Abou Dhabi entre Kiev et Moscou sous médiatio"
    },
    {
-    "id": "01a1c8e6-86ee-7cb7-a86c-7323e38c39fa",
-    "language": "fr",
-    "date": "11-11",
-    "title": "Guerre en Ukraine : à Abu Dhabi, les pourparlers russo-ukrainiens condamnés à l’impasse"
-   },
-   {
     "id": "01a1c689-586c-7acc-b0b3-613502acb3ce",
     "language": "fr",
     "date": "11-10",
     "title": "Les pourparlers Ukraine-Russie à Abou Dhabi sont \"très productifs\", affirme Rubio"
+   },
+   {
+    "id": "01a1c689-633c-75a9-bb04-df930b32a8f0",
+    "language": "fr",
+    "date": "11-10",
+    "title": "Guerre en Ukraine: les pourparlers à Abou Dhabi sont \"très productifs\", affirme Rubio"
    },
    {
     "id": "01a1c689-717b-744d-9213-3f90ffb36379",

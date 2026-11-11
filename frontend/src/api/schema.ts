@@ -624,6 +624,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/workspaces/{workspace_id}/articles/{article_id}/publications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Publications */
+        get: operations["list_publications_api_workspaces__workspace_id__articles__article_id__publications_get"];
+        put?: never;
+        /**
+         * Send
+         * @description Sends the validated version: as a draft, or published (never without a click of the
+         *     author). The same WordPress post is updated by every later send.
+         */
+        post: operations["send_api_workspaces__workspace_id__articles__article_id__publications_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/workspaces/{workspace_id}/articles/{article_id}/send": {
         parameters: {
             query?: never;
@@ -1739,6 +1761,83 @@ export interface paths {
         get: operations["progress_api_workspaces__workspace_id__progress_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/publications/{publication_id}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Events */
+        get: operations["list_events_api_workspaces__workspace_id__publications__publication_id__events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/publishing/sites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Sites */
+        get: operations["list_sites_api_workspaces__workspace_id__publishing_sites_get"];
+        put?: never;
+        /**
+         * Add Site
+         * @description Adds a WordPress site; its application password is sealed at once, and « Tester »
+         *     starts by itself.
+         */
+        post: operations["add_site_api_workspaces__workspace_id__publishing_sites_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/publishing/sites/{site_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Site */
+        put: operations["update_site_api_workspaces__workspace_id__publishing_sites__site_id__put"];
+        post?: never;
+        /** Delete Site */
+        delete: operations["delete_site_api_workspaces__workspace_id__publishing_sites__site_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/workspaces/{workspace_id}/publishing/sites/{site_id}/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check Site
+         * @description « Tester »: the worker connects; the site shows the result when it is done.
+         */
+        post: operations["check_site_api_workspaces__workspace_id__publishing_sites__site_id__check_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2977,6 +3076,21 @@ export interface components {
              */
             updated_at: string;
         };
+        /** EventView */
+        EventView: {
+            /** Action */
+            action: string;
+            /** At */
+            at: string | null;
+            /** Detail */
+            detail: string | null;
+            /** Remote Status */
+            remote_status: string | null;
+            /** Result */
+            result: string;
+            /** Version */
+            version: number;
+        };
         /** ExportSelectionBody */
         ExportSelectionBody: {
             /** Article Ids */
@@ -3687,6 +3801,67 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** PublicationBody */
+        PublicationBody: {
+            /**
+             * Action
+             * @default draft
+             * @enum {string}
+             */
+            action: "draft" | "publish";
+            /** Categories */
+            categories?: number[];
+            /**
+             * Site Id
+             * Format: uuid
+             */
+            site_id: string;
+            /** Tags */
+            tags?: string[];
+        };
+        /** PublicationView */
+        PublicationView: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "draft" | "publish";
+            /** Asked Version */
+            asked_version: number;
+            /** Categories */
+            categories: number[];
+            /** Error */
+            error: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Remote Id */
+            remote_id: number | null;
+            /** Remote Status */
+            remote_status: string | null;
+            /** Remote Url */
+            remote_url: string | null;
+            /** Sent At */
+            sent_at: string | null;
+            /**
+             * Site Id
+             * Format: uuid
+             */
+            site_id: string;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "pending" | "done" | "failed" | "to_check";
+            /** Tags */
+            tags: string[];
+            /** Updated At */
+            updated_at: string | null;
+            /** Version */
+            version: number | null;
+        };
         /** PullBody */
         PullBody: {
             /** Model */
@@ -3975,6 +4150,47 @@ export interface components {
             csrf_token: string;
             user: components["schemas"]["UserView"];
         };
+        /** SiteBody */
+        SiteBody: {
+            /** Name */
+            name: string;
+            /** Password */
+            password?: string | null;
+            /** Url */
+            url: string;
+            /** Username */
+            username: string;
+        };
+        /** SiteView */
+        SiteView: {
+            /** Categories */
+            categories: components["schemas"]["TermView"][];
+            /** Check Detail */
+            check_detail: string | null;
+            /** Check Pending */
+            check_pending: boolean;
+            /** Check Result */
+            check_result: string | null;
+            /** Check Role */
+            check_role: string | null;
+            /** Checked At */
+            checked_at: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Password Hint */
+            password_hint: string;
+            /** Tags */
+            tags: components["schemas"]["TermView"][];
+            /** Url */
+            url: string;
+            /** Username */
+            username: string;
+        };
         /**
          * Sort
          * @description How the feed is ordered (U03); pinned items stay first in the views that pin them.
@@ -4177,6 +4393,13 @@ export interface components {
         TagsBody: {
             /** Tags */
             tags: string[];
+        };
+        /** TermView */
+        TermView: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
         };
         /** TermsBody */
         TermsBody: {
@@ -5686,6 +5909,74 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ArticleView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_publications_api_workspaces__workspace_id__articles__article_id__publications_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicationView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    send_api_workspaces__workspace_id__articles__article_id__publications_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                article_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublicationBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicationView"];
                 };
             };
             /** @description Validation Error */
@@ -7961,6 +8252,202 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProgressView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_events_api_workspaces__workspace_id__publications__publication_id__events_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                publication_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_sites_api_workspaces__workspace_id__publishing_sites_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_site_api_workspaces__workspace_id__publishing_sites_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SiteBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_site_api_workspaces__workspace_id__publishing_sites__site_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                site_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SiteBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_site_api_workspaces__workspace_id__publishing_sites__site_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                site_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    check_site_api_workspaces__workspace_id__publishing_sites__site_id__check_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                site_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteView"];
                 };
             };
             /** @description Validation Error */

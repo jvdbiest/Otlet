@@ -1110,7 +1110,8 @@
     "tabs": {
       "label": "Sections des réglages",
       "ai": "Intelligence artificielle",
-      "backups": "Sauvegardes"
+      "backups": "Sauvegardes",
+      "publishing": "Publication"
     }
   },
   "backups": {
@@ -1464,6 +1465,109 @@
       "fromSecond": "seconde recherche",
       "byModel": "Jugé par votre modèle sur les titres et les résumés : ouvrez les articles pour vérifier.",
       "failed": "La lecture n'a pas abouti ({error}). Vous pouvez la relancer."
+    }
+  },
+  "publishing": {
+    "title": "Publication",
+    "intro": "Les sites WordPress vers lesquels Otlet envoie les articles de la Bibliothèque, en brouillon ou publiés. Rien ne part sans votre clic.",
+    "howTo": "Dans WordPress, créez de préférence un compte de rôle Auteur pour Otlet, puis un mot de passe d'application : Profil › Mots de passe d'application. Collez-le ici : il est scellé, et seul le service d'envoi peut le lire.",
+    "none": "Aucun site pour l'instant.",
+    "site": {
+      "new": "Ajouter un site WordPress",
+      "name": "Nom du site",
+      "url": "Adresse du site",
+      "username": "Identifiant WordPress",
+      "password": "Mot de passe d'application",
+      "passwordHelp": "Créé dans WordPress, Profil › Mots de passe d'application. Ce n'est pas le mot de passe de connexion.",
+      "passwordKept": "Laissez vide pour garder celui qui finit par {{hint}}",
+      "passwordEnds": "mot de passe …{{hint}}",
+      "add": "Ajouter et tester",
+      "save": "Enregistrer et tester",
+      "cancel": "Annuler",
+      "check": "Tester",
+      "checking": "Test en cours…",
+      "neverChecked": "Pas encore testé.",
+      "checkOk": "Connexion réussie le {{date}} : compte {{role}}, {{categories}} catégories et {{tags}} étiquettes lues.",
+      "adminWarning": "Ce compte est Administrateur. Un compte Auteur suffit et limite les risques.",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "confirmDelete": "Supprimer ce site ? Les articles déjà envoyés restent dans WordPress."
+    },
+    "panel": {
+      "title": "Publier sur WordPress",
+      "noSite": "Aucun site WordPress n'est configuré.",
+      "addSite": "Ajouter un site",
+      "notValidated": "Validez une version de l'article pour pouvoir l'envoyer.",
+      "site": "Site",
+      "categories": "Catégories",
+      "tags": "Étiquettes",
+      "tagsPlaceholder": "MotoGP, Qatar",
+      "tagsHelp": "Séparées par des virgules. Une étiquette absente du site est créée, si le compte en a le droit.",
+      "notChecked": "La connexion à ce site n'a pas réussi ou n'a pas été testée.",
+      "toSettings": "Voir les réglages",
+      "sendDraft": "Envoyer en brouillon vers {{site}}",
+      "updateDraft": "Mettre à jour le brouillon sur {{site}}",
+      "publish": "Publier…",
+      "updatePublished": "Mettre à jour l'article en ligne…",
+      "publishedHelp": "L'article est en ligne : Otlet ne le repasse pas en brouillon. Pour le retirer, dépubliez-le dans WordPress."
+    },
+    "confirm": {
+      "publish": "Publier « {{title}} » sur {{site}} ?",
+      "update": "Mettre à jour l'article en ligne « {{title}} » sur {{site}} ?",
+      "help": "La version validée (v{{number}}) sera visible par les lecteurs du site dès l'envoi.",
+      "publishNow": "Publier maintenant",
+      "updateNow": "Mettre à jour maintenant",
+      "cancel": "Annuler"
+    },
+    "onSite": {
+      "draft": "Brouillon sur {{site}}",
+      "published": "Publié sur {{site}}",
+      "none": "Pas encore sur {{site}}"
+    },
+    "open": "Ouvrir dans WordPress",
+    "sentVersion": "v{{number}} envoyée le {{date}}",
+    "outdated": "La version en ligne (v{{sent}}) est plus ancienne que la version validée (v{{validated}}).",
+    "pendingDraft": "Envoi du brouillon en cours…",
+    "pendingPublish": "Publication en cours…",
+    "showJournal": "Journal des envois",
+    "hideJournal": "Masquer le journal",
+    "done": "réussi",
+    "versionN": "v{{number}}",
+    "action": {
+      "draft": "brouillon",
+      "publish": "publication"
+    },
+    "reasons": {
+      "address_not_allowed": "Cette adresse interne doit être autorisée par l'administrateur (Réglages › IA › Politique de l'instance : réseau et port).",
+      "already_published": "L'article est déjà en ligne : publiez la mise à jour, ou dépubliez-le dans WordPress.",
+      "bad_credentials": "Identifiant ou mot de passe d'application refusé par WordPress.",
+      "forbidden": "Le compte n'a pas le droit de faire cela sur ce site.",
+      "invalid_name": "Donnez un nom au site.",
+      "invalid_password": "Collez le mot de passe d'application créé dans WordPress.",
+      "invalid_tag": "Une étiquette est vide ou trop longue.",
+      "invalid_url": "Saisissez l'adresse du site, qui commence par http:// ou https://.",
+      "invalid_username": "Saisissez l'identifiant WordPress.",
+      "name_taken": "Un site porte déjà ce nom.",
+      "no_rest_api": "L'API de WordPress est introuvable à cette adresse.",
+      "not_logged_in": "WordPress ne reconnaît pas la connexion : une extension de sécurité ou le serveur bloque peut-être les mots de passe d'application.",
+      "not_validated": "Validez d'abord une version de l'article dans la Bibliothèque.",
+      "not_wordpress": "Ce site ne répond pas comme un WordPress.",
+      "redirected": "Le site redirige ailleurs : vérifiez l'adresse (https, www).",
+      "refused": "Le site a refusé l'envoi.",
+      "remote_deleted": "L'article a été supprimé dans WordPress. Renvoyez-le pour en créer un nouveau.",
+      "secrets_unavailable": "Le service d'envoi ne peut pas lire le mot de passe (clé de l'instance absente).",
+      "send_running": "Un envoi de cet article est déjà en cours.",
+      "server_error": "Le site a rencontré une erreur. Réessayez plus tard.",
+      "several_posts": "Plusieurs articles WordPress portent la marque de cet article : vérifiez-les dans WordPress.",
+      "site_not_found": "Ce site n'existe plus.",
+      "tag_not_allowed": "Le compte ne peut pas créer cette étiquette : créez-la dans WordPress ou choisissez-en une existante.",
+      "timeout": "Le site n'a pas répondu à temps.",
+      "too_close": "Cette version est trop proche d'une source : justifiez-la avant de l'envoyer.",
+      "too_close_blocked": "Cette version est trop proche d'une source : justifiez-la avant de l'envoyer.",
+      "too_close_pending": "La vérification de proximité est en cours : réessayez dans un instant.",
+      "too_many_terms": "Au plus 20 catégories et 20 étiquettes.",
+      "unreachable": "Le site est injoignable.",
+      "version_changed": "La version validée a changé pendant l'envoi : renvoyez l'article."
     }
   }
 }

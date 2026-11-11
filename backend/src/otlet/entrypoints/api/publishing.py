@@ -111,7 +111,7 @@ class PublicationView(BaseModel):
         )
 
 
-class SendBody(BaseModel):
+class PublicationBody(BaseModel):
     site_id: UUID
     # draft: « Envoyer en brouillon », the default; publish: « Publier », confirmed by the author.
     action: Literal["draft", "publish"] = "draft"
@@ -225,7 +225,7 @@ def build_router(
         return [PublicationView.of(p) for p in publishing.publications(context, article_id)]
 
     @router.post("/articles/{article_id}/publications", status_code=status.HTTP_202_ACCEPTED)
-    def send(article_id: UUID, body: SendBody, context: Context) -> PublicationView:
+    def send(article_id: UUID, body: PublicationBody, context: Context) -> PublicationView:
         """Sends the validated version: as a draft, or published (never without a click of the
         author). The same WordPress post is updated by every later send."""
         try:

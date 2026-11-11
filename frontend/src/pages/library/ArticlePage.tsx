@@ -16,6 +16,7 @@ import {
 import { errorText, formatDate } from "../watch/labels.ts";
 import { styles } from "../watch/styles.ts";
 import { ArticleVersions } from "../writing/ArticleVersions.tsx";
+import { PublishPanel } from "./PublishPanel.tsx";
 import { Warning } from "../writing/Warning.tsx";
 
 function Tags({ workspaceId, article }: { workspaceId: string; article: ArticleView }) {
@@ -134,6 +135,14 @@ export function ArticlePage({ articleId }: { articleId: string }) {
           {data.status === "archive" ? t("library.unarchive") : t("library.archive")}
         </button>
       </p>
+      {data.status !== "archive" && (
+        <PublishPanel
+          workspaceId={workspaceId}
+          articleId={data.id}
+          title={validated?.title ?? data.title}
+          validated={data.status === "valide" ? data.validated_version : null}
+        />
+      )}
       <section className={styles.panel} aria-labelledby="draft-title">
         <h2 id="draft-title">{t("library.versions")}</h2>
         <ArticleVersions

@@ -172,6 +172,7 @@ class Drafts:
         articles: ArticleStore,
         writer: Writer | None = None,
         charter: Callable[[UUID], str] | None = None,
+        language_model: Callable[[UUID, str], ModelChoice | None] | None = None,
     ) -> None:
         """The API passes no writer: it only records generations; the worker writes them.
         `charter` gives the writing charter of a user (none when not given)."""
@@ -179,6 +180,9 @@ class Drafts:
         self._articles = articles
         self._writer = writer
         self._charter = charter or (lambda user_id: "")
+        # The model the user chose for a writing language (docs/design/MODELE_PAR_LANGUE.md):
+        # used when the brief names none; none: the user's profile, as before.
+        self._language_model = language_model or (lambda user_id, language: None)
 
     def start(
         self, context: WorkspaceContext, brief_id: UUID, *, force: bool = False
@@ -252,6 +256,16 @@ class Drafts:
         asked = brief.fields.length
         used = Length.SHORT if longest is None else min(asked, longest, key=WORDS.__getitem__)
         fields = replace(brief.fields, length=used)
+        # Which model writes, and why: the brief's, else the one set for its language, else
+        # the profile (Joël, 2026-11-11, after LANG1 and LANG2).
+        model_reason = "brief"
+        if fields.model is None:
+            by_language = self._language_model(user_id, fields.language)
+            if by_language is not None:
+                fields = replace(fields, model=by_language)
+                model_reason = "language"
+            else:
+                model_reason = "profile"
         window, local = writer.room(user_id, fields.model)
         output = OUTPUT_TOKENS[fields.length]
         charter = self._charter(user_id)
@@ -346,6 +360,8 @@ class Drafts:
                 kept_first = True
         details: dict[str, Any] = {
             "kept_first_answer": kept_first,
+            # brief, language or profile: why this model wrote the draft.
+            "model_reason": model_reason,
             # The language the draft is written in, when its frequent words tell (none: too short
             # or mixed): a draft in another language than asked is shown with a warning.
             "language_written": None if written.text is None else _language_of(written.text),

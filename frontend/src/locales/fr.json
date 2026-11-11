@@ -599,7 +599,9 @@
       "invalid_model_name": "Ce nom de modèle n'est pas valide (par exemple qwen3:8b).",
       "not_a_local_engine": "Seul un moteur local liste ses modèles.",
       "invalid_context_window": "Une fenêtre de contexte compte de 2 048 à 2 000 000 jetons.",
-      "invalid_charter": "La charte dépasse 8 000 caractères."
+      "invalid_charter": "La charte dépasse 8 000 caractères.",
+      "unknown_language": "Cette langue n'est pas proposée pour la rédaction.",
+      "duplicate_language": "Une langue apparaît deux fois."
     },
     "models": {
       "loading": "Lecture des modèles installés…",
@@ -625,6 +627,14 @@
       "helpLocal": "Pour un moteur local, la fenêtre dépend de la machine : « Automatique » suppose 4 096 jetons, la valeur par défaut d'Ollama. Si vous avez réglé OLLAMA_CONTEXT_LENGTH, indiquez la même valeur ici.",
       "helpRemote": "« Automatique » utilise la fenêtre de chaque modèle, connue d'Otlet. Une valeur personnalisée la réduit, par exemple pour envoyer moins de texte.",
       "save": "Enregistrer la fenêtre"
+    },
+    "languages": {
+      "title": "Modèle par langue de rédaction",
+      "help": "Pour chaque langue, le modèle qui écrit les brouillons quand le brief n'en fixe pas. Le modèle choisi dans un brief reste prioritaire. « Mon profil habituel » : les modèles du profil ci-dessus, dans l'ordre.",
+      "profile": "Mon profil habituel",
+      "advice": "D'après les bancs LANG1 et LANG2 (novembre 2026), gemma4 est le seul modèle local essayé qui a toujours écrit dans la langue demandée (FR, NL, EN). Ses faits restent à vérifier avec l'aide à la phrase.",
+      "save": "Enregistrer",
+      "saved": "Enregistré."
     }
   },
   "brief": {
@@ -718,6 +728,12 @@
       "help": "Vérifiés avec le Reporter, avec leur source. La rédaction les reçoit comme des faits à respecter, et les chiffres et dates du brouillon sont contrôlés contre eux et contre les sources.",
       "remove": "Retirer",
       "conversation": "Voir la conversation du Reporter"
+    },
+    "writtenBy": {
+      "brief": "Écrit par {{model}}, le modèle choisi ci-dessous.",
+      "language": "Écrit par {{model}} (réglage pour le {{language}}).",
+      "profile": "Écrit par votre profil habituel : aucun modèle n'est réglé pour le {{language}}.",
+      "choose": "Choisir le modèle pour cette langue"
     }
   },
   "proximity": {

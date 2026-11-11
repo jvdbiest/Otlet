@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Statut | Proposition ; LANG1 conclu en échec le 2026-11-11 : pas de mode « Automatique » pour l’instant |
+| Statut | Construit le 2026-11-11, sans mode « Automatique » (LANG1 et LANG2 en échec) |
 | Ouverte le | 2026-11-10 |
 | Origine | Joël, 2026-11-10, après la comparaison en néerlandais de trois modèles locaux sur le brief MotoGP |
 | Choix concernés | ADR-0027 (passerelle IA : l'utilisateur choisit, l'administrateur autorise ou bloque), contrôle de langue du brouillon |
@@ -40,3 +40,15 @@ Il ne sera proposé que si LANG1 montre, pour une langue, un modèle meilleur de
 - Le mode « Automatique » vaut-il la peine, ou un simple conseil affiché à côté de la liste suffit-il (« Pour le néerlandais, gemma4 a donné les meilleurs résultats ») ?
 - Faut-il refaire la mesure quand un nouveau modèle est installé ?
 - Le français, langue de la plupart des sources, a-t-il besoin d'un réglage, ou le profil habituel suffit-il ?
+
+## 6. Ce qui est construit (2026-11-11)
+
+Décision de Joël après LANG2 : le réglage manuel d'abord, la ligne de langue neutre dans la charte pour la cohérence, pas de chartes par langue pour l'instant. Si des règles propres à une langue deviennent utiles, ce sera une charte générale complétée par des règles par langue, pas trois chartes indépendantes.
+
+- **Réglages > IA > « Modèle par langue de rédaction »** : pour chacune des 7 langues des briefs, « Mon profil habituel » ou un modèle des fournisseurs de l'utilisateur, avec les mêmes contrôles que le profil (fournisseur à soi, modèle permis par l'instance). Table `ai_language_models` (migration 0047), sous sécurité par ligne comme le profil ; supprimer un fournisseur supprime ses choix.
+- **Ordre de priorité à la rédaction** : le modèle du brief, sinon celui de la langue du brief, sinon le profil. Le brouillon garde `model_reason` (`brief`, `language` ou `profile`).
+- **Page du brief** : sous la liste « Langue », la ligne « Écrit par … » dit quel modèle écrira et pourquoi, avec le lien « Choisir le modèle pour cette langue » qui ouvre le réglage dans un nouvel onglet.
+- **Un conseil, pas un automatisme** : le réglage rappelle que gemma4 est le seul modèle local essayé qui a toujours tenu la langue (LANG1, LANG2).
+- **Charte par défaut** : la ligne 20 devient « Écris dans la langue de rédaction demandée par le brief, dans un style correct, clair, fluide et professionnel. ». Une charte modifiée par un utilisateur n'est pas touchée.
+
+Essai réel sur .252 : un brief néerlandais sans modèle, avec gemma4 réglé pour le néerlandais, a été écrit par gemma4 (`model_reason` = `language`), en néerlandais, en 1 min 30. Le réglage de Joël a été remis à vide ensuite.

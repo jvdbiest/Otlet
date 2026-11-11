@@ -3,7 +3,7 @@ import { useQueries, useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { catalogueQuery, installedQuery, profileQuery, providersQuery } from "../../ai.ts";
+import { languageModelsQuery } from "../../ai.ts";
 import { ApiError } from "../../api/client.ts";
 import { itemQuery } from "../../collection.ts";
 import { conversationQuery } from "../../reporter.ts";
@@ -28,6 +28,7 @@ import { errorText, formatDate } from "../watch/labels.ts";
 import { styles } from "../watch/styles.ts";
 import { DraftPanel } from "./DraftPanel.tsx";
 import { MatterPanel } from "./MatterPanel.tsx";
+import { modelName, useModelOptions } from "./modelOptions.ts";
 
 const LENGTHS: readonly BriefLength[] = ["short", "medium", "long"];
 const MODES: readonly BriefMode[] = ["synthesis", "panorama"];
@@ -507,6 +508,7 @@ function BriefForm({
                 </option>
               ))}
             </select>
+            <WrittenBy language={language} model={model} />
           </div>
         </div>
         <ChoiceField
@@ -820,37 +822,32 @@ function ChoiceField({
   );
 }
 
+/** Which model will write, for the language chosen, and a link to choose it
+ * (docs/design/MODELE_PAR_LANGUE.md): the brief's model, else the language's, else the profile. */
+function WrittenBy({ language, model }: { language: string; model: string }) {
+  const { t } = useTranslation();
+  const chosen = useQuery(languageModelsQuery);
+  const name = t(`topics.languageNames.${language as (typeof LANGUAGES)[number]}`);
+  const byLanguage = chosen.data?.entries.find((entry) => entry.language === language);
+  const text =
+    model !== ""
+      ? t("brief.writtenBy.brief", { model: modelName(model) })
+      : byLanguage !== undefined
+        ? t("brief.writtenBy.language", { model: byLanguage.model, language: name })
+        : t("brief.writtenBy.profile", { language: name });
+  return (
+    <span className={styles.help}>
+      {text}{" "}
+      <a href="/reglages#ai-languages" target="_blank" rel="noopener">
+        {t("brief.writtenBy.choose")}
+      </a>
+    </span>
+  );
+}
+
 function ModelSelect({ value, onChange }: { value: string; onChange: (value: string) => void }) {
   const { t } = useTranslation();
-  const providers = useQuery(providersQuery);
-  const profile = useQuery(profileQuery);
-  const catalogue = useQuery(catalogueQuery);
-  const local = (providers.data ?? []).filter(
-    (provider) => catalogue.data?.kinds.find((kind) => kind.name === provider.kind)?.custom_models === true,
-  );
-  const installed = useQueries({ queries: local.map((provider) => installedQuery(provider.id)) });
-  const options: { value: string; label: string }[] = [];
-  for (const provider of providers.data ?? []) {
-    const engine = installed[local.findIndex((other) => other.id === provider.id)]?.data;
-    const models = new Set(
-      engine !== undefined
-        ? engine.models.map((model) => model.name)
-        : (catalogue.data?.models ?? [])
-            .filter((model) => model.provider === provider.kind && model.status !== "blocked")
-            .map((model) => model.model),
-    );
-    for (const entry of profile.data?.entries ?? []) {
-      if (entry.provider_id === provider.id) {
-        models.add(entry.model);
-      }
-    }
-    for (const model of models) {
-      options.push({ value: `${provider.id}|${model}`, label: `${provider.name} · ${model}` });
-    }
-  }
-  if (value !== "" && !options.some((option) => option.value === value)) {
-    options.push({ value, label: value.split("|", 2)[1] ?? value });
-  }
+  const options = useModelOptions([value]);
   return (
     <div className={styles.field}>
       <label htmlFor="brief-model">{t("brief.model")}</label>

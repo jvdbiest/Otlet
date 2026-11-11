@@ -230,3 +230,48 @@ def test_the_worker_opens_the_key_of_its_user_only(
 
     with pytest.raises(PrivateKeyUnavailable):
         SealedKeys(engine, None).open(alice, groq.id)  # the API has no private key
+
+
+@requires_database
+def test_a_model_per_writing_language_belongs_to_its_user(
+    migrated: TestDatabase, keys: tuple[X25519PrivateKey, Path]
+) -> None:
+    """docs/design/MODELE_PAR_LANGUE.md: a language left out writes with the profile."""
+    _, public_file = keys
+    engine = db.create_engine(migrated.app_url)
+    settings = AiSettings(PostgresAiSettings(engine), CATALOGUE, PublicKeySealer(public_file))
+    alice, bob = user(engine, "alice@example.org"), user(engine, "bob@example.org")
+    settings.set_policy(is_admin=True, allowed_paid=[], networks=["192.168.1.0/24"], ports=[11434])
+    local = settings.add_provider(
+        alice, name="Ollama", kind="ollama", endpoint="http://192.168.1.5:11434/v1", api_key=None
+    )
+    languages = ("fr", "nl", "en")
+
+    assert settings.language_models(alice) == {}
+    chosen = settings.set_language_models(
+        alice,
+        {
+            "nl": ProfileEntry(local.id, " gemma4:latest "),
+            "en": ProfileEntry(local.id, "qwen3:14b"),
+        },
+        languages,
+    )
+    assert chosen == settings.language_models(alice)
+    assert chosen["nl"] == ProfileEntry(local.id, "gemma4:latest")
+    assert "fr" not in chosen  # the profile writes French
+
+    with pytest.raises(SettingsError) as caught:
+        settings.set_language_models(alice, {"xx": ProfileEntry(local.id, "qwen3:14b")}, languages)
+    assert caught.value.code == "unknown_language"
+    with pytest.raises(SettingsError) as caught:
+        settings.set_language_models(
+            bob, {"nl": ProfileEntry(local.id, "gemma4:latest")}, languages
+        )
+    assert caught.value.code == "unknown_provider"
+    assert settings.language_models(bob) == {}
+
+    # Choosing again replaces every choice; removing the provider removes its choices.
+    settings.set_language_models(alice, {"nl": ProfileEntry(local.id, "gemma4:latest")}, languages)
+    assert list(settings.language_models(alice)) == ["nl"]
+    assert settings.delete_provider(alice, local.id)
+    assert settings.language_models(alice) == {}

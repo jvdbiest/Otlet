@@ -7,6 +7,7 @@ import { AiButton } from "../../layout/AiButton.tsx";
 import {
   budgetQuery,
   installedQuery,
+  languageModelsQuery,
   pullQuery,
   callsQuery,
   catalogueQuery,
@@ -20,6 +21,7 @@ import {
   useSaveBudget,
   useSaveCharter,
   useSavePolicy,
+  useSaveLanguageModels,
   useSaveProfile,
   useCancelCheck,
   useStartCheck,
@@ -35,6 +37,7 @@ import { sessionQuery } from "../../session.ts";
 import { errorText, formatDate } from "../watch/labels.ts";
 import { styles } from "../watch/styles.ts";
 import { SettingsTabs } from "./SettingsTabs.tsx";
+import { useModelOptions } from "../writing/modelOptions.ts";
 
 /** Réglages > IA (F05, ADR-0027): the user chooses providers and models, sets a budget, tests
  * the profile; the administrator of the instance allows or blocks. */
@@ -52,6 +55,7 @@ export function AiSettingsPage() {
       <p className={styles.help}>{t("ai.intro")}</p>
       <Providers catalogue={catalogue.data} />
       <Profile catalogue={catalogue.data} />
+      <LanguageModels />
       <Charter />
       <Budget />
       <Check />
@@ -64,6 +68,7 @@ export function AiSettingsPage() {
 const AI_ERRORS = [
   "address_not_allowed",
   "admin_only",
+  "duplicate_language",
   "duplicate_model",
   "engine_unreachable",
   "install_not_allowed",
@@ -81,6 +86,7 @@ const AI_ERRORS = [
   "name_taken",
   "profile_too_long",
   "unknown_kind",
+  "unknown_language",
   "unknown_model",
   "unknown_provider",
 ] as const;
@@ -621,6 +627,83 @@ function ContextWindow({ provider, local }: { provider: ProviderView; local: boo
 }
 
 /** The writing charter: standing instructions for every draft of the user (Joël, 2026-10-19). */
+// The languages a brief may be written in, as on the brief page.
+const WRITING_LANGUAGES = ["fr", "en", "de", "nl", "es", "it", "pt"] as const;
+
+/** The model of each writing language, used when a brief names none (docs/design/
+ * MODELE_PAR_LANGUE.md, Joël, 2026-11-11). No « Automatique »: LANG1 found no model to trust
+ * for a language on its own. */
+function LanguageModels() {
+  const { t } = useTranslation();
+  const saved = useQuery(languageModelsQuery);
+  const save = useSaveLanguageModels();
+  const [choices, setChoices] = useState<Record<string, string> | null>(null);
+  const shown: Record<string, string> =
+    choices ??
+    Object.fromEntries((saved.data?.entries ?? []).map((e) => [e.language, `${e.provider_id}|${e.model}`]));
+  const options = useModelOptions(Object.values(shown));
+  const error = errorOf(t, save.error);
+  return (
+    <section className={styles.panel} aria-labelledby="ai-languages">
+      <h2 id="ai-languages">{t("ai.languages.title")}</h2>
+      <p className={styles.help}>{t("ai.languages.help")}</p>
+      <ul className={styles.list}>
+        {WRITING_LANGUAGES.map((language) => (
+          <li key={language} className={styles.row}>
+            <label htmlFor={`ai-language-${language}`}>{t(`topics.languageNames.${language}`)}</label>
+            <select
+              id={`ai-language-${language}`}
+              value={shown[language] ?? ""}
+              onChange={(event) => {
+                setChoices({ ...shown, [language]: event.target.value });
+              }}
+            >
+              <option value="">{t("ai.languages.profile")}</option>
+              {options.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </li>
+        ))}
+      </ul>
+      <p className={styles.help}>{t("ai.languages.advice")}</p>
+      {error !== null && (
+        <p role="alert" className={styles.error}>
+          {error}
+        </p>
+      )}
+      <p className={styles.row}>
+        <button
+          type="button"
+          className={styles.primary}
+          disabled={save.isPending || choices === null}
+          onClick={() => {
+            const entries = Object.entries(shown)
+              .filter(([, value]) => value !== "")
+              .map(([language, value]) => {
+                const [providerId, ...model] = value.split("|");
+                return { language, provider_id: providerId ?? "", model: model.join("|") };
+              });
+            save.mutate(
+              { entries },
+              {
+                onSuccess: () => {
+                  setChoices(null);
+                },
+              },
+            );
+          }}
+        >
+          {t("ai.languages.save")}
+        </button>
+        {save.isSuccess && choices === null && <span className={styles.meta}>{t("ai.languages.saved")}</span>}
+      </p>
+    </section>
+  );
+}
+
 function Charter() {
   const { t } = useTranslation();
   const charter = useQuery(charterQuery);

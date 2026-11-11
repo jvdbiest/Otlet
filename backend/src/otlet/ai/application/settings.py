@@ -22,6 +22,7 @@ from otlet.ai.domain.settings import (
     check_context_window,
     check_endpoint,
     check_key,
+    check_language_models,
     check_name,
     check_profile,
     key_hint,
@@ -173,3 +174,22 @@ class AiSettings:
         )
         self._store.save_profile(user_id, profile)
         return profile
+
+    # The model of each writing language (docs/design/MODELE_PAR_LANGUE.md) -------------------
+
+    def language_models(self, user_id: UUID) -> dict[str, ProfileEntry]:
+        return self._store.language_models(user_id)
+
+    def set_language_models(
+        self, user_id: UUID, models: dict[str, ProfileEntry], languages: Sequence[str]
+    ) -> dict[str, ProfileEntry]:
+        """Replaces the user's choices; a language left out writes with the profile."""
+        checked = check_language_models(
+            models,
+            languages,
+            self._store.list_providers(user_id),
+            self._catalogue,
+            self._store.policy(),
+        )
+        self._store.save_language_models(user_id, checked)
+        return checked

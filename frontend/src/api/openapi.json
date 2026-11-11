@@ -2951,6 +2951,53 @@
         "title": "KindView",
         "type": "object"
       },
+      "LanguageModelView": {
+        "description": "The model that writes the drafts of one language when the brief names none.",
+        "properties": {
+          "language": {
+            "maxLength": 5,
+            "minLength": 2,
+            "title": "Language",
+            "type": "string"
+          },
+          "model": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Model",
+            "type": "string"
+          },
+          "provider_id": {
+            "format": "uuid",
+            "title": "Provider Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "language",
+          "provider_id",
+          "model"
+        ],
+        "title": "LanguageModelView",
+        "type": "object"
+      },
+      "LanguageModelsView": {
+        "description": "A language left out writes with the profile (docs/design/MODELE_PAR_LANGUE.md).",
+        "properties": {
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/LanguageModelView"
+            },
+            "maxItems": 7,
+            "title": "Entries",
+            "type": "array"
+          }
+        },
+        "required": [
+          "entries"
+        ],
+        "title": "LanguageModelsView",
+        "type": "object"
+      },
       "LibraryEntryView": {
         "properties": {
           "brief_id": {
@@ -6862,6 +6909,60 @@
           }
         },
         "summary": "Cancel Check"
+      }
+    },
+    "/api/ai/language-models": {
+      "get": {
+        "operationId": "get_language_models_api_ai_language_models_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LanguageModelsView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Language Models"
+      },
+      "put": {
+        "operationId": "set_language_models_api_ai_language_models_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LanguageModelsView"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LanguageModelsView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Language Models"
       }
     },
     "/api/ai/policy": {

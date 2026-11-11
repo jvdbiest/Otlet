@@ -49,7 +49,7 @@ from otlet.writing.application.editing import Editing
 from otlet.writing.application.library import Library, TagError, TitleError, clean_tags
 from otlet.writing.application.proximity import CHECK_PROXIMITY, override
 from otlet.writing.domain.article import Version
-from otlet.writing.domain.brief import BriefFields, Length
+from otlet.writing.domain.brief import BriefFields, Length, ModelChoice
 from otlet.writing.domain.charter import DEFAULT_CHARTER
 from otlet.writing.domain.document import check
 from otlet.writing.domain.proximity import TooClose
@@ -112,6 +112,7 @@ class World:
     jobs: list[tuple[str, dict[str, str]]]
     articles: PostgresArticleStore
     charters: Charters
+    settings: AiSettings
 
 
 @pytest.fixture
@@ -195,6 +196,14 @@ def world(migrated: TestDatabase, tmp_path: Path) -> Iterator[World]:
         articles,
         GatewayWriter(gateway, store, catalogue),
         lambda user: charters.of(user).text,
+        lambda user, language: next(
+            (
+                ModelChoice(e.provider_id, e.model)
+                for lang, e in store.language_models(user).items()
+                if lang == language
+            ),
+            None,
+        ),
     )
     try:
         yield World(
@@ -206,6 +215,7 @@ def world(migrated: TestDatabase, tmp_path: Path) -> Iterator[World]:
             jobs,
             articles,
             charters,
+            settings,
         )
     finally:
         fake.server.shutdown()
@@ -500,6 +510,36 @@ def test_a_repair_in_another_language_keeps_the_first_answer(world: World) -> No
     assert details["kept_first_answer"] is True and details["language_written"] == "nl"
     repair = world.fake.requests[-1]["body"]["messages"][-1]["content"]
     assert "keep writing the whole article in Nederlands" in repair
+
+
+def test_the_model_of_the_brief_then_of_its_language_then_the_profile(world: World) -> None:
+    """docs/design/MODELE_PAR_LANGUE.md (Joël, 2026-11-11): the brief's model first, else the
+    one chosen for the brief's language, else the profile; the draft says which and why."""
+    context = world.context
+    world.charters.set(context.user_id, "")
+    agence, journal = items(world)
+    provider = world.settings.providers(context.user_id)[0].id
+    world.settings.set_language_models(
+        context.user_id, {"nl": ProfileEntry(provider, "gemma4:latest")}, ("fr", "nl", "en")
+    )
+
+    def written(**fields: object) -> tuple[str, str]:
+        brief = world.briefs.create(
+            context,
+            BriefFields(title="T", item_ids=(journal, agence), **fields),  # type: ignore[arg-type]
+        )
+        generation = world.drafts.start(context, brief.id, force=True)
+        assert generation is not None
+        world.drafts.run(context.workspace_id, context.user_id, generation.id)
+        article = world.drafts.article(context, brief.id)
+        assert article is not None
+        model: str = world.fake.requests[-1]["body"]["model"]
+        return model, article.versions[-1].details["model_reason"]
+
+    assert written(language="nl") == ("gemma4:latest", "language")
+    assert written(language="fr") == ("llama3.1", "profile")
+    chosen = ModelChoice(provider, "qwen3:14b")
+    assert written(language="nl", model=chosen) == ("qwen3:14b", "brief")
 
 
 def test_a_cancelled_draft_keeps_nothing(world: World) -> None:

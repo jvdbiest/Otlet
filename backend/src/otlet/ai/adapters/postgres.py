@@ -166,6 +166,36 @@ class PostgresAiSettings:
                     },
                 )
 
+    def language_models(self, user_id: UUID) -> dict[str, ProfileEntry]:
+        with scoped_transaction(self._engine, user_id=user_id) as connection:
+            rows = connection.execute(
+                sa.text(
+                    f"SELECT language, provider_id, model FROM ai_language_models WHERE {OWN}"
+                    " ORDER BY language"
+                ),
+                {"user": user_id},
+            ).all()
+        return {row.language: ProfileEntry(row.provider_id, row.model) for row in rows}
+
+    def save_language_models(self, user_id: UUID, models: dict[str, ProfileEntry]) -> None:
+        with scoped_transaction(self._engine, user_id=user_id) as connection:
+            connection.execute(
+                sa.text(f"DELETE FROM ai_language_models WHERE {OWN}"), {"user": user_id}
+            )
+            for language, entry in models.items():
+                connection.execute(
+                    sa.text(
+                        "INSERT INTO ai_language_models (user_id, language, provider_id, model)"
+                        " VALUES (:user, :language, :provider, :model)"
+                    ),
+                    {
+                        "user": user_id,
+                        "language": language,
+                        "provider": entry.provider_id,
+                        "model": entry.model,
+                    },
+                )
+
     def policy(self) -> InstancePolicy:
         with self._engine.connect() as connection:
             value = connection.execute(

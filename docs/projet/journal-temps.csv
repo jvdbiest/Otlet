@@ -127,3 +127,4 @@ date,heures,domaine,etape,tache,note
 2026-11-08,3,fonction,E1,FID1,termes qui ne se rencontrent pas ; banc des associations nom-valeur : protocole, mesure, relecture ; estimation grossière (Claude)
 2026-11-08,2,fonction,E1,REL1-REL2,aide à la relecture : deux bancs, mesure, relecture ; estimation grossière (Claude)
 2026-11-11,4,fonction,E1,LANG1,modèle par langue : note, protocole, 45 générations, relecture à l'aveugle, rapport ; estimation grossière (Claude)
+2026-11-11,1,fonction,E1,LANG2,ligne de langue de la charte : protocole, 30 générations, rapport ; estimation grossière (Claude)

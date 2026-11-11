@@ -1,0 +1,36 @@
+Par brouillon :
+qwen3:14b       A motogp    nl done    écrit fr première autre 518 mots 220 s
+qwen3:14b       B motogp    nl done    écrit fr première autre 560 mots 240 s
+qwen3:14b       A motogp    en done    écrit fr première autre 517 mots 180 s
+qwen3:14b       B motogp    en done    écrit en première bonne 676 mots 220 s
+qwen3:14b       A rhum      nl done    écrit nl première bonne 368 mots 120 s
+qwen3:14b       B rhum      nl done    écrit nl première autre 432 mots 140 s
+qwen3:14b       A rhum      en done    écrit en première bonne 518 mots 140 s
+qwen3:14b       B rhum      en done    écrit en première bonne 446 mots 100 s
+qwen3:14b       A nvidia    nl done    écrit nl première autre 504 mots 140 s
+qwen3:14b       B nvidia    nl done    écrit nl première bonne 223 mots 100 s
+qwen3:14b       A nvidia    en done    écrit en première bonne 365 mots 100 s
+qwen3:14b       B nvidia    en done    écrit en première bonne 360 mots 80 s
+qwen3:14b       A cpas      nl done    écrit fr première autre 663 mots 220 s
+qwen3:14b       B cpas      nl done    écrit fr première autre 520 mots 140 s
+qwen3:14b       A cpas      en done    écrit en première bonne 246 mots 100 s
+qwen3:14b       B cpas      en done    écrit en première bonne 384 mots 160 s
+qwen3:14b       A cracovie  nl done    écrit nl première bonne 503 mots 160 s
+qwen3:14b       B cracovie  nl done    écrit fr première autre 888 mots 200 s
+qwen3:14b       A cracovie  en done    écrit en première bonne 443 mots 80 s
+qwen3:14b       B cracovie  en done    écrit en première bonne 259 mots 120 s
+gemma4:latest   B motogp    nl done    écrit nl première bonne 564 mots 140 s
+gemma4:latest   B motogp    en done    écrit en première bonne 572 mots 120 s
+gemma4:latest   B rhum      nl done    écrit nl première bonne 534 mots 100 s
+gemma4:latest   B rhum      en done    écrit en première bonne 499 mots 80 s
+gemma4:latest   B nvidia    nl done    écrit nl première bonne 461 mots 80 s
+gemma4:latest   B nvidia    en done    écrit en première bonne 475 mots 80 s
+gemma4:latest   B cpas      nl done    écrit nl première bonne 593 mots 100 s
+gemma4:latest   B cpas      en done    écrit en première bonne 651 mots 100 s
+gemma4:latest   B cracovie  nl done    écrit nl première bonne 480 mots 100 s
+gemma4:latest   B cracovie  en done    écrit en première bonne 434 mots 80 s
+
+Par modèle et charte :
+gemma4:latest   B  tient la langue 10/10  première réponse dans la langue 10/10  aboutis 10/10  mots médians 516  durée médiane 1.7 min
+qwen3:14b       A  tient la langue 7/10  première réponse dans la langue 6/10  aboutis 10/10  mots médians 504  durée médiane 2.3 min
+qwen3:14b       B  tient la langue 7/10  première réponse dans la langue 6/10  aboutis 10/10  mots médians 439  durée médiane 2.3 min

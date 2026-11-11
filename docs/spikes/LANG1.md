@@ -2,9 +2,9 @@
 
 | | |
 |---|---|
-| Statut | Protocole, en attente de fusion |
+| Statut | Conclue : échec (aucun modèle retenu, dans aucune langue) |
 | Durée maximale | 8 h de génération sur la VM .252, appels un par un ; 4 h de relecture |
-| Ouverte le | 2026-11-10 |
+| Ouverte le / conclue le | 2026-11-10 / 2026-11-11 |
 | Choix concernés | `docs/design/MODELE_PAR_LANGUE.md`, ADR-0027, contrôle de langue du brouillon |
 | Commande de rejeu | `python /data/lang1.py` dans le conteneur `api` de la VM, puis `python3 spikes/lang1/analyse.py <dossier>` |
 
@@ -68,8 +68,46 @@ Un modèle est **retenu pour une langue** s'il tient les six critères suivants 
 
 ## 4. Mesures
 
-À venir.
+Du 2026-11-10 à 21 h 06 au 2026-11-11 à 2 h 09, sur la VM .252 avec l'Ollama du PC de Joël : 45 générations, une à la fois. La relecture à l'aveugle a suivi, avec l'aide à la phrase sur chaque phrase (`aide.py`). La correspondance n'a été ouverte qu'une fois la grille remplie. Fichiers : `spikes/lang1/results/` (grille et notes par brouillon, `rapport.txt`, correspondance). Les brouillons complets et l'aide sont sur la VM, dans `~/s-lang1/`.
+
+| Langue | Modèle | C1 aboutis, bonne langue | C2 faits | C3 langue | C4 | C5 longueur | C6 médiane | Retenu |
+|---|---|---|---|---|---|---|---|---|
+| fr | gemma4 | 5/5 | 6 ❌ | 7 | 1 ❌ | 5/5 | 1,7 min | non |
+| fr | mistral-small | 4/5 ❌ | 4 | 2 | 0 | 2/5 ❌ | 11,7 min ❌ | non |
+| fr | qwen3:14b | 5/5 | 11 ❌ | 4 | 0 | 4/5 ❌ | 2,7 min | non |
+| nl | gemma4 | 5/5 | 6 ❌ | 24 ❌ | 0 | 5/5 | 2,0 min | non |
+| nl | mistral-small | 3/5 ❌ | 5 | 11 | 2 ❌ | 3/5 ❌ | 18,7 min ❌ | non |
+| nl | qwen3:14b | 2/5 ❌ | 7 ❌ | 16 | 0 | 4/5 ❌ | 3,3 min | non |
+| en | gemma4 | 5/5 | 6 ❌ | 3 | 0 | 5/5 | 1,7 min | non |
+| en | mistral-small | 2/5 ❌ | 2 | 1 | 1 ❌ | 2/5 ❌ | 13,3 min ❌ | non |
+| en | qwen3:14b | 3/5 ❌ | 7 ❌ | 1 | 0 | 3/5 ❌ | 2,3 min | non |
+
+**Aucun modèle n'est retenu, dans aucune langue.** La stabilité sur les sujets n'a donc pas lieu d'être calculée.
+
+**Ce qui a fait échouer chaque modèle.**
+- **gemma4** écrit toujours dans la langue demandée (15 sur 15) et il est le plus rapide (2 min environ). Il échoue de peu sur les faits, avec 6 erreurs au lieu de 5 au plus dans chaque langue. La moitié vient de la Route du Rhum : propos de Francis Le Goff et de Franck Cammas attribués à Laperche, Beaudart qui saluerait Horeau (le cas de référence), Le Cléac'h présenté comme le mentor de Laperche. En néerlandais, il fait aussi 24 fautes de langue sur 5 brouillons (« een intense duel », « achterwiel », « rechterradius », « werd neutraliseerd », « CPAS » au lieu de « OCMW »). En français, un brouillon contient quatre fois la ligne parasite « Otlet ajoute les références des sources: les sources. ».
+- **mistral-small** fait le moins d'erreurs de faits, mais 4 générations sur 15 dépassent le délai de 10 minutes de la passerelle, deux fois de suite, et échouent. Deux autres sortent en français alors que le néerlandais ou l'anglais était demandé. Sa durée médiane dépasse 10 minutes dans les trois langues, et il répète des phrases (jusqu'à 5 dans un brouillon).
+- **qwen3:14b** a écrit 5 brouillons en français sur 10 demandés en néerlandais ou en anglais. C'est aussi lui qui fait le plus d'erreurs de faits en français (11), dont l'erreur de référence du MotoGP : « Martín, malgré sa deuxième place dans la course Sprint », et même Martín « leader du championnat ».
+
+**Brouillons écrits en français au lieu de la langue demandée : 7 sur 30.** Ce sont 5 brouillons de qwen3 et 2 de mistral-small. Chaque fois, le contrôle de langue a renvoyé la première réponse (« language: the article is written in français »), et la réparation est restée en français. Le brouillon garde alors l'avertissement « écrit en français ». Une piste, à vérifier hors de ce banc : la charte d'écriture de Joël, envoyée avec chaque brief quelle qu'en soit la langue, se termine par « Écris dans un français correct, clair, fluide et professionnel ».
+
+**Deux défauts du produit vus en passant, sans lien avec la langue.**
+- Dans 3 brouillons de gemma4 (L14, L15, L17), des phrases s'arrêtent juste avant une citation (« Het bedrijf stelt dat de interacties tussen Jensen Huang en Alice Huang » sans la suite), 9 fois en tout. La citation a disparu entre la réponse du modèle et le brouillon.
+- La ligne « Otlet ajoute les références des sources: les sources. » est une consigne du prompt recopiée telle quelle dans le texte.
+
+**Limites.** Il y a un seul essai par combinaison. Je relis le néerlandais sans en être locuteur natif, et Joël n'a pas encore relu les 5 brouillons néerlandais tirés au hasard. Les erreurs de faits ont été relevées avec l'aide à la phrase, qui retrouve mal une phrase française pour une phrase néerlandaise ou anglaise quand elle n'a ni nom ni chiffre. Une invention discrète a donc pu m'échapper, plus en NL et en EN qu'en FR.
 
 ## 5. Conclusion
 
-À venir.
+**Échec**, au sens fixé d'avance : aucun modèle n'est retenu, dans aucune langue. Il n'y a donc pas de base pour un mode « Automatique ». Le réglage « Modèle par langue de rédaction » peut être fait sans lui (`docs/design/MODELE_PAR_LANGUE.md`, §4).
+
+Ce que le banc montre malgré tout, pour éclairer le choix manuel :
+- **gemma4 est le seul modèle utilisable dans les trois langues.** Il aboutit toujours, dans la bonne langue, en 2 minutes, et il échoue de peu sur les faits. Son néerlandais reste fautif.
+- **Choisir un modèle par langue ne corrige pas les erreurs de faits.** Les trois modèles se trompent sur les mêmes points : qui dit quoi, et les rangs. L'aide à la phrase reste nécessaire, quelle que soit la langue.
+- **mistral-small n'est pas utilisable sur ce matériel** : il dépasse trop souvent le délai de la passerelle.
+- **qwen3:14b ne tient pas la langue demandée** en néerlandais ni en anglais.
+
+Trois sujets à trancher avec Joël, hors de ce banc :
+1. La charte d'écriture : faut-il la rendre neutre en langue, ou ajouter dans le prompt que la langue du brief l'emporte sur celle de la charte ?
+2. Les citations coupées et la ligne parasite : deux défauts du produit à corriger, à mesurer sur les brouillons de ce banc.
+3. Le réglage manuel « Modèle par langue de rédaction », sans mode « Automatique », avec gemma4 seulement comme conseil affiché.

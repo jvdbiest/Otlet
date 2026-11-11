@@ -1,0 +1,15 @@
+== en
+gemma4:latest          C1 5/5  C2 6  C3 3  C4 0  C5 5/5  C6 1.7 min  mots [568, 525, 550, 535, 603]  répétées [0, 0, 0, 1, 0]  non retenu
+mistral-small:latest   C1 2/5  C2 2  C3 1  C4 1  C5 2/5  C6 13.3 min  mots [415, 466, 0, 648, 0]  répétées [0, 2, 0, 3, 0]  non retenu
+qwen3:14b              C1 3/5  C2 7  C3 1  C4 0  C5 3/5  C6 2.3 min  mots [346, 332, 679, 452, 641]  répétées [0, 0, 0, 0, 0]  non retenu
+aucun modèle retenu
+== fr
+gemma4:latest          C1 5/5  C2 6  C3 7  C4 1  C5 5/5  C6 1.7 min  mots [579, 463, 636, 504, 463]  répétées [3, 1, 1, 0, 0]  non retenu
+mistral-small:latest   C1 4/5  C2 4  C3 2  C4 0  C5 2/5  C6 11.7 min  mots [0, 247, 642, 485, 348]  répétées [0, 1, 1, 2, 0]  non retenu
+qwen3:14b              C1 5/5  C2 11  C3 4  C4 0  C5 4/5  C6 2.7 min  mots [524, 406, 829, 438, 511]  répétées [0, 0, 2, 1, 0]  non retenu
+aucun modèle retenu
+== nl
+gemma4:latest          C1 5/5  C2 6  C3 24  C4 0  C5 5/5  C6 2.0 min  mots [480, 452, 500, 479, 548]  répétées [1, 0, 0, 0, 0]  non retenu
+mistral-small:latest   C1 3/5  C2 5  C3 11  C4 2  C5 3/5  C6 18.7 min  mots [0, 557, 642, 200, 1044]  répétées [0, 5, 0, 0, 5]  non retenu
+qwen3:14b              C1 2/5  C2 7  C3 16  C4 0  C5 4/5  C6 3.3 min  mots [583, 516, 528, 604, 413]  répétées [1, 2, 1, 2, 0]  non retenu
+aucun modèle retenu

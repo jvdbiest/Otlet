@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Statut | Proposition, en attente du banc LANG1 (`docs/spikes/LANG1.md`) |
+| Statut | Proposition ; LANG1 conclu en échec le 2026-11-11 : pas de mode « Automatique » pour l’instant |
 | Ouverte le | 2026-11-10 |
 | Origine | Joël, 2026-11-10, après la comparaison en néerlandais de trois modèles locaux sur le brief MotoGP |
 | Choix concernés | ADR-0027 (passerelle IA : l'utilisateur choisit, l'administrateur autorise ou bloque), contrôle de langue du brouillon |

@@ -1,0 +1,272 @@
+{
+ "L01": {
+  "subject": "cpas",
+  "language": "en",
+  "model": "qwen3:14b",
+  "brief": "f8fe5178-64ae-48de-b79b-c89861ed3707"
+ },
+ "L02": {
+  "subject": "nvidia",
+  "language": "en",
+  "model": "qwen3:14b",
+  "brief": "1565161c-19fd-4e70-8adf-93594cb4706f"
+ },
+ "L03": {
+  "subject": "rhum",
+  "language": "fr",
+  "model": "qwen3:14b",
+  "brief": "41618706-d239-4d3c-abd8-db8c32252669"
+ },
+ "L04": {
+  "subject": "motogp",
+  "language": "en",
+  "model": "qwen3:14b",
+  "brief": "c6c737ad-e080-409e-b3b4-67377d6bc66e"
+ },
+ "L05": {
+  "subject": "motogp",
+  "language": "fr",
+  "model": "gemma4:latest",
+  "brief": "4b136999-f91d-4253-a653-b3f4cff48952"
+ },
+ "L06": {
+  "subject": "nvidia",
+  "language": "fr",
+  "model": "gemma4:latest",
+  "brief": "95c8b145-91b1-4423-8c65-b5b513c4bf91"
+ },
+ "L07": {
+  "subject": "rhum",
+  "language": "fr",
+  "model": "gemma4:latest",
+  "brief": "d5fe1268-14b2-4989-b09e-3269e853641f"
+ },
+ "L08": {
+  "subject": "motogp",
+  "language": "en",
+  "model": "mistral-small:latest",
+  "brief": "3ef81c36-f438-4ab8-abec-d719c657412c"
+ },
+ "L09": {
+  "subject": "rhum",
+  "language": "en",
+  "model": "gemma4:latest",
+  "brief": "7eeebb07-3c35-4777-818c-17c0fd0477dd"
+ },
+ "L10": {
+  "subject": "motogp",
+  "language": "en",
+  "model": "gemma4:latest",
+  "brief": "77332260-5f80-4eec-a358-d1145a1e7a53"
+ },
+ "L11": {
+  "subject": "motogp",
+  "language": "fr",
+  "model": "mistral-small:latest",
+  "brief": "4e594580-f15a-41c9-af37-cb238a1bd5b3"
+ },
+ "L12": {
+  "subject": "motogp",
+  "language": "nl",
+  "model": "mistral-small:latest",
+  "brief": "915ed046-af9e-48b3-ace6-86182e4078c3"
+ },
+ "L13": {
+  "subject": "cpas",
+  "language": "nl",
+  "model": "gemma4:latest",
+  "brief": "3b94f50a-da35-4cdc-9cda-dfdc0bb25c82"
+ },
+ "L14": {
+  "subject": "nvidia",
+  "language": "nl",
+  "model": "gemma4:latest",
+  "brief": "dd253788-af52-493a-87be-83ae7391b9ad"
+ },
+ "L15": {
+  "subject": "cracovie",
+  "language": "fr",
+  "model": "gemma4:latest",
+  "brief": "5d8d2acb-9214-4104-9990-a3874e825ef2"
+ },
+ "L16": {
+  "subject": "rhum",
+  "language": "en",
+  "model": "qwen3:14b",
+  "brief": "ee7e475d-d9c2-437e-a995-c1d0a648912f"
+ },
+ "L17": {
+  "subject": "cpas",
+  "language": "en",
+  "model": "gemma4:latest",
+  "brief": "ff8b0778-5856-4f6a-8181-ca3862c9bf27"
+ },
+ "L18": {
+  "subject": "rhum",
+  "language": "fr",
+  "model": "mistral-small:latest",
+  "brief": "ec2fb633-ab0c-44a4-b374-a308697b1a95"
+ },
+ "L19": {
+  "subject": "cpas",
+  "language": "fr",
+  "model": "gemma4:latest",
+  "brief": "7f433618-1c21-4a0f-b938-751f3d511dfe"
+ },
+ "L20": {
+  "subject": "cracovie",
+  "language": "fr",
+  "model": "qwen3:14b",
+  "brief": "768756ba-0971-44a0-a60f-52277b419bc4"
+ },
+ "L21": {
+  "subject": "cracovie",
+  "language": "en",
+  "model": "mistral-small:latest",
+  "brief": "dfd2cab2-e7e1-4d3f-b188-9e385e82e06d"
+ },
+ "L22": {
+  "subject": "nvidia",
+  "language": "nl",
+  "model": "qwen3:14b",
+  "brief": "8ec0ec81-d80c-4f38-999e-7061f5516b49"
+ },
+ "L23": {
+  "subject": "rhum",
+  "language": "nl",
+  "model": "qwen3:14b",
+  "brief": "3ca961cf-1e7a-41f5-99eb-aa91bf427a5e"
+ },
+ "L24": {
+  "subject": "cracovie",
+  "language": "fr",
+  "model": "mistral-small:latest",
+  "brief": "0fc0a7f9-f834-40af-9bad-bb52d73bf860"
+ },
+ "L25": {
+  "subject": "cpas",
+  "language": "nl",
+  "model": "mistral-small:latest",
+  "brief": "ad7eef48-b56b-4aa7-b49f-6832b74ccc3f"
+ },
+ "L26": {
+  "subject": "cracovie",
+  "language": "nl",
+  "model": "gemma4:latest",
+  "brief": "6f580674-69ce-4dcc-95ec-1ff8f6894f03"
+ },
+ "L27": {
+  "subject": "cracovie",
+  "language": "en",
+  "model": "gemma4:latest",
+  "brief": "de41a2f8-e1e1-429d-965f-9564d20337f1"
+ },
+ "L28": {
+  "subject": "motogp",
+  "language": "nl",
+  "model": "qwen3:14b",
+  "brief": "59ffda4a-015c-4264-9643-88671c828ed7"
+ },
+ "L29": {
+  "subject": "nvidia",
+  "language": "nl",
+  "model": "mistral-small:latest",
+  "brief": "a647d725-3230-42c8-99d7-3a6ec3d7b8e9"
+ },
+ "L30": {
+  "subject": "rhum",
+  "language": "nl",
+  "model": "gemma4:latest",
+  "brief": "545cb295-47f4-4695-b474-8f5c08845e08"
+ },
+ "L31": {
+  "subject": "nvidia",
+  "language": "fr",
+  "model": "mistral-small:latest",
+  "brief": "772496f9-d8c8-40ee-8dc5-d52073aba7b3"
+ },
+ "L32": {
+  "subject": "nvidia",
+  "language": "en",
+  "model": "gemma4:latest",
+  "brief": "3974a8ba-a884-45dd-8f7d-193ed1f4935c"
+ },
+ "L33": {
+  "subject": "rhum",
+  "language": "en",
+  "model": "mistral-small:latest",
+  "brief": "6b90c10c-72d6-4ddf-b412-e62eaa5a39ed"
+ },
+ "L34": {
+  "subject": "cpas",
+  "language": "fr",
+  "model": "mistral-small:latest",
+  "brief": "c074d82c-b3b2-4f28-bf57-24c43999bc71"
+ },
+ "L35": {
+  "subject": "cpas",
+  "language": "en",
+  "model": "mistral-small:latest",
+  "brief": "ebcfe3c5-8c8b-48f2-8927-4a76ddd03fc4"
+ },
+ "L36": {
+  "subject": "cracovie",
+  "language": "en",
+  "model": "qwen3:14b",
+  "brief": "9a5de7a1-9e49-4887-9d2c-bdadf89b329e"
+ },
+ "L37": {
+  "subject": "cpas",
+  "language": "fr",
+  "model": "qwen3:14b",
+  "brief": "c16c5488-6d0b-4eb9-b95d-58f2d57503c2"
+ },
+ "L38": {
+  "subject": "nvidia",
+  "language": "fr",
+  "model": "qwen3:14b",
+  "brief": "efd1aa11-3b3d-492a-b35f-88c6aa5dc08a"
+ },
+ "L39": {
+  "subject": "nvidia",
+  "language": "en",
+  "model": "mistral-small:latest",
+  "brief": "274f7c78-8860-4532-8f50-60de39b634a3"
+ },
+ "L40": {
+  "subject": "motogp",
+  "language": "fr",
+  "model": "qwen3:14b",
+  "brief": "12fc2520-e20d-4783-982e-f00ca59800c7"
+ },
+ "L41": {
+  "subject": "motogp",
+  "language": "nl",
+  "model": "gemma4:latest",
+  "brief": "4e82a755-fc54-4de4-9a28-3c9446fcf9fb"
+ },
+ "L42": {
+  "subject": "cracovie",
+  "language": "nl",
+  "model": "qwen3:14b",
+  "brief": "007c6f9c-fca5-419f-be5a-076c32c5dac9"
+ },
+ "L43": {
+  "subject": "cracovie",
+  "language": "nl",
+  "model": "mistral-small:latest",
+  "brief": "f4c7c2ce-0142-4abf-8f8f-99a02b4b02be"
+ },
+ "L44": {
+  "subject": "rhum",
+  "language": "nl",
+  "model": "mistral-small:latest",
+  "brief": "d744e9b4-eb3e-4587-888d-d5ed7e2cbc87"
+ },
+ "L45": {
+  "subject": "cpas",
+  "language": "nl",
+  "model": "qwen3:14b",
+  "brief": "c9ed875f-d270-4f9b-8ebd-c5d7ddf633f6"
+ }
+}

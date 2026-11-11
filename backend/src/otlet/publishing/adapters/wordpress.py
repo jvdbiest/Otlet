@@ -151,7 +151,7 @@ class WordPress:
             "categories": list(post.categories),
             "tags": list(post.tags),
         }
-        if post.slug:
+        if post.slug is not None:
             fields["slug"] = post.slug
         return fields
 

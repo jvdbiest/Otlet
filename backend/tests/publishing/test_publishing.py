@@ -95,7 +95,8 @@ class FakeWordPress:
         self.posts[post_id] = {
             "status": post.status,
             "raw_content": post.content,
-            "slug": post.slug or current.get("slug") or "un-titre",
+            # An empty slug: WordPress makes one from the title.
+            "slug": post.slug or (current.get("slug") if post.slug is None else None) or "le-gp",
             "link": f"http://site.test/?p={post_id}",
             "title": post.title,
             "categories": list(post.categories),
@@ -210,6 +211,8 @@ def test_a_draft_then_its_publication_update_the_same_post(migrated: TestDatabas
     # 3. « Publier »: the same post goes on line.
     third = send(Action.PUBLISH)
     assert (third.remote_id, third.remote_status) == (1, "publish")
+    # Published, the post drops the otlet-<key> slug for the one WordPress makes from the title.
+    assert wordpress.posts[1]["slug"] == "le-gp"
     # 4. Published, a draft is refused: Otlet never takes it off line by itself.
     with pytest.raises(PublishingError) as caught:
         publishing.send(alice, article, site.id, Action.DRAFT, [], [])

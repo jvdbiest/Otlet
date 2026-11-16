@@ -7,21 +7,21 @@ license = "AGPL-3.0-or-later"
 authors = [{ name = "Joël" }]
 dependencies = [
     "alembic>=1.20.1",
-    "anthropic>=2.1.0",
+    "anthropic>=2.6.0",
     "argon2-cffi>=25.1.0",
     "cryptography>=50.0.2",
-    "fastapi>=0.161.1",
+    "fastapi>=0.162.2",
     "feedparser>=6.0.14",
     "httpx2>=2.16.0",
     "nh3>=0.3.7",
-    "openai>=3.37.0",
+    "openai>=3.46.0",
     "pillow>=13,<14",
     "procrastinate~=3.10.0",
     "protego>=0.7.0",
-    "psycopg[binary]>=3.3.6",
+    "psycopg[binary]>=3.3.8",
     "python-docx>=1.2,<2",
     "readability-lxml>=0.9",
-    "sqlalchemy>=2.1.6",
+    "sqlalchemy>=2.1.8",
     "trafilatura>=2.0,<3",
     "uvicorn>=0.54.0",
     "weasyprint>=70,<71",
@@ -43,16 +43,16 @@ override-dependencies = ["dateparser; python_version < '3'"]
 [dependency-groups]
 dev = [
     "httpx2>=2.16.0",
-    "hypothesis>=6.170.8",
-    "import-linter>=2.15",
-    "mypy>=2.4",
+    "hypothesis>=6.170.15",
+    "import-linter>=2.16",
+    "mypy>=2.4.1",
     "pre-commit>=4.7.0",
-    "pytest>=9.1",
-    "ruff>=0.17.2",
+    "pytest>=9.2.0",
+    "ruff>=0.17.4",
 ]
 
 [build-system]
-requires = ["hatchling>=1.32.4"]
+requires = ["hatchling>=1.33.0"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]

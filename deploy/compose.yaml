@@ -35,7 +35,7 @@ x-long-running: &long-running
 
 services:
   caddy:
-    image: caddy:2.11.7-alpine
+    image: caddy:2.11.9-alpine
     restart: unless-stopped
     ports:
       - "${OTLET_HTTP_PORT:-80}:80"
